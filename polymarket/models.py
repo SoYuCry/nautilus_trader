@@ -1,9 +1,10 @@
-"""Canonical Polymarket L2 replay data model for research backtests.
+"""Canonical Polymarket L2 source-normalization model for research backtests.
 
 Adapters translate source-specific formats (PMXT parquet, PMXT curated events,
 local raw WebSocket captures, or future event bundles) into these types.  The
-backtest loop consumes only these canonical replay steps and must not branch on
-adapter-specific source quirks.
+Nautilus-native bridge consumes only these canonical steps and must not branch
+on adapter-specific source quirks.  Matching, fills, cash, positions, and PnL
+belong to NautilusTrader's native backtest engine, not this package.
 """
 
 from __future__ import annotations
@@ -46,7 +47,7 @@ class L2UpdateV1:
 
 @dataclass(frozen=True, slots=True)
 class L2ReplayStepV1:
-    """Atomic unit consumed by the v1 replay loop."""
+    """Atomic source step converted into Nautilus-native data."""
 
     sequence: int
     timestamp_received: datetime
