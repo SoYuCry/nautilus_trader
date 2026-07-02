@@ -16,6 +16,7 @@ from typing import Any, Mapping
 from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
 from nautilus_trader.adapters.polymarket.common.enums import PolymarketOrderSide
 from nautilus_trader.adapters.polymarket.common.parsing import determine_trade_id
+from nautilus_trader.adapters.polymarket.common.symbol import get_polymarket_condition_id
 from nautilus_trader.adapters.polymarket.common.symbol import get_polymarket_instrument_id
 from nautilus_trader.adapters.polymarket.common.symbol import get_polymarket_token_id
 from nautilus_trader.core.datetime import dt_to_unix_nanos
@@ -129,7 +130,11 @@ def convert_dataset_to_nautilus(
     data: list[NativePolymarketData] = []
     skipped: list[str] = []
     tick_size_changes: list[tuple[str, str]] = []
-    selected_asset_id = selected_asset_id or _token_id_from_instrument(instrument.id)
+    selected_condition_id, selected_asset_id = _resolve_selection(
+        dataset,
+        instrument=instrument,
+        selected_asset_id=selected_asset_id,
+    )
     last_ts_init: int | None = None
 
     def next_ts_init(step: L2ReplayStepV1) -> int:
@@ -144,7 +149,7 @@ def convert_dataset_to_nautilus(
         relevant = [
             update
             for update in step.updates
-            if update.asset_id == selected_asset_id or selected_asset_id is None
+            if update.market == selected_condition_id and update.asset_id == selected_asset_id
         ]
         if not relevant:
             continue
@@ -203,8 +208,7 @@ def _step_to_order_book_deltas(
             deltas.extend(_snapshot_to_deltas(step, update, instrument=instrument, ts_init=ts_init))
         elif update.event_type == "price_change":
             delta = _price_change_to_delta(step, update, instrument=instrument, ts_init=ts_init)
-            if delta is not None:
-                deltas.append(delta)
+            deltas.append(delta)
 
     if not deltas:
         return None
@@ -279,9 +283,17 @@ def _price_change_to_delta(
     *,
     instrument: BinaryOption,
     ts_init: int,
-) -> OrderBookDelta | None:
+) -> OrderBookDelta:
     if update.price is None or update.size is None:
-        return None
+        missing = [
+            field
+            for field, value in (("price", update.price), ("size", update.size))
+            if value is None
+        ]
+        raise ValueError(
+            "price_change update is missing required field(s) "
+            f"{', '.join(missing)} at sequence={step.sequence}, asset_id={update.asset_id!r}",
+        )
     if update.side == "BUY":
         side = OrderSide.BUY
     elif update.side == "SELL":
@@ -369,12 +381,42 @@ def _ts_event(step: L2ReplayStepV1) -> int:
     return datetime_to_nanos(step.timestamp or step.timestamp_received)
 
 
-def _first_update(dataset: PolymarketL2DatasetV1, *, selected_asset_id: str | None) -> L2UpdateV1:
+def _first_update(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    selected_asset_id: str | None,
+    selected_condition_id: str | None = None,
+) -> L2UpdateV1:
     for step in dataset.steps:
         for update in step.updates:
+            if selected_condition_id is not None and update.market != selected_condition_id:
+                continue
             if selected_asset_id is None or update.asset_id == selected_asset_id:
                 return update
-    raise ValueError("dataset has no updates for selected asset")
+    if selected_condition_id is None:
+        raise ValueError(f"dataset has no updates for selected asset: asset_id={selected_asset_id!r}")
+    raise ValueError(
+        "dataset has no updates for selected Polymarket instrument: "
+        f"condition_id={selected_condition_id!r}, asset_id={selected_asset_id!r}",
+    )
+
+
+def _resolve_selection(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    instrument: BinaryOption,
+    selected_asset_id: str | None,
+) -> tuple[str, str]:
+    instrument_condition_id = get_polymarket_condition_id(instrument.id)
+    instrument_token_id = _token_id_from_instrument(instrument.id)
+    resolved_asset_id = selected_asset_id or instrument_token_id
+    if selected_asset_id is not None and selected_asset_id != instrument_token_id:
+        raise ValueError(
+            "selected_asset_id does not match Nautilus instrument token_id: "
+            f"selected_asset_id={selected_asset_id!r}, instrument_token_id={instrument_token_id!r}",
+        )
+    _first_update(dataset, selected_condition_id=instrument_condition_id, selected_asset_id=resolved_asset_id)
+    return instrument_condition_id, resolved_asset_id
 
 
 def _token_id_from_instrument(instrument_id: InstrumentId) -> str:

@@ -230,3 +230,83 @@ def test_bridge_keeps_nautilus_init_timestamps_monotonic_when_receive_times_tie(
     ]
     assert [item.ts_init for item in converted.data] == sorted(item.ts_init for item in converted.data)
     assert len({item.ts_init for item in converted.data}) == len(converted.data)
+
+
+@pytest.mark.parametrize(
+    ("price", "size", "missing"),
+    [
+        (None, Decimal("50"), "price"),
+        (Decimal("0.41"), None, "size"),
+        (None, None, "price, size"),
+    ],
+)
+def test_bridge_rejects_malformed_price_change_without_silent_skip(
+    price: Decimal | None,
+    size: Decimal | None,
+    missing: str,
+) -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=price,
+                        size=size,
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match=rf"missing required field\\(s\\) {missing}.*sequence=2.*asset_id='yes'"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_rejects_selected_asset_that_differs_from_instrument_token() -> None:
+    data = dataset([step(1, [book(asset_id="yes")])])
+    instrument = load_binary_option_from_config(
+        {"condition_id": "condition", "token_id": "no"},
+        dataset=data,
+        selected_asset_id="yes",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="selected_asset_id does not match Nautilus instrument token_id.*'yes'.*'no'",
+    ):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_rejects_instrument_token_without_matching_dataset_updates() -> None:
+    data = dataset([step(1, [book(asset_id="yes")])])
+    instrument = load_binary_option_from_config(
+        {"condition_id": "condition", "token_id": "no"},
+        dataset=data,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="dataset has no updates for selected Polymarket instrument.*condition.*no",
+    ):
+        convert_dataset_to_nautilus(data, instrument=instrument)
+
+
+def test_bridge_rejects_matching_token_under_wrong_condition() -> None:
+    data = dataset([step(1, [book(asset_id="yes")])])
+    instrument = load_binary_option_from_config(
+        {"condition_id": "other_condition", "token_id": "yes"},
+        dataset=data,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="dataset has no updates for selected Polymarket instrument.*other_condition.*yes",
+    ):
+        convert_dataset_to_nautilus(data, instrument=instrument)
