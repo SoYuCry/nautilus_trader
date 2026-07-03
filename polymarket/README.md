@@ -14,12 +14,20 @@ source data -> polymarket/adapters -> polymarket/models.py
 Backtest execution, order simulation, fills, positions, cash, and reports are
 handled by NautilusTrader's native `BacktestEngine`.
 
+Important framing: `models.py` is the data contract we want to require from the
+IT/data feed, not a long-term compatibility abstraction.  If a current source
+does not match it, use a temporary normalizer/patch script to convert into this
+shape before backtesting.  Once the IT feed is fixed, the backtest stack should
+expect that fixed shape directly.
+
 ## Boundaries
 
-- `adapters/` own source compatibility for PMXT parquet, PMXT curated event
-  folders, local live raw WebSocket captures, and future event bundles.
-- `models.py` defines the canonical source-normalization model used between
-  adapters and the Nautilus-native bridge.
+- `DATA_CONTRACT_V1.md` describes the Polymarket L2 data shape we should ask
+  IT/data to deliver.
+- `models.py` implements that required data contract in Python dataclasses.
+- `adapters/` are temporary ingress shims for current pre-contract files.  They
+  should patch inputs into the required contract, not become a broad
+  compatibility layer.
 - `nautilus_native.py` converts the canonical source model into Nautilus native
   `OrderBookDeltas` and `TradeTick` objects.
 - `backtest_v1.py` is the single v1 run/backtest entry point.  It constructs and
@@ -39,11 +47,49 @@ stable.
 
 ## Source status
 
+These are current ingress paths, not equal long-term targets:
+
 - `pmxt_parquet_v1`: legacy/questionable.  PMXT parquet lacks raw WebSocket
   message boundaries and source timestamps may invert.
 - `pmxt_event_v1`: legacy/questionable because it is derived from PMXT data.
 - `live_ws_v1`: preferred current path for local raw WebSocket captures.
-- `live_event_bundle_v1`: future data-team event bundle boundary.
+- `live_event_bundle_v1`: provisional data-team event bundle boundary.  The
+  final IT feed should be coordinated against `DATA_CONTRACT_V1.md`.
+
+## Data-health gate before backtest
+
+`python -m polymarket.backtest_v1` now runs a mandatory data-health check after
+adapter loading and before Nautilus conversion/engine execution:
+
+- `timestamp_received` must be non-decreasing in adapter output order.
+- local replay `sequence` must be strictly increasing.
+- failures stop the run and write `data_health.json`; they are not repaired by
+  sorting.
+- source timestamp inversions and future source timestamps are reported as
+  diagnostics so we can judge severity, but replay chronology remains
+  `timestamp_received`.
+
+The Nautilus bridge also uses `timestamp_received` as the replay clock.  Source
+`timestamp` is kept for diagnostics/provenance and must not create look-ahead
+ordering.
+
+Standalone health check:
+
+```powershell
+python -m polymarket.data_health --ndjson polymarket/tests/fixtures/live_ws_minimal.ndjson
+```
+
+Normalize a capture wrapper into strict `live_ws_v1` NDJSON:
+
+```powershell
+python -m polymarket.scripts.normalize_live_ws_v1 `
+  --input path/to/raw_capture.ndjson `
+  --output path/to/live_ws_v1.ndjson
+```
+
+`live_ws_v1` requires a real receive timestamp
+(`recv_wall_time_utc`, `timestamp_received`, or `received_at`).  It refuses to
+substitute Polymarket source `timestamp` as receive time.
 
 ## Current replay support boundary
 

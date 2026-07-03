@@ -1,9 +1,12 @@
-"""Canonical Polymarket L2 source-normalization model for research backtests.
+"""Target Polymarket L2 data contract for research backtests.
 
-Adapters translate source-specific formats (PMXT parquet, PMXT curated events,
-local raw WebSocket captures, or future event bundles) into these types.  The
-Nautilus-native bridge consumes only these canonical steps and must not branch
-on adapter-specific source quirks.  Matching, fills, cash, positions, and PnL
+These types describe the standard format we want the data/IT side to deliver.
+Temporary adapters and one-off scripts may patch pre-contract inputs into this
+shape, but the backtest stack should treat this model as the fixed boundary, not
+as an open-ended compatibility layer for arbitrary data sources.
+
+The Nautilus-native bridge consumes only these contract steps and must not
+branch on upstream source quirks.  Matching, fills, cash, positions, and PnL
 belong to NautilusTrader's native backtest engine, not this package.
 """
 
@@ -47,7 +50,7 @@ class L2UpdateV1:
 
 @dataclass(frozen=True, slots=True)
 class L2ReplayStepV1:
-    """Atomic source step converted into Nautilus-native data."""
+    """One atomic replay step in the required data contract."""
 
     sequence: int
     timestamp_received: datetime
@@ -73,7 +76,7 @@ class DatasetMetadataV1:
 
 @dataclass(frozen=True, slots=True)
 class PolymarketL2DatasetV1:
-    """Canonical dataset produced by all Polymarket v1 adapters."""
+    """Dataset in the required Polymarket v1 L2 replay contract."""
 
     metadata: DatasetMetadataV1
     steps: tuple[L2ReplayStepV1, ...]
