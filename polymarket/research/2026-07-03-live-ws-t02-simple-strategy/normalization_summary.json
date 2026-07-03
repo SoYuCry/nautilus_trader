@@ -1,0 +1,10 @@
+{
+  "input": "C:/Projects/PolyReaper/research/2026-06-25-polymarket-raw-ws-ordering-capture/data/raw/ws_capture_20260626T022520Z.ndjson",
+  "output": "polymarket/research/2026-07-03-live-ws-t02-simple-strategy/data/live_ws_v1_20260626T022520Z.ndjson",
+  "rows_written": 2088,
+  "control_messages": 268,
+  "skipped_unsupported_messages": 260,
+  "split_array_messages": 1,
+  "format": "live_ws_v1",
+  "receive_timestamp_policy": "required_explicit_receive_time"
+}
