@@ -40,6 +40,8 @@ from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
 from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
+from polymarket.data_health import DataHealthError
+from polymarket.data_health import analyze_dataset_health
 from polymarket.models import PolymarketL2DatasetV1
 from polymarket.nautilus_native import convert_dataset_to_nautilus
 from polymarket.nautilus_native import load_binary_option_from_config
@@ -62,6 +64,7 @@ class NativeBacktestResultV1:
     trade_ticks_count: int
     skipped_updates: tuple[str, ...]
     tick_size_changes: tuple[tuple[str, str], ...]
+    data_health: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -171,6 +174,10 @@ def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int,
         engine.add_data(order_book_deltas, sort=False)
     if trade_ticks:
         engine.add_data(trade_ticks, sort=False)
+    # The source dataset is not repaired or re-sorted to hide problems.  The
+    # mandatory pre-run data-health gate proves ts_init is receive-time
+    # monotonic; this Nautilus sort only syncs separately added native data
+    # types into a single ts_init-ordered stream required by BacktestEngine.
     engine.sort_data()
     return len(order_book_deltas), len(trade_ticks)
 
@@ -192,6 +199,7 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
                 "trade_ticks_count": result.trade_ticks_count,
                 "skipped_updates": list(result.skipped_updates),
                 "tick_size_changes": list(result.tick_size_changes),
+                "data_health": result.data_health,
                 "reports": {
                     "account": "account_report.txt",
                     "fills": "fills_report.txt",
@@ -211,8 +219,23 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     output_dir = resolve_output_dir(config_path, config.get("report") or {})
     run_dir = ensure_child(output_dir, output_dir / run_id)
     run_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(config_path, run_dir / "original_config.yml")
 
     dataset = load_adapter(config)
+    health_config = config.get("data_health") or {}
+    data_health_report = analyze_dataset_health(
+        dataset,
+        future_tolerance_ms=float(health_config.get("future_tolerance_ms", 50.0)),
+        delay_warning_ms=float(health_config.get("delay_warning_ms", 1_000.0)),
+    )
+    (run_dir / "data_health.json").write_text(data_health_report.to_json() + "\n", encoding="utf-8")
+    if not data_health_report.ok:
+        raise DataHealthError(
+            "Polymarket data-health check failed before Nautilus backtest. "
+            f"Inspect {repo_relative_or_absolute(run_dir / 'data_health.json', repo_root=REPO_ROOT)}; "
+            "do not sort the source data to make this pass.",
+        )
+
     selected_asset_id = (config.get("selection") or {}).get("asset_id")
     instrument = load_binary_option_from_config(
         config.get("instrument") or {},
@@ -242,8 +265,8 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             trade_ticks_count=trade_count,
             skipped_updates=conversion.skipped_updates,
             tick_size_changes=conversion.tick_size_changes,
+            data_health=data_health_report.to_dict(),
         )
-        shutil.copyfile(config_path, run_dir / "original_config.yml")
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
             "adapter": {
@@ -256,6 +279,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
             "instrument_id": str(instrument.id),
             "strategy": strategy_provenance,
+            "data_health": data_health_report.to_dict(),
             "runtime": {
                 "run_id": run_id,
                 "created_at_utc": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
@@ -271,6 +295,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "outputs": {
                 "original_config": repo_relative_or_absolute(run_dir / "original_config.yml", repo_root=REPO_ROOT),
                 "resolved_config": repo_relative_or_absolute(run_dir / "resolved_config.json", repo_root=REPO_ROOT),
+                "data_health": repo_relative_or_absolute(run_dir / "data_health.json", repo_root=REPO_ROOT),
                 "summary": repo_relative_or_absolute(run_dir / "summary.json", repo_root=REPO_ROOT),
                 "account_report": repo_relative_or_absolute(run_dir / "account_report.txt", repo_root=REPO_ROOT),
                 "fills_report": repo_relative_or_absolute(run_dir / "fills_report.txt", repo_root=REPO_ROOT),
@@ -279,6 +304,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "data_count": result.data_count,
             "order_book_deltas_count": result.order_book_deltas_count,
             "trade_ticks_count": result.trade_ticks_count,
+            "data_health_ok": data_health_report.ok,
         }
         print(json.dumps(summary, indent=2))
         return summary

@@ -378,7 +378,10 @@ def _trade_to_tick(
 
 
 def _ts_event(step: L2ReplayStepV1) -> int:
-    return datetime_to_nanos(step.timestamp or step.timestamp_received)
+    # Historical replay is receive-time ordered.  Source timestamps remain
+    # diagnostics/provenance in data_health.json; they must not reorder replay
+    # or create a look-ahead path when they are future-stamped or inverted.
+    return datetime_to_nanos(step.timestamp_received)
 
 
 def _first_update(

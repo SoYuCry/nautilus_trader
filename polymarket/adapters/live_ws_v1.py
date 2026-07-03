@@ -106,9 +106,11 @@ class LiveWsV1Adapter:
                 return as_utc_datetime(payload[key])
         if message.get("timestamp_received") is not None:
             return as_utc_datetime(message["timestamp_received"])
-        if message.get("timestamp") is not None:
-            return as_utc_datetime(message["timestamp"])
-        raise ValueError("live WS message lacks receive timestamp")
+        raise ValueError(
+            "live_ws_v1 requires an explicit receive timestamp "
+            "(recv_wall_time_utc/timestamp_received/received_at); "
+            "do not substitute Polymarket source timestamp for replay order",
+        )
 
     def _message_to_updates(self, message: Mapping[str, Any]) -> list[L2UpdateV1]:
         event_type = str(message.get("event_type") or message.get("type") or "")
