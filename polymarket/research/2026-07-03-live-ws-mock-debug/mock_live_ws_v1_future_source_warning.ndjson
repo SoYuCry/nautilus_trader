@@ -1,0 +1,2 @@
+{"local_msg_index":1,"recv_wall_time_utc":"2026-06-26T02:25:28.635000Z","raw_json":{"event_type":"book","market":"condition-mock-001","asset_id":"yes-token-mock","timestamp":"2026-06-26T02:25:28.600Z","bids":[["0.40","100"]],"asks":[["0.60","100"]]}}
+{"local_msg_index":2,"recv_wall_time_utc":"2026-06-26T02:25:29Z","raw_json":{"event_type":"price_change","market":"condition-mock-001","timestamp":"2026-06-26T02:25:29.120Z","price_changes":[{"asset_id":"yes-token-mock","side":"BUY","price":"0.41","size":"50"}]}}

@@ -1,0 +1,34 @@
+﻿experiment:
+  name: live_ws_mock_debug
+
+adapter:
+  name: live_ws_v1
+  input:
+    ndjson_path: polymarket/research/2026-07-03-live-ws-mock-debug/mock_live_ws_v1_clean.ndjson
+
+selection:
+  asset_id: "yes-token-mock"
+
+instrument:
+  condition_id: "condition-mock-001"
+  token_id: "yes-token-mock"
+  outcome: "Yes"
+  description: "Mock Polymarket binary option for live_ws debug"
+  price_increment: "0.01"
+  size_increment: "0.000001"
+
+strategy:
+  enabled: false
+
+runtime:
+  run_id: mock-live-ws-debug-001
+
+report:
+  output_dir: ./runs
+
+replay:
+  fail_on_tick_size_change: false
+
+data_health:
+  future_tolerance_ms: 50
+  delay_warning_ms: 1000

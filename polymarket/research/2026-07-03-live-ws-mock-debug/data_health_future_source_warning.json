@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "summary": {
+    "step_count": 2,
+    "update_count": 2,
+    "first_timestamp_received": "2026-06-26T02:25:28.635000Z",
+    "last_timestamp_received": "2026-06-26T02:25:29Z",
+    "receive_time_inversion_count": 0,
+    "sequence_inversion_count": 0,
+    "source_timestamp_present_step_count": 2,
+    "source_timestamp_missing_step_count": 0,
+    "source_timestamp_missing_update_count": 0,
+    "source_time_inversion_count": 0,
+    "future_source_time_count": 1,
+    "max_future_source_time_ms": 120.0,
+    "source_delay_over_threshold_count": 0,
+    "max_source_delay_ms": 35.0
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "code": "future_source_time",
+      "message": "source timestamp is later than receive time; reported for severity, replay remains receive-time ordered",
+      "sequence": 2,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-26T02:25:29.120000Z",
+        "timestamp_received": "2026-06-26T02:25:29Z",
+        "future_ms": 120.0,
+        "future_tolerance_ms": 50.0
+      }
+    }
+  ],
+  "assumptions": [
+    "Replay chronology is timestamp_received order, not source timestamp order.",
+    "Hard failures are receive-time or local-sequence inversions.",
+    "Future/source-time issues are surfaced as diagnostics for severity review.",
+    "Missing source timestamps are counted so source-time diagnostics are not overread.",
+    "This check never sorts, drops, or repairs data."
+  ]
+}
