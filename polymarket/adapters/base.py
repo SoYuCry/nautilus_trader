@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Protocol
 
-from polymarket.models import PolymarketL2DatasetV1
+from polymarket._core.models import PolymarketL2DatasetV1
 
 
 class DatasetAdapterV1(Protocol):
@@ -21,3 +21,4 @@ class DatasetAdapterV1(Protocol):
     def load(self, config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
         """Load pre-contract data into required replay steps."""
         ...
+

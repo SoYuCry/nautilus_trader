@@ -1,4 +1,4 @@
-﻿# live_ws mock debug data
+# live_ws mock debug data
 
 这个目录用于手工 debug 当前 Polymarket live_ws 回测链路。
 
@@ -23,7 +23,7 @@
 ## 推荐 debug 顺序
 
 ```powershell
-python -m polymarket.scripts.normalize_live_ws_v1 `
+python -m polymarket._tools.normalize_live_ws_v1 `
   --input polymarket/research/2026-07-03-live-ws-mock-debug/mock_capture_clean.ndjson `
   --output polymarket/research/2026-07-03-live-ws-mock-debug/mock_live_ws_v1_clean.ndjson
 
@@ -50,7 +50,7 @@ python -m polymarket.backtest_v1 `
 ### missing source timestamp warning
 
 ```powershell
-python -m polymarket.scripts.normalize_live_ws_v1 `
+python -m polymarket._tools.normalize_live_ws_v1 `
   --input polymarket/research/2026-07-03-live-ws-mock-debug/mock_capture_missing_source_timestamp.ndjson `
   --output polymarket/research/2026-07-03-live-ws-mock-debug/mock_live_ws_v1_missing_source_timestamp.ndjson
 
@@ -63,3 +63,4 @@ python -m polymarket.data_health `
 
 - `source_timestamp_missing_step_count`
 - `source_timestamp_missing_update_count`
+

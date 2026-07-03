@@ -8,7 +8,7 @@ for this shape directly.
 
 ## Required replay model
 
-The canonical in-code representation is `polymarket.models.PolymarketL2DatasetV1`.
+The canonical in-code representation is the private dataclass model `polymarket._core.models.PolymarketL2DatasetV1`.
 Conceptually it is:
 
 ```text
@@ -117,3 +117,4 @@ instrument-epoch model.
 - `normalize_live_ws_v1.py`: patch/normalizer for capture wrappers into the
   strict live WS contract shape.
 - `pmxt_*`: legacy/questionable research inputs only.
+

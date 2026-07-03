@@ -105,8 +105,12 @@ def test_runner_uses_nautilus_backtest_engine_and_native_reports(tmp_path: Path)
     assert summary["order_book_deltas_count"] == 2
     assert summary["trade_ticks_count"] == 1
     assert (run_dir / "account_report.txt").exists()
+    assert (run_dir / "account_report.csv").exists()
     assert (run_dir / "fills_report.txt").exists()
+    assert (run_dir / "fills_report.csv").exists()
     assert (run_dir / "positions_report.txt").exists()
+    assert (run_dir / "positions_report.csv").exists()
+    assert (run_dir / "run_report.md").exists()
 
 
 def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> None:
@@ -188,6 +192,10 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
               token_id: "yes"
               price_increment: "0.01"
               size_increment: "0.000001"
+              taker_fee: "0.05"
+            fees:
+              enabled: true
+              maker_rebates_enabled: false
             strategy:
               enabled: true
               path: {strategy_path.as_posix()}
@@ -208,19 +216,26 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     run_summary = json.loads(Path(summary["outputs"]["summary"]).read_text(encoding="utf-8"))
     resolved = json.loads(Path(summary["outputs"]["resolved_config"]).read_text(encoding="utf-8"))
     fills = Path(summary["outputs"]["fills_report"]).read_text(encoding="utf-8")
+    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
     positions = Path(summary["outputs"]["positions_report"]).read_text(encoding="utf-8")
+    run_report = Path(summary["outputs"]["run_report"]).read_text(encoding="utf-8")
 
     assert summary["engine"] == "nautilus_trader.backtest.engine.BacktestEngine"
     assert run_summary["order_book_deltas_count"] == 2
     assert run_summary["trade_ticks_count"] == 1
     assert resolved["strategy"]["class"] == "TakeBestAskOnce"
+    assert resolved["fees"]["model"] == "PolymarketFeeModel"
+    assert resolved["fees"]["maker_rebates_enabled"] is False
+    assert resolved["fees"]["instrument_taker_fee"] == "0.05"
     assert "MARKET" in fills
     assert "BUY" in fills
     assert "FILLED" in fills
     assert "1.000000" in fills
+    assert "0.012000 pUSD" in fills_csv
     assert "LONG" in positions
     assert "avg_px_open" in positions
     assert "0.6" in positions
+    assert "TradeTick count" in run_report
 
 
 def test_report_output_dir_must_stay_inside_experiment_runs(tmp_path: Path) -> None:

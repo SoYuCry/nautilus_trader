@@ -6,15 +6,15 @@ production NautilusTrader adapter package.
 The hard boundary is:
 
 ```text
-source data -> polymarket/adapters -> polymarket/models.py
-            -> polymarket/nautilus_native.py -> Nautilus OrderBookDeltas/TradeTick
+source data -> polymarket/adapters -> private source model
+            -> private Nautilus bridge -> Nautilus OrderBookDeltas/TradeTick
             -> nautilus_trader.backtest.engine.BacktestEngine
 ```
 
 Backtest execution, order simulation, fills, positions, cash, and reports are
 handled by NautilusTrader's native `BacktestEngine`.
 
-Important framing: `models.py` is the data contract we want to require from the
+Important framing: the private source model in `_core/` is the data contract we want to require from the
 IT/data feed, not a long-term compatibility abstraction.  If a current source
 does not match it, use a temporary normalizer/patch script to convert into this
 shape before backtesting.  Once the IT feed is fixed, the backtest stack should
@@ -24,14 +24,11 @@ expect that fixed shape directly.
 
 - `DATA_CONTRACT_V1.md` describes the Polymarket L2 data shape we should ask
   IT/data to deliver.
-- `models.py` implements that required data contract in Python dataclasses.
+- `_core/` holds private implementation details: the source dataclasses and Nautilus-native bridge. Day-to-day users should not need to edit it.
 - `adapters/` are temporary ingress shims for current pre-contract files.  They
   should patch inputs into the required contract, not become a broad
   compatibility layer.
-- `nautilus_native.py` converts the canonical source model into Nautilus native
-  `OrderBookDeltas` and `TradeTick` objects.
-- `backtest_v1.py` is the single v1 run/backtest entry point.  It constructs and
-  runs `nautilus_trader.backtest.engine.BacktestEngine`.
+- `backtest_v1.py` is the single v1 run/backtest entry point.  It runs data-health first, constructs Nautilus `BacktestEngine`, and writes reports.
 - `research/` contains data/WS studies and future Nautilus-native experiments.
 - `ideas/` contains long-horizon brainstorms.
 - `boss_reports/` contains polished decision reports.
@@ -81,10 +78,10 @@ Standalone health check:
 python -m polymarket.data_health --ndjson polymarket/tests/fixtures/live_ws_minimal.ndjson
 ```
 
-Normalize a capture wrapper into strict `live_ws_v1` NDJSON:
+Temporary helper for old capture wrappers into strict `live_ws_v1` NDJSON. This lives under `_tools/` because it should disappear once IT delivers the final contract:
 
 ```powershell
-python -m polymarket.scripts.normalize_live_ws_v1 `
+python -m polymarket._tools.normalize_live_ws_v1 `
   --input path/to/raw_capture.ndjson `
   --output path/to/live_ws_v1.ndjson
 ```
@@ -124,7 +121,7 @@ python -m pytest polymarket\tests\test_nautilus_native_bridge.py polymarket\test
 
 Each future `research/<date-topic>/` directory may own its `experiment.yml`,
 optional Nautilus-native `strategy.py`, `report.md`, and representative
-`runs/<run_id>/` outputs.  Runs must write both `original_config.yml` and
-`resolved_config.json`.  Any strategy script must subclass
+`runs/<run_id>/` outputs.  Runs write `original_config.yml`, `resolved_config.json`, `data_health.json`, CSV reports, txt previews, and `run_report.md`.  Any strategy script must subclass
 `nautilus_trader.trading.strategy.Strategy`; this package stays focused on
 adapters, Nautilus-native conversion, and report post-processing.
+

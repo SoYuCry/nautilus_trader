@@ -23,8 +23,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from polymarket.models import L2ReplayStepV1
-from polymarket.models import PolymarketL2DatasetV1
+from polymarket._core.models import L2ReplayStepV1
+from polymarket._core.models import PolymarketL2DatasetV1
 
 
 SeverityV1 = Literal["error", "warning"]
@@ -335,3 +335,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

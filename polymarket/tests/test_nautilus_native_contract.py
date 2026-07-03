@@ -20,7 +20,7 @@ def test_polymarket_strategy_namespace_is_not_defined() -> None:
 
 
 def test_nautilus_bridge_uses_received_time_for_replay_clock() -> None:
-    source = Path("polymarket/nautilus_native.py").read_text(encoding="utf-8")
+    source = Path("polymarket/_core/nautilus_native.py").read_text(encoding="utf-8")
 
     assert "return datetime_to_nanos(step.timestamp_received)" in source
     assert "step.timestamp or step.timestamp_received" not in source

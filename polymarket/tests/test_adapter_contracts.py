@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from decimal import Decimal
@@ -9,6 +9,13 @@ import pytest
 
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
 from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
+from polymarket.adapters.utils import as_utc_datetime
+
+
+def test_as_utc_datetime_parses_polymarket_epoch_millisecond_strings() -> None:
+    parsed = as_utc_datetime("1782440717084")
+
+    assert parsed.isoformat().replace("+00:00", "Z") == "2026-06-26T02:25:17.084000Z"
 
 
 def test_pmxt_unknown_event_type_fails_loudly(tmp_path: Path) -> None:

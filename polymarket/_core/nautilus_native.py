@@ -36,9 +36,9 @@ from nautilus_trader.model.instruments import BinaryOption
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
 
-from polymarket.models import L2ReplayStepV1
-from polymarket.models import L2UpdateV1
-from polymarket.models import PolymarketL2DatasetV1
+from polymarket._core.models import L2ReplayStepV1
+from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import PolymarketL2DatasetV1
 
 
 NativePolymarketData = OrderBookDeltas | TradeTick
@@ -113,7 +113,7 @@ def load_binary_option_from_config(
         info={
             "condition_id": condition_id,
             "token_id": token_id,
-            "source": "polymarket.nautilus_native.load_binary_option_from_config",
+            "source": "polymarket._core.nautilus_native.load_binary_option_from_config",
         },
     )
 
@@ -428,3 +428,4 @@ def _resolve_selection(
 
 def _token_id_from_instrument(instrument_id: InstrumentId) -> str:
     return get_polymarket_token_id(instrument_id)
+

@@ -22,6 +22,7 @@ import pandas as pd
 import yaml
 
 from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
+from nautilus_trader.adapters.polymarket.fee_model import PolymarketFeeModel
 from nautilus_trader.backtest.config import BacktestEngineConfig
 from nautilus_trader.backtest.engine import BacktestEngine
 from nautilus_trader.config import LoggingConfig
@@ -42,9 +43,9 @@ from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
 from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
-from polymarket.models import PolymarketL2DatasetV1
-from polymarket.nautilus_native import convert_dataset_to_nautilus
-from polymarket.nautilus_native import load_binary_option_from_config
+from polymarket._core.models import PolymarketL2DatasetV1
+from polymarket._core.nautilus_native import convert_dataset_to_nautilus
+from polymarket._core.nautilus_native import load_binary_option_from_config
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -147,6 +148,12 @@ def load_native_strategy(config_path: Path, strategy_config: Mapping[str, Any]) 
 
 
 def build_engine(config: Mapping[str, Any]) -> BacktestEngine:
+    fees_config = config.get("fees") or {}
+    fee_model = None
+    if fees_config.get("enabled", True):
+        fee_model = PolymarketFeeModel(
+            maker_rebates_enabled=bool(fees_config.get("maker_rebates_enabled", False)),
+        )
     engine_config = BacktestEngineConfig(
         trader_id=TraderId(str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001"))),
         logging=LoggingConfig(bypass_logging=bool((config.get("engine") or {}).get("bypass_logging", True))),
@@ -159,6 +166,7 @@ def build_engine(config: Mapping[str, Any]) -> BacktestEngine:
         account_type=AccountType.CASH,
         base_currency=pUSD,
         starting_balances=[Money.from_str(str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")))],
+        fee_model=fee_model,
         book_type=BookType.L2_MBP,
         trade_execution=bool((config.get("engine") or {}).get("trade_execution", True)),
         liquidity_consumption=bool((config.get("engine") or {}).get("liquidity_consumption", False)),
@@ -190,6 +198,16 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
         (run_dir / "account_report.txt").write_text(str(account), encoding="utf-8")
         (run_dir / "fills_report.txt").write_text(str(fills), encoding="utf-8")
         (run_dir / "positions_report.txt").write_text(str(positions), encoding="utf-8")
+    account.to_csv(run_dir / "account_report.csv")
+    fills.to_csv(run_dir / "fills_report.csv")
+    positions.to_csv(run_dir / "positions_report.csv")
+    _write_run_report_markdown(
+        run_dir=run_dir,
+        result=result,
+        account=account,
+        fills=fills,
+        positions=positions,
+    )
     (run_dir / "summary.json").write_text(
         json.dumps(
             {
@@ -201,15 +219,79 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
                 "tick_size_changes": list(result.tick_size_changes),
                 "data_health": result.data_health,
                 "reports": {
-                    "account": "account_report.txt",
-                    "fills": "fills_report.txt",
-                    "positions": "positions_report.txt",
+                    "account_txt": "account_report.txt",
+                    "account_csv": "account_report.csv",
+                    "fills_txt": "fills_report.txt",
+                    "fills_csv": "fills_report.csv",
+                    "positions_txt": "positions_report.txt",
+                    "positions_csv": "positions_report.csv",
+                    "markdown": "run_report.md",
                 },
             },
             indent=2,
         ),
         encoding="utf-8",
     )
+
+
+def _write_run_report_markdown(
+    *,
+    run_dir: Path,
+    result: NativeBacktestResultV1,
+    account: pd.DataFrame,
+    fills: pd.DataFrame,
+    positions: pd.DataFrame,
+) -> None:
+    health_summary = result.data_health.get("summary", {})
+    lines = [
+        "# Polymarket backtest run report",
+        "",
+        "## Summary",
+        "",
+        "- Engine: `nautilus_trader.backtest.engine.BacktestEngine`",
+        f"- Nautilus data count: `{result.data_count}`",
+        f"- OrderBookDeltas count: `{result.order_book_deltas_count}`",
+        f"- TradeTick count: `{result.trade_ticks_count}`",
+        f"- Data health ok: `{str(result.data_health.get('ok')).lower()}`",
+        f"- Receive-time inversions: `{health_summary.get('receive_time_inversion_count')}`",
+        f"- Sequence inversions: `{health_summary.get('sequence_inversion_count')}`",
+        f"- Source-time inversions: `{health_summary.get('source_time_inversion_count')}`",
+        f"- Future source-time count: `{health_summary.get('future_source_time_count')}`",
+        "",
+        "## Report files",
+        "",
+        "- `summary.json`",
+        "- `data_health.json`",
+        "- `fills_report.csv` / `fills_report.txt`",
+        "- `positions_report.csv` / `positions_report.txt`",
+        "- `account_report.csv` / `account_report.txt`",
+        "",
+        "## Fills preview",
+        "",
+        _frame_preview(fills),
+        "",
+        "## Positions preview",
+        "",
+        _frame_preview(positions),
+        "",
+        "## Account preview",
+        "",
+        _frame_preview(account),
+        "",
+        "## Notes",
+        "",
+        "- `TradeTick count` is selected-token `last_trade_price` converted into Nautilus `TradeTick`; it is not strategy fill count.",
+        "- Strategy fills are recorded in `fills_report.csv`.",
+        "- Fees use Nautilus' Polymarket fee model when enabled and read the instrument `maker_fee` / `taker_fee` fields.",
+    ]
+    (run_dir / "run_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _frame_preview(frame: pd.DataFrame, *, max_rows: int = 10) -> str:
+    if frame.empty:
+        return "_empty_"
+    with pd.option_context("display.max_rows", max_rows, "display.max_columns", None, "display.width", 300):
+        return "```text\n" + str(frame.head(max_rows)) + "\n```"
 
 
 def run_from_config(config_path: Path) -> dict[str, Any]:
@@ -279,6 +361,13 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
             "instrument_id": str(instrument.id),
             "strategy": strategy_provenance,
+            "fees": {
+                "enabled": bool((config.get("fees") or {}).get("enabled", True)),
+                "model": "PolymarketFeeModel" if (config.get("fees") or {}).get("enabled", True) else "disabled",
+                "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
+                "instrument_maker_fee": str(instrument.maker_fee),
+                "instrument_taker_fee": str(instrument.taker_fee),
+            },
             "data_health": data_health_report.to_dict(),
             "runtime": {
                 "run_id": run_id,
@@ -298,8 +387,12 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 "data_health": repo_relative_or_absolute(run_dir / "data_health.json", repo_root=REPO_ROOT),
                 "summary": repo_relative_or_absolute(run_dir / "summary.json", repo_root=REPO_ROOT),
                 "account_report": repo_relative_or_absolute(run_dir / "account_report.txt", repo_root=REPO_ROOT),
+                "account_report_csv": repo_relative_or_absolute(run_dir / "account_report.csv", repo_root=REPO_ROOT),
                 "fills_report": repo_relative_or_absolute(run_dir / "fills_report.txt", repo_root=REPO_ROOT),
+                "fills_report_csv": repo_relative_or_absolute(run_dir / "fills_report.csv", repo_root=REPO_ROOT),
                 "positions_report": repo_relative_or_absolute(run_dir / "positions_report.txt", repo_root=REPO_ROOT),
+                "positions_report_csv": repo_relative_or_absolute(run_dir / "positions_report.csv", repo_root=REPO_ROOT),
+                "run_report": repo_relative_or_absolute(run_dir / "run_report.md", repo_root=REPO_ROOT),
             },
             "data_count": result.data_count,
             "order_book_deltas_count": result.order_book_deltas_count,
@@ -325,3 +418,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

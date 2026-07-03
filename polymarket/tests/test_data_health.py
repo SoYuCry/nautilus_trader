@@ -12,10 +12,10 @@ from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
 from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
 from polymarket.data_health import validate_dataset_for_backtest
-from polymarket.models import DatasetMetadataV1
-from polymarket.models import L2ReplayStepV1
-from polymarket.models import L2UpdateV1
-from polymarket.models import PolymarketL2DatasetV1
+from polymarket._core.models import DatasetMetadataV1
+from polymarket._core.models import L2ReplayStepV1
+from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import PolymarketL2DatasetV1
 
 
 BASE = datetime(2026, 1, 1, tzinfo=UTC)
@@ -155,3 +155,4 @@ def test_live_ws_requires_explicit_receive_timestamp(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="requires an explicit receive timestamp"):
         LiveWsV1Adapter(repo_root=Path.cwd()).load({"input": {"ndjson_path": str(ndjson)}})
+

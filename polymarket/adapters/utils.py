@@ -10,7 +10,7 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from polymarket.models import LevelV1
+from polymarket._core.models import LevelV1
 
 
 def is_missing_scalar(value: Any) -> bool:
@@ -34,12 +34,51 @@ def as_decimal(value: Any) -> Decimal | None:
 def as_utc_datetime(value: Any) -> datetime:
     if value is None:
         raise ValueError("datetime value is required")
+    epoch_value = _coerce_epoch_timestamp(value)
+    if epoch_value is not None:
+        ts = pd.to_datetime(epoch_value[0], unit=epoch_value[1], utc=True)
+        return ts.to_pydatetime()
     ts = pd.Timestamp(value)
     if ts.tzinfo is None:
         ts = ts.tz_localize(UTC)
     else:
         ts = ts.tz_convert(UTC)
     return ts.to_pydatetime()
+
+
+def _coerce_epoch_timestamp(value: Any) -> tuple[int, str] | None:
+    """Return ``(value, unit)`` for exchange epoch timestamps.
+
+    Polymarket WebSocket source timestamps are commonly millisecond epoch
+    strings (for example ``"1782440717084"``).  Pandas treats a digit-only
+    string as a calendar-like string and can overflow, so handle numeric epoch
+    values before the generic timestamp parser.
+    """
+
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        number = value
+    elif isinstance(value, float) and value.is_integer():
+        number = int(value)
+    elif isinstance(value, str):
+        text = value.strip()
+        if not text or not text.lstrip("-").isdigit():
+            return None
+        number = int(text)
+    else:
+        return None
+
+    magnitude = abs(number)
+    if magnitude >= 10**18:
+        return number, "ns"
+    if magnitude >= 10**15:
+        return number, "us"
+    if magnitude >= 10**12:
+        return number, "ms"
+    if magnitude >= 10**9:
+        return number, "s"
+    return None
 
 
 def optional_utc_datetime(value: Any) -> datetime | None:
@@ -105,3 +144,4 @@ def first_existing(paths: Iterable[Path]) -> Path | None:
         if path.exists():
             return path
     return None
+

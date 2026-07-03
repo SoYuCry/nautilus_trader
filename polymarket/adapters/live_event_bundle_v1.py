@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
-from polymarket.models import DatasetMetadataV1, PolymarketL2DatasetV1
+from polymarket._core.models import DatasetMetadataV1, PolymarketL2DatasetV1
 
 
 class LiveEventBundleV1Adapter:
@@ -51,3 +51,4 @@ class LiveEventBundleV1Adapter:
             + ("live_event_bundle_v1 schema is provisional until data-team event bundle format stabilizes.",),
         )
         return PolymarketL2DatasetV1(metadata=metadata, steps=dataset.steps)
+

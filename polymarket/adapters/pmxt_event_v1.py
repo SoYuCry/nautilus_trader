@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
-from polymarket.models import DatasetMetadataV1, PolymarketL2DatasetV1
+from polymarket._core.models import DatasetMetadataV1, PolymarketL2DatasetV1
 
 
 class PMXTEventV1Adapter:
@@ -38,4 +38,5 @@ class PMXTEventV1Adapter:
             + ("PMXT event adapter inherits PMXT parquet data-quality concerns.",),
         )
         return PolymarketL2DatasetV1(metadata=metadata, steps=dataset.steps)
+
 

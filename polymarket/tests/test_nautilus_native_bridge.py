@@ -22,13 +22,13 @@ pytest.importorskip("nautilus_trader.core.data", reason="Nautilus compiled runti
 from nautilus_trader.model.data import OrderBookDeltas  # noqa: E402
 from nautilus_trader.model.data import TradeTick  # noqa: E402
 
-from polymarket.models import DatasetMetadataV1  # noqa: E402
-from polymarket.models import L2ReplayStepV1  # noqa: E402
-from polymarket.models import L2UpdateV1  # noqa: E402
-from polymarket.models import LevelV1  # noqa: E402
-from polymarket.models import PolymarketL2DatasetV1  # noqa: E402
-from polymarket.nautilus_native import convert_dataset_to_nautilus  # noqa: E402
-from polymarket.nautilus_native import load_binary_option_from_config  # noqa: E402
+from polymarket._core.models import DatasetMetadataV1  # noqa: E402
+from polymarket._core.models import L2ReplayStepV1  # noqa: E402
+from polymarket._core.models import L2UpdateV1  # noqa: E402
+from polymarket._core.models import LevelV1  # noqa: E402
+from polymarket._core.models import PolymarketL2DatasetV1  # noqa: E402
+from polymarket._core.nautilus_native import convert_dataset_to_nautilus  # noqa: E402
+from polymarket._core.nautilus_native import load_binary_option_from_config  # noqa: E402
 
 
 BASE = datetime(2026, 1, 1, tzinfo=UTC)
@@ -313,3 +313,4 @@ def test_bridge_rejects_matching_token_under_wrong_condition() -> None:
         match="dataset has no updates for selected Polymarket instrument.*other_condition.*yes",
     ):
         convert_dataset_to_nautilus(data, instrument=instrument)
+

@@ -28,8 +28,8 @@ from nautilus_trader.model.enums import RecordFlag
 
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
 from polymarket.data_health import analyze_dataset_health
-from polymarket.nautilus_native import convert_dataset_to_nautilus
-from polymarket.nautilus_native import load_binary_option_from_config
+from polymarket._core.nautilus_native import convert_dataset_to_nautilus
+from polymarket._core.nautilus_native import load_binary_option_from_config
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -190,3 +190,4 @@ def _repo_relative(path: Path) -> str:
 
 if __name__ == "__main__":
     main()
+

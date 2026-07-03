@@ -20,7 +20,7 @@ from polymarket.adapters.utils import (
     parse_levels,
     repo_relative_or_absolute,
 )
-from polymarket.models import (
+from polymarket._core.models import (
     DatasetMetadataV1,
     L2ReplayStepV1,
     L2UpdateV1,
@@ -166,3 +166,4 @@ class PMXTParquetV1Adapter:
             old_tick_size=as_decimal(getattr(row, "old_tick_size", None)),
             new_tick_size=as_decimal(getattr(row, "new_tick_size", None)),
         )
+

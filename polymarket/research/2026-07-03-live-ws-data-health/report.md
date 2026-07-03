@@ -28,7 +28,7 @@ look-ahead 风险。
 4. `live_ws_v1` 不再用 source `timestamp` 伪装 receive time；没有显式 receive
    time 就失败。
 5. 新增独立归一化脚本：
-   `python -m polymarket.scripts.normalize_live_ws_v1`，把现有 capture wrapper
+   `python -m polymarket._tools.normalize_live_ws_v1`，把现有 capture wrapper
    转成 `live_ws_v1` 可读格式。
 6. PMXT adapter 本轮不继续展开；PMXT 仍是 legacy/questionable 数据源。
 
@@ -81,7 +81,7 @@ python -m polymarket.data_health --ndjson path/to/live_ws_v1.ndjson --output dat
 归一化现有抓包：
 
 ```powershell
-python -m polymarket.scripts.normalize_live_ws_v1 `
+python -m polymarket._tools.normalize_live_ws_v1 `
   --input path/to/raw_capture.ndjson `
   --output path/to/live_ws_v1.ndjson
 ```
