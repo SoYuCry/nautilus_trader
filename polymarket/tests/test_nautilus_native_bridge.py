@@ -120,6 +120,9 @@ def test_bridge_emits_nautilus_order_book_deltas_and_trade_ticks() -> None:
         TradeTick,
     ]
     assert all(item.instrument_id == instrument.id for item in converted.data)
+    trade_tick = converted.data[2]
+    assert isinstance(trade_tick, TradeTick)
+    assert trade_tick.ts_init == trade_tick.ts_event
 
 
 def test_bridge_refuses_to_silently_replay_dynamic_tick_size() -> None:
@@ -265,7 +268,7 @@ def test_bridge_rejects_malformed_price_change_without_silent_skip(
     )
     instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
 
-    with pytest.raises(ValueError, match=rf"missing required field\\(s\\) {missing}.*sequence=2.*asset_id='yes'"):
+    with pytest.raises(ValueError, match=rf"missing required field\(s\) {missing}.*sequence=2.*asset_id='yes'"):
         convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
 
 

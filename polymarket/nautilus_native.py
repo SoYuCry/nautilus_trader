@@ -154,14 +154,18 @@ def convert_dataset_to_nautilus(
         if not relevant:
             continue
 
-        deltas = _step_to_order_book_deltas(
-            step,
-            relevant,
-            instrument=instrument,
-            ts_init=next_ts_init(step),
-        )
-        if deltas is not None:
-            data.append(deltas)
+        book_updates = [
+            update for update in relevant if update.event_type in {"book", "price_change"}
+        ]
+        if book_updates:
+            deltas = _step_to_order_book_deltas(
+                step,
+                book_updates,
+                instrument=instrument,
+                ts_init=next_ts_init(step),
+            )
+            if deltas is not None:
+                data.append(deltas)
 
         for update in relevant:
             if update.event_type == "trade":
