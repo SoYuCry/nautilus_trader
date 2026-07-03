@@ -57,12 +57,15 @@ adapter 或 runner 里改排序规则。
 - `source_delay_over_threshold_count`
 - `max_source_delay_ms`
 - `source_time_inversion_count`
+- `source_timestamp_missing_step_count`
+- `source_timestamp_missing_update_count`
 
 这些字段用于回答：
 
 1. source timestamp 是否经常晚于本地 receive time；
 2. 晚到是否只是几十毫秒级时钟偏差，还是秒级问题；
 3. source timestamp 在同一个 `event_type + asset_id` 内是否倒序。
+4. source timestamp 覆盖率是否足够，避免把“缺失所以没法比较”误读成“没有倒序”。
 
 当前策略是“报告但不自动修正”。如果未来发现严重问题，再决定是否在数据采集
 或上游 schema 中补更强的 message/order 证据。

@@ -25,11 +25,11 @@ def ts(milliseconds: int) -> datetime:
     return BASE + timedelta(milliseconds=milliseconds)
 
 
-def step(sequence: int, received_ms: int, source_ms: int) -> L2ReplayStepV1:
+def step(sequence: int, received_ms: int, source_ms: int | None) -> L2ReplayStepV1:
     return L2ReplayStepV1(
         sequence=sequence,
         timestamp_received=ts(received_ms),
-        timestamp=ts(source_ms),
+        timestamp=ts(source_ms) if source_ms is not None else None,
         updates=(
             L2UpdateV1(
                 event_type="price_change",
@@ -117,6 +117,32 @@ def test_data_health_reports_source_delay_over_threshold() -> None:
     assert report.summary.source_delay_over_threshold_count == 1
     assert report.summary.max_source_delay_ms == 2_000
     assert [issue.code for issue in report.issues] == ["source_delay_over_threshold"]
+
+
+def test_data_health_reports_missing_source_timestamp_coverage() -> None:
+    report = validate_dataset_for_backtest(
+        dataset(
+            [
+                step(sequence=1, received_ms=100, source_ms=None),
+                step(sequence=2, received_ms=200, source_ms=200),
+            ],
+        ),
+    )
+
+    assert report.ok is True
+    assert report.summary.step_count == 2
+    assert report.summary.update_count == 2
+    assert report.summary.source_timestamp_present_step_count == 1
+    assert report.summary.source_timestamp_missing_step_count == 1
+    assert report.summary.source_timestamp_missing_update_count == 1
+    assert report.summary.source_time_inversion_count == 0
+    assert [issue.code for issue in report.issues] == ["missing_source_timestamp"]
+    assert report.issues[0].details == {
+        "missing_step_count": 1,
+        "missing_update_count": 1,
+        "step_count": 2,
+        "update_count": 2,
+    }
 
 
 def test_live_ws_requires_explicit_receive_timestamp(tmp_path: Path) -> None:

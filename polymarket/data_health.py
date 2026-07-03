@@ -3,6 +3,14 @@
 The backtest path is intentionally ordered by local receive time.  These checks
 therefore validate that the adapter-produced replay steps are already safe to
 consume in their current order; they do not sort or repair the dataset.
+
+Checks performed:
+- `timestamp_received` must be non-decreasing in replay order.
+- `sequence` must be strictly increasing in replay order.
+- source `timestamp` coverage is counted; missing source timestamps are reported.
+- per `event_type + asset_id` source `timestamp` inversions are reported.
+- source timestamps materially later than receive time are reported.
+- source-to-receive delays above the configured threshold are reported.
 """
 
 from __future__ import annotations
@@ -39,10 +47,14 @@ class DataHealthSummaryV1:
     """Compact metrics for replay-order and clock pathologies."""
 
     step_count: int
+    update_count: int
     first_timestamp_received: str | None
     last_timestamp_received: str | None
     receive_time_inversion_count: int
     sequence_inversion_count: int
+    source_timestamp_present_step_count: int
+    source_timestamp_missing_step_count: int
+    source_timestamp_missing_update_count: int
     source_time_inversion_count: int
     future_source_time_count: int
     max_future_source_time_ms: float
@@ -85,8 +97,12 @@ def analyze_dataset_health(
 
     issues: list[DataHealthIssueV1] = []
     steps = dataset.steps
+    update_count = 0
     receive_time_inversion_count = 0
     sequence_inversion_count = 0
+    source_timestamp_present_step_count = 0
+    source_timestamp_missing_step_count = 0
+    source_timestamp_missing_update_count = 0
     source_time_inversion_count = 0
     future_source_time_count = 0
     source_delay_over_threshold_count = 0
@@ -96,6 +112,7 @@ def analyze_dataset_health(
 
     previous_step: L2ReplayStepV1 | None = None
     for step in steps:
+        update_count += len(step.updates)
         if previous_step is not None:
             if step.timestamp_received < previous_step.timestamp_received:
                 receive_time_inversion_count += 1
@@ -129,7 +146,11 @@ def analyze_dataset_health(
                 )
         previous_step = step
 
-        if step.timestamp is not None:
+        if step.timestamp is None:
+            source_timestamp_missing_step_count += 1
+            source_timestamp_missing_update_count += len(step.updates)
+        else:
+            source_timestamp_present_step_count += 1
             future_ms = _delta_ms(step.timestamp, step.timestamp_received)
             delay_ms = _delta_ms(step.timestamp_received, step.timestamp)
             max_future_source_time_ms = max(max_future_source_time_ms, future_ms)
@@ -173,9 +194,10 @@ def analyze_dataset_health(
                     ),
                 )
 
+        if step.timestamp is None:
+            continue
+
         for update in step.updates:
-            if step.timestamp is None:
-                continue
             group = (update.event_type, update.asset_id)
             previous_source = previous_source_by_group.get(group)
             if previous_source is not None and step.timestamp < previous_source[1]:
@@ -202,13 +224,35 @@ def analyze_dataset_health(
                 )
             previous_source_by_group[group] = (step.sequence, step.timestamp)
 
+    if source_timestamp_missing_step_count:
+        issues.append(
+            DataHealthIssueV1(
+                severity="warning",
+                code="missing_source_timestamp",
+                message=(
+                    "source timestamp is missing on some replay steps; "
+                    "source-time diagnostics are coverage-limited"
+                ),
+                details={
+                    "missing_step_count": source_timestamp_missing_step_count,
+                    "missing_update_count": source_timestamp_missing_update_count,
+                    "step_count": len(steps),
+                    "update_count": update_count,
+                },
+            ),
+        )
+
     hard_errors = [issue for issue in issues if issue.severity == "error"]
     summary = DataHealthSummaryV1(
         step_count=len(steps),
+        update_count=update_count,
         first_timestamp_received=_iso(steps[0].timestamp_received) if steps else None,
         last_timestamp_received=_iso(steps[-1].timestamp_received) if steps else None,
         receive_time_inversion_count=receive_time_inversion_count,
         sequence_inversion_count=sequence_inversion_count,
+        source_timestamp_present_step_count=source_timestamp_present_step_count,
+        source_timestamp_missing_step_count=source_timestamp_missing_step_count,
+        source_timestamp_missing_update_count=source_timestamp_missing_update_count,
         source_time_inversion_count=source_time_inversion_count,
         future_source_time_count=future_source_time_count,
         max_future_source_time_ms=round(max_future_source_time_ms, 6),
@@ -223,6 +267,7 @@ def analyze_dataset_health(
             "Replay chronology is timestamp_received order, not source timestamp order.",
             "Hard failures are receive-time or local-sequence inversions.",
             "Future/source-time issues are surfaced as diagnostics for severity review.",
+            "Missing source timestamps are counted so source-time diagnostics are not overread.",
             "This check never sorts, drops, or repairs data.",
         ),
     )

@@ -106,7 +106,8 @@ instrument-epoch model.
 5. Keep source timestamp pathologies visible for diagnostics:
    - future source time;
    - source timestamp inversion;
-   - late delivery / large delay.
+   - late delivery / large delay;
+   - missing source timestamp coverage.
 6. Treat PMXT-derived formats as temporary research inputs, not the target
    contract.
 
@@ -116,4 +117,3 @@ instrument-epoch model.
 - `normalize_live_ws_v1.py`: patch/normalizer for capture wrappers into the
   strict live WS contract shape.
 - `pmxt_*`: legacy/questionable research inputs only.
-

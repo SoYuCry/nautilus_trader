@@ -68,6 +68,8 @@ adapter loading and before Nautilus conversion/engine execution:
 - source timestamp inversions and future source timestamps are reported as
   diagnostics so we can judge severity, but replay chronology remains
   `timestamp_received`.
+- missing source timestamps are counted explicitly, so a low
+  `source_time_inversion_count` is not mistaken for good source-time coverage.
 
 The Nautilus bridge also uses `timestamp_received` as the replay clock.  Source
 `timestamp` is kept for diagnostics/provenance and must not create look-ahead
