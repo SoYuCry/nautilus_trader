@@ -7,11 +7,11 @@ adapter:
     ndjson_path: polymarket/research/2026-07-03-live-ws-mock-debug/mock_live_ws_v1_clean.ndjson
 
 selection:
-  asset_id: "yes-token-mock"
+  asset_id: "yestokenmock"
 
 instrument:
-  condition_id: "condition-mock-001"
-  token_id: "yes-token-mock"
+  condition_id: "conditionmock001"
+  token_id: "yestokenmock"
   outcome: "Yes"
   description: "Mock Polymarket binary option for live_ws debug"
   price_increment: "0.01"

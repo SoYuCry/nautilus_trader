@@ -1,0 +1,49 @@
+experiment:
+  name: live_ws_mock_strategy_debug
+
+adapter:
+  name: live_ws_v1
+  input:
+    ndjson_path: polymarket/research/2026-07-03-live-ws-mock-debug/mock_live_ws_v1_clean.ndjson
+
+selection:
+  asset_id: "yestokenmock"
+
+instrument:
+  condition_id: "conditionmock001"
+  token_id: "yestokenmock"
+  outcome: "Yes"
+  description: "Mock Polymarket binary option for live_ws strategy debug"
+  price_increment: "0.01"
+  size_increment: "0.000001"
+
+portfolio:
+  starting_balance: "10000 pUSD"
+
+engine:
+  trade_execution: true
+  liquidity_consumption: false
+  queue_position: false
+  bypass_logging: true
+  run_analysis: false
+
+strategy:
+  enabled: true
+  path: strategy_take_best_ask.py
+  class: TakeBestAskOnce
+  params:
+    instrument_id: "conditionmock001-yestokenmock.POLYMARKET"
+    quantity: "1"
+
+runtime:
+  run_id: mock-live-ws-strategy-001
+
+report:
+  output_dir: ./runs
+
+replay:
+  fail_on_tick_size_change: false
+
+data_health:
+  future_tolerance_ms: 50
+  delay_warning_ms: 1000

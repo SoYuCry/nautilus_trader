@@ -14,7 +14,11 @@
 - `mock_capture_receive_inversion_bad.ndjson`
   - 故意让第二条 `received_at` 早于第一条；`data_health` 应该 fail。
 - `experiment.yml`
-  - 指向 clean normalized 数据的 backtest 配置。
+  - 指向 clean normalized 数据的 backtest 配置；`strategy.enabled=false`，只验证数据能进 Nautilus `BacktestEngine`。
+- `strategy_take_best_ask.py`
+  - mock 专用策略；不是 alpha，只在第一轮可用盘口后提交一次 market BUY。
+- `experiment_with_strategy.yml`
+  - 指向 clean normalized 数据并启用 `TakeBestAskOnce`，用于验证 order / fill / position 报告链路。
 
 ## 推荐 debug 顺序
 
@@ -29,9 +33,19 @@ python -m polymarket.data_health `
 
 python -m polymarket.backtest_v1 `
   --config polymarket/research/2026-07-03-live-ws-mock-debug/experiment.yml
+
+python -m polymarket.backtest_v1 `
+  --config polymarket/research/2026-07-03-live-ws-mock-debug/experiment_with_strategy.yml
 ```
 
 如果本地没有 Nautilus compiled runtime，完整 `backtest_v1` 可能跑不起来；这时先 debug 到 normalizer / adapter / data_health / nautilus_native conversion。
+
+`experiment_with_strategy.yml` 的预期结果：
+
+- `summary.json`: `data_count=4`，`order_book_deltas_count=3`，`trade_ticks_count=1`。
+- `fills_report.txt`: 1 笔 `MARKET BUY`，数量 `1.000000`，均价 `0.6`。
+- `positions_report.txt`: 1 个 open long position。
+- `tick_size_change` 不进入 Nautilus data，但会记录到 `skipped_updates` / `tick_size_changes`。
 
 ### missing source timestamp warning
 
