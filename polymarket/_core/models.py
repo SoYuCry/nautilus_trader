@@ -59,10 +59,29 @@ class L2ReplayStepV1:
 
 
 @dataclass(frozen=True, slots=True)
+class MarketMetadataV1:
+    """Market-level metadata snapshot needed to price and audit backtests.
+
+    This is dataset-level metadata, not replay data.  For fee modelling, the
+    target feed should preserve the effective Polymarket fee schedule observed
+    for the market instead of forcing strategy configs to hard-code a guess.
+    """
+
+    condition_id: str
+    token_id: str | None = None
+    maker_fee: Decimal = Decimal("0")
+    taker_fee: Decimal | None = None
+    fee_source: str = "unknown"
+    category: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class DatasetMetadataV1:
     """Source metadata for reporting and audit only.
 
-    Backtest behavior must not branch on these fields after adapter loading.
+    Replay chronology and L2 conversion must not branch on provenance fields.
+    Market metadata is allowed to supply explicit instrument economics such as
+    fees, because those are part of the data contract rather than source quirks.
     """
 
     dataset_id: str
@@ -72,6 +91,7 @@ class DatasetMetadataV1:
     source_files: tuple[str, ...] = ()
     assumptions: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
+    market_metadata: tuple[MarketMetadataV1, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

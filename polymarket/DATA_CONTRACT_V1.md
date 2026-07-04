@@ -14,6 +14,7 @@ Conceptually it is:
 ```text
 dataset
   metadata
+    market_metadata[]
   steps[]
     sequence
     timestamp_received
@@ -25,6 +26,46 @@ One `step` is one atomic replay unit.  For live raw WebSocket captures, that
 means one raw WebSocket message.  For future IT delivery, the feed should
 preserve an equivalent atomic message/update boundary instead of flattening it
 into ambiguous rows.
+
+## Market metadata snapshot
+
+Replay events are not enough for realistic backtests.  The live data delivery
+should also include a market-level metadata snapshot captured around the same
+collection window.  This metadata is dataset-level audit/config input; it is
+not replayed as an order-book event.
+
+Required for fee-aware backtests:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `condition_id` | yes | Polymarket condition id / CLOB market id. |
+| `token_id` | preferred | Outcome token id. If omitted, metadata applies to the whole condition. |
+| `maker_fee` | yes | Effective maker fee rate. Usually `0`. |
+| `taker_fee` | yes | Effective taker fee rate / `feeSchedule.rate` decimal fraction, e.g. `0.05`. |
+| `fee_source` | yes | Source of the fee value, e.g. `clob_market_info.feeSchedule.rate`. |
+| `category` | optional | Market category/tag used to audit fee schedules. |
+
+Example sidecar shape accepted by the current `live_ws_v1` adapter:
+
+```json
+{
+  "markets": [
+    {
+      "condition_id": "0x...",
+      "token_id": "123...",
+      "maker_fee": "0",
+      "taker_fee": "0.05",
+      "fee_source": "clob_market_info.feeSchedule.rate",
+      "category": "weather"
+    }
+  ]
+}
+```
+
+If this metadata is missing, the runner can still use explicit
+`instrument.maker_fee` / `instrument.taker_fee` overrides in the experiment
+config, but those should be treated as manual overrides rather than the target
+production data contract.
 
 ## Step fields
 

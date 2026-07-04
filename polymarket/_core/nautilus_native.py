@@ -38,6 +38,7 @@ from nautilus_trader.model.objects import Quantity
 
 from polymarket._core.models import L2ReplayStepV1
 from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import MarketMetadataV1
 from polymarket._core.models import PolymarketL2DatasetV1
 
 
@@ -90,6 +91,12 @@ def load_binary_option_from_config(
         if expiration
         else datetime_to_nanos(datetime.now(tz=UTC) + timedelta(days=3650))
     )
+    maker_fee, taker_fee, fee_source = _resolve_fee_fields(
+        config,
+        dataset=dataset,
+        condition_id=condition_id,
+        token_id=token_id,
+    )
 
     return BinaryOption(
         instrument_id=instrument_id,
@@ -106,16 +113,56 @@ def load_binary_option_from_config(
         expiration_ns=expiration_ns,
         max_quantity=None,
         min_quantity=None,
-        maker_fee=Decimal(str(config.get("maker_fee", "0"))),
-        taker_fee=Decimal(str(config.get("taker_fee", "0"))),
+        maker_fee=maker_fee,
+        taker_fee=taker_fee,
         ts_event=now_ns,
         ts_init=now_ns,
         info={
             "condition_id": condition_id,
             "token_id": token_id,
+            "fee_source": fee_source,
             "source": "polymarket._core.nautilus_native.load_binary_option_from_config",
         },
     )
+
+
+def _resolve_fee_fields(
+    config: Mapping[str, Any],
+    *,
+    dataset: PolymarketL2DatasetV1,
+    condition_id: str,
+    token_id: str,
+) -> tuple[Decimal, Decimal, str]:
+    if config.get("maker_fee") is not None or config.get("taker_fee") is not None:
+        return (
+            Decimal(str(config.get("maker_fee", "0"))),
+            Decimal(str(config.get("taker_fee", "0"))),
+            str(config.get("fee_source") or "instrument_config"),
+        )
+
+    metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
+    if metadata is not None and metadata.taker_fee is not None:
+        return metadata.maker_fee, metadata.taker_fee, metadata.fee_source
+
+    return Decimal("0"), Decimal("0"), "default_zero"
+
+
+def _find_market_metadata(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    condition_id: str,
+    token_id: str,
+) -> MarketMetadataV1 | None:
+    condition_matches = [
+        item for item in dataset.metadata.market_metadata if item.condition_id == condition_id
+    ]
+    for item in condition_matches:
+        if item.token_id == token_id:
+            return item
+    for item in condition_matches:
+        if item.token_id is None:
+            return item
+    return None
 
 
 def convert_dataset_to_nautilus(

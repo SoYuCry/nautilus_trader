@@ -26,6 +26,7 @@ from polymarket._core.models import DatasetMetadataV1  # noqa: E402
 from polymarket._core.models import L2ReplayStepV1  # noqa: E402
 from polymarket._core.models import L2UpdateV1  # noqa: E402
 from polymarket._core.models import LevelV1  # noqa: E402
+from polymarket._core.models import MarketMetadataV1  # noqa: E402
 from polymarket._core.models import PolymarketL2DatasetV1  # noqa: E402
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus  # noqa: E402
 from polymarket._core.nautilus_native import load_binary_option_from_config  # noqa: E402
@@ -54,6 +55,27 @@ def dataset(steps: list[L2ReplayStepV1]) -> PolymarketL2DatasetV1:
             adapter_name="synthetic",
             adapter_version="v1",
             source_type="test",
+        ),
+        steps=tuple(steps),
+    )
+
+
+def dataset_with_market_metadata(steps: list[L2ReplayStepV1]) -> PolymarketL2DatasetV1:
+    return PolymarketL2DatasetV1(
+        metadata=DatasetMetadataV1(
+            dataset_id="synthetic-nautilus-native",
+            adapter_name="synthetic",
+            adapter_version="v1",
+            source_type="test",
+            market_metadata=(
+                MarketMetadataV1(
+                    condition_id="condition",
+                    token_id="yes",
+                    maker_fee=Decimal("0"),
+                    taker_fee=Decimal("0.05"),
+                    fee_source="clob_market_info.feeSchedule.rate",
+                ),
+            ),
         ),
         steps=tuple(steps),
     )
@@ -123,6 +145,16 @@ def test_bridge_emits_nautilus_order_book_deltas_and_trade_ticks() -> None:
     trade_tick = converted.data[2]
     assert isinstance(trade_tick, TradeTick)
     assert trade_tick.ts_init == trade_tick.ts_event
+
+
+def test_binary_option_uses_dataset_fee_metadata_when_config_omits_fee() -> None:
+    data = dataset_with_market_metadata([step(1, [book()])])
+
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    assert instrument.maker_fee == Decimal("0")
+    assert instrument.taker_fee == Decimal("0.05")
+    assert instrument.info["fee_source"] == "clob_market_info.feeSchedule.rate"
 
 
 def test_bridge_refuses_to_silently_replay_dynamic_tick_size() -> None:

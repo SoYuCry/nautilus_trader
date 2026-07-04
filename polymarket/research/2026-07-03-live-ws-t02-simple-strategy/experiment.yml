@@ -18,6 +18,7 @@ instrument:
   size_increment: "0.000001"
   maker_fee: "0"
   taker_fee: "0.05"
+  fee_source: "manual_override_until_market_metadata_is_available"
 
 fees:
   enabled: true

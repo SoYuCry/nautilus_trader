@@ -227,6 +227,7 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     assert resolved["fees"]["model"] == "PolymarketFeeModel"
     assert resolved["fees"]["maker_rebates_enabled"] is False
     assert resolved["fees"]["instrument_taker_fee"] == "0.05"
+    assert resolved["fees"]["instrument_fee_source"] == "instrument_config"
     assert "MARKET" in fills
     assert "BUY" in fills
     assert "FILLED" in fills

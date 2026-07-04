@@ -367,6 +367,9 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
                 "instrument_maker_fee": str(instrument.maker_fee),
                 "instrument_taker_fee": str(instrument.taker_fee),
+                "instrument_fee_source": str(
+                    (getattr(instrument, "info", None) or {}).get("fee_source", "unknown"),
+                ),
             },
             "data_health": data_health_report.to_dict(),
             "runtime": {

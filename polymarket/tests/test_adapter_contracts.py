@@ -145,3 +145,60 @@ def test_live_ws_control_messages_are_explicitly_skipped_with_warning(tmp_path: 
     assert len(dataset.steps) == 1
     assert dataset.steps[0].sequence == 2
     assert any("Skipped 1 explicit live WS control" in warning for warning in dataset.metadata.warnings)
+
+
+def test_live_ws_loads_market_fee_metadata_sidecar(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    ndjson_path.write_text(
+        json.dumps(
+            {
+                "local_msg_index": 1,
+                "recv_wall_time_utc": "2026-01-01T00:00:00Z",
+                "raw_json": {
+                    "event_type": "book",
+                    "market": "condition",
+                    "asset_id": "yes",
+                    "timestamp": "2026-01-01T00:00:00Z",
+                    "bids": [["0.40", "10"]],
+                    "asks": [["0.60", "10"]],
+                },
+            },
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "market_metadata.json"
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "markets": [
+                    {
+                        "condition_id": "condition",
+                        "token_id": "yes",
+                        "maker_fee": "0",
+                        "feeSchedule": {"rate": "0.05"},
+                        "fee_source": "clob_market_info.feeSchedule.rate",
+                        "category": "weather",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    dataset = LiveWsV1Adapter(repo_root=Path.cwd()).load(
+        {
+            "input": {
+                "ndjson_path": str(ndjson_path),
+                "market_metadata_path": str(metadata_path),
+            },
+        },
+    )
+
+    assert len(dataset.metadata.market_metadata) == 1
+    market_metadata = dataset.metadata.market_metadata[0]
+    assert market_metadata.condition_id == "condition"
+    assert market_metadata.token_id == "yes"
+    assert market_metadata.maker_fee == Decimal("0")
+    assert market_metadata.taker_fee == Decimal("0.05")
+    assert market_metadata.fee_source == "clob_market_info.feeSchedule.rate"

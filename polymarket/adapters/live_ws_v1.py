@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Mapping
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ from polymarket._core.models import (
     DatasetMetadataV1,
     L2ReplayStepV1,
     L2UpdateV1,
+    MarketMetadataV1,
     PolymarketL2DatasetV1,
 )
 
@@ -46,6 +48,7 @@ class LiveWsV1Adapter:
         if not ndjson_path.exists():
             raise FileNotFoundError(ndjson_path)
 
+        market_metadata, metadata_files = self._load_market_metadata(input_config)
         steps: list[L2ReplayStepV1] = []
         skipped_control_messages = 0
         with ndjson_path.open(encoding="utf-8-sig") as f:
@@ -78,11 +81,73 @@ class LiveWsV1Adapter:
             adapter_name=self.adapter_name,
             adapter_version=self.adapter_version,
             source_type="live_raw_ws",
-            source_files=(repo_relative_or_absolute(ndjson_path, repo_root=self.repo_root),),
+            source_files=(
+                repo_relative_or_absolute(ndjson_path, repo_root=self.repo_root),
+                *metadata_files,
+            ),
             assumptions=("One local raw WebSocket message is one replay step.",),
             warnings=tuple(warnings),
+            market_metadata=market_metadata,
         )
         return PolymarketL2DatasetV1(metadata=metadata, steps=tuple(steps))
+
+    def _load_market_metadata(
+        self,
+        input_config: Mapping[str, Any],
+    ) -> tuple[tuple[MarketMetadataV1, ...], tuple[str, ...]]:
+        raw_metadata = input_config.get("market_metadata")
+        metadata_files: tuple[str, ...] = ()
+        if input_config.get("market_metadata_path") is not None:
+            metadata_path = Path(str(input_config["market_metadata_path"]))
+            if not metadata_path.is_absolute():
+                metadata_path = self.repo_root / metadata_path
+            if not metadata_path.exists():
+                raise FileNotFoundError(metadata_path)
+            raw_metadata = json.loads(metadata_path.read_text(encoding="utf-8-sig"))
+            metadata_files = (repo_relative_or_absolute(metadata_path, repo_root=self.repo_root),)
+
+        if raw_metadata is None:
+            return (), metadata_files
+
+        if isinstance(raw_metadata, Mapping) and "markets" in raw_metadata:
+            raw_markets = raw_metadata["markets"]
+        else:
+            raw_markets = raw_metadata
+
+        if isinstance(raw_markets, Mapping):
+            raw_markets = [raw_markets]
+        if not isinstance(raw_markets, list):
+            raise ValueError("live_ws_v1 market_metadata must be an object, a list, or {'markets': [...]}")
+
+        return tuple(self._market_metadata_item(item) for item in raw_markets), metadata_files
+
+    @staticmethod
+    def _market_metadata_item(item: Mapping[str, Any]) -> MarketMetadataV1:
+        condition_id = item.get("condition_id") or item.get("market") or item.get("conditionId")
+        if condition_id is None:
+            raise ValueError("market_metadata item requires condition_id/market")
+        token_id = item.get("token_id")
+        if token_id is None:
+            token_id = item.get("asset_id")
+        fee_schedule = item.get("feeSchedule") or item.get("fee_schedule") or {}
+        if not isinstance(fee_schedule, Mapping):
+            fee_schedule = {}
+        raw_taker_fee = item.get("taker_fee")
+        if raw_taker_fee is None:
+            raw_taker_fee = item.get("fee_rate")
+        if raw_taker_fee is None:
+            raw_taker_fee = item.get("rate")
+        if raw_taker_fee is None:
+            raw_taker_fee = fee_schedule.get("rate")
+        raw_maker_fee = item.get("maker_fee", "0")
+        return MarketMetadataV1(
+            condition_id=str(condition_id),
+            token_id=str(token_id) if token_id is not None else None,
+            maker_fee=as_decimal(raw_maker_fee) or Decimal("0"),
+            taker_fee=as_decimal(raw_taker_fee) if raw_taker_fee is not None else None,
+            fee_source=str(item.get("fee_source") or "market_metadata"),
+            category=str(item["category"]) if item.get("category") is not None else None,
+        )
 
     @staticmethod
     def _extract_message(payload: Mapping[str, Any]) -> Mapping[str, Any]:
