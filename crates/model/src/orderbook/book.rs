@@ -953,6 +953,26 @@ impl OrderBook {
             })
     }
 
+    /// Returns the orders at a specific price level in FIFO order, or an empty vec if no level exists.
+    ///
+    /// Follows the same side convention as `get_quantity_at_level`: for a BUY
+    /// order this reads the asks (sell side), for a SELL order the bids.
+    #[must_use]
+    pub fn get_orders_at_level(&self, price: Price, order_side: OrderSide) -> Vec<BookOrder> {
+        let side = order_side.as_specified();
+
+        let (levels, book_side) = match side {
+            OrderSideSpecified::Buy => (&self.asks.levels, OrderSideSpecified::Sell),
+            OrderSideSpecified::Sell => (&self.bids.levels, OrderSideSpecified::Buy),
+        };
+
+        let book_price = BookPrice::new(price, book_side);
+
+        levels
+            .get(&book_price)
+            .map_or_else(Vec::new, BookLevel::get_orders)
+    }
+
     /// Simulates fills for an order, returning list of (price, quantity) tuples.
     #[must_use]
     pub fn simulate_fills(&self, order: &BookOrder) -> Vec<(Price, Quantity)> {

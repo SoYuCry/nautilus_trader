@@ -873,7 +873,7 @@ impl BinanceFuturesExecutionClient {
                     Err(e) => {
                         let err_str = format!("{e}");
                         if err_str.contains("-4046") {
-                            log::info!("{symbol} margin type already {margin_type:?}");
+                            log::debug!("{symbol} margin type already {margin_type:?}");
                         } else {
                             return Err(e)
                                 .context(format!("failed to set margin type for {symbol}"));
@@ -1161,7 +1161,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
             if instruments.is_empty() {
                 log::warn!("No instruments returned for Binance Futures");
             } else {
-                log::info!("Loaded {} Futures instruments", instruments.len());
+                log::debug!("Loaded {} Futures instruments", instruments.len());
             }
 
             self.core.set_instruments_initialized();
@@ -1174,14 +1174,14 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
             .context("failed to apply futures config")?;
 
         // Create listen key for user data stream
-        log::info!("Creating listen key for user data stream...");
+        log::debug!("Creating listen key for user data stream...");
         let listen_key_response = self
             .http_client
             .create_listen_key()
             .await
             .context("failed to create listen key")?;
         let listen_key = listen_key_response.listen_key;
-        log::info!("Listen key created successfully");
+        log::debug!("Listen key created successfully");
 
         {
             let mut key_guard = self.listen_key.write().expect(MUTEX_POISONED);
@@ -1340,7 +1340,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
             .context("failed to request Binance Futures account state")?;
 
         if !account_state.balances.is_empty() {
-            log::info!(
+            log::debug!(
                 "Received account state with {} balance(s) and {} margin(s)",
                 account_state.balances.len(),
                 account_state.margins.len()
@@ -1356,7 +1356,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
         if let Some(ref mut ws_trading) = self.ws_trading_client {
             match ws_trading.connect().await {
                 Ok(()) => {
-                    log::info!("Connected to Binance Futures WS trading API");
+                    log::debug!("Connected to Binance Futures WS trading API");
 
                     let ws_trading_clone = ws_trading.clone();
                     let emitter = self.emitter.clone();
@@ -1492,7 +1492,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
         }
         let params = builder.build().map_err(|e| anyhow::anyhow!("{e}"))?;
 
-        let (_, size_precision) = self.get_instrument_precision(instrument_id);
+        let (price_precision, size_precision) = self.get_instrument_precision(instrument_id);
         let ts_init = self.clock.get_time_ns();
 
         match self.http_client.query_order(&params).await {
@@ -1500,6 +1500,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                 let report = order.to_order_status_report(
                     self.core.account_id,
                     instrument_id,
+                    price_precision,
                     size_precision,
                     self.config.treat_expired_as_canceled,
                     ts_init,
@@ -1517,6 +1518,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                         let report = algo_order.to_order_status_report(
                             self.core.account_id,
                             instrument_id,
+                            price_precision,
                             size_precision,
                             ts_init,
                         )?;
@@ -1555,11 +1557,13 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
 
             for order in orders {
                 if let Some(instrument_id) = cmd.instrument_id {
-                    let (_, size_precision) = self.get_instrument_precision(instrument_id);
+                    let (price_precision, size_precision) =
+                        self.get_instrument_precision(instrument_id);
 
                     if let Ok(report) = order.to_order_status_report(
                         self.core.account_id,
                         instrument_id,
+                        price_precision,
                         size_precision,
                         self.config.treat_expired_as_canceled,
                         ts_init,
@@ -1575,6 +1579,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                         && let Ok(report) = order.to_order_status_report(
                             self.core.account_id,
                             instrument.id(),
+                            instrument.price_precision(),
                             instrument.size_precision(),
                             self.config.treat_expired_as_canceled,
                             ts_init,
@@ -1587,11 +1592,13 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
 
             for algo_order in algo_orders {
                 if let Some(instrument_id) = cmd.instrument_id {
-                    let (_, size_precision) = self.get_instrument_precision(instrument_id);
+                    let (price_precision, size_precision) =
+                        self.get_instrument_precision(instrument_id);
 
                     if let Ok(report) = algo_order.to_order_status_report(
                         self.core.account_id,
                         instrument_id,
+                        price_precision,
                         size_precision,
                         ts_init,
                     ) {
@@ -1606,6 +1613,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                         && let Ok(report) = algo_order.to_order_status_report(
                             self.core.account_id,
                             instrument.id(),
+                            instrument.price_precision(),
                             instrument.size_precision(),
                             ts_init,
                         )
@@ -1636,12 +1644,13 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
             let params = builder.build().map_err(|e| anyhow::anyhow!("{e}"))?;
 
             let orders = self.http_client.query_all_orders(&params).await?;
-            let (_, size_precision) = self.get_instrument_precision(instrument_id);
+            let (price_precision, size_precision) = self.get_instrument_precision(instrument_id);
 
             for order in orders {
                 if let Ok(report) = order.to_order_status_report(
                     self.core.account_id,
                     instrument_id,
+                    price_precision,
                     size_precision,
                     self.config.treat_expired_as_canceled,
                     ts_init,
@@ -1838,7 +1847,8 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
             &command.client_order_id,
             BINANCE_NAUTILUS_FUTURES_BROKER_ID,
         ));
-        let (_, size_precision) = self.get_instrument_precision(command.instrument_id);
+        let (price_precision, size_precision) =
+            self.get_instrument_precision(command.instrument_id);
         let treat_expired_as_canceled = self.config.treat_expired_as_canceled;
 
         self.spawn_task("query_order", async move {
@@ -1864,6 +1874,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                     let report = order.to_order_status_report(
                         account_id,
                         command.instrument_id,
+                        price_precision,
                         size_precision,
                         treat_expired_as_canceled,
                         ts_init,
@@ -1908,7 +1919,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
                     if instruments.is_empty() {
                         log::warn!("No instruments returned for Binance Futures");
                     } else {
-                        log::info!("Loaded {} Futures instruments", instruments.len());
+                        log::debug!("Loaded {} Futures instruments", instruments.len());
                     }
                 }
                 Err(e) => {
@@ -2396,7 +2407,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
         self.spawn_task("cancel_all_orders", async move {
             match http_client.cancel_all_orders(instrument_id).await {
                 Ok(_) => {
-                    log::info!("Cancel all regular orders request accepted for {instrument_id}");
+                    log::debug!("Cancel all regular orders request accepted for {instrument_id}");
                 }
                 Err(e) => {
                     log::error!("Failed to cancel all regular orders for {instrument_id}: {e}");
@@ -2405,7 +2416,7 @@ impl ExecutionClient for BinanceFuturesExecutionClient {
 
             match http_client.cancel_all_algo_orders(instrument_id).await {
                 Ok(()) => {
-                    log::info!("Cancel all algo orders request accepted for {instrument_id}");
+                    log::debug!("Cancel all algo orders request accepted for {instrument_id}");
                 }
                 Err(e) => {
                     log::error!("Failed to cancel all algo orders for {instrument_id}: {e}");

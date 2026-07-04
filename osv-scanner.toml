@@ -56,8 +56,12 @@ id = "RUSTSEC-2026-0173"
 reason = "proc-macro-error2 unmaintained via alloy and tabled_derive; no patch available"
 
 [[IgnoredVulns]]
-id = "GHSA-7gcm-g887-7qv7"
-reason = "protobuf JSON recursion DoS, no fix available yet, low risk for internal use (we don't parse untrusted JSON with protobuf)"
+id = "RUSTSEC-2026-0194"
+reason = "quick-xml DoS via object_store 0.13.2; no fixed object_store release"
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0195"
+reason = "quick-xml NsReader DoS via object_store 0.13.2; no fixed object_store release"
 
 [[IgnoredVulns]]
 id = "GHSA-6w46-j5rx-g56g"

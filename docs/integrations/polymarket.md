@@ -91,7 +91,7 @@ The table below shows the main differences that affect behavior today.
 | Batch cancel        | Uses `DELETE /orders`                                                         | Uses `DELETE /orders`                                         | Both align with official Polymarket docs. |
 | Market unsubscribe  | Sends dynamic WebSocket `unsubscribe` messages                                | Sends dynamic WebSocket `unsubscribe` messages                | Both support subscribe and unsubscribe. |
 | Auto‑load retry     | `auto_load_max_retries` (12), `auto_load_retry_delay_*` (5.0/15.0 secs)       | Same knobs, same defaults                                     | Both retry CLOB‑hydration / indexing‑lag misses with bounded exponential backoff plus jitter. |
-| Data client config  | Credentials, subscription buffering, quote handling, provider config          | Base URLs, timeouts, filters, new‑market discovery            | Config surfaces differ materially outside of the auto‑load family. |
+| Data client config  | Credentials, buffering, effective delta compression, provider config          | Base URLs, timeouts, filters, discovery, provider config      | Shared auto‑load and `drop_quotes_missing_side`; other surfaces still differ. |
 | Exec client config  | Credentials, retries, raw WS logging, experimental trade‑based order recovery | Credentials, retries, account IDs, native timeouts            | Rust does not expose every Python‑only option. |
 
 ## pUSD
@@ -315,6 +315,20 @@ orders, both adapters accept only `IOC` and `FOK`; `GTC` and `GTD` are valid for
 resting `LIMIT` orders only.
 :::
 
+:::note
+A marketable order (any `FOK`/`FAK` order, or a `BUY` that crosses the book)
+must be worth at least **1 pUSD** in notional value, otherwise the venue rejects
+it with `invalid amount for a marketable BUY order … min size: $1`. Resting
+`GTC`/`GTD` limit orders are bounded only by the 5‑share minimum.
+:::
+
+:::note
+The venue reports `GTD` expiry as an `OrderCanceled` event (not `OrderExpired`),
+and Polymarket applies an internal expiration buffer of roughly one minute, so a
+`GTD` order rests for about a minute less than the requested duration before the
+venue cancels it.
+:::
+
 ### Advanced order features
 
 | Feature            | Binary Options | Notes                              |
@@ -451,11 +465,13 @@ adapter treats the change as a book epoch transition:
 4. Drop incremental `price_change` book deltas until the snapshot arrives.
 5. Reseed the book from the snapshot and resume normal processing.
 
-Trade ticks and the instrument update flow through unchanged. The Rust adapter
-keeps emitting `QuoteTick` events through the gap by reading `best_bid` and
-`best_ask` from each `price_change`. The Python adapter derives quotes from
-the local book, so quote subscribers see the same brief gap as the deltas
-(typically sub-second, until the venue snapshot arrives).
+Trade ticks and the instrument update flow through unchanged. Quote handling
+follows `drop_quotes_missing_side`: when enabled, quote ticks require both bid
+and ask prices; when disabled, missing sides use Polymarket boundary prices with
+zero size. The Rust adapter can keep quotes flowing during the gap by reading
+`best_bid` and `best_ask` from each `price_change`. The Python adapter derives
+quotes from the local book, so quote subscribers can see the same brief gap as
+the deltas until the venue snapshot arrives.
 
 ## Trades
 
@@ -918,6 +934,7 @@ Struct: `PolymarketDataClientConfig` in `crates/adapters/polymarket/src/config.r
 |--------------------------------------|--------------------------------------------|-------------|
 | `base_url_http`                      | `None` (official CLOB endpoint)            | Override for the CLOB REST base URL. |
 | `base_url_ws`                        | `None` (official CLOB endpoint)            | Override for the CLOB WebSocket base URL. |
+| `base_url_rtds`                      | `None` (official RTDS endpoint)            | Override for the real‑time data service (RTDS) base URL. |
 | `base_url_gamma`                     | `None` (official Gamma endpoint)           | Override for the Gamma API base URL. |
 | `base_url_data_api`                  | `None` (`https://data-api.polymarket.com`) | Override for the Data API base URL. |
 | `http_timeout_secs`                  | `60`                                       | HTTP request timeout (seconds). |
@@ -925,6 +942,8 @@ Struct: `PolymarketDataClientConfig` in `crates/adapters/polymarket/src/config.r
 | `ws_max_subscriptions`               | `200`                                      | Maximum instrument subscriptions per WebSocket connection. |
 | `update_instruments_interval_mins`   | `60`                                       | Interval (minutes) between instrument catalogue refreshes. |
 | `subscribe_new_markets`              | `false`                                    | Subscribe to new‑market discovery events via WebSocket when `true`. |
+| `drop_quotes_missing_side`           | `true`                                     | Drop quotes with missing bid/ask prices instead of substituting boundary values. |
+| `new_market_fetch_max_concurrency`   | `8`                                        | Maximum concurrent instrument fetches spawned from new‑market discovery events. |
 | `auto_load_missing_instruments`      | `true`                                     | Load instruments on demand when subscribe or request commands reference uncached instruments. |
 | `auto_load_debounce_ms`              | `100`                                      | Debounce window (milliseconds) for coalescing concurrent runtime instrument loads. |
 | `auto_load_max_retries`              | `12`                                       | Maximum retry attempts on transient auto‑load failures (markets in the CLOB hydration window). Set to `0` to disable. |
@@ -934,13 +953,14 @@ Struct: `PolymarketDataClientConfig` in `crates/adapters/polymarket/src/config.r
 | `resolve_poll_interval_secs`         | `30`                                       | Interval (seconds) between automatic resolution polling attempts. |
 | `resolve_poll_grace_secs`            | `10`                                       | Delay (seconds) after expiry before the first automatic resolution poll. |
 | `resolve_poll_max_wait_secs`         | `1800`                                     | Maximum wait (seconds) after expiry before automatic polling pauses a watched condition for manual recovery. |
+| `instrument_config`                  | `None`                                     | Optional `PolymarketInstrumentProviderConfig` controlling bootstrap loading (`load_ids`, `event_slugs`, `market_slugs`, `event_slug_builder`). |
 | `filters`                            | `[]`                                       | Instrument filters applied during loading and discovery. |
 | `new_market_filter`                  | `None`                                     | Optional filter applied to newly discovered markets before emission. |
 | `transport_backend`                  | `Sockudo`                                  | WebSocket transport backend. |
 
 The Rust data client config does not accept account credentials; authentication is handled by
-the execution client. Subscription buffering (`ws_connection_initial_delay_secs`) and quote
-handling (`compute_effective_deltas`, `drop_quotes_missing_side`) are Python-only today.
+the execution client. Subscription buffering (`ws_connection_initial_delay_secs`) and effective
+delta compression (`compute_effective_deltas`) are Python-only today.
 
 ### Execution client options (Rust v2)
 

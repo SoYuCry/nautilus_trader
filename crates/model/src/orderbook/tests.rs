@@ -619,6 +619,46 @@ fn test_book_get_quantity_at_level_after_delete() {
 }
 
 #[rstest]
+fn test_book_get_orders_at_level_fifo_and_side_convention() {
+    let instrument_id = InstrumentId::from("ETHUSDT-PERP.BINANCE");
+    let mut book = OrderBook::new(instrument_id, BookType::L3_MBO);
+
+    let ask1 = BookOrder::new(
+        OrderSide::Sell,
+        Price::from("2.000"),
+        Quantity::from("100.0"),
+        1,
+    );
+    let ask2 = BookOrder::new(
+        OrderSide::Sell,
+        Price::from("2.000"),
+        Quantity::from("200.0"),
+        2,
+    );
+    let bid = BookOrder::new(
+        OrderSide::Buy,
+        Price::from("1.000"),
+        Quantity::from("50.0"),
+        3,
+    );
+    book.add(ask1, 0, 1, 1.into());
+    book.add(ask2, 0, 2, 2.into());
+    book.add(bid, 0, 3, 3.into());
+
+    // BUY reads the asks, in FIFO insertion order
+    let asks = book.get_orders_at_level(Price::from("2.000"), OrderSide::Buy);
+    assert_eq!(asks, vec![ask1, ask2]);
+
+    // SELL reads the bids
+    let bids = book.get_orders_at_level(Price::from("1.000"), OrderSide::Sell);
+    assert_eq!(bids, vec![bid]);
+
+    // No level at this price
+    let missing = book.get_orders_at_level(Price::from("1.500"), OrderSide::Buy);
+    assert!(missing.is_empty());
+}
+
+#[rstest]
 fn test_book_get_price_for_exposure_no_market() {
     let instrument_id = InstrumentId::from("ETHUSDT-PERP.BINANCE");
     let book = OrderBook::new(instrument_id, BookType::L2_MBP);

@@ -33,7 +33,7 @@ use nautilus_common::{
     msgbus, nautilus_actor,
     timer::TimeEvent,
 };
-use nautilus_core::UnixNanos;
+use nautilus_core::{UUID4, UnixNanos};
 use nautilus_execution::models::latency::StaticLatencyModel;
 use nautilus_indicators::{
     average::ema::ExponentialMovingAverage,
@@ -1561,12 +1561,12 @@ fn test_get_result_includes_snapshot_position_history(crypto_perpetual_ethusdt: 
         let cache = cache_rc.borrow();
         let positions = cache.positions(None, None, None, None, None);
 
-        let mut expected_pnls: Vec<(PositionId, Currency, f64)> = positions
+        let mut expected_pnls: Vec<(PositionId, UnixNanos, Currency, f64)> = positions
             .iter()
             .filter_map(|p| {
                 p.realized_pnl
                     .as_ref()
-                    .map(|m| (p.id, m.currency, m.as_f64()))
+                    .map(|m| (p.id, p.ts_last, m.currency, m.as_f64()))
             })
             .collect();
 
@@ -1578,7 +1578,7 @@ fn test_get_result_includes_snapshot_position_history(crypto_perpetual_ethusdt: 
         expected_pnls.extend(snapshot_positions.iter().filter_map(|p| {
             p.realized_pnl
                 .as_ref()
-                .map(|m| (p.id, m.currency, m.as_f64()))
+                .map(|m| (p.id, p.ts_last, m.currency, m.as_f64()))
         }));
         let snapshots_realized: f64 = snapshot_positions
             .iter()
@@ -1596,12 +1596,12 @@ fn test_get_result_includes_snapshot_position_history(crypto_perpetual_ethusdt: 
 
         let expected_currency = expected_pnls
             .first()
-            .map(|(_, currency, _)| *currency)
+            .map(|(_, _, currency, _)| *currency)
             .expect("expected realized PnL history");
         let expected_pnls = expected_pnls
             .into_iter()
-            .filter_map(|(position_id, currency, pnl)| {
-                (currency == expected_currency).then_some((position_id, pnl))
+            .filter_map(|(position_id, ts_event, currency, pnl)| {
+                (currency == expected_currency).then_some((position_id, ts_event, pnl))
             })
             .collect::<Vec<_>>();
 
@@ -1621,16 +1621,26 @@ fn test_get_result_includes_snapshot_position_history(crypto_perpetual_ethusdt: 
         .recorded_realized_pnls()
         .get(&expected_currency)
     {
-        expected_pnls.retain(|(position_id, _)| {
+        expected_pnls.retain(|(position_id, ts_event, _)| {
+            let key = (canonical_position_id(*position_id), *ts_event);
             !recorded_pnls
                 .iter()
-                .any(|(recorded_position_id, _, _)| recorded_position_id == position_id)
+                .any(|(recorded_position_id, recorded_ts_event, _)| {
+                    (
+                        canonical_position_id(*recorded_position_id),
+                        *recorded_ts_event,
+                    ) == key
+                })
         });
-        expected_pnls.extend(recorded_pnls.iter().map(|(id, _, pnl)| (*id, *pnl)));
+        expected_pnls.extend(
+            recorded_pnls
+                .iter()
+                .map(|(id, ts_event, pnl)| (*id, *ts_event, *pnl)),
+        );
     }
 
     let expected_expectancy =
-        expected_pnls.iter().map(|(_, pnl)| pnl).sum::<f64>() / expected_pnls.len() as f64;
+        expected_pnls.iter().map(|(_, _, pnl)| pnl).sum::<f64>() / expected_pnls.len() as f64;
 
     let bt_result = engine.get_result();
     assert_eq!(
@@ -1660,6 +1670,26 @@ fn test_get_result_includes_snapshot_position_history(crypto_perpetual_ethusdt: 
         (expectancy - expected_expectancy).abs() < 1e-9,
         "expected Expectancy={expected_expectancy} to include snapshot history {snapshots_realized}, found {expectancy}"
     );
+}
+
+fn canonical_position_id(position_id: PositionId) -> PositionId {
+    const UUID4_STRING_LEN: usize = 36;
+
+    let value = position_id.as_str();
+    let Some(separator_index) = value.len().checked_sub(UUID4_STRING_LEN + 1) else {
+        return position_id;
+    };
+
+    if separator_index == 0 || value.as_bytes()[separator_index] != b'-' {
+        return position_id;
+    }
+
+    let suffix = &value[separator_index + 1..];
+    if suffix.parse::<UUID4>().is_ok() {
+        PositionId::new(&value[..separator_index])
+    } else {
+        position_id
+    }
 }
 
 #[rstest]
@@ -2676,7 +2706,36 @@ impl CascadingStopStrategy {
     }
 }
 
-nautilus_strategy!(CascadingStopStrategy);
+nautilus_strategy!(CascadingStopStrategy, {
+    fn on_order_filled(&mut self, _event: &OrderFilled) {
+        // Submit stop-loss in response to fill (cascading command)
+        if !self.stop_submitted.get() {
+            self.stop_submitted.set(true);
+            let instrument_id = self.instrument_id;
+            let trade_size = self.trade_size;
+            let order = self.order().stop_market(
+                instrument_id,
+                OrderSide::Sell,
+                trade_size,
+                Price::from("900.00"),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            );
+            self.submit_order(order, None, None, None)
+                .expect("failed to submit cascading stop loss");
+        }
+    }
+});
 
 impl Debug for CascadingStopStrategy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -2699,35 +2758,6 @@ impl DataActor for CascadingStopStrategy {
                 instrument_id,
                 OrderSide::Buy,
                 trade_size,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            );
-            self.submit_order(order, None, None, None)?;
-        }
-        Ok(())
-    }
-
-    fn on_order_filled(&mut self, _event: &OrderFilled) -> anyhow::Result<()> {
-        // Submit stop-loss in response to fill (cascading command)
-        if !self.stop_submitted.get() {
-            self.stop_submitted.set(true);
-            let instrument_id = self.instrument_id;
-            let trade_size = self.trade_size;
-            let order = self.order().stop_market(
-                instrument_id,
-                OrderSide::Sell,
-                trade_size,
-                Price::from("900.00"),
-                None,
-                None,
-                None,
-                None,
-                None,
                 None,
                 None,
                 None,
@@ -3760,6 +3790,94 @@ fn test_option_expiry_timer_runs_when_end_equals_expiration() {
         underlying_open.is_empty(),
         "expected no underlying position for OTM expiry, found {}",
         underlying_open.len(),
+    );
+}
+
+#[rstest]
+fn test_instruments_with_same_expiration_share_expiry_timer() {
+    let venue = Venue::from("OPRA");
+    let expiration_ns = UnixNanos::from(2_000_000_000u64);
+    let mut engine = BacktestEngine::new(BacktestEngineConfig::default()).unwrap();
+    engine
+        .add_venue(
+            SimulatedVenueConfig::builder()
+                .venue(venue)
+                .oms_type(OmsType::Netting)
+                .account_type(AccountType::Margin)
+                .book_type(BookType::L1_MBP)
+                .starting_balances(vec![Money::from("1_000_000 USD")])
+                .build()
+                .unwrap(),
+        )
+        .unwrap();
+
+    let option = option_contract(venue, expiration_ns);
+    let mut other_option = option_contract(venue, expiration_ns);
+    if let InstrumentAny::OptionContract(option) = &mut other_option {
+        option.id = InstrumentId::from(format!("AAPL240315C00155000.{venue}").as_str());
+        option.raw_symbol = Symbol::from("AAPL240315C00155000");
+        option.strike_price = Price::from("155.00");
+    }
+
+    engine.add_instrument(&option).unwrap();
+    engine.add_instrument(&other_option).unwrap();
+
+    let expiry_timer_names: Vec<String> = engine
+        .kernel()
+        .clock
+        .borrow()
+        .timer_names()
+        .into_iter()
+        .filter(|name| name.starts_with("INSTRUMENT-EXPIRATION:"))
+        .map(ToString::to_string)
+        .collect();
+
+    assert_eq!(
+        expiry_timer_names,
+        vec![format!("INSTRUMENT-EXPIRATION:{venue}:{expiration_ns}")],
+    );
+}
+
+#[rstest]
+fn test_instrument_update_cancels_previous_expiry_timer() {
+    let venue = Venue::from("OPRA");
+    let original_expiration_ns = UnixNanos::from(2_000_000_000u64);
+    let updated_expiration_ns = UnixNanos::from(3_000_000_000u64);
+    let mut engine = BacktestEngine::new(BacktestEngineConfig::default()).unwrap();
+    engine
+        .add_venue(
+            SimulatedVenueConfig::builder()
+                .venue(venue)
+                .oms_type(OmsType::Netting)
+                .account_type(AccountType::Margin)
+                .book_type(BookType::L1_MBP)
+                .starting_balances(vec![Money::from("1_000_000 USD")])
+                .build()
+                .unwrap(),
+        )
+        .unwrap();
+
+    let option = option_contract(venue, original_expiration_ns);
+    let updated_option = option_contract(venue, updated_expiration_ns);
+
+    engine.add_instrument(&option).unwrap();
+    engine.add_instrument(&updated_option).unwrap();
+
+    let expiry_timer_names: Vec<String> = engine
+        .kernel()
+        .clock
+        .borrow()
+        .timer_names()
+        .into_iter()
+        .filter(|name| name.starts_with("INSTRUMENT-EXPIRATION:"))
+        .map(ToString::to_string)
+        .collect();
+
+    assert_eq!(
+        expiry_timer_names,
+        vec![format!(
+            "INSTRUMENT-EXPIRATION:{venue}:{updated_expiration_ns}"
+        )],
     );
 }
 

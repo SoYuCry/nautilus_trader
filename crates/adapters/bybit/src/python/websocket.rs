@@ -273,7 +273,7 @@ impl BybitWebSocketClient {
         self.remove_option_greeks_sub(&instrument_id);
     }
 
-    /// Disconnects the WebSocket client and stops the background task.
+    /// Establishes the WebSocket connection.
     #[pyo3(name = "connect")]
     #[expect(clippy::needless_pass_by_value)] // PyO3 extracted parameter
     fn py_connect<'py>(
@@ -429,7 +429,7 @@ impl BybitWebSocketClient {
                             log::info!("WebSocket reconnected");
                         }
                         BybitWsMessage::Auth(_) => {
-                            log::info!("WebSocket authenticated");
+                            log::debug!("WebSocket authenticated");
                         }
                     }
                 }
@@ -439,6 +439,7 @@ impl BybitWebSocketClient {
         })
     }
 
+    /// Disconnects the WebSocket client and stops the background task.
     #[pyo3(name = "close")]
     fn py_close<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let mut client = self.clone();

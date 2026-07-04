@@ -506,8 +506,8 @@ pub trait Order: 'static + Send {
             self.client_order_id(),
             self.venue_order_id(),
             self.order_side().as_specified(),
-            self.price().expect("`OwnBookOrder` must have a price"), // TBD
-            self.quantity(),
+            self.price().expect("`OwnBookOrder` must have a price"),
+            self.leaves_qty(),
             self.order_type(),
             self.time_in_force(),
             self.status(),
@@ -1444,6 +1444,34 @@ mod tests {
         assert_eq!(own_book_order.ts_submitted, UnixNanos::from(1_000_000));
         assert_eq!(own_book_order.ts_accepted, UnixNanos::from(2_000_000));
         assert_eq!(own_book_order.ts_last, UnixNanos::from(2_000_000));
+    }
+
+    #[rstest]
+    fn test_to_own_book_order_partial_fill_uses_leaves_qty() {
+        use crate::orders::limit::LimitOrder;
+
+        let init = OrderInitializedSpec::builder()
+            .price(Price::from("100.00"))
+            .quantity(Quantity::from(100_000))
+            .build();
+        let submitted = OrderSubmittedSpec::builder().build();
+        let accepted = OrderAcceptedSpec::builder().build();
+        let filled = OrderFilledSpec::builder()
+            .order_type(OrderType::Limit)
+            .last_qty(Quantity::from(40_000))
+            .last_px(Price::from("100.00"))
+            .build();
+
+        let mut order: LimitOrder = init.try_into().unwrap();
+        order.apply(OrderEventAny::Submitted(submitted)).unwrap();
+        order.apply(OrderEventAny::Accepted(accepted)).unwrap();
+        order.apply(OrderEventAny::Filled(filled)).unwrap();
+
+        let own_book_order = order.to_own_book_order();
+
+        assert_eq!(order.status(), OrderStatus::PartiallyFilled);
+        assert_eq!(order.leaves_qty(), Quantity::from(60_000));
+        assert_eq!(own_book_order.size, Quantity::from(60_000));
     }
 
     #[rstest]

@@ -22,6 +22,8 @@ pub mod messages;
 pub mod parse;
 pub mod post;
 
+pub(crate) mod book;
+
 pub use client::HyperliquidWebSocketClient;
 pub use enums::HyperliquidWsChannel;
 pub use error::HyperliquidWsError;

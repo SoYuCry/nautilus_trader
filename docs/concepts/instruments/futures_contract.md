@@ -8,34 +8,34 @@ currency futures.
 
 ## Fields
 
-| Field              | Rust type          | Python type       | Required/default | Notes                                   |
-|--------------------|--------------------|-------------------|------------------|-----------------------------------------|
-| `instrument_id`    | `InstrumentId`     | `InstrumentId`    | Required         | Stored as `id` in Rust.                 |
-| `raw_symbol`       | `Symbol`           | `Symbol`          | Required         | Native venue symbol.                    |
-| `asset_class`      | `AssetClass`       | `AssetClass`      | Required         | Asset class of the underlying.          |
-| `exchange`         | `Option<Ustr>`     | `str \| None`      | `None`           | Exchange MIC or venue code when known.  |
-| `underlying`       | `Ustr`             | `str`             | Required         | Underlying asset, index, or product.    |
-| `activation_ns`    | `UnixNanos`        | `int`             | Required         | Contract activation timestamp.          |
-| `expiration_ns`    | `UnixNanos`        | `int`             | Required         | Contract expiration timestamp.          |
-| `currency`         | `Currency`         | `Currency`        | Required         | Quote and settlement currency.          |
-| `price_precision`  | `u8`               | `int`             | Required         | Decimal places allowed for prices.      |
-| `price_increment`  | `Price`            | `Price`           | Required         | Smallest valid price step.              |
-| `size_precision`   | `u8`               | `int`             | `0`              | Futures trade in whole contracts.       |
-| `size_increment`   | `Quantity`         | `Quantity`        | `1`              | Minimum contract size step.             |
-| `multiplier`       | `Quantity`         | `Quantity`        | Required         | Contract multiplier.                    |
-| `lot_size`         | `Quantity`         | `Quantity`        | Required         | Rounded lot or contract lot size.       |
-| `margin_init`      | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Initial margin rate.                    |
-| `margin_maint`     | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maintenance margin rate.                |
-| `maker_fee`        | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maker fee rate. Negative values rebate. |
-| `taker_fee`        | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Taker fee rate. Negative values rebate. |
-| `max_quantity`     | `Option<Quantity>` | `Quantity \| None` | `None`           | Maximum order quantity.                 |
-| `min_quantity`     | `Option<Quantity>` | `Quantity \| None` | `1`              | Minimum order quantity.                 |
-| `max_price`        | `Option<Price>`    | `Price \| None`    | `None`           | Maximum valid quote or order price.     |
-| `min_price`        | `Option<Price>`    | `Price \| None`    | `None`           | Minimum valid quote or order price.     |
-| `tick_scheme_name` | N/A                | `str \| None`      | `None`           | Registered variable tick scheme name.   |
-| `info`             | `Option<Params>`   | `dict \| None`     | `None`           | Adapter metadata.                       |
-| `ts_event`         | `UnixNanos`        | `int`             | Required         | Event timestamp in nanoseconds.         |
-| `ts_init`          | `UnixNanos`        | `int`             | Required         | Initialization timestamp in nanoseconds. |
+| Field             | Rust type          | Python type        | Required/default | Notes                                    |
+|-------------------|--------------------|--------------------|------------------|------------------------------------------|
+| `instrument_id`   | `InstrumentId`     | `InstrumentId`     | Required         | Stored as `id` in Rust.                  |
+| `raw_symbol`      | `Symbol`           | `Symbol`           | Required         | Native venue symbol.                     |
+| `asset_class`     | `AssetClass`       | `AssetClass`       | Required         | Asset class of the underlying.           |
+| `exchange`        | `Option<Ustr>`     | `str \| None`      | `None`           | Exchange MIC or venue code when known.   |
+| `underlying`      | `Ustr`             | `str`              | Required         | Underlying asset, index, or product.     |
+| `activation_ns`   | `UnixNanos`        | `int`              | Required         | Contract activation timestamp.           |
+| `expiration_ns`   | `UnixNanos`        | `int`              | Required         | Contract expiration timestamp.           |
+| `currency`        | `Currency`         | `Currency`         | Required         | Quote and settlement currency.           |
+| `price_precision` | `u8`               | `int`              | Required         | Decimal places allowed for prices.       |
+| `price_increment` | `Price`            | `Price`            | Required         | Smallest valid price step.               |
+| `size_precision`  | `u8`               | `int`              | `0`              | Futures trade in whole contracts.        |
+| `size_increment`  | `Quantity`         | `Quantity`         | `1`              | Minimum contract size step.              |
+| `multiplier`      | `Quantity`         | `Quantity`         | Required         | Contract multiplier.                     |
+| `lot_size`        | `Quantity`         | `Quantity`         | Required         | Rounded lot or contract lot size.        |
+| `margin_init`     | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Initial margin rate.                     |
+| `margin_maint`    | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maintenance margin rate.                 |
+| `maker_fee`       | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maker fee rate. Negative values rebate.  |
+| `taker_fee`       | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Taker fee rate. Negative values rebate.  |
+| `max_quantity`    | `Option<Quantity>` | `Quantity \| None` | `None`           | Maximum order quantity.                  |
+| `min_quantity`    | `Option<Quantity>` | `Quantity \| None` | `1`              | Minimum order quantity.                  |
+| `max_price`       | `Option<Price>`    | `Price \| None`    | `None`           | Maximum valid quote or order price.      |
+| `min_price`       | `Option<Price>`    | `Price \| None`    | `None`           | Minimum valid quote or order price.      |
+| `tick_scheme`     | `Option<Ustr>`     | `str \| None`      | `None`           | Registered variable tick scheme name.    |
+| `info`            | `Option<Params>`   | `dict \| None`     | `None`           | Adapter metadata.                        |
+| `ts_event`        | `UnixNanos`        | `int`              | Required         | Event timestamp in nanoseconds.          |
+| `ts_init`         | `UnixNanos`        | `int`              | Required         | Initialization timestamp in nanoseconds. |
 
 *Note: Python constructors use `instrument_id`; Rust stores the same value as `id`.*
 
@@ -85,29 +85,29 @@ let esz21 = FuturesContract::builder()
 ```python tab="Python"
 import pandas as pd
 
-from nautilus_trader.model.currencies import USD
-from nautilus_trader.model.enums import AssetClass
-from nautilus_trader.model.identifiers import InstrumentId
-from nautilus_trader.model.identifiers import Symbol
-from nautilus_trader.model.instruments import FuturesContract
-from nautilus_trader.model.objects import Price
-from nautilus_trader.model.objects import Quantity
+from nautilus_trader.model import AssetClass
+from nautilus_trader.model import Currency
+from nautilus_trader.model import FuturesContract
+from nautilus_trader.model import InstrumentId
+from nautilus_trader.model import Price
+from nautilus_trader.model import Quantity
+from nautilus_trader.model import Symbol
 
 esz21 = FuturesContract(
     instrument_id=InstrumentId.from_str("ESZ21.GLBX"),
     raw_symbol=Symbol("ESZ21"),
     asset_class=AssetClass.INDEX,
-    exchange="XCME",
     underlying="ES",
-    currency=USD,
+    activation_ns=pd.Timestamp("2021-09-10", tz="UTC").value,
+    expiration_ns=pd.Timestamp("2021-12-17", tz="UTC").value,
+    currency=Currency.from_str("USD"),
     price_precision=2,
     price_increment=Price.from_str("0.25"),
     multiplier=Quantity.from_int(1),
     lot_size=Quantity.from_int(1),
-    activation_ns=pd.Timestamp("2021-09-10", tz="UTC").value,
-    expiration_ns=pd.Timestamp("2021-12-17", tz="UTC").value,
     ts_event=0,
     ts_init=0,
+    exchange="XCME",
 )
 ```
 

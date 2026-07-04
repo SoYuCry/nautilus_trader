@@ -4,6 +4,7 @@ import enum
 import typing
 
 from nautilus_trader import model
+from nautilus_trader import network
 
 __all__ = [
     "LIGHTER",
@@ -32,6 +33,7 @@ class LighterDataClientConfig:
         ws_timeout_secs: int | None = None,
         update_instruments_interval_mins: int | None = None,
         rest_quota_per_min: int | None = None,
+        transport_backend: network.TransportBackend | None = None,
     ) -> None: ...
     @property
     def proxy_url(self) -> str | None: ...
@@ -56,10 +58,10 @@ class LighterExecClientConfig:
         environment: LighterEnvironment | None = None,
         http_timeout_secs: int | None = None,
         ws_timeout_secs: int | None = None,
-        active_markets: typing.Sequence[int] | None = None,
         market_order_slippage_bps: int | None = None,
         rest_quota_per_min: int | None = None,
         sendtx_quota_per_min: int | None = None,
+        transport_backend: network.TransportBackend | None = None,
     ) -> None: ...
     @property
     def proxy_url(self) -> str | None: ...

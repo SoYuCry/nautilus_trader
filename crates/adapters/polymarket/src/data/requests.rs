@@ -90,7 +90,9 @@ pub(super) fn request_data(client: &PolymarketDataClient, request: RequestCustom
         pending_snapshot_after_tick_change: client.pending_snapshot_after_tick_change.clone(),
         new_market_inflight_keys: client.new_market_inflight_keys.clone(),
         new_market_fetch_semaphore: client.new_market_fetch_semaphore.clone(),
+        rtds_feed: client.rtds_feed.clone(),
         subscribe_new_markets: client.config.subscribe_new_markets,
+        drop_quotes_missing_side: client.config.drop_quotes_missing_side,
         new_market_filter: client.config.new_market_filter.clone(),
         cancellation_token: client.cancellation_token.clone(),
     };
@@ -161,7 +163,7 @@ pub(super) fn request_data(client: &PolymarketDataClient, request: RequestCustom
             summary.error = stats.error;
         }
 
-        log::info!(
+        log::debug!(
             "Polymarket manual resolve request requested={} fetched={} resolved={} emitted={} failed={} skipped_non_binary={} clob_fallback_successes={} timed_out_watchlist={} used_watchlist_fallback={}",
             summary.requested_condition_ids.len(),
             summary.fetched_markets,

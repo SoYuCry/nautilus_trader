@@ -18,11 +18,7 @@
 use std::str::FromStr;
 
 use anyhow::Context;
-use nautilus_core::{
-    UnixNanos,
-    datetime::{NANOSECONDS_IN_MILLISECOND, NANOSECONDS_IN_SECOND},
-    params::Params,
-};
+use nautilus_core::{UnixNanos, datetime::NANOSECONDS_IN_SECOND, params::Params};
 use nautilus_model::{
     enums::{OptionKind, OrderSide, OrderStatus, OrderType, TimeInForce, TriggerType},
     identifiers::{InstrumentId, Symbol},
@@ -533,6 +529,11 @@ pub fn derive_rejection_due_post_only(code: Option<i64>, reason: &str) -> bool {
 
 /// Parses a Derive instrument definition into a Nautilus instrument.
 ///
+/// Perpetuals are normalized to USDC quote and settlement: the wire quotes
+/// perps in `"USD"` index terms, while all Derive collateral, fees, and PnL
+/// settle in USDC, so Money currencies must match the account balances. The
+/// raw wire values remain in the instrument `info` payload.
+///
 /// # Errors
 ///
 /// Returns an error when a Derive instrument is missing required details or
@@ -560,7 +561,8 @@ fn parse_perp_instrument(
     let instrument_id = format_instrument_id(instrument.instrument_name.as_str());
     let raw_symbol = Symbol::new(instrument.instrument_name.as_str());
     let base_currency = Currency::get_or_create_crypto(instrument.base_currency.as_str());
-    let quote_currency = Currency::get_or_create_crypto(instrument.quote_currency.as_str());
+    // Wire says "USD" but Derive settles everything in USDC
+    let quote_currency = Currency::USDC();
     let settlement_currency = quote_currency;
     let price_increment = price_from_decimal(instrument.tick_size, "tick_size")?;
     let size_increment = quantity_from_decimal(instrument.amount_step, "amount_step")?;
@@ -618,7 +620,7 @@ fn parse_option_instrument(
     let option_kind = parse_option_kind(details.option_type);
     let strike_price = price_from_decimal(details.strike, "option_details.strike")?;
     let activation_ns =
-        timestamp_millis_to_nanos(instrument.scheduled_activation, "scheduled_activation")?;
+        timestamp_seconds_to_nanos(instrument.scheduled_activation, "scheduled_activation")?;
     let expiration_ns = timestamp_seconds_to_nanos(details.expiry, "option_details.expiry")?;
     let price_increment = price_from_decimal(instrument.tick_size, "tick_size")?;
     let size_increment = quantity_from_decimal(instrument.amount_step, "amount_step")?;
@@ -739,10 +741,6 @@ fn quantity_from_decimal(value: Decimal, field: &str) -> anyhow::Result<Quantity
 
 fn timestamp_seconds_to_nanos(value: i64, field: &str) -> anyhow::Result<UnixNanos> {
     timestamp_to_nanos(value, NANOSECONDS_IN_SECOND, field)
-}
-
-fn timestamp_millis_to_nanos(value: i64, field: &str) -> anyhow::Result<UnixNanos> {
-    timestamp_to_nanos(value, NANOSECONDS_IN_MILLISECOND, field)
 }
 
 fn timestamp_to_nanos(value: i64, multiplier: u64, field: &str) -> anyhow::Result<UnixNanos> {
@@ -968,14 +966,15 @@ mod tests {
         assert_eq!(perp.id(), InstrumentId::from("ETH-PERP.DERIVE"));
         assert_eq!(perp.raw_symbol().as_str(), "ETH-PERP");
         assert_eq!(perp.base_currency(), Some(Currency::ETH()));
+        // Fixture carries the live wire quote "USD"; parser normalizes to USDC
         assert_eq!(perp.quote_currency(), Currency::USDC());
         assert_eq!(perp.settlement_currency(), Currency::USDC());
         assert_eq!(perp.price_increment(), Price::from("0.01"));
         assert_eq!(perp.size_increment(), Quantity::from("0.001"));
-        assert_eq!(perp.max_quantity(), Some(Quantity::from("1000")));
-        assert_eq!(perp.min_quantity(), Some(Quantity::from("0.001")));
+        assert_eq!(perp.max_quantity(), Some(Quantity::from("10000")));
+        assert_eq!(perp.min_quantity(), Some(Quantity::from("0.1")));
         assert_eq!(perp.maker_fee(), dec!(0.0001));
-        assert_eq!(perp.taker_fee(), dec!(0.0005));
+        assert_eq!(perp.taker_fee(), dec!(0.0003));
         assert!(!perp.is_inverse());
 
         // `info` mirrors the raw venue payload so downstream consumers can read
@@ -985,7 +984,47 @@ mod tests {
         assert_eq!(info.get_str("instrument_name"), Some("ETH-PERP"));
         assert_eq!(info.get_str("instrument_type"), Some("perp"));
         assert_eq!(info.get_str("base_asset_sub_id"), Some("0"));
+        // Normalization must not rewrite the raw venue payload.
+        assert_eq!(info.get_str("quote_currency"), Some("USD"));
         assert!(info.get("perp_details").is_some_and(|v| v.is_object()));
+    }
+
+    #[rstest]
+    fn test_parse_perp_instrument_money_flows_settle_in_usdc() {
+        // Linear notional and PnL come out in cost_currency (= quote), which
+        // must match the USDC-only account
+        let instrument = parse_derive_instrument_any(&perp_fixture(), UnixNanos::from(123))
+            .unwrap()
+            .unwrap();
+
+        let InstrumentAny::CryptoPerpetual(perp) = instrument else {
+            panic!("expected CryptoPerpetual");
+        };
+
+        let notional =
+            perp.calculate_notional_value(Quantity::from("2"), Price::from("3000.00"), None);
+
+        assert!(!perp.is_quanto());
+        assert_eq!(perp.cost_currency(), Currency::USDC());
+        assert_eq!(notional.currency, Currency::USDC());
+        assert_eq!(notional.as_decimal(), dec!(6000));
+    }
+
+    #[rstest]
+    fn test_parse_perp_instrument_pins_usdc_for_any_wire_quote() {
+        // The USDC pin is unconditional, not gated on the wire saying "USD".
+        let mut instrument = perp_fixture();
+        instrument.quote_currency = "XUSD".into();
+
+        let parsed = parse_derive_instrument_any(&instrument, UnixNanos::from(123))
+            .unwrap()
+            .unwrap();
+        let InstrumentAny::CryptoPerpetual(perp) = parsed else {
+            panic!("expected CryptoPerpetual");
+        };
+
+        assert_eq!(perp.quote_currency(), Currency::USDC());
+        assert_eq!(perp.settlement_currency(), Currency::USDC());
     }
 
     #[rstest]
@@ -1000,9 +1039,9 @@ mod tests {
 
         assert_eq!(
             option.id(),
-            InstrumentId::from("ETH-20260627-3500-C.DERIVE")
+            InstrumentId::from("ETH-20261225-3500-C.DERIVE")
         );
-        assert_eq!(option.raw_symbol().as_str(), "ETH-20260627-3500-C");
+        assert_eq!(option.raw_symbol().as_str(), "ETH-20261225-3500-C");
         assert_eq!(option.base_currency(), Some(Currency::ETH()));
         assert_eq!(option.quote_currency(), Currency::USDC());
         assert_eq!(option.settlement_currency(), Currency::USDC());
@@ -1010,20 +1049,20 @@ mod tests {
         assert_eq!(option.strike_price(), Some(Price::from("3500")));
         assert_eq!(
             option.activation_ns(),
-            Some(UnixNanos::from(1_700_000_000_000_000_000)),
+            Some(UnixNanos::from(1_774_598_400_000_000_000)),
         );
         assert_eq!(
             option.expiration_ns(),
-            Some(UnixNanos::from(1_782_000_000_000_000_000)),
+            Some(UnixNanos::from(1_798_185_600_000_000_000)),
         );
-        assert_eq!(option.price_increment(), Price::from("1"));
+        assert_eq!(option.price_increment(), Price::from("0.1"));
         assert_eq!(option.size_increment(), Quantity::from("0.01"));
-        assert_eq!(option.max_quantity(), Some(Quantity::from("100")));
-        assert_eq!(option.min_quantity(), Some(Quantity::from("0.01")));
-        assert_eq!(option.taker_fee(), dec!(0.001));
+        assert_eq!(option.max_quantity(), Some(Quantity::from("10000")));
+        assert_eq!(option.min_quantity(), Some(Quantity::from("0.1")));
+        assert_eq!(option.taker_fee(), dec!(0.0003));
 
         let info = option.info.as_ref().expect("info populated");
-        assert_eq!(info.get_str("instrument_name"), Some("ETH-20260627-3500-C"));
+        assert_eq!(info.get_str("instrument_name"), Some("ETH-20261225-3500-C"));
         assert_eq!(info.get_str("instrument_type"), Some("option"));
         let option_details = info.get("option_details").expect("option_details present");
         assert_eq!(

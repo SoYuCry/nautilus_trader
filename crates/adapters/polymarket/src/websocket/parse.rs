@@ -31,7 +31,11 @@ use nautilus_model::{
 use rust_decimal::Decimal;
 
 use super::messages::{PolymarketBookSnapshot, PolymarketQuote, PolymarketQuotes, PolymarketTrade};
-use crate::common::{enums::PolymarketOrderSide, parse::determine_trade_id};
+use crate::common::{
+    consts::{MAX_PRICE, MIN_PRICE},
+    enums::PolymarketOrderSide,
+    parse::determine_trade_id,
+};
 
 /// Parses a millisecond epoch timestamp string into [`UnixNanos`].
 pub fn parse_timestamp_ms(ts: &str) -> anyhow::Result<UnixNanos> {
@@ -218,33 +222,42 @@ pub fn parse_trade_tick(
 
 /// Extracts a top-of-book [`QuoteTick`] from a book snapshot.
 ///
-/// Returns `None` if either side is empty.
-///
-/// # Panics
-///
-/// Cannot panic: `.expect()` calls are guarded by the empty-side
-/// early return above.
+/// Returns `None` if either side is empty and `drop_quotes_missing_side` is enabled.
 pub fn parse_quote_from_snapshot(
     snap: &PolymarketBookSnapshot,
     instrument_id: InstrumentId,
     price_precision: u8,
     size_precision: u8,
+    drop_quotes_missing_side: bool,
     ts_init: UnixNanos,
 ) -> anyhow::Result<Option<QuoteTick>> {
-    if snap.bids.is_empty() || snap.asks.is_empty() {
+    if drop_quotes_missing_side && (snap.bids.is_empty() || snap.asks.is_empty()) {
         return Ok(None);
     }
 
     let ts_event = parse_timestamp_ms(&snap.timestamp)?;
 
-    // Polymarket sends bids ascending and asks descending, so best-of-book is last
-    let best_bid = snap.bids.last().expect("bids not empty");
-    let best_ask = snap.asks.last().expect("asks not empty");
-
-    let bid_price = parse_price(&best_bid.price, price_precision)?;
-    let ask_price = parse_price(&best_ask.price, price_precision)?;
-    let bid_size = parse_quantity(&best_bid.size, size_precision)?;
-    let ask_size = parse_quantity(&best_ask.size, size_precision)?;
+    // Polymarket sends bids ascending and asks descending, so best-of-book is last.
+    let (bid_price, bid_size) = match snap.bids.last() {
+        Some(best_bid) => (
+            parse_price(&best_bid.price, price_precision)?,
+            parse_quantity(&best_bid.size, size_precision)?,
+        ),
+        None => (
+            parse_price(MIN_PRICE, price_precision)?,
+            Quantity::zero(size_precision),
+        ),
+    };
+    let (ask_price, ask_size) = match snap.asks.last() {
+        Some(best_ask) => (
+            parse_price(&best_ask.price, price_precision)?,
+            parse_quantity(&best_ask.size, size_precision)?,
+        ),
+        None => (
+            parse_price(MAX_PRICE, price_precision)?,
+            Quantity::zero(size_precision),
+        ),
+    };
 
     Ok(Some(QuoteTick::new_checked(
         instrument_id,
@@ -259,23 +272,43 @@ pub fn parse_quote_from_snapshot(
 
 /// Parses a quote tick from a price change message using its best_bid/best_ask fields.
 ///
-/// Returns `None` when either best_bid or best_ask is absent (empty book side).
+/// Returns `None` when either top-of-book side is absent or at the resolution
+/// boundary and `drop_quotes_missing_side` is enabled.
+/// Returns `None` for locked or crossed top-of-book prices.
 /// When `last_quote` is provided the opposite side's size is carried forward
 /// instead of being set to zero, matching the Python adapter's behavior.
+#[expect(clippy::too_many_arguments)]
 pub fn parse_quote_from_price_change(
     quote: &PolymarketQuote,
     instrument_id: InstrumentId,
     price_precision: u8,
     size_precision: u8,
+    drop_quotes_missing_side: bool,
     last_quote: Option<&QuoteTick>,
     ts_event: UnixNanos,
     ts_init: UnixNanos,
 ) -> anyhow::Result<Option<QuoteTick>> {
-    let (Some(best_bid), Some(best_ask)) = (&quote.best_bid, &quote.best_ask) else {
+    let bid_top = parse_bid_top(quote.best_bid.as_deref(), price_precision)?;
+    let ask_top = parse_ask_top(quote.best_ask.as_deref(), price_precision)?;
+    if drop_quotes_missing_side && (bid_top.is_none() || ask_top.is_none()) {
         return Ok(None);
+    }
+
+    let bid_missing = bid_top.is_none();
+    let ask_missing = ask_top.is_none();
+    let bid_price = match bid_top {
+        Some(price) => price,
+        None => parse_price(MIN_PRICE, price_precision)?,
     };
-    let bid_price = parse_price(best_bid, price_precision)?;
-    let ask_price = parse_price(best_ask, price_precision)?;
+    let ask_price = match ask_top {
+        Some(price) => price,
+        None => parse_price(MAX_PRICE, price_precision)?,
+    };
+
+    if !bid_missing && !ask_missing && bid_price >= ask_price {
+        return Ok(None);
+    }
+
     let changed_price = parse_price(&quote.price, price_precision)?;
 
     let size = parse_quantity(&quote.size, size_precision)?;
@@ -285,21 +318,33 @@ pub fn parse_quote_from_price_change(
     // otherwise preserve the previous quote's size for that side
     let (bid_size, ask_size) = match quote.side {
         PolymarketOrderSide::Buy => {
-            let bid_size = if changed_price == bid_price {
+            let bid_size = if bid_missing {
+                zero()
+            } else if changed_price == bid_price {
                 size
             } else {
                 last_quote.map_or_else(zero, |q| q.bid_size)
             };
-            let ask_size = last_quote.map_or_else(zero, |q| q.ask_size);
+            let ask_size = if ask_missing {
+                zero()
+            } else {
+                last_quote.map_or_else(zero, |q| q.ask_size)
+            };
             (bid_size, ask_size)
         }
         PolymarketOrderSide::Sell => {
-            let ask_size = if changed_price == ask_price {
+            let ask_size = if ask_missing {
+                zero()
+            } else if changed_price == ask_price {
                 size
             } else {
                 last_quote.map_or_else(zero, |q| q.ask_size)
             };
-            let bid_size = last_quote.map_or_else(zero, |q| q.bid_size);
+            let bid_size = if bid_missing {
+                zero()
+            } else {
+                last_quote.map_or_else(zero, |q| q.bid_size)
+            };
             (bid_size, ask_size)
         }
     };
@@ -313,6 +358,33 @@ pub fn parse_quote_from_price_change(
         ts_event,
         ts_init,
     )?))
+}
+
+fn parse_bid_top(value: Option<&str>, precision: u8) -> CorrectnessResult<Option<Price>> {
+    parse_top_price(value, precision, |value| value <= Decimal::ZERO)
+}
+
+fn parse_ask_top(value: Option<&str>, precision: u8) -> CorrectnessResult<Option<Price>> {
+    parse_top_price(value, precision, |value| value >= Decimal::ONE)
+}
+
+fn parse_top_price(
+    value: Option<&str>,
+    precision: u8,
+    is_missing: impl FnOnce(Decimal) -> bool,
+) -> CorrectnessResult<Option<Price>> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    let decimal = Decimal::from_str(value).map_err(|e| CorrectnessError::PredicateViolation {
+        message: format!("Invalid price '{value}': {e}"),
+    })?;
+
+    if is_missing(decimal) {
+        return Ok(None);
+    }
+
+    Ok(Some(Price::from_decimal_dp(decimal, precision)?))
 }
 
 #[cfg(test)]
@@ -494,6 +566,7 @@ mod tests {
             instrument.id(),
             instrument.price_precision(),
             instrument.size_precision(),
+            true,
             ts_init,
         )
         .unwrap()
@@ -520,11 +593,66 @@ mod tests {
             instrument.id(),
             instrument.price_precision(),
             instrument.size_precision(),
+            true,
             ts_init,
         )
         .unwrap();
 
         assert!(result.is_none());
+    }
+
+    #[rstest]
+    fn test_parse_quote_from_snapshot_empty_side_uses_boundary_when_drop_disabled() {
+        let mut snap: PolymarketBookSnapshot = load("ws_book_snapshot.json");
+        snap.asks.clear();
+        let instrument = test_instrument();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let quote = parse_quote_from_snapshot(
+            &snap,
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            false,
+            ts_init,
+        )
+        .unwrap()
+        .expect("quote should use boundary ask when drop is disabled");
+
+        assert_eq!(quote.bid_price, Price::from("0.50"));
+        assert_eq!(quote.bid_size, Quantity::from("200.00"));
+        assert_eq!(
+            quote.ask_price,
+            parse_price(MAX_PRICE, instrument.price_precision()).unwrap()
+        );
+        assert_eq!(quote.ask_size, Quantity::from("0.00"));
+    }
+
+    #[rstest]
+    fn test_parse_quote_from_snapshot_empty_bid_uses_boundary_when_drop_disabled() {
+        let mut snap: PolymarketBookSnapshot = load("ws_book_snapshot.json");
+        snap.bids.clear();
+        let instrument = test_instrument();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let quote = parse_quote_from_snapshot(
+            &snap,
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            false,
+            ts_init,
+        )
+        .unwrap()
+        .expect("quote should use boundary bid when drop is disabled");
+
+        assert_eq!(
+            quote.bid_price,
+            parse_price(MIN_PRICE, instrument.price_precision()).unwrap()
+        );
+        assert_eq!(quote.bid_size, Quantity::from("0.00"));
+        assert_eq!(quote.ask_price, Price::from("0.51"));
+        assert_eq!(quote.ask_size, Quantity::from("150.00"));
     }
 
     #[rstest]
@@ -539,6 +667,7 @@ mod tests {
             instrument.id(),
             instrument.price_precision(),
             instrument.size_precision(),
+            true,
             None,
             ts_event,
             ts_init,
@@ -547,5 +676,124 @@ mod tests {
         .expect("quote should be Some when best_bid/best_ask present");
 
         assert_eq!(quote.instrument_id, instrument.id());
+    }
+
+    #[rstest]
+    #[case(None)]
+    #[case(Some("1"))]
+    fn test_parse_quote_from_price_change_missing_side_drops_by_default(
+        #[case] best_ask: Option<&str>,
+    ) {
+        let mut quotes: PolymarketQuotes = load("ws_quotes.json");
+        quotes.price_changes[0].best_ask = best_ask.map(str::to_string);
+        let instrument = test_instrument();
+        let ts_event = parse_timestamp_ms(&quotes.timestamp).unwrap();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let result = parse_quote_from_price_change(
+            &quotes.price_changes[0],
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            true,
+            None,
+            ts_event,
+            ts_init,
+        )
+        .unwrap();
+
+        assert!(result.is_none());
+    }
+
+    #[rstest]
+    #[case(None)]
+    #[case(Some("1"))]
+    fn test_parse_quote_from_price_change_missing_side_uses_boundary_when_drop_disabled(
+        #[case] best_ask: Option<&str>,
+    ) {
+        let mut quotes: PolymarketQuotes = load("ws_quotes.json");
+        quotes.price_changes[0].best_ask = best_ask.map(str::to_string);
+        let instrument = test_instrument();
+        let ts_event = parse_timestamp_ms(&quotes.timestamp).unwrap();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let quote = parse_quote_from_price_change(
+            &quotes.price_changes[0],
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            false,
+            None,
+            ts_event,
+            ts_init,
+        )
+        .unwrap()
+        .expect("quote should use boundary ask when drop is disabled");
+
+        assert_eq!(quote.bid_price, Price::from("0.51"));
+        assert_eq!(quote.bid_size, Quantity::from("150.00"));
+        assert_eq!(
+            quote.ask_price,
+            parse_price(MAX_PRICE, instrument.price_precision()).unwrap()
+        );
+        assert_eq!(quote.ask_size, Quantity::from("0.00"));
+    }
+
+    #[rstest]
+    fn test_parse_quote_from_price_change_missing_bid_uses_boundary_when_drop_disabled() {
+        let mut quotes: PolymarketQuotes = load("ws_quotes.json");
+        quotes.price_changes[0].side = PolymarketOrderSide::Sell;
+        quotes.price_changes[0].price = "0.52".to_string();
+        quotes.price_changes[0].size = "75".to_string();
+        quotes.price_changes[0].best_bid = Some("0".to_string());
+        quotes.price_changes[0].best_ask = Some("0.52".to_string());
+        let instrument = test_instrument();
+        let ts_event = parse_timestamp_ms(&quotes.timestamp).unwrap();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let quote = parse_quote_from_price_change(
+            &quotes.price_changes[0],
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            false,
+            None,
+            ts_event,
+            ts_init,
+        )
+        .unwrap()
+        .expect("quote should use boundary bid when drop is disabled");
+
+        assert_eq!(
+            quote.bid_price,
+            parse_price(MIN_PRICE, instrument.price_precision()).unwrap()
+        );
+        assert_eq!(quote.bid_size, Quantity::from("0.00"));
+        assert_eq!(quote.ask_price, Price::from("0.52"));
+        assert_eq!(quote.ask_size, Quantity::from("75.00"));
+    }
+
+    #[rstest]
+    fn test_parse_quote_from_price_change_crossed_top_returns_none() {
+        let mut quotes: PolymarketQuotes = load("ws_quotes.json");
+        quotes.price_changes[0].best_bid = Some("0.70".to_string());
+        quotes.price_changes[0].best_ask = Some("0.60".to_string());
+        let instrument = test_instrument();
+        let ts_event = parse_timestamp_ms(&quotes.timestamp).unwrap();
+        let ts_init = UnixNanos::from(1_000_000_000u64);
+
+        let result = parse_quote_from_price_change(
+            &quotes.price_changes[0],
+            instrument.id(),
+            instrument.price_precision(),
+            instrument.size_precision(),
+            false,
+            None,
+            ts_event,
+            ts_init,
+        )
+        .unwrap();
+
+        assert!(result.is_none());
     }
 }

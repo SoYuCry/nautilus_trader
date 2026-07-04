@@ -9,16 +9,16 @@ component instrument prices.
 
 ## Fields
 
-| Field             | Rust type           | Python type          | Required/default | Notes                                      |
-|-------------------|---------------------|----------------------|------------------|--------------------------------------------|
-| `symbol`          | `Symbol`            | `Symbol`             | Required         | Synthetic symbol used with venue `SYNTH`.  |
-| `id`              | `InstrumentId`      | `InstrumentId`       | Derived          | Instrument ID formed from `symbol.SYNTH`.  |
+| Field             | Rust type           | Python type          | Required/default | Notes                                       |
+|-------------------|---------------------|----------------------|------------------|---------------------------------------------|
+| `symbol`          | `Symbol`            | `Symbol`             | Required         | Synthetic symbol used with venue `SYNTH`.   |
+| `id`              | `InstrumentId`      | `InstrumentId`       | Derived          | Instrument ID formed from `symbol.SYNTH`.   |
 | `price_precision` | `u8`                | `int`                | Required         | Decimal places allowed for synthetic price. |
-| `price_increment` | `Price`             | `Price`              | Derived          | Smallest price step from precision.        |
-| `components`      | `Vec<InstrumentId>` | `list[InstrumentId]` | Required         | Component instruments used by the formula. |
-| `formula`         | `String`            | `str`                | Required         | Numeric expression over component IDs.     |
-| `ts_event`        | `UnixNanos`         | `int`                | Required         | Event timestamp in nanoseconds.            |
-| `ts_init`         | `UnixNanos`         | `int`                | Required         | Initialization timestamp in nanoseconds.   |
+| `price_increment` | `Price`             | `Price`              | Derived          | Smallest price step from precision.         |
+| `components`      | `Vec<InstrumentId>` | `list[InstrumentId]` | Required         | Component instruments used by the formula.  |
+| `formula`         | `String`            | `str`                | Required         | Numeric expression over component IDs.      |
+| `ts_event`        | `UnixNanos`         | `int`                | Required         | Event timestamp in nanoseconds.             |
+| `ts_init`         | `UnixNanos`         | `int`                | Required         | Initialization timestamp in nanoseconds.    |
 
 *Note: Python constructs the instrument ID from `symbol` and the `SYNTH` venue. Rust
 stores the same value as `id`.*
@@ -54,9 +54,9 @@ let synthetic = SyntheticInstrument::new(
 ```
 
 ```python tab="Python"
-from nautilus_trader.model.identifiers import InstrumentId
-from nautilus_trader.model.identifiers import Symbol
-from nautilus_trader.model.instruments import SyntheticInstrument
+from nautilus_trader.model import InstrumentId
+from nautilus_trader.model import Symbol
+from nautilus_trader.model import SyntheticInstrument
 
 synthetic = SyntheticInstrument(
     symbol=Symbol("BTC-LTC"),
@@ -79,4 +79,4 @@ may come from any adapter already loaded into the system.
 ## Related guides
 
 - [Synthetics](../synthetics.md) covers formula-derived instruments and synthetic bars.
-- [Data](../data.md) explains market data that references instruments.
+- [Data](../data/) explains market data that references instruments.

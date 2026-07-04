@@ -19,6 +19,11 @@ use nautilus_model::{enums::OrderSide, position::Position};
 
 use crate::{Returns, statistic::PortfolioStatistic};
 
+/// Calculates the ratio of long positions to total positions.
+///
+/// A position counts as long when its entry (opening order) side is `Buy`.
+/// The result is in `[0, 1]`, rounded to `precision` decimal places, and is
+/// `None` for an empty position list.
 #[repr(C)]
 #[derive(Debug, Clone)]
 #[cfg_attr(
@@ -30,6 +35,7 @@ use crate::{Returns, statistic::PortfolioStatistic};
     pyo3_stub_gen::derive::gen_stub_pyclass(module = "nautilus_trader.analysis")
 )]
 pub struct LongRatio {
+    /// The number of decimal places to round the ratio to (default: 2).
     pub precision: usize,
 }
 

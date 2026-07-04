@@ -33,7 +33,11 @@ use crate::{
 ///
 /// Formula: Calmar Ratio = CAGR / |Max Drawdown|
 ///
-/// Reference: Young, T. W. (1991). "Calmar Ratio: A Smoother Tool". Futures, 20(1).
+/// # References
+///
+/// - Young, T. W. (1991). "Calmar Ratio: A Smoother Tool". *Futures*, 20(1).
+/// - Bacon, C. R. (2008). *Practical Portfolio Performance Measurement and Attribution*
+///   (2nd ed.). Wiley.
 #[repr(C)]
 #[derive(Debug, Clone)]
 #[cfg_attr(
@@ -105,6 +109,7 @@ impl PortfolioStatistic for CalmarRatio {
 
 #[cfg(test)]
 mod tests {
+    use nautilus_core::approx_eq;
     use rstest::rstest;
 
     use super::*;
@@ -147,6 +152,19 @@ mod tests {
         // Should be NaN when no drawdown (undefined ratio)
         assert!(result.is_some());
         assert!(result.unwrap().is_nan());
+    }
+
+    #[rstest]
+    fn test_known_value() {
+        // period = 5 over 5 daily bins makes CAGR equal the total return:
+        //   total = 1.1 * 0.9 * 1.5 * 0.8 * 1.1 - 1 = 0.3068
+        //   CAGR = (1.3068)^(5/5) - 1 = 0.3068
+        //   equity = [1.1, 0.99, 1.485, 1.188, 1.3068]; max drawdown = (1.485 - 1.188) / 1.485 = 0.20
+        //   Calmar = 0.3068 / 0.20 = 1.534
+        let ratio = CalmarRatio::new(Some(5));
+        let returns = create_returns(&[0.10, -0.10, 0.50, -0.20, 0.10]);
+        let result = ratio.calculate_from_returns(&returns).unwrap();
+        assert!(approx_eq!(f64, result, 1.534, epsilon = 1e-9));
     }
 
     #[rstest]

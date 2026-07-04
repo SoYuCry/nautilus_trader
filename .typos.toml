@@ -41,6 +41,9 @@ Fo = "Fo" # Base64 encoded certificate data
 # NumPy/scientific computing functions
 arange = "arange" # NumPy array range function (not a typo of "arrange")
 
+# Author names in literature references
+Cann = "Cann" # Part of McCann (Ulcer Index reference author)
+
 # Rust crate names
 flate = "flate" # Part of flate2 crate name (deflate compression)
 

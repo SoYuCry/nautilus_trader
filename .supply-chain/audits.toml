@@ -109,6 +109,12 @@ criteria = "safe-to-deploy"
 delta = "1.9.0 -> 1.9.1"
 notes = "Single atomic ordering fix: compare_exchange failure order changed from Acquire to SeqCst in debt repayment. No new unsafe patterns."
 
+[[audits.arc-swap]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "1.9.1 -> 1.9.2"
+notes = "Documentation-only release clarifying that RefCnt methods must not panic or unwind. No runtime logic, dependency, build-script, filesystem, network, process, or unsafe-code changes."
+
 [[audits.aws-lc-rs]]
 who = "Nautech Systems <info@nautechsystems.io>"
 criteria = "safe-to-deploy"
@@ -315,6 +321,18 @@ criteria = "safe-to-deploy"
 delta = "0.58.0 -> 0.59.0"
 notes = "Version bump only. Published source only updates package version metadata."
 
+[[audits.enum-ordinalize]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "4.3.2 -> 4.4.1"
+notes = "MSRV/edition metadata and documentation updates, plus explicit unsafe block in the trait example. No new runtime logic, build script, filesystem, network, or ambient capability changes."
+
+[[audits.enum-ordinalize-derive]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "4.3.2 -> 4.4.1"
+notes = "Proc-macro delta improves repr parsing, span diagnostics, explicit unsafe blocks in generated unsafe fns, and fully qualified trait paths. The transmute-based unsafe path remains caller-gated by valid enum discriminants; no build script, filesystem, network, or process behavior."
+
 [[audits.fastrand]]
 who = "Nautech Systems <info@nautechsystems.io>"
 criteria = "safe-to-deploy"
@@ -332,6 +350,12 @@ who = "Nautech Systems <info@nautechsystems.io>"
 criteria = "safe-to-deploy"
 delta = "0.11.0 -> 0.11.1"
 notes = "Fixes retain removal to match nodes by pointer identity and makes unsafe value-node dropping panic-safe. Reviewed unsafe linked-list delta; no new dependencies, build script, filesystem, or network behavior."
+
+[[audits.hybrid-array]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "0.4.12 -> 0.4.13"
+notes = "Adds ArraySize impls for U521 and U522 plus CI workflow updates. No new unsafe, dependencies, build script, filesystem, network, or process behavior."
 
 [[audits.hyper]]
 who = "Nautech Systems <info@nautechsystems.io>"
@@ -416,6 +440,12 @@ criteria = "safe-to-deploy"
 delta = "0.28.2 -> 0.28.3"
 notes = "5 bug fixes: enum into_pyobject deadlock, PyBytesWriter soundness (3.15 only), attach race (auto-initialize), Probe name collision, Py_NegativeRefcount FFI cfg. No new deps."
 
+[[audits.rapidhash]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "4.4.1 -> 4.4.2"
+notes = "Mostly README/docs and cfg-gated test corrections, including clearer HashDoS caveats. Production code changes are comment/doc fixes; no new unsafe, dependencies, build script, filesystem, network, or process behavior."
+
 [[audits.redis]]
 who = "Nautech Systems <info@nautechsystems.io>"
 criteria = "safe-to-deploy"
@@ -427,6 +457,12 @@ who = "Nautech Systems <info@nautechsystems.io>"
 criteria = "safe-to-deploy"
 delta = "1.2.1 -> 1.2.2"
 notes = "Additive feature/fix release: new HOTKEYS command module, TLS certificate auth, SO_LINGER socket option, connection-manager concurrency limit, bb8 sentinel pool. New code plus tests; no build-script or existing-behavior changes."
+
+[[audits.redis]]
+who = "Nautech Systems <info@nautechsystems.io>"
+criteria = "safe-to-deploy"
+delta = "1.2.4 -> 1.3.0"
+notes = "Adds optional Bloom command support, numbered DB support for cluster clients, and a cluster retry backoff bound fix. No new build-script, filesystem, process, or suspicious network behavior."
 
 [[audits.rustls-native-certs]]
 who = "Nautech Systems <info@nautechsystems.io>"

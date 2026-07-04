@@ -12,9 +12,9 @@ alloy-primitives = { version = "1.6.0", default-features = false, features = [
   "std",
   "serde",
 ] }
-libfuzzer-sys = "0.4.12"
+libfuzzer-sys = "0.4.13"
 nautilus-derive = { path = ".." }
-rust_decimal = { version = "1.42.0", features = ["serde-with-float"] }
+rust_decimal = { version = "1.42.1", features = ["serde-with-float"] }
 serde = { version = "1.0.228", default-features = false, features = [
   "derive",
   "std",

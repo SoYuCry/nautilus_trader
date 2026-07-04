@@ -30,6 +30,12 @@ use crate::statistic::PortfolioStatistic;
 /// Formula: CAGR = (Ending Value / Beginning Value)^(Period/Days) - 1
 ///
 /// For returns: CAGR = ((1 + Total Return)^(Period/Days)) - 1
+///
+/// # References
+///
+/// - Bacon, C. R. (2008). *Practical Portfolio Performance Measurement and Attribution*
+///   (2nd ed.). Wiley.
+/// - CFA Institute Level I Curriculum: Quantitative Methods
 #[repr(C)]
 #[derive(Debug, Clone)]
 #[cfg_attr(

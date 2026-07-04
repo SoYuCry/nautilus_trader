@@ -2569,7 +2569,7 @@ impl OKXHttpClient {
             book.add(order, 0, (bids_len + i) as u64, ts_event);
         }
 
-        log::info!(
+        log::debug!(
             "Fetched order book for {} with {} bids and {} asks",
             instrument_id,
             snapshot.bids.len(),
@@ -2665,7 +2665,7 @@ impl OKXHttpClient {
             ));
         }
 
-        log::info!(
+        log::debug!(
             "Fetched order book snapshot for {} with {} bids and {} asks",
             instrument_id,
             snapshot.bids.len(),
@@ -2732,7 +2732,7 @@ impl OKXHttpClient {
         // cache.add_funding_rates (which push_fronts) leaves the newest at front
         rates.reverse();
 
-        log::info!(
+        log::debug!(
             "Fetched {} funding rates for {}",
             rates.len(),
             instrument_id,
@@ -5879,15 +5879,9 @@ impl OKXHttpClient {
                 return Ok(reports);
             }
 
-            // OKX's `/orders-algo-history` endpoint rejects calls that
-            // carry neither a `state` nor an `algoId` / `algoClOrdId`
-            // narrowing with code 50015. The reconciliation path wants
-            // only currently-live algo orders (those already appear in
-            // the pending response above), so skip the history leg when
-            // the caller supplied no narrowing. Specific-lookup callers
-            // still hit history because `has_specific_lookup` implies
-            // `algoId` or `algoClOrdId`, which the endpoint accepts.
-            if state.is_some() || has_specific_lookup {
+            // `/orders-algo-history` rejects anything but `state`/`algoId`
+            // with 50015; `algoClOrdId` alone is not accepted.
+            if state.is_some() || algo_id.is_some() {
                 let remaining = limit.map(|l| (l as usize).saturating_sub(reports.len()));
                 let history = self.paginate_algo_history(&params, remaining).await?;
                 self.collect_algo_reports(

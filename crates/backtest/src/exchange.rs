@@ -307,6 +307,23 @@ impl SimulatedExchange {
         self.instruments.keys()
     }
 
+    /// Returns the expiration timestamp for the given instrument, if present.
+    #[must_use]
+    pub fn instrument_expiration(&self, instrument_id: InstrumentId) -> Option<UnixNanos> {
+        self.matching_engines
+            .get(&instrument_id)
+            .and_then(|matching_engine| matching_engine.instrument.expiration_ns())
+    }
+
+    /// Returns whether an unprocessed instrument remains for the given expiration.
+    #[must_use]
+    pub fn has_unprocessed_instrument_expiration(&self, expiration_ns: UnixNanos) -> bool {
+        self.matching_engines.values().any(|matching_engine| {
+            !matching_engine.is_expiration_processed()
+                && matching_engine.instrument.expiration_ns() == Some(expiration_ns)
+        })
+    }
+
     pub fn initialize_account(&mut self) {
         self.generate_fresh_account_state();
     }
@@ -1183,7 +1200,7 @@ impl SimulatedExchange {
             let PositionEvent::PositionAdjusted(adjustment) = &event else {
                 continue;
             };
-            let topic = switchboard::get_event_positions_topic(adjustment.strategy_id);
+            let topic = switchboard::get_event_position_topic(adjustment.strategy_id);
             msgbus::publish_position_event(topic, &event);
         }
     }

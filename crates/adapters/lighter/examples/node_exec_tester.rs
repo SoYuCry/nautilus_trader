@@ -16,6 +16,8 @@
 //! Example demonstrating live execution testing with the Lighter adapter.
 //!
 //! Edit the constants below to change the environment, target instrument, and order size.
+//! By default this connects in dry-run mode. Set `DRY_RUN` to `false` to allow
+//! real orders.
 //!
 //! Run with: `cargo run --example lighter-exec-tester --package nautilus-lighter --features examples`
 //!
@@ -40,14 +42,17 @@ use nautilus_model::{
 use nautilus_testkit::testers::{ExecTester, ExecTesterConfig};
 use nautilus_trading::strategy::StrategyConfig;
 
+// DRY_RUN connects to the venue, but ExecTester skips order submission and
+// shutdown cancel/close commands.
+const DRY_RUN: bool = true;
 const LIGHTER_ENVIRONMENT: LighterEnvironment = LighterEnvironment::Mainnet;
 const TRADER_ID: &str = "TESTER-001";
 const ACCOUNT_ID: &str = "LIGHTER-001";
 const NODE_NAME: &str = "LIGHTER-EXEC-TESTER-001";
 const CLIENT_ID: &str = "LIGHTER";
 const STRATEGY_ID: &str = "EXEC_TESTER-001";
-const INSTRUMENT_ID: &str = "ETH-PERP.LIGHTER";
-const ORDER_QTY: &str = "0.01";
+const INSTRUMENT_ID: &str = "BTC-PERP.LIGHTER";
+const ORDER_QTY: &str = "0.001";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -61,10 +66,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_id = ClientId::new(CLIENT_ID);
     let instrument_id = InstrumentId::from(INSTRUMENT_ID);
 
-    let data_config = LighterDataClientConfig {
-        environment: lighter_environment,
-        ..Default::default()
-    };
+    let data_config = LighterDataClientConfig::builder()
+        .environment(lighter_environment)
+        .build();
     let exec_config = LighterExecClientConfig::builder()
         .trader_id(trader_id)
         .account_id(account_id)
@@ -79,13 +83,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ..Default::default()
     };
     let exec_engine_config = LiveExecEngineConfig {
+        reconciliation_lookback_mins: Some(60),
+        reconciliation_instrument_ids: Some(vec![INSTRUMENT_ID.to_string()]),
         open_check_interval_secs: Some(10.0),
         position_check_interval_secs: Some(30.0),
-        // Example client order ID filtering for historical rows
-        filtered_client_order_ids: Some(vec![
-            "1793664468".to_string(),
-            "1062637805503".to_string(),
-        ]),
         ..Default::default()
     };
 
@@ -122,6 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .use_post_only(true)
         .cancel_orders_on_stop(true)
         .close_positions_on_stop(true)
+        .dry_run(DRY_RUN)
         .log_data(false)
         .build()?;
 

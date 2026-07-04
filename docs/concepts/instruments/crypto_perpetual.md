@@ -8,34 +8,34 @@ Examples include `ETHUSDT-PERP.BINANCE`, `XBTUSD.BITMEX`, and `BTC-USD-SWAP.OKX`
 
 ## Fields
 
-| Field                 | Rust type          | Python type            | Required/default     | Notes                                      |
-|-----------------------|--------------------|------------------------|----------------------|--------------------------------------------|
-| `instrument_id`       | `InstrumentId`     | `InstrumentId`         | Required             | Stored as `id` in Rust.                    |
-| `raw_symbol`          | `Symbol`           | `Symbol`               | Required             | Native venue symbol.                       |
-| `base_currency`       | `Currency`         | `Currency`             | Required             | Base crypto asset.                         |
-| `quote_currency`      | `Currency`         | `Currency`             | Required             | Price quote currency.                      |
-| `settlement_currency` | `Currency`         | `Currency`             | Required             | Currency used to settle PnL and fees.      |
-| `is_inverse`          | `bool`             | `bool`                 | Required             | True when sizing/costing is inverse.       |
-| `price_precision`     | `u8`               | `int`                  | Required             | Decimal places allowed for prices.         |
-| `size_precision`      | `u8`               | `int`                  | Required             | Decimal places allowed for order sizes.    |
-| `price_increment`     | `Price`            | `Price`                | Required             | Smallest valid price step.                 |
-| `size_increment`      | `Quantity`         | `Quantity`             | Required             | Smallest valid size step.                  |
-| `ts_event`            | `UnixNanos`        | `int`                  | Required             | Event timestamp in nanoseconds.            |
-| `ts_init`             | `UnixNanos`        | `int`                  | Required             | Initialization timestamp in nanoseconds.   |
-| `multiplier`          | `Quantity`         | `Quantity`             | `1`                  | Contract multiplier.                       |
-| `lot_size`            | `Quantity`         | `Quantity`             | `1`                  | Rounded lot or board size.                 |
-| `max_quantity`        | `Option<Quantity>` | `Quantity \| None`      | `None`               | Maximum order quantity.                    |
-| `min_quantity`        | `Option<Quantity>` | `Quantity \| None`      | `None`               | Minimum order quantity.                    |
-| `max_notional`        | `Option<Money>`    | `Money \| None`         | `None`               | Maximum order notional value.              |
-| `min_notional`        | `Option<Money>`    | `Money \| None`         | `None`               | Minimum order notional value.              |
-| `max_price`           | `Option<Price>`    | `Price \| None`         | `None`               | Maximum valid quote or order price.        |
-| `min_price`           | `Option<Price>`    | `Price \| None`         | `None`               | Minimum valid quote or order price.        |
-| `margin_init`         | `Option<Decimal>`  | `Decimal \| None`       | `0`                  | Initial margin rate.                       |
-| `margin_maint`        | `Option<Decimal>`  | `Decimal \| None`       | `0`                  | Maintenance margin rate.                   |
-| `maker_fee`           | `Option<Decimal>`  | `Decimal \| None`       | `0`                  | Maker fee rate. Negative values rebate.    |
-| `taker_fee`           | `Option<Decimal>`  | `Decimal \| None`       | `0`                  | Taker fee rate. Negative values rebate.    |
-| `tick_scheme_name`    | N/A                | `str \| None`           | `None`               | Registered variable tick scheme name.      |
-| `info`                | `Option<Params>`   | `dict \| None`          | `None`               | Adapter metadata.                          |
+| Field                 | Rust type          | Python type        | Required/default | Notes                                    |
+|-----------------------|--------------------|--------------------|------------------|------------------------------------------|
+| `instrument_id`       | `InstrumentId`     | `InstrumentId`     | Required         | Stored as `id` in Rust.                  |
+| `raw_symbol`          | `Symbol`           | `Symbol`           | Required         | Native venue symbol.                     |
+| `base_currency`       | `Currency`         | `Currency`         | Required         | Base crypto asset.                       |
+| `quote_currency`      | `Currency`         | `Currency`         | Required         | Price quote currency.                    |
+| `settlement_currency` | `Currency`         | `Currency`         | Required         | Currency used to settle PnL and fees.    |
+| `is_inverse`          | `bool`             | `bool`             | Required         | True when sizing/costing is inverse.     |
+| `price_precision`     | `u8`               | `int`              | Required         | Decimal places allowed for prices.       |
+| `size_precision`      | `u8`               | `int`              | Required         | Decimal places allowed for order sizes.  |
+| `price_increment`     | `Price`            | `Price`            | Required         | Smallest valid price step.               |
+| `size_increment`      | `Quantity`         | `Quantity`         | Required         | Smallest valid size step.                |
+| `ts_event`            | `UnixNanos`        | `int`              | Required         | Event timestamp in nanoseconds.          |
+| `ts_init`             | `UnixNanos`        | `int`              | Required         | Initialization timestamp in nanoseconds. |
+| `multiplier`          | `Quantity`         | `Quantity`         | `1`              | Contract multiplier.                     |
+| `lot_size`            | `Quantity`         | `Quantity`         | `1`              | Rounded lot or board size.               |
+| `max_quantity`        | `Option<Quantity>` | `Quantity \| None` | `None`           | Maximum order quantity.                  |
+| `min_quantity`        | `Option<Quantity>` | `Quantity \| None` | `None`           | Minimum order quantity.                  |
+| `max_notional`        | `Option<Money>`    | `Money \| None`    | `None`           | Maximum order notional value.            |
+| `min_notional`        | `Option<Money>`    | `Money \| None`    | `None`           | Minimum order notional value.            |
+| `max_price`           | `Option<Price>`    | `Price \| None`    | `None`           | Maximum valid quote or order price.      |
+| `min_price`           | `Option<Price>`    | `Price \| None`    | `None`           | Minimum valid quote or order price.      |
+| `margin_init`         | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Initial margin rate.                     |
+| `margin_maint`        | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maintenance margin rate.                 |
+| `maker_fee`           | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Maker fee rate. Negative values rebate.  |
+| `taker_fee`           | `Option<Decimal>`  | `Decimal \| None`  | `0`              | Taker fee rate. Negative values rebate.  |
+| `tick_scheme`         | `Option<Ustr>`     | `str \| None`      | `None`           | Registered variable tick scheme name.    |
+| `info`                | `Option<Params>`   | `dict \| None`     | `None`           | Adapter metadata.                        |
 
 *Note: Python constructors use `instrument_id`; Rust stores the same value as `id`.*
 
@@ -96,14 +96,16 @@ let instrument = InstrumentAny::CryptoPerpetual(ethusdt_perp);
 ```python tab="Python"
 from decimal import Decimal
 
-from nautilus_trader.model.currencies import ETH
-from nautilus_trader.model.currencies import USDT
-from nautilus_trader.model.identifiers import InstrumentId
-from nautilus_trader.model.identifiers import Symbol
-from nautilus_trader.model.instruments import CryptoPerpetual
-from nautilus_trader.model.objects import Money
-from nautilus_trader.model.objects import Price
-from nautilus_trader.model.objects import Quantity
+from nautilus_trader.model import CryptoPerpetual
+from nautilus_trader.model import Currency
+from nautilus_trader.model import InstrumentId
+from nautilus_trader.model import Money
+from nautilus_trader.model import Price
+from nautilus_trader.model import Quantity
+from nautilus_trader.model import Symbol
+
+ETH = Currency.from_str("ETH")
+USDT = Currency.from_str("USDT")
 
 ethusdt_perp = CryptoPerpetual(
     instrument_id=InstrumentId.from_str("ETHUSDT-PERP.BINANCE"),
@@ -120,7 +122,7 @@ ethusdt_perp = CryptoPerpetual(
     ts_init=0,
     max_quantity=Quantity.from_str("10000.000"),
     min_quantity=Quantity.from_str("0.001"),
-    min_notional=Money.from_str("10.00 USDT"),
+    min_notional=Money(10.00, USDT),
     max_price=Price.from_str("15000.00"),
     min_price=Price.from_str("1.00"),
     margin_init=Decimal("1.0"),
@@ -145,6 +147,6 @@ Representative adapters that create or consume `CryptoPerpetual` instruments inc
 
 ## Related guides
 
-- [Data](../data.md) covers mark prices, index prices, and funding rate updates.
+- [Data](../data/) covers mark prices, index prices, and funding rate updates.
 - [Options](../options.md) covers option-specific instrument types.
 - [Execution](../execution.md) explains precision and notional checks before orders reach a venue.
