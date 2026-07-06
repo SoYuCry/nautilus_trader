@@ -4,11 +4,9 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
-from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
 from polymarket.adapters.utils import as_utc_datetime
 
 
@@ -16,87 +14,6 @@ def test_as_utc_datetime_parses_polymarket_epoch_millisecond_strings() -> None:
     parsed = as_utc_datetime("1782440717084")
 
     assert parsed.isoformat().replace("+00:00", "Z") == "2026-06-26T02:25:17.084000Z"
-
-
-def test_pmxt_unknown_event_type_fails_loudly(tmp_path: Path) -> None:
-    parquet_path = tmp_path / "unknown_event.parquet"
-    pd.DataFrame(
-        [
-            {
-                "timestamp_received": pd.Timestamp("2026-01-01T00:00:00Z"),
-                "timestamp": pd.Timestamp("2026-01-01T00:00:00Z"),
-                "market": "m1",
-                "event_type": "unexpected_event",
-                "asset_id": "yes",
-            },
-        ],
-    ).to_parquet(parquet_path, index=False)
-
-    with pytest.raises(ValueError, match="unsupported PMXT event_type"):
-        PMXTParquetV1Adapter(repo_root=Path.cwd()).load({"input": {"parquet_path": str(parquet_path)}})
-
-
-def test_pmxt_unknown_prebook_event_type_is_not_hidden_by_drop_until_first_book(tmp_path: Path) -> None:
-    parquet_path = tmp_path / "unknown_prebook_then_book.parquet"
-    pd.DataFrame(
-        [
-            {
-                "timestamp_received": pd.Timestamp("2026-01-01T00:00:00Z"),
-                "timestamp": pd.Timestamp("2026-01-01T00:00:00Z"),
-                "market": "m1",
-                "event_type": "unexpected_event",
-                "asset_id": "yes",
-            },
-            {
-                "timestamp_received": pd.Timestamp("2026-01-01T00:00:01Z"),
-                "timestamp": pd.Timestamp("2026-01-01T00:00:01Z"),
-                "market": "m1",
-                "event_type": "book",
-                "asset_id": "yes",
-                "bids": '[["0.40", "10"]]',
-                "asks": '[["0.60", "10"]]',
-            },
-        ],
-    ).to_parquet(parquet_path, index=False)
-
-    with pytest.raises(ValueError, match="unsupported PMXT event_type"):
-        PMXTParquetV1Adapter(repo_root=Path.cwd()).load(
-            {"input": {"parquet_path": str(parquet_path), "drop_until_first_book": True}},
-        )
-
-
-def test_pmxt_replay_order_is_explicit(tmp_path: Path) -> None:
-    parquet_path = tmp_path / "ordering.parquet"
-    pd.DataFrame(
-        [
-            {
-                "timestamp_received": pd.Timestamp("2026-01-01T00:00:00Z"),
-                "timestamp": pd.Timestamp("2026-01-01T00:00:02Z"),
-                "market": "m1",
-                "event_type": "book",
-                "asset_id": "yes",
-                "bids": '[["0.50", "10"]]',
-                "asks": '[["0.60", "10"]]',
-            },
-            {
-                "timestamp_received": pd.Timestamp("2026-01-01T00:00:01Z"),
-                "timestamp": pd.Timestamp("2026-01-01T00:00:01Z"),
-                "market": "m1",
-                "event_type": "book",
-                "asset_id": "yes",
-                "bids": '[["0.55", "10"]]',
-                "asks": '[["0.65", "10"]]',
-            },
-        ],
-    ).to_parquet(parquet_path, index=False)
-    adapter = PMXTParquetV1Adapter(repo_root=Path.cwd())
-
-    received = adapter.load({"input": {"parquet_path": str(parquet_path), "replay_order": "received_time"}})
-    source = adapter.load({"input": {"parquet_path": str(parquet_path), "replay_order": "source_time"}})
-
-    assert received.steps[0].updates[0].best_bid is None
-    assert received.steps[0].updates[0].bids[0].price == Decimal("0.50")
-    assert source.steps[0].updates[0].bids[0].price == Decimal("0.55")
 
 
 def test_live_ws_unknown_event_type_fails_loudly(tmp_path: Path) -> None:

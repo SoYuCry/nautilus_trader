@@ -19,7 +19,8 @@ from nautilus_trader.model.enums import TimeInForce
 from nautilus_trader.model.events import OrderFilled
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.instruments import Instrument
-from nautilus_trader.trading.strategy import Strategy
+
+from polymarket.strategy import PolymarketStrategyBase
 
 
 class TakeBestAskExitAfterConfig(StrategyConfig, frozen=True):
@@ -28,7 +29,7 @@ class TakeBestAskExitAfterConfig(StrategyConfig, frozen=True):
     exit_after_seconds: int
 
 
-class TakeBestAskExitAfter(Strategy):
+class TakeBestAskExitAfter(PolymarketStrategyBase):
     """Buy once at market, then sell once after ``exit_after_seconds``."""
 
     def __init__(

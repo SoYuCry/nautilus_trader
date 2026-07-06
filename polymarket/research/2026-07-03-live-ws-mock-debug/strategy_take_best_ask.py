@@ -17,7 +17,8 @@ from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import TimeInForce
 from nautilus_trader.model.identifiers import InstrumentId
 from nautilus_trader.model.instruments import Instrument
-from nautilus_trader.trading.strategy import Strategy
+
+from polymarket.strategy import PolymarketStrategyBase
 
 
 class TakeBestAskOnceConfig(StrategyConfig, frozen=True):
@@ -27,7 +28,7 @@ class TakeBestAskOnceConfig(StrategyConfig, frozen=True):
     quantity: Decimal
 
 
-class TakeBestAskOnce(Strategy):
+class TakeBestAskOnce(PolymarketStrategyBase):
     """Submit one market BUY once the selected Polymarket book has an ask."""
 
     def __init__(self, instrument_id: str, quantity: str = "1") -> None:

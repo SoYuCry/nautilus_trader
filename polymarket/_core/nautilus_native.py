@@ -13,7 +13,6 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Literal, Mapping
 
-from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
 from nautilus_trader.adapters.polymarket.common.enums import PolymarketOrderSide
 from nautilus_trader.adapters.polymarket.common.parsing import determine_trade_id
 from nautilus_trader.adapters.polymarket.common.symbol import get_polymarket_condition_id
@@ -42,6 +41,7 @@ from polymarket._core.models import L2ReplayStepV1
 from polymarket._core.models import L2UpdateV1
 from polymarket._core.models import MarketMetadataV1
 from polymarket._core.models import PolymarketL2DatasetV1
+from polymarket._core.tick_size import resolve_effective_tick_size
 
 
 NativePolymarketData = OrderBookDeltas | TradeTick | InstrumentClose
@@ -106,13 +106,14 @@ def load_binary_option_from_config(
     *,
     dataset: PolymarketL2DatasetV1,
     selected_asset_id: str | None = None,
+    config_base_dir: Path | None = None,
 ) -> BinaryOption:
     """Build a Nautilus ``BinaryOption`` from explicit config or dataset IDs."""
 
     if config.get("dict_path") is not None:
         path = Path(str(config["dict_path"]))
         if not path.is_absolute():
-            path = Path.cwd() / path
+            path = (config_base_dir or Path.cwd()) / path
         import json
 
         instrument = BinaryOption.from_dict(json.loads(path.read_text(encoding="utf-8")))
@@ -921,21 +922,17 @@ def install_effective_tick_size_order_guard(
     precision, but Polymarket's effective minimum tick can be coarser earlier in
     the market life.  This guard rejects strategy order prices that would have
     been illegal at the strategy-visible clock time.
+
+    The guard is deliberately installed on the strategy instance, not Nautilus
+    core classes, so the contract is local to Polymarket research runs.  The
+    patched methods are ``submit_order``, ``submit_order_list``, and
+    ``modify_order``; regression tests cover all three paths.
     """
 
     original_submit_order = strategy.submit_order
     original_submit_order_list = strategy.submit_order_list
     original_modify_order = strategy.modify_order
     ordered_changes = tuple(sorted(changes, key=lambda item: item.effective_from_ts_init))
-
-    def tick_at(ts_now: int) -> Decimal:
-        tick = initial_tick_size
-        for change in ordered_changes:
-            if ts_now >= change.effective_from_ts_init:
-                tick = change.new_tick_size
-            else:
-                break
-        return tick
 
     def validate_order(order: Any) -> None:
         validate_prices(
@@ -948,7 +945,11 @@ def install_effective_tick_size_order_guard(
 
     def validate_prices(prices: tuple[Any, ...], *, asset_id: str) -> None:
         ts_now = int(strategy.clock.timestamp_ns())
-        effective_tick = tick_at(ts_now)
+        effective_tick = resolve_effective_tick_size(
+            initial_tick_size=initial_tick_size,
+            changes=ordered_changes,
+            ts_ns=ts_now,
+        )
         for price in prices:
             if price is None:
                 continue

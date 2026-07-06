@@ -39,8 +39,6 @@ from nautilus_trader.trading.strategy import Strategy
 
 from polymarket.adapters.live_event_bundle_v1 import LiveEventBundleV1Adapter
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
-from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
-from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
 from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
@@ -48,12 +46,11 @@ from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus
 from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
 from polymarket._core.nautilus_native import load_binary_option_from_config
+from polymarket.strategy import PolymarketStrategyBase
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTERS = {
-    PMXTParquetV1Adapter.adapter_name: PMXTParquetV1Adapter,
-    PMXTEventV1Adapter.adapter_name: PMXTEventV1Adapter,
     LiveWsV1Adapter.adapter_name: LiveWsV1Adapter,
     LiveEventBundleV1Adapter.adapter_name: LiveEventBundleV1Adapter,
 }
@@ -149,6 +146,54 @@ def load_native_strategy(config_path: Path, strategy_config: Mapping[str, Any]) 
         "class": str(class_name),
         "params_resolved": params,
     }
+
+
+def configure_polymarket_strategy_timeline(strategy: Strategy, conversion: Any) -> dict[str, Any]:
+    """Inject Polymarket effective tick timeline into compatible strategies."""
+
+    if not isinstance(strategy, PolymarketStrategyBase):
+        return {
+            "enabled": False,
+            "reason": "strategy does not subclass PolymarketStrategyBase",
+        }
+    strategy.set_polymarket_tick_timeline(
+        initial_tick_size=conversion.initial_tick_size,
+        changes=conversion.effective_tick_size_changes,
+    )
+    return {
+        "enabled": True,
+        "initial_tick_size": str(conversion.initial_tick_size),
+        "changes": [
+            {
+                "sequence": change.sequence,
+                "effective_from_ts_init": change.effective_from_ts_init,
+                "old_tick_size": str(change.old_tick_size),
+                "new_tick_size": str(change.new_tick_size),
+            }
+            for change in conversion.effective_tick_size_changes
+        ],
+    }
+
+
+def collect_polymarket_strategy_rounding(strategy: Strategy | None) -> dict[str, Any]:
+    """Return strategy-level Polymarket price rounding audit data, if present."""
+
+    if strategy is None or not isinstance(strategy, PolymarketStrategyBase):
+        return {"enabled": False, "count": 0, "events": []}
+    events = strategy.polymarket_price_rounding_events
+    event_rows = [
+        {
+            "ts_ns": event.ts_ns,
+            "original_price": str(event.original_price),
+            "rounded_price": str(event.rounded_price),
+            "tick_size": str(event.tick_size),
+            "side": event.side,
+            "intent": event.intent,
+            "direction": event.direction,
+        }
+        for event in events
+    ]
+    return {"enabled": True, "count": len(event_rows), "events": event_rows}
 
 
 def build_engine(
@@ -380,6 +425,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         config.get("instrument") or {},
         dataset=dataset,
         selected_asset_id=selected_asset_id,
+        config_base_dir=config_path.parent,
     )
     conversion = convert_dataset_to_nautilus(
         dataset,
@@ -399,6 +445,10 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         order_book_count, trade_count, instrument_close_count = add_native_data(engine, conversion.data)
         strategy, strategy_provenance = load_native_strategy(config_path, config.get("strategy") or {})
         if strategy is not None:
+            strategy_provenance["polymarket_strategy_base_tick_timeline"] = configure_polymarket_strategy_timeline(
+                strategy,
+                conversion,
+            )
             strategy_provenance["effective_tick_size_order_guard"] = install_effective_tick_size_order_guard(
                 strategy,
                 initial_tick_size=conversion.initial_tick_size,
@@ -406,6 +456,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             )
             engine.add_strategy(strategy)
         engine.run()
+        strategy_provenance["polymarket_price_rounding"] = collect_polymarket_strategy_rounding(strategy)
 
         settlement_dict = _settlement_to_dict(conversion)
         result = NativeBacktestResultV1(

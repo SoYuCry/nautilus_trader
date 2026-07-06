@@ -98,6 +98,53 @@ def write_ndjson_with_tick_change(path: Path) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
+def write_ndjson_with_post_tick_change_liquidity(path: Path) -> None:
+    rows = [
+        {
+            "local_msg_index": 1,
+            "recv_wall_time_utc": "2026-06-26T02:25:28.635Z",
+            "raw_json": {
+                "event_type": "book",
+                "market": "condition",
+                "asset_id": "yes",
+                "timestamp": "2026-06-26T02:25:28.600Z",
+                "bids": [["0.40", "100"]],
+                "asks": [["0.60", "100"]],
+            },
+        },
+        {
+            "local_msg_index": 2,
+            "recv_wall_time_utc": "2026-06-26T02:25:29.000Z",
+            "raw_json": {
+                "event_type": "tick_size_change",
+                "market": "condition",
+                "asset_id": "yes",
+                "timestamp": "2026-06-26T02:25:28.900Z",
+                "old_tick_size": "0.01",
+                "new_tick_size": "0.001",
+            },
+        },
+        {
+            "local_msg_index": 3,
+            "recv_wall_time_utc": "2026-06-26T02:25:29.500Z",
+            "raw_json": {
+                "event_type": "price_change",
+                "market": "condition",
+                "timestamp": "2026-06-26T02:25:29.400Z",
+                "price_changes": [
+                    {
+                        "asset_id": "yes",
+                        "side": "SELL",
+                        "price": "0.601",
+                        "size": "50",
+                    },
+                ],
+            },
+        },
+    ]
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+
 def write_ndjson_terminal_yes(path: Path) -> None:
     rows = [
         {
@@ -428,6 +475,217 @@ def test_runner_rejects_strategy_limit_price_outside_effective_tick(tmp_path: Pa
 
     with pytest.raises(ValueError, match=r"price violates effective tick size.*0\.501.*0\.01"):
         run_from_config(config_path)
+
+
+def test_runner_allows_strategy_base_rounded_limit_price(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    write_ndjson(ndjson_path)
+    strategy_path = tmp_path / "strategy_rounded_tick.py"
+    strategy_path.write_text(
+        textwrap.dedent(
+            """
+            from __future__ import annotations
+
+            from decimal import Decimal
+
+            from nautilus_trader.config import StrategyConfig
+            from nautilus_trader.model.data import OrderBookDeltas
+            from nautilus_trader.model.enums import BookType
+            from nautilus_trader.model.enums import OrderSide
+            from nautilus_trader.model.enums import TimeInForce
+            from nautilus_trader.model.identifiers import InstrumentId
+            from nautilus_trader.model.instruments import Instrument
+
+            from polymarket.strategy import PolymarketStrategyBase
+
+
+            class RoundedTickLimitConfig(StrategyConfig, frozen=True):
+                instrument_id: InstrumentId
+
+
+            class RoundedTickLimit(PolymarketStrategyBase):
+                def __init__(self, instrument_id: str) -> None:
+                    super().__init__(RoundedTickLimitConfig(instrument_id=InstrumentId.from_str(instrument_id)))
+                    self.instrument: Instrument | None = None
+                    self.submitted = False
+
+                def on_start(self) -> None:
+                    self.instrument = self.cache.instrument(self.config.instrument_id)
+                    self.subscribe_order_book_deltas(self.config.instrument_id, BookType.L2_MBP)
+
+                def on_order_book_deltas(self, deltas: OrderBookDeltas) -> None:
+                    if self.submitted or self.instrument is None:
+                        return
+                    rounded_price = self.make_polymarket_price(
+                        Decimal("0.601"),
+                        side=OrderSide.BUY,
+                        intent="aggressive",
+                    )
+                    order = self.order_factory.limit(
+                        instrument_id=self.instrument.id,
+                        order_side=OrderSide.BUY,
+                        quantity=self.instrument.make_qty(Decimal("1")),
+                        price=rounded_price,
+                        time_in_force=TimeInForce.GTC,
+                    )
+                    self.submitted = True
+                    self.submit_order(order)
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: rounded_effective_tick
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            strategy:
+              enabled: true
+              path: {strategy_path.as_posix()}
+              class: RoundedTickLimit
+              params:
+                instrument_id: "condition-yes.POLYMARKET"
+            engine:
+              trade_execution: true
+              liquidity_consumption: false
+              queue_position: false
+              bypass_logging: true
+              run_analysis: false
+            runtime:
+              run_id: rounded-effective-tick
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    summary = run_from_config(config_path)
+    resolved = json.loads(Path(summary["outputs"]["resolved_config"]).read_text(encoding="utf-8"))
+
+    assert resolved["strategy"]["polymarket_strategy_base_tick_timeline"]["enabled"] is True
+    assert resolved["strategy"]["effective_tick_size_order_guard"]["enabled"] is True
+    rounding = resolved["strategy"]["polymarket_price_rounding"]
+    assert rounding["enabled"] is True
+    assert rounding["count"] == 1
+    assert rounding["events"][0]["original_price"] == "0.601"
+    assert rounding["events"][0]["rounded_price"] == "0.61"
+    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
+    assert "BUY" in fills_csv
+    assert "0.6" in fills_csv
+
+
+def test_runner_strategy_base_uses_post_tick_change_precision(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live_post_tick_change.ndjson"
+    write_ndjson_with_post_tick_change_liquidity(ndjson_path)
+    strategy_path = tmp_path / "strategy_post_tick.py"
+    strategy_path.write_text(
+        textwrap.dedent(
+            """
+            from __future__ import annotations
+
+            from decimal import Decimal
+
+            from nautilus_trader.config import StrategyConfig
+            from nautilus_trader.model.data import OrderBookDeltas
+            from nautilus_trader.model.enums import BookType
+            from nautilus_trader.model.enums import OrderSide
+            from nautilus_trader.model.enums import TimeInForce
+            from nautilus_trader.model.identifiers import InstrumentId
+            from nautilus_trader.model.instruments import Instrument
+
+            from polymarket.strategy import PolymarketStrategyBase
+
+
+            class PostTickLimitConfig(StrategyConfig, frozen=True):
+                instrument_id: InstrumentId
+
+
+            class PostTickLimit(PolymarketStrategyBase):
+                def __init__(self, instrument_id: str) -> None:
+                    super().__init__(PostTickLimitConfig(instrument_id=InstrumentId.from_str(instrument_id)))
+                    self.instrument: Instrument | None = None
+                    self.delta_count = 0
+                    self.submitted = False
+
+                def on_start(self) -> None:
+                    self.instrument = self.cache.instrument(self.config.instrument_id)
+                    self.subscribe_order_book_deltas(self.config.instrument_id, BookType.L2_MBP)
+
+                def on_order_book_deltas(self, deltas: OrderBookDeltas) -> None:
+                    self.delta_count += 1
+                    if self.submitted or self.instrument is None or self.delta_count < 2:
+                        return
+                    rounded_price = self.make_polymarket_price(
+                        Decimal("0.6014"),
+                        side=OrderSide.BUY,
+                        intent="aggressive",
+                    )
+                    order = self.order_factory.limit(
+                        instrument_id=self.instrument.id,
+                        order_side=OrderSide.BUY,
+                        quantity=self.instrument.make_qty(Decimal("1")),
+                        price=rounded_price,
+                        time_in_force=TimeInForce.GTC,
+                    )
+                    self.submitted = True
+                    self.submit_order(order)
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: post_tick_change_strategy_base
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            strategy:
+              enabled: true
+              path: {strategy_path.as_posix()}
+              class: PostTickLimit
+              params:
+                instrument_id: "condition-yes.POLYMARKET"
+            engine:
+              trade_execution: true
+              liquidity_consumption: false
+              queue_position: false
+              bypass_logging: true
+              run_analysis: false
+            runtime:
+              run_id: post-tick-change-strategy-base
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    summary = run_from_config(config_path)
+    resolved = json.loads(Path(summary["outputs"]["resolved_config"]).read_text(encoding="utf-8"))
+
+    rounding = resolved["strategy"]["polymarket_price_rounding"]
+    assert rounding["enabled"] is True
+    assert rounding["count"] == 1
+    assert rounding["events"][0]["tick_size"] == "0.001"
+    assert rounding["events"][0]["original_price"] == "0.6014"
+    assert rounding["events"][0]["rounded_price"] == "0.602"
+    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
+    assert "BUY" in fills_csv
+    assert "0.601" in fills_csv
 
 
 def test_runner_settlement_metadata_closes_open_position_without_trade_tick(tmp_path: Path) -> None:

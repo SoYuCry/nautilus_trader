@@ -46,12 +46,13 @@ stable.
 
 These are current ingress paths, not equal long-term targets:
 
-- `pmxt_parquet_v1`: legacy/questionable.  PMXT parquet lacks raw WebSocket
-  message boundaries and source timestamps may invert.
-- `pmxt_event_v1`: legacy/questionable because it is derived from PMXT data.
 - `live_ws_v1`: preferred current path for local raw WebSocket captures.
 - `live_event_bundle_v1`: provisional data-team event bundle boundary.  The
   final IT feed should be coordinated against `DATA_CONTRACT_V1.md`.
+
+Historical PMXT shims were removed from the runnable entry point for this
+live-data-first pass.  PMXT parquet remains a research reference only because
+it lacks raw WebSocket message boundaries and source timestamps may invert.
 
 ## Data-health gate before backtest
 
@@ -104,13 +105,31 @@ substitute Polymarket source `timestamp` as receive time.
   trading tick starts at `0.01` and switches only when a `tick_size_change`
   event arrives.  The runner installs a strategy submit-time guard so orders are
   rejected if their price is illegal under the effective tick at the strategy
-  clock time.
+  clock time.  That guard is local to the strategy instance and covers
+  `submit_order`, `submit_order_list`, and `modify_order`; it does not patch
+  Nautilus core classes.
+- Strategy code may inherit `polymarket.strategy.PolymarketStrategyBase` to
+  explicitly project model prices onto the current effective Polymarket tick
+  before creating limit orders.  This does not replace Nautilus
+  `instrument.make_price`; Nautilus still handles static `0.001` price
+  expression, while the Polymarket base handles dynamic legality:
+  `passive BUY` rounds down, `passive SELL` rounds up, `aggressive BUY` rounds
+  up, `aggressive SELL` rounds down, `nearest` rounds symmetrically, and
+  `strict` rejects off-grid prices.  The runner guard remains a fail-fast
+  backstop for strategies that bypass the helper.  Order-price rounding events
+  created through `make_polymarket_price` are written into
+  `resolved_config.json` under `strategy.polymarket_price_rounding` for audit.
 - Settlement is reported as `official`, `inferred`, or `open`.  Official
   resolved metadata is converted into Nautilus `InstrumentClose` plus venue
   `settlement_prices`; inferred settlement is explicitly marked as a
   terminal-price guess; open mode leaves final positions unclosed.  Settlement
   is a system close event and is not represented as a market `TradeTick`.
-- Strategy code must subclass `nautilus_trader.trading.strategy.Strategy`.
+- Strategy code must subclass `nautilus_trader.trading.strategy.Strategy`;
+  `PolymarketStrategyBase` is just a Polymarket-specialized subclass of that
+  native Nautilus base.  In runner-managed backtests, the runner injects the
+  converted tick-size timeline before `engine.add_strategy`; the base class's
+  standalone `0.01` default is only a safe Polymarket v1 initial assumption for
+  isolated helper tests or manual construction.
 
 ## Validation gap
 

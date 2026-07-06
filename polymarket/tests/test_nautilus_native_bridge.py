@@ -281,6 +281,28 @@ def test_binary_option_rejects_coarse_dict_path_price_increment_when_tick_change
         )
 
 
+def test_binary_option_dict_path_can_be_resolved_against_config_base_dir(tmp_path: Path) -> None:
+    data = dataset([step(1, [book()])])
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+    config_dir = tmp_path / "experiment"
+    config_dir.mkdir()
+    dict_dir = config_dir / "instruments"
+    dict_dir.mkdir()
+    (dict_dir / "instrument.json").write_text(
+        json.dumps(BinaryOption.to_dict(instrument)),
+        encoding="utf-8",
+    )
+
+    loaded = load_binary_option_from_config(
+        {"dict_path": "instruments/instrument.json"},
+        dataset=data,
+        selected_asset_id="yes",
+        config_base_dir=config_dir,
+    )
+
+    assert loaded.id == instrument.id
+
+
 def test_bridge_rejects_subpenny_price_before_tick_size_change() -> None:
     data = dataset(
         [
@@ -538,6 +560,60 @@ def test_effective_tick_guard_rejects_invalid_modify_order_price_before_tick_cha
     strategy.clock.ts_now = datetime_to_nanos(ts(3))
     strategy.modify_order(DummyOrder(), price=Decimal("0.501"))
     assert strategy.modified == [Decimal("0.501")]
+
+
+def test_effective_tick_guard_rejects_invalid_submit_order_list_price_before_tick_change() -> None:
+    class DummyClock:
+        def __init__(self, ts_now: int) -> None:
+            self.ts_now = ts_now
+
+        def timestamp_ns(self) -> int:
+            return self.ts_now
+
+    class DummyOrder:
+        instrument_id = "condition-yes.POLYMARKET"
+        price = Decimal("0.501")
+        trigger_price = None
+
+    class DummyOrderList:
+        orders = (DummyOrder(),)
+
+    class DummyStrategy:
+        def __init__(self) -> None:
+            self.clock = DummyClock(datetime_to_nanos(ts(1)))
+            self.submitted_order_lists: list[DummyOrderList] = []
+
+        def submit_order(self, order) -> None:
+            return None
+
+        def submit_order_list(self, order_list) -> None:
+            self.submitted_order_lists.append(order_list)
+
+        def modify_order(self, order, quantity=None, price=None, trigger_price=None, client_id=None, params=None) -> None:
+            return None
+
+    strategy = DummyStrategy()
+    guard_info = install_effective_tick_size_order_guard(
+        strategy,
+        initial_tick_size=Decimal("0.01"),
+        changes=(
+            EffectiveTickSizeChangeV1(
+                sequence=2,
+                effective_from_ts_init=datetime_to_nanos(ts(2)),
+                old_tick_size=Decimal("0.01"),
+                new_tick_size=Decimal("0.001"),
+            ),
+        ),
+    )
+
+    assert "submit_order_list" in guard_info["guarded_methods"]
+    with pytest.raises(ValueError, match=r"price violates effective tick size.*0\.501.*0\.01"):
+        strategy.submit_order_list(DummyOrderList())
+
+    strategy.clock.ts_now = datetime_to_nanos(ts(3))
+    order_list = DummyOrderList()
+    strategy.submit_order_list(order_list)
+    assert strategy.submitted_order_lists == [order_list]
 
 
 def test_bridge_converts_resolution_metadata_to_instrument_close_not_trade_tick() -> None:
