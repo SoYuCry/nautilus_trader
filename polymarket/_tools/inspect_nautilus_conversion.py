@@ -3,7 +3,7 @@
 This is a debug helper for the critical projection boundary:
 
     PolymarketL2DatasetV1
-        -> OrderBookDeltas / TradeTick
+        -> OrderBookDeltas / TradeTick / InstrumentClose
 
 It intentionally does not run BacktestEngine or strategy code.
 """
@@ -20,6 +20,7 @@ from typing import Any
 import yaml
 
 from nautilus_trader.model.data import OrderBookDeltas
+from nautilus_trader.model.data import InstrumentClose
 from nautilus_trader.model.data import TradeTick
 from nautilus_trader.model.enums import AggressorSide
 from nautilus_trader.model.enums import BookAction
@@ -68,7 +69,7 @@ def main() -> None:
         dataset,
         instrument=instrument,
         selected_asset_id=selected_asset_id,
-        fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", True)),
+        fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
     )
 
     summary = {
@@ -90,6 +91,17 @@ def main() -> None:
             "data_count": len(conversion.data),
             "skipped_updates": list(conversion.skipped_updates),
             "tick_size_changes": [list(pair) for pair in conversion.tick_size_changes],
+            "initial_effective_tick_size": str(conversion.initial_tick_size),
+            "effective_tick_size_changes": [
+                {
+                    "sequence": change.sequence,
+                    "effective_from_ts_init": _ts_dict(change.effective_from_ts_init),
+                    "old_tick_size": str(change.old_tick_size),
+                    "new_tick_size": str(change.new_tick_size),
+                }
+                for change in conversion.effective_tick_size_changes
+            ],
+            "settlement": _settlement_to_dict(conversion.settlement),
             "items": [_native_item_to_dict(item) for item in conversion.data[: args.max_items]],
         },
     }
@@ -118,6 +130,15 @@ def _native_item_to_dict(item: Any) -> dict[str, Any]:
             "ts_event": _ts_dict(item.ts_event),
             "ts_init": _ts_dict(item.ts_init),
         }
+    if isinstance(item, InstrumentClose):
+        return {
+            "type": "InstrumentClose",
+            "instrument_id": str(item.instrument_id),
+            "close_price": str(item.close_price),
+            "close_type": str(item.close_type),
+            "ts_event": _ts_dict(item.ts_event),
+            "ts_init": _ts_dict(item.ts_init),
+        }
     return {"type": type(item).__name__, "repr": repr(item)}
 
 
@@ -125,9 +146,9 @@ def _delta_to_dict(delta: Any) -> dict[str, Any]:
     order = delta.order
     return {
         "action": _book_action_label(delta.action),
-        "side": _order_side_label(order.side),
-        "price": str(order.price),
-        "size": str(order.size),
+        "side": _order_side_label(order.side) if order is not None else None,
+        "price": str(order.price) if order is not None else None,
+        "size": str(order.size) if order is not None else None,
         "flags": _record_flags(delta.flags),
         "sequence": int(delta.sequence),
         "ts_event": _ts_dict(delta.ts_event),
@@ -186,6 +207,19 @@ def _repo_relative(path: Path) -> str:
         return path.resolve().relative_to(REPO_ROOT).as_posix()
     except ValueError:
         return path.as_posix()
+
+
+def _settlement_to_dict(settlement: Any | None) -> dict[str, Any] | None:
+    if settlement is None:
+        return None
+    return {
+        "condition_id": settlement.condition_id,
+        "token_id": settlement.token_id,
+        "resolution_time": _ts_dict(settlement.resolution_time_ns),
+        "payout": str(settlement.payout),
+        "source": settlement.source,
+        "status": settlement.status,
+    }
 
 
 if __name__ == "__main__":

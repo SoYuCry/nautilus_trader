@@ -22,12 +22,14 @@ from nautilus_trader.adapters.polymarket.common.symbol import get_polymarket_tok
 from nautilus_trader.core.datetime import dt_to_unix_nanos
 from nautilus_trader.model.currencies import pUSD
 from nautilus_trader.model.data import BookOrder
+from nautilus_trader.model.data import InstrumentClose
 from nautilus_trader.model.data import OrderBookDelta
 from nautilus_trader.model.data import OrderBookDeltas
 from nautilus_trader.model.data import TradeTick
 from nautilus_trader.model.enums import AggressorSide
 from nautilus_trader.model.enums import AssetClass
 from nautilus_trader.model.enums import BookAction
+from nautilus_trader.model.enums import InstrumentCloseType
 from nautilus_trader.model.enums import OrderSide
 from nautilus_trader.model.enums import RecordFlag
 from nautilus_trader.model.identifiers import InstrumentId
@@ -42,7 +44,29 @@ from polymarket._core.models import MarketMetadataV1
 from polymarket._core.models import PolymarketL2DatasetV1
 
 
-NativePolymarketData = OrderBookDeltas | TradeTick
+NativePolymarketData = OrderBookDeltas | TradeTick | InstrumentClose
+
+
+@dataclass(frozen=True, slots=True)
+class EffectiveTickSizeChangeV1:
+    """Effective Polymarket tick-size change for one selected outcome token."""
+
+    sequence: int
+    effective_from_ts_init: int
+    old_tick_size: Decimal
+    new_tick_size: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class SettlementMetadataV1:
+    """Resolved token payout mapped to Nautilus settlement-price inputs."""
+
+    condition_id: str
+    token_id: str
+    resolution_time_ns: int
+    payout: Decimal
+    source: str
+    status: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +77,9 @@ class NautilusConversionResultV1:
     data: tuple[NativePolymarketData, ...]
     skipped_updates: tuple[str, ...]
     tick_size_changes: tuple[tuple[str, str], ...]
+    initial_tick_size: Decimal
+    effective_tick_size_changes: tuple[EffectiveTickSizeChangeV1, ...]
+    settlement: SettlementMetadataV1 | None
 
 
 def datetime_to_nanos(value: datetime) -> int:
@@ -75,14 +102,34 @@ def load_binary_option_from_config(
             path = Path.cwd() / path
         import json
 
-        return BinaryOption.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        instrument = BinaryOption.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        _ensure_instrument_replay_precision(instrument, dataset=dataset)
+        return instrument
 
     first_update = _first_update(dataset, selected_asset_id=selected_asset_id)
     condition_id = str(config.get("condition_id") or first_update.market)
     token_id = str(config.get("token_id") or selected_asset_id or first_update.asset_id)
     instrument_id = get_polymarket_instrument_id(condition_id, token_id)
     raw_symbol = Symbol(token_id)
-    price_increment = Price.from_str(str(config.get("price_increment", "0.01")))
+    finest_price_increment = _finest_price_increment(
+        dataset,
+        condition_id=condition_id,
+        token_id=token_id,
+    )
+    raw_price_increment = config.get("price_increment")
+    selected_price_increment = (
+        finest_price_increment
+        if raw_price_increment is None
+        else Decimal(str(raw_price_increment))
+    )
+    if selected_price_increment > finest_price_increment:
+        raise ValueError(
+            "instrument.price_increment is too coarse for Polymarket replay data: "
+            f"configured={selected_price_increment}, finest_required={finest_price_increment}. "
+            "Use the finest replay precision and rely on the effective tick-size guard "
+            "for strategy order legality.",
+        )
+    price_increment = Price.from_str(str(selected_price_increment))
     size_increment = Quantity.from_str(str(config.get("size_increment", "0.000001")))
     now_ns = datetime_to_nanos(datetime.now(tz=UTC))
     expiration = config.get("expiration")
@@ -121,6 +168,9 @@ def load_binary_option_from_config(
             "condition_id": condition_id,
             "token_id": token_id,
             "fee_source": fee_source,
+            "effective_initial_tick_size": str(
+                _initial_tick_size(dataset, condition_id=condition_id, token_id=token_id),
+            ),
             "source": "polymarket._core.nautilus_native.load_binary_option_from_config",
         },
     )
@@ -165,22 +215,82 @@ def _find_market_metadata(
     return None
 
 
+def _ensure_instrument_replay_precision(
+    instrument: BinaryOption,
+    *,
+    dataset: PolymarketL2DatasetV1,
+) -> None:
+    condition_id = get_polymarket_condition_id(instrument.id)
+    token_id = _token_id_from_instrument(instrument.id)
+    selected_price_increment = _decimal_from_price_like(instrument.price_increment)
+    finest_price_increment = _finest_price_increment(
+        dataset,
+        condition_id=condition_id,
+        token_id=token_id,
+    )
+    if selected_price_increment > finest_price_increment:
+        raise ValueError(
+            "instrument.price_increment is too coarse for Polymarket replay data: "
+            f"configured={selected_price_increment}, finest_required={finest_price_increment}. "
+            "Use the finest replay precision and rely on the effective tick-size guard "
+            "for strategy order legality.",
+        )
+
+
+def _initial_tick_size(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    condition_id: str,
+    token_id: str,
+) -> Decimal:
+    metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
+    if metadata is not None and metadata.minimum_tick_size is not None:
+        return metadata.minimum_tick_size
+    return Decimal("0.01")
+
+
+def _finest_price_increment(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    condition_id: str,
+    token_id: str,
+) -> Decimal:
+    increments = {_initial_tick_size(dataset, condition_id=condition_id, token_id=token_id)}
+    for step in dataset.steps:
+        for update in step.updates:
+            if update.market != condition_id or update.asset_id != token_id:
+                continue
+            if update.event_type != "tick_size_change":
+                continue
+            if update.old_tick_size is not None:
+                increments.add(update.old_tick_size)
+            if update.new_tick_size is not None:
+                increments.add(update.new_tick_size)
+    return min(increments)
+
+
 def convert_dataset_to_nautilus(
     dataset: PolymarketL2DatasetV1,
     *,
     instrument: BinaryOption,
     selected_asset_id: str | None = None,
-    fail_on_tick_size_change: bool = True,
+    fail_on_tick_size_change: bool = False,
 ) -> NautilusConversionResultV1:
     """Convert normalized Polymarket L2 data into Nautilus-native data objects."""
 
     data: list[NativePolymarketData] = []
     skipped: list[str] = []
     tick_size_changes: list[tuple[str, str]] = []
+    effective_tick_size_changes: list[EffectiveTickSizeChangeV1] = []
     selected_condition_id, selected_asset_id = _resolve_selection(
         dataset,
         instrument=instrument,
         selected_asset_id=selected_asset_id,
+    )
+    current_tick_size = _initial_tick_size(
+        dataset,
+        condition_id=selected_condition_id,
+        token_id=selected_asset_id,
     )
     last_ts_init: int | None = None
 
@@ -192,6 +302,22 @@ def convert_dataset_to_nautilus(
         last_ts_init = ts_init
         return ts_init
 
+    def append_book_updates(
+        step: L2ReplayStepV1,
+        book_updates: list[L2UpdateV1],
+    ) -> None:
+        if not book_updates:
+            return
+        deltas = _step_to_order_book_deltas(
+            step,
+            book_updates,
+            instrument=instrument,
+            ts_init=next_ts_init(step),
+        )
+        if deltas is not None:
+            data.append(deltas)
+        book_updates.clear()
+
     for step in dataset.steps:
         relevant = [
             update
@@ -201,21 +327,18 @@ def convert_dataset_to_nautilus(
         if not relevant:
             continue
 
-        book_updates = [
-            update for update in relevant if update.event_type in {"book", "price_change"}
-        ]
-        if book_updates:
-            deltas = _step_to_order_book_deltas(
-                step,
-                book_updates,
-                instrument=instrument,
-                ts_init=next_ts_init(step),
-            )
-            if deltas is not None:
-                data.append(deltas)
-
+        pending_book_updates: list[L2UpdateV1] = []
         for update in relevant:
-            if update.event_type == "trade":
+            if update.event_type in {"book", "price_change", "trade"}:
+                _validate_update_prices_on_effective_tick(
+                    step,
+                    update,
+                    effective_tick_size=current_tick_size,
+                )
+            if update.event_type in {"book", "price_change"}:
+                pending_book_updates.append(update)
+            elif update.event_type == "trade":
+                append_book_updates(step, pending_book_updates)
                 data.append(
                     _trade_to_tick(
                         step,
@@ -225,24 +348,78 @@ def convert_dataset_to_nautilus(
                     ),
                 )
             elif update.event_type == "tick_size_change":
+                append_book_updates(step, pending_book_updates)
+                if fail_on_tick_size_change:
+                    raise NotImplementedError(
+                        "tick_size_change replay support was disabled by "
+                        "replay.fail_on_tick_size_change=true",
+                    )
+                if update.old_tick_size is None or update.new_tick_size is None:
+                    raise ValueError(
+                        "tick_size_change update requires old_tick_size and new_tick_size "
+                        f"at sequence={step.sequence}, asset_id={update.asset_id!r}",
+                    )
                 old_tick = str(update.old_tick_size)
                 new_tick = str(update.new_tick_size)
                 tick_size_changes.append((old_tick, new_tick))
-                if fail_on_tick_size_change:
-                    raise NotImplementedError(
-                        "Nautilus-native historical replay for dynamic Polymarket "
-                        "tick_size_change needs an instrument epoch model; refusing "
-                        "to silently replay it with a future or stale tick size.",
+                if update.old_tick_size != current_tick_size:
+                    raise ValueError(
+                        "tick_size_change old_tick_size does not match current effective "
+                        f"tick size at sequence={step.sequence}, asset_id={update.asset_id!r}: "
+                        f"current={current_tick_size}, old_tick_size={update.old_tick_size}",
                     )
-                skipped.append(f"tick_size_change {old_tick}->{new_tick}")
+                effective_tick_size_changes.append(
+                    EffectiveTickSizeChangeV1(
+                        sequence=step.sequence,
+                        effective_from_ts_init=_next_monotonic_ts_init(
+                            _ts_event(step),
+                            last_ts_init,
+                        ),
+                        old_tick_size=update.old_tick_size,
+                        new_tick_size=update.new_tick_size,
+                    ),
+                )
+                current_tick_size = update.new_tick_size
+                skipped.append(f"tick_size_change {old_tick}->{new_tick} (timeline_applied)")
             elif update.event_type not in {"book", "price_change"}:
+                append_book_updates(step, pending_book_updates)
                 skipped.append(update.event_type)
+        append_book_updates(step, pending_book_updates)
+
+    settlement = _selected_settlement_metadata(
+        dataset,
+        condition_id=selected_condition_id,
+        token_id=selected_asset_id,
+    )
+    if settlement is not None:
+        if last_ts_init is not None and settlement.resolution_time_ns < last_ts_init:
+            raise ValueError(
+                "resolved Polymarket token settlement time is before the last replay "
+                "timestamp_received for the selected token: "
+                f"resolution_time_ns={settlement.resolution_time_ns}, last_replay_ts_init={last_ts_init}",
+            )
+        data.append(
+            InstrumentClose(
+                instrument_id=instrument.id,
+                close_price=instrument.make_price(float(settlement.payout)),
+                close_type=InstrumentCloseType.CONTRACT_EXPIRED,
+                ts_event=settlement.resolution_time_ns,
+                ts_init=_next_monotonic_ts_init(settlement.resolution_time_ns, last_ts_init),
+            ),
+        )
 
     return NautilusConversionResultV1(
         instrument=instrument,
         data=tuple(data),
         skipped_updates=tuple(skipped),
         tick_size_changes=tuple(tick_size_changes),
+        initial_tick_size=_initial_tick_size(
+            dataset,
+            condition_id=selected_condition_id,
+            token_id=selected_asset_id,
+        ),
+        effective_tick_size_changes=tuple(effective_tick_size_changes),
+        settlement=settlement,
     )
 
 
@@ -364,6 +541,49 @@ def _price_change_to_delta(
     )
 
 
+def _validate_update_prices_on_effective_tick(
+    step: L2ReplayStepV1,
+    update: L2UpdateV1,
+    *,
+    effective_tick_size: Decimal,
+) -> None:
+    prices: list[Decimal] = []
+    if update.price is not None:
+        prices.append(update.price)
+    prices.extend(level.price for level in update.bids)
+    prices.extend(level.price for level in update.asks)
+    for price in prices:
+        _validate_price_on_tick(
+            price,
+            tick_size=effective_tick_size,
+            sequence=step.sequence,
+            asset_id=update.asset_id,
+        )
+
+
+def _validate_price_on_tick(
+    price: Decimal,
+    *,
+    tick_size: Decimal,
+    sequence: int,
+    asset_id: str,
+) -> None:
+    if tick_size <= 0:
+        raise ValueError(f"effective tick size must be positive, got {tick_size}")
+    if price < 0 or price > 1:
+        raise ValueError(
+            f"Polymarket price must be in [0, 1] at sequence={sequence}, "
+            f"asset_id={asset_id!r}, price={price}",
+        )
+    quotient = price / tick_size
+    if quotient != quotient.to_integral_value():
+        raise ValueError(
+            "price violates effective tick size: "
+            f"sequence={sequence}, asset_id={asset_id!r}, price={price}, "
+            f"effective_tick_size={tick_size}",
+        )
+
+
 def _level_delta(
     step: L2ReplayStepV1,
     *,
@@ -435,6 +655,42 @@ def _ts_event(step: L2ReplayStepV1) -> int:
     return datetime_to_nanos(step.timestamp_received)
 
 
+def _next_monotonic_ts_init(candidate: int, previous: int | None) -> int:
+    if previous is not None and candidate <= previous:
+        return previous + 1
+    return candidate
+
+
+def _selected_settlement_metadata(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    condition_id: str,
+    token_id: str,
+) -> SettlementMetadataV1 | None:
+    metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
+    if metadata is None or metadata.token_payout is None:
+        return None
+    if metadata.resolution_time is None:
+        raise ValueError(
+            "resolved Polymarket token metadata requires resolution_time "
+            f"for condition_id={condition_id!r}, token_id={token_id!r}",
+        )
+    if metadata.token_payout < 0 or metadata.token_payout > 1:
+        raise ValueError(
+            "resolved Polymarket token payout must be in [0, 1]: "
+            f"condition_id={condition_id!r}, token_id={token_id!r}, "
+            f"payout={metadata.token_payout}",
+        )
+    return SettlementMetadataV1(
+        condition_id=condition_id,
+        token_id=token_id,
+        resolution_time_ns=datetime_to_nanos(metadata.resolution_time),
+        payout=metadata.token_payout,
+        source=metadata.resolution_source,
+        status=metadata.resolution_status,
+    )
+
+
 def _first_update(
     dataset: PolymarketL2DatasetV1,
     *,
@@ -475,4 +731,112 @@ def _resolve_selection(
 
 def _token_id_from_instrument(instrument_id: InstrumentId) -> str:
     return get_polymarket_token_id(instrument_id)
+
+
+def install_effective_tick_size_order_guard(
+    strategy: Any,
+    *,
+    initial_tick_size: Decimal,
+    changes: tuple[EffectiveTickSizeChangeV1, ...],
+) -> dict[str, Any]:
+    """Install a Polymarket v1 submit-time price guard on one strategy instance.
+
+    The Nautilus instrument uses the finest price increment required for replay
+    precision, but Polymarket's effective minimum tick can be coarser earlier in
+    the market life.  This guard rejects strategy order prices that would have
+    been illegal at the strategy-visible clock time.
+    """
+
+    original_submit_order = strategy.submit_order
+    original_submit_order_list = strategy.submit_order_list
+    original_modify_order = strategy.modify_order
+    ordered_changes = tuple(sorted(changes, key=lambda item: item.effective_from_ts_init))
+
+    def tick_at(ts_now: int) -> Decimal:
+        tick = initial_tick_size
+        for change in ordered_changes:
+            if ts_now >= change.effective_from_ts_init:
+                tick = change.new_tick_size
+            else:
+                break
+        return tick
+
+    def validate_order(order: Any) -> None:
+        validate_prices(
+            (
+                getattr(order, "price", None),
+                getattr(order, "trigger_price", None),
+            ),
+            asset_id=str(getattr(order, "instrument_id", "")),
+        )
+
+    def validate_prices(prices: tuple[Any, ...], *, asset_id: str) -> None:
+        ts_now = int(strategy.clock.timestamp_ns())
+        effective_tick = tick_at(ts_now)
+        for price in prices:
+            if price is None:
+                continue
+            _validate_price_on_tick(
+                _decimal_from_price_like(price),
+                tick_size=effective_tick,
+                sequence=-1,
+                asset_id=asset_id,
+            )
+
+    def guarded_submit_order(order: Any, *args: Any, **kwargs: Any) -> Any:
+        validate_order(order)
+        return original_submit_order(order, *args, **kwargs)
+
+    def guarded_submit_order_list(order_list: Any, *args: Any, **kwargs: Any) -> Any:
+        for order in _iter_order_list_items(order_list):
+            validate_order(order)
+        return original_submit_order_list(order_list, *args, **kwargs)
+
+    def guarded_modify_order(order: Any, *args: Any, **kwargs: Any) -> Any:
+        price = kwargs.get("price")
+        trigger_price = kwargs.get("trigger_price")
+        if len(args) >= 2 and price is None:
+            price = args[1]
+        if len(args) >= 3 and trigger_price is None:
+            trigger_price = args[2]
+        validate_prices(
+            (price, trigger_price),
+            asset_id=str(getattr(order, "instrument_id", "")),
+        )
+        return original_modify_order(order, *args, **kwargs)
+
+    strategy.submit_order = guarded_submit_order
+    strategy.submit_order_list = guarded_submit_order_list
+    strategy.modify_order = guarded_modify_order
+    return {
+        "enabled": True,
+        "guarded_methods": ["submit_order", "submit_order_list", "modify_order"],
+        "initial_tick_size": str(initial_tick_size),
+        "changes": [
+            {
+                "sequence": change.sequence,
+                "effective_from_ts_init": change.effective_from_ts_init,
+                "old_tick_size": str(change.old_tick_size),
+                "new_tick_size": str(change.new_tick_size),
+            }
+            for change in ordered_changes
+        ],
+    }
+
+
+def _iter_order_list_items(order_list: Any) -> tuple[Any, ...]:
+    orders = getattr(order_list, "orders", None)
+    if orders is not None:
+        return tuple(orders)
+    try:
+        return tuple(order_list)
+    except TypeError:
+        return (order_list,)
+
+
+def _decimal_from_price_like(value: Any) -> Decimal:
+    if hasattr(value, "as_decimal"):
+        return Decimal(str(value.as_decimal()))
+    text = str(value).split()[0]
+    return Decimal(text)
 

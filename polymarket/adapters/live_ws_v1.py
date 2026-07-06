@@ -119,14 +119,36 @@ class LiveWsV1Adapter:
         if not isinstance(raw_markets, list):
             raise ValueError("live_ws_v1 market_metadata must be an object, a list, or {'markets': [...]}")
 
-        return tuple(self._market_metadata_item(item) for item in raw_markets), metadata_files
+        metadata_items: list[MarketMetadataV1] = []
+        for item in raw_markets:
+            metadata_items.extend(self._market_metadata_items(item))
+        return tuple(metadata_items), metadata_files
 
     @staticmethod
-    def _market_metadata_item(item: Mapping[str, Any]) -> MarketMetadataV1:
+    def _market_metadata_items(item: Mapping[str, Any]) -> tuple[MarketMetadataV1, ...]:
         condition_id = item.get("condition_id") or item.get("market") or item.get("conditionId")
         if condition_id is None:
             raise ValueError("market_metadata item requires condition_id/market")
-        token_id = item.get("token_id")
+        tokens = item.get("tokens")
+        if isinstance(tokens, list) and tokens:
+            return tuple(
+                LiveWsV1Adapter._market_metadata_item(item, token=token)
+                for token in tokens
+                if isinstance(token, Mapping)
+            )
+        return (LiveWsV1Adapter._market_metadata_item(item, token=None),)
+
+    @staticmethod
+    def _market_metadata_item(
+        item: Mapping[str, Any],
+        *,
+        token: Mapping[str, Any] | None,
+    ) -> MarketMetadataV1:
+        condition_id = item.get("condition_id") or item.get("market") or item.get("conditionId")
+        if condition_id is None:
+            raise ValueError("market_metadata item requires condition_id/market")
+        token_data = token or {}
+        token_id = token_data.get("token_id") or token_data.get("asset_id") or item.get("token_id")
         if token_id is None:
             token_id = item.get("asset_id")
         fee_schedule = item.get("feeSchedule") or item.get("fee_schedule") or {}
@@ -140,13 +162,42 @@ class LiveWsV1Adapter:
         if raw_taker_fee is None:
             raw_taker_fee = fee_schedule.get("rate")
         raw_maker_fee = item.get("maker_fee", "0")
+        raw_min_tick = (
+            item.get("minimum_tick_size")
+            or item.get("minimumTickSize")
+            or item.get("min_tick_size")
+            or item.get("tick_size")
+        )
+        resolution_time = (
+            item.get("resolution_time")
+            or item.get("resolutionTime")
+            or item.get("closedTime")
+            or item.get("closed_time")
+        )
+        raw_payout = token_data.get("payout")
+        winner = token_data.get("winner")
+        if raw_payout is None and winner is not None:
+            raw_payout = "1" if bool(winner) else "0"
+        resolution_status = (
+            item.get("resolution_status")
+            or item.get("umaResolutionStatus")
+            or ("resolved" if item.get("closed") is True and raw_payout is not None else None)
+        )
         return MarketMetadataV1(
             condition_id=str(condition_id),
             token_id=str(token_id) if token_id is not None else None,
+            outcome=str(token_data.get("outcome")) if token_data.get("outcome") is not None else None,
             maker_fee=as_decimal(raw_maker_fee) or Decimal("0"),
             taker_fee=as_decimal(raw_taker_fee) if raw_taker_fee is not None else None,
             fee_source=str(item.get("fee_source") or "market_metadata"),
             category=str(item["category"]) if item.get("category") is not None else None,
+            minimum_tick_size=as_decimal(raw_min_tick) if raw_min_tick is not None else None,
+            tick_size_source=str(item.get("tick_size_source") or "market_metadata"),
+            resolution_status=str(resolution_status) if resolution_status is not None else None,
+            resolution_time=as_utc_datetime(resolution_time) if resolution_time is not None else None,
+            token_payout=as_decimal(raw_payout) if raw_payout is not None else None,
+            winner=bool(winner) if winner is not None else None,
+            resolution_source=str(item.get("resolution_source") or "market_metadata"),
         )
 
     @staticmethod

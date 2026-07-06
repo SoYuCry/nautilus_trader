@@ -49,6 +49,7 @@ class LiveEventBundleV1Adapter:
             + ("live_event_bundle_v1 reused live_ws_v1 raw message parsing.",),
             warnings=dataset.metadata.warnings
             + ("live_event_bundle_v1 schema is provisional until data-team event bundle format stabilizes.",),
+            market_metadata=dataset.metadata.market_metadata,
         )
         return PolymarketL2DatasetV1(metadata=metadata, steps=dataset.steps)
 

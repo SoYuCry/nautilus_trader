@@ -69,10 +69,18 @@ class MarketMetadataV1:
 
     condition_id: str
     token_id: str | None = None
+    outcome: str | None = None
     maker_fee: Decimal = Decimal("0")
     taker_fee: Decimal | None = None
     fee_source: str = "unknown"
     category: str | None = None
+    minimum_tick_size: Decimal | None = None
+    tick_size_source: str = "unknown"
+    resolution_status: str | None = None
+    resolution_time: datetime | None = None
+    token_payout: Decimal | None = None
+    winner: bool | None = None
+    resolution_source: str = "unknown"
 
 
 @dataclass(frozen=True, slots=True)

@@ -28,6 +28,7 @@ from nautilus_trader.backtest.engine import BacktestEngine
 from nautilus_trader.config import LoggingConfig
 from nautilus_trader.model.currencies import pUSD
 from nautilus_trader.model.data import OrderBookDeltas
+from nautilus_trader.model.data import InstrumentClose
 from nautilus_trader.model.data import TradeTick
 from nautilus_trader.model.enums import AccountType
 from nautilus_trader.model.enums import BookType
@@ -45,6 +46,7 @@ from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus
+from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
 from polymarket._core.nautilus_native import load_binary_option_from_config
 
 
@@ -63,8 +65,10 @@ class NativeBacktestResultV1:
     data_count: int
     order_book_deltas_count: int
     trade_ticks_count: int
+    instrument_close_count: int
     skipped_updates: tuple[str, ...]
     tick_size_changes: tuple[tuple[str, str], ...]
+    settlement: dict[str, Any] | None
     data_health: dict[str, Any]
 
 
@@ -147,7 +151,11 @@ def load_native_strategy(config_path: Path, strategy_config: Mapping[str, Any]) 
     }
 
 
-def build_engine(config: Mapping[str, Any]) -> BacktestEngine:
+def build_engine(
+    config: Mapping[str, Any],
+    *,
+    settlement_prices: Mapping[Any, float] | None = None,
+) -> BacktestEngine:
     fees_config = config.get("fees") or {}
     fee_model = None
     if fees_config.get("enabled", True):
@@ -171,23 +179,27 @@ def build_engine(config: Mapping[str, Any]) -> BacktestEngine:
         trade_execution=bool((config.get("engine") or {}).get("trade_execution", True)),
         liquidity_consumption=bool((config.get("engine") or {}).get("liquidity_consumption", False)),
         queue_position=bool((config.get("engine") or {}).get("queue_position", False)),
+        settlement_prices=dict(settlement_prices or {}),
     )
     return engine
 
 
-def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int, int]:
+def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int, int, int]:
     order_book_deltas = [item for item in data if isinstance(item, OrderBookDeltas)]
     trade_ticks = [item for item in data if isinstance(item, TradeTick)]
+    instrument_closes = [item for item in data if isinstance(item, InstrumentClose)]
     if order_book_deltas:
         engine.add_data(order_book_deltas, sort=False)
     if trade_ticks:
         engine.add_data(trade_ticks, sort=False)
+    if instrument_closes:
+        engine.add_data(instrument_closes, sort=False)
     # The source dataset is not repaired or re-sorted to hide problems.  The
     # mandatory pre-run data-health gate proves ts_init is receive-time
     # monotonic; this Nautilus sort only syncs separately added native data
     # types into a single ts_init-ordered stream required by BacktestEngine.
     engine.sort_data()
-    return len(order_book_deltas), len(trade_ticks)
+    return len(order_book_deltas), len(trade_ticks), len(instrument_closes)
 
 
 def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestResultV1) -> None:
@@ -215,8 +227,10 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
                 "data_count": result.data_count,
                 "order_book_deltas_count": result.order_book_deltas_count,
                 "trade_ticks_count": result.trade_ticks_count,
+                "instrument_close_count": result.instrument_close_count,
                 "skipped_updates": list(result.skipped_updates),
                 "tick_size_changes": list(result.tick_size_changes),
+                "settlement": result.settlement,
                 "data_health": result.data_health,
                 "reports": {
                     "account_txt": "account_report.txt",
@@ -252,6 +266,8 @@ def _write_run_report_markdown(
         f"- Nautilus data count: `{result.data_count}`",
         f"- OrderBookDeltas count: `{result.order_book_deltas_count}`",
         f"- TradeTick count: `{result.trade_ticks_count}`",
+        f"- InstrumentClose count: `{result.instrument_close_count}`",
+        f"- Settlement enabled: `{str(result.settlement is not None).lower()}`",
         f"- Data health ok: `{str(result.data_health.get('ok')).lower()}`",
         f"- Receive-time inversions: `{health_summary.get('receive_time_inversion_count')}`",
         f"- Sequence inversions: `{health_summary.get('sequence_inversion_count')}`",
@@ -281,6 +297,7 @@ def _write_run_report_markdown(
         "## Notes",
         "",
         "- `TradeTick count` is selected-token `last_trade_price` converted into Nautilus `TradeTick`; it is not strategy fill count.",
+        "- Settlement uses Nautilus `InstrumentClose` + venue `settlement_prices`; it is not converted into a market `TradeTick`.",
         "- Strategy fills are recorded in `fills_report.csv`.",
         "- Fees use Nautilus' Polymarket fee model when enabled and read the instrument `maker_fee` / `taker_fee` fields.",
     ]
@@ -292,6 +309,20 @@ def _frame_preview(frame: pd.DataFrame, *, max_rows: int = 10) -> str:
         return "_empty_"
     with pd.option_context("display.max_rows", max_rows, "display.max_columns", None, "display.width", 300):
         return "```text\n" + str(frame.head(max_rows)) + "\n```"
+
+
+def _settlement_to_dict(settlement: Any | None) -> dict[str, Any] | None:
+    if settlement is None:
+        return None
+    return {
+        "condition_id": settlement.condition_id,
+        "token_id": settlement.token_id,
+        "resolution_time_ns": settlement.resolution_time_ns,
+        "payout": str(settlement.payout),
+        "source": settlement.source,
+        "status": settlement.status,
+        "mechanism": "Nautilus InstrumentClose + venue settlement_prices",
+    }
 
 
 def run_from_config(config_path: Path) -> dict[str, Any]:
@@ -328,25 +359,38 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         dataset,
         instrument=instrument,
         selected_asset_id=selected_asset_id,
-        fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", True)),
+        fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
     )
 
-    engine = build_engine(config)
+    settlement_prices = (
+        {instrument.id: float(conversion.settlement.payout)}
+        if conversion.settlement is not None
+        else None
+    )
+    engine = build_engine(config, settlement_prices=settlement_prices)
     try:
         engine.add_instrument(instrument)
-        order_book_count, trade_count = add_native_data(engine, conversion.data)
+        order_book_count, trade_count, instrument_close_count = add_native_data(engine, conversion.data)
         strategy, strategy_provenance = load_native_strategy(config_path, config.get("strategy") or {})
         if strategy is not None:
+            strategy_provenance["effective_tick_size_order_guard"] = install_effective_tick_size_order_guard(
+                strategy,
+                initial_tick_size=conversion.initial_tick_size,
+                changes=conversion.effective_tick_size_changes,
+            )
             engine.add_strategy(strategy)
         engine.run()
 
+        settlement_dict = _settlement_to_dict(conversion.settlement)
         result = NativeBacktestResultV1(
             run_dir=run_dir,
             data_count=len(conversion.data),
             order_book_deltas_count=order_book_count,
             trade_ticks_count=trade_count,
+            instrument_close_count=instrument_close_count,
             skipped_updates=conversion.skipped_updates,
             tick_size_changes=conversion.tick_size_changes,
+            settlement=settlement_dict,
             data_health=data_health_report.to_dict(),
         )
         resolved = {
@@ -361,6 +405,20 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
             "instrument_id": str(instrument.id),
             "strategy": strategy_provenance,
+            "tick_size": {
+                "instrument_price_increment": str(instrument.price_increment),
+                "initial_effective_tick_size": str(conversion.initial_tick_size),
+                "effective_tick_size_changes": [
+                    {
+                        "sequence": change.sequence,
+                        "effective_from_ts_init": change.effective_from_ts_init,
+                        "old_tick_size": str(change.old_tick_size),
+                        "new_tick_size": str(change.new_tick_size),
+                    }
+                    for change in conversion.effective_tick_size_changes
+                ],
+            },
+            "settlement": settlement_dict,
             "fees": {
                 "enabled": bool((config.get("fees") or {}).get("enabled", True)),
                 "model": "PolymarketFeeModel" if (config.get("fees") or {}).get("enabled", True) else "disabled",
@@ -400,6 +458,8 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "data_count": result.data_count,
             "order_book_deltas_count": result.order_book_deltas_count,
             "trade_ticks_count": result.trade_ticks_count,
+            "instrument_close_count": result.instrument_close_count,
+            "settlement_enabled": result.settlement is not None,
             "data_health_ok": data_health_report.ok,
         }
         print(json.dumps(summary, indent=2))
