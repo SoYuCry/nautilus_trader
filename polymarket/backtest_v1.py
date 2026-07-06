@@ -42,6 +42,9 @@ from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
 from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
+from polymarket._core.fees import build_fee_report
+from polymarket._core.fees import enforce_fee_report
+from polymarket._core.fees import summarize_fill_fee_totals
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus
 from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
@@ -67,6 +70,7 @@ class NativeBacktestResultV1:
     tick_size_changes: tuple[tuple[str, str], ...]
     settlement: dict[str, Any]
     data_health: dict[str, Any]
+    fees: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -196,6 +200,16 @@ def collect_polymarket_strategy_rounding(strategy: Strategy | None) -> dict[str,
     return {"enabled": True, "count": len(event_rows), "events": event_rows}
 
 
+def collect_fee_report(config: Mapping[str, Any], instrument: Any) -> dict[str, Any]:
+    """Return the run's fee model/source contract in a serializable form."""
+    return build_fee_report(
+        config.get("fees") or {},
+        maker_fee=instrument.maker_fee,
+        taker_fee=instrument.taker_fee,
+        fee_source=str((getattr(instrument, "info", None) or {}).get("fee_source", "unknown")),
+    )
+
+
 def build_engine(
     config: Mapping[str, Any],
     *,
@@ -247,10 +261,12 @@ def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int,
     return len(order_book_deltas), len(trade_ticks), len(instrument_closes)
 
 
-def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestResultV1) -> None:
+def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestResultV1) -> dict[str, Any]:
     account = engine.trader.generate_account_report(POLYMARKET_VENUE)
     fills = engine.trader.generate_order_fills_report()
     positions = engine.trader.generate_positions_report()
+    fee_totals = summarize_fill_fee_totals(fills)
+    fee_report = {**result.fees, "totals_from_fills_report": fee_totals}
     with pd.option_context("display.max_rows", 200, "display.max_columns", None, "display.width", 300):
         (run_dir / "account_report.txt").write_text(str(account), encoding="utf-8")
         (run_dir / "fills_report.txt").write_text(str(fills), encoding="utf-8")
@@ -264,6 +280,7 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
         account=account,
         fills=fills,
         positions=positions,
+        fee_totals=fee_totals,
     )
     (run_dir / "summary.json").write_text(
         json.dumps(
@@ -277,6 +294,7 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
                 "tick_size_changes": list(result.tick_size_changes),
                 "settlement": result.settlement,
                 "data_health": result.data_health,
+                "fees": fee_report,
                 "reports": {
                     "account_txt": "account_report.txt",
                     "account_csv": "account_report.csv",
@@ -291,6 +309,7 @@ def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestR
         ),
         encoding="utf-8",
     )
+    return {"fees": fee_report}
 
 
 def _write_run_report_markdown(
@@ -300,6 +319,7 @@ def _write_run_report_markdown(
     account: pd.DataFrame,
     fills: pd.DataFrame,
     positions: pd.DataFrame,
+    fee_totals: dict[str, Any],
 ) -> None:
     health_summary = result.data_health.get("summary", {})
     lines = [
@@ -321,6 +341,20 @@ def _write_run_report_markdown(
         f"- Sequence inversions: `{health_summary.get('sequence_inversion_count')}`",
         f"- Source-time inversions: `{health_summary.get('source_time_inversion_count')}`",
         f"- Future source-time count: `{health_summary.get('future_source_time_count')}`",
+        "",
+        "## Fees",
+        "",
+        f"- Fee model enabled: `{str(result.fees.get('enabled', False)).lower()}`",
+        f"- Fee model: `{result.fees.get('model', 'unknown')}`",
+        f"- Maker rebates enabled: `{str(result.fees.get('maker_rebates_enabled', False)).lower()}`",
+        f"- Require explicit fee metadata: `{str(result.fees.get('require_explicit', False)).lower()}`",
+        f"- Instrument maker fee: `{result.fees.get('instrument_maker_fee', 'unknown')}`",
+        f"- Instrument taker fee: `{result.fees.get('instrument_taker_fee', 'unknown')}`",
+        f"- Fee source: `{result.fees.get('instrument_fee_source', 'unknown')}`",
+        f"- Total fees from `fills_report`: `{fee_totals.get('total_display', 'unavailable')}`",
+        f"- Fee total source column: `{fee_totals.get('source_column')}`",
+        f"- Fee warning: {result.fees.get('warning') or 'none'}",
+        f"- Fee total warning: {fee_totals.get('warning') or 'none'}",
         "",
         "## Report files",
         "",
@@ -427,6 +461,8 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         selected_asset_id=selected_asset_id,
         config_base_dir=config_path.parent,
     )
+    fee_report = collect_fee_report(config, instrument)
+    enforce_fee_report(fee_report)
     conversion = convert_dataset_to_nautilus(
         dataset,
         instrument=instrument,
@@ -469,6 +505,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             tick_size_changes=conversion.tick_size_changes,
             settlement=settlement_dict,
             data_health=data_health_report.to_dict(),
+            fees=fee_report,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
@@ -496,16 +533,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 ],
             },
             "settlement": settlement_dict,
-            "fees": {
-                "enabled": bool((config.get("fees") or {}).get("enabled", True)),
-                "model": "PolymarketFeeModel" if (config.get("fees") or {}).get("enabled", True) else "disabled",
-                "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
-                "instrument_maker_fee": str(instrument.maker_fee),
-                "instrument_taker_fee": str(instrument.taker_fee),
-                "instrument_fee_source": str(
-                    (getattr(instrument, "info", None) or {}).get("fee_source", "unknown"),
-                ),
-            },
+            "fees": fee_report,
             "data_health": data_health_report.to_dict(),
             "runtime": {
                 "run_id": run_id,
@@ -515,7 +543,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
         }
         (run_dir / "resolved_config.json").write_text(json.dumps(resolved, indent=2), encoding="utf-8")
-        write_reports(run_dir, engine, result)
+        report_metadata = write_reports(run_dir, engine, result)
         summary = {
             "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
@@ -539,6 +567,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "settlement_mode": result.settlement.get("mode", "open"),
             "settlement_enabled": bool(result.settlement.get("enabled", False)),
             "data_health_ok": data_health_report.ok,
+            "fees": report_metadata["fees"],
         }
         print(json.dumps(summary, indent=2))
         return summary

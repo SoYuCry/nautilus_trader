@@ -382,8 +382,11 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     assert resolved["strategy"]["class"] == "TakeBestAskOnce"
     assert resolved["fees"]["model"] == "PolymarketFeeModel"
     assert resolved["fees"]["maker_rebates_enabled"] is False
+    assert resolved["fees"]["require_explicit"] is False
     assert resolved["fees"]["instrument_taker_fee"] == "0.05"
     assert resolved["fees"]["instrument_fee_source"] == "instrument_config"
+    assert run_summary["fees"]["instrument_fee_source"] == "instrument_config"
+    assert run_summary["fees"]["totals_from_fills_report"]["total_display"] == "0.012 pUSD"
     assert "MARKET" in fills
     assert "BUY" in fills
     assert "FILLED" in fills
@@ -393,6 +396,9 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     assert "avg_px_open" in positions
     assert "0.6" in positions
     assert "TradeTick count" in run_report
+    assert "## Fees" in run_report
+    assert "Fee source: `instrument_config`" in run_report
+    assert "Total fees from `fills_report`: `0.012 pUSD`" in run_report
 
 
 def test_runner_rejects_strategy_limit_price_outside_effective_tick(tmp_path: Path) -> None:
@@ -850,6 +856,38 @@ def test_runner_leaves_settlement_open_and_reports_positions(tmp_path: Path) -> 
     assert summary["settlement_mode"] == "open"
     assert "Settlement mode: `open`" in run_report
     assert "## Final open positions" in run_report
+
+
+def test_runner_require_explicit_fee_rejects_default_zero_fallback(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    write_ndjson(ndjson_path)
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: require_explicit_fee
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            fees:
+              require_explicit: true
+            strategy:
+              enabled: false
+            runtime:
+              run_id: require-explicit-fee
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="fees.require_explicit=true.*fee_source=default_zero"):
+        run_from_config(config_path)
 
 
 def test_report_output_dir_must_stay_inside_experiment_runs(tmp_path: Path) -> None:
