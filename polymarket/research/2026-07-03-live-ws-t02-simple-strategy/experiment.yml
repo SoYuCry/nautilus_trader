@@ -34,7 +34,7 @@ strategy:
     exit_after_seconds: 60
 
 replay:
-  fail_on_tick_size_change: true
+  fail_on_tick_size_change: false
 
 data_health:
   future_tolerance_ms: 50

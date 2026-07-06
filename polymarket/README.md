@@ -7,7 +7,7 @@ The hard boundary is:
 
 ```text
 source data -> polymarket/adapters -> private source model
-            -> private Nautilus bridge -> Nautilus OrderBookDeltas/TradeTick
+            -> private Nautilus bridge -> Nautilus OrderBookDeltas/TradeTick/InstrumentClose
             -> nautilus_trader.backtest.engine.BacktestEngine
 ```
 
@@ -98,10 +98,15 @@ substitute Polymarket source `timestamp` as receive time.
   `OrderBookDeltas`; raw WebSocket message boundaries are preserved by the live
   adapter when available.
 - Trade prints (`last_trade_price`) are converted into Nautilus `TradeTick`.
-- Historical `tick_size_change` is fail-fast by default.  Live Nautilus
-  Polymarket data code supports instrument updates, but this historical bridge
-  still needs an explicit instrument-epoch model before dynamic tick size can be
-  claimed as backtest-supported.
+- Historical `tick_size_change` is supported as an effective tick-size
+  timeline.  The Nautilus instrument uses the finest price increment required
+  for replay precision, while the runner installs a strategy submit-time guard
+  so orders are rejected if their price is illegal under the effective tick at
+  the strategy clock time.  A manually configured `instrument.price_increment`
+  must not be coarser than the finest tick observed in the dataset.
+- Resolved market metadata is converted into Nautilus `InstrumentClose` plus
+  venue `settlement_prices`.  Settlement is a system close event and is not
+  represented as a market `TradeTick`.
 - Strategy code must subclass `nautilus_trader.trading.strategy.Strategy`.
 
 ## Validation gap

@@ -40,10 +40,18 @@ Required for fee-aware backtests:
 | --- | --- | --- |
 | `condition_id` | yes | Polymarket condition id / CLOB market id. |
 | `token_id` | preferred | Outcome token id. If omitted, metadata applies to the whole condition. |
+| `outcome` | preferred | Human-readable outcome label, e.g. `Yes` / `No`. |
 | `maker_fee` | yes | Effective maker fee rate. Usually `0`. |
 | `taker_fee` | yes | Effective taker fee rate / `feeSchedule.rate` decimal fraction, e.g. `0.05`. |
 | `fee_source` | yes | Source of the fee value, e.g. `clob_market_info.feeSchedule.rate`. |
 | `category` | optional | Market category/tag used to audit fee schedules. |
+| `minimum_tick_size` | yes | Effective minimum tick at the beginning of the capture window, usually `0.01` unless the market is already in the tail band. |
+| `tick_size_source` | preferred | Source of the tick value, e.g. `clob_market_info.minimum_tick_size` or `market_metadata`. |
+| `resolution_status` | required when resolved | Settlement / UMA resolution status. |
+| `resolution_time` | required when resolved | UTC time when the token payout becomes known. |
+| `token_payout` | required when resolved | Per-token settlement payout in `[0, 1]`; winner is usually `1`, loser `0`. |
+| `winner` | optional | Boolean token winner flag used to audit `token_payout`. |
+| `resolution_source` | required when resolved | Source of settlement fields, e.g. API snapshot or resolution file. |
 
 Example sidecar shape accepted by the current `live_ws_v1` adapter:
 
@@ -52,11 +60,18 @@ Example sidecar shape accepted by the current `live_ws_v1` adapter:
   "markets": [
     {
       "condition_id": "0x...",
-      "token_id": "123...",
+      "minimum_tick_size": "0.01",
       "maker_fee": "0",
-      "taker_fee": "0.05",
       "fee_source": "clob_market_info.feeSchedule.rate",
-      "category": "weather"
+      "feeSchedule": {"rate": "0.05"},
+      "category": "weather",
+      "resolution_status": "resolved",
+      "resolution_time": "2026-06-26T03:00:00Z",
+      "resolution_source": "clob/gamma resolution snapshot",
+      "tokens": [
+        {"token_id": "123...", "outcome": "Yes", "payout": "1", "winner": true},
+        {"token_id": "456...", "outcome": "No", "payout": "0", "winner": false}
+      ]
     }
   ]
 }
@@ -135,8 +150,22 @@ Required:
 - `old_tick_size`
 - `new_tick_size`
 
-The current Nautilus bridge fails fast by default on this event until we add an
-instrument-epoch model.
+The v1 Nautilus bridge applies this as an effective tick-size timeline.  The
+Nautilus instrument may use the finest price precision needed for the full
+dataset, but source updates and strategy order prices are still validated
+against the effective tick at replay time.  If the event says `old_tick_size`
+does not match the current effective tick, conversion fails instead of silently
+guessing.  A configured instrument precision must not be coarser than the
+finest tick observed in the dataset; otherwise sub-tick historical replay would
+lose information.
+
+### Resolution / settlement
+
+Settlement is metadata, not a market-data update.  The target feed should
+provide per-token payout in `market_metadata[]` once a market is resolved.  The
+runner maps it to Nautilus `InstrumentClose` plus venue `settlement_prices`, so
+open positions are closed by the engine's settlement path.  Do not encode
+settlement as a synthetic `trade` / `TradeTick`.
 
 ## Hard requirements
 
@@ -151,6 +180,8 @@ instrument-epoch model.
    - missing source timestamp coverage.
 6. Treat PMXT-derived formats as temporary research inputs, not the target
    contract.
+7. Preserve tick-size transition events and resolved per-token payout metadata
+   when available.  Do not force the backtest config to hard-code these values.
 
 ## Current temporary ingress paths
 

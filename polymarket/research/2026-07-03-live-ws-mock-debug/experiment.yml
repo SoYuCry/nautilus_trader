@@ -14,7 +14,7 @@ instrument:
   token_id: "yestokenmock"
   outcome: "Yes"
   description: "Mock Polymarket binary option for live_ws debug"
-  price_increment: "0.01"
+  price_increment: "0.001"
   size_increment: "0.000001"
 
 strategy:
