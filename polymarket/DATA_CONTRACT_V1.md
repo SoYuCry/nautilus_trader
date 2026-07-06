@@ -45,7 +45,7 @@ Required for fee-aware backtests:
 | `taker_fee` | yes | Effective taker fee rate / `feeSchedule.rate` decimal fraction, e.g. `0.05`. |
 | `fee_source` | yes | Source of the fee value, e.g. `clob_market_info.feeSchedule.rate`. |
 | `category` | optional | Market category/tag used to audit fee schedules. |
-| `minimum_tick_size` | yes | Effective minimum tick at the beginning of the capture window, usually `0.01` unless the market is already in the tail band. |
+| `minimum_tick_size` | preferred | Audit copy of the market minimum tick at capture time. The v1 replay rule still starts from Polymarket's standard `0.01` effective tick and changes only on `tick_size_change`. |
 | `tick_size_source` | preferred | Source of the tick value, e.g. `clob_market_info.minimum_tick_size` or `market_metadata`. |
 | `resolution_status` | required when resolved | Settlement / UMA resolution status. |
 | `resolution_time` | required when resolved | UTC time when the token payout becomes known. |
@@ -151,13 +151,14 @@ Required:
 - `new_tick_size`
 
 The v1 Nautilus bridge applies this as an effective tick-size timeline.  The
-Nautilus instrument may use the finest price precision needed for the full
-dataset, but source updates and strategy order prices are still validated
-against the effective tick at replay time.  If the event says `old_tick_size`
-does not match the current effective tick, conversion fails instead of silently
-guessing.  A configured instrument precision must not be coarser than the
-finest tick observed in the dataset; otherwise sub-tick historical replay would
-lose information.
+Nautilus instrument always uses Polymarket's static expression precision
+`0.001`; this is a rule, not something inferred by scanning future data.  The
+effective trading tick starts at `0.01` and changes only when a
+`tick_size_change` event arrives, normally `0.01 -> 0.001`.  Source updates and
+strategy order prices are validated against the effective tick at replay time.
+If the event says `old_tick_size` does not match the current effective tick, or
+`new_tick_size` does not match the v1 fine precision, conversion fails instead
+of silently guessing.
 
 ### Resolution / settlement
 
@@ -166,6 +167,18 @@ provide per-token payout in `market_metadata[]` once a market is resolved.  The
 runner maps it to Nautilus `InstrumentClose` plus venue `settlement_prices`, so
 open positions are closed by the engine's settlement path.  Do not encode
 settlement as a synthetic `trade` / `TradeTick`.
+
+The runner reports one of three settlement modes at the top of each run report:
+
+- `official`: official/resolved metadata supplies a payout.  Resolved metadata
+  is fail-fast: `resolution_time` and per-token `token_payout` or `winner` must
+  be present, and `winner` must agree with a 0/1 payout.
+- `inferred`: no official settlement metadata exists, but terminal market data
+  clearly converges to 0 or 1.  The runner may add a clearly marked inferred
+  `InstrumentClose` for research convenience and records the terminal
+  bid/ask/last-trade evidence.
+- `open`: no official result and no safe terminal-price inference.  No
+  `InstrumentClose` is generated; reports leave final positions open.
 
 ## Hard requirements
 

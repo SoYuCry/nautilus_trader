@@ -31,6 +31,24 @@ def as_decimal(value: Any) -> Decimal | None:
     return Decimal(text)
 
 
+def as_bool(value: Any) -> bool | None:
+    """Parse a metadata boolean without Python's truthy-string footgun."""
+
+    if is_missing_scalar(value):
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in {0, 1}:
+        return bool(value)
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in {"true", "t", "yes", "y", "1"}:
+            return True
+        if text in {"false", "f", "no", "n", "0"}:
+            return False
+    raise ValueError(f"cannot parse boolean metadata value: {value!r}")
+
+
 def as_utc_datetime(value: Any) -> datetime:
     if value is None:
         raise ValueError("datetime value is required")

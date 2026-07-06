@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
 
 from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
 from nautilus_trader.adapters.polymarket.common.enums import PolymarketOrderSide
@@ -45,6 +45,13 @@ from polymarket._core.models import PolymarketL2DatasetV1
 
 
 NativePolymarketData = OrderBookDeltas | TradeTick | InstrumentClose
+SettlementModeV1 = Literal["official", "inferred", "open"]
+
+POLYMARKET_FINE_PRICE_INCREMENT = Decimal("0.001")
+POLYMARKET_INITIAL_EFFECTIVE_TICK_SIZE = Decimal("0.01")
+SETTLEMENT_INFERENCE_LOW = Decimal("0.01")
+SETTLEMENT_INFERENCE_HIGH = Decimal("0.99")
+OFFICIAL_SETTLEMENT_STATUSES = frozenset({"resolved", "settled", "closed", "final", "finalized"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,10 +70,13 @@ class SettlementMetadataV1:
 
     condition_id: str
     token_id: str
+    mode: Literal["official", "inferred"]
     resolution_time_ns: int
     payout: Decimal
     source: str
     status: str | None
+    reason: str
+    evidence: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +90,9 @@ class NautilusConversionResultV1:
     initial_tick_size: Decimal
     effective_tick_size_changes: tuple[EffectiveTickSizeChangeV1, ...]
     settlement: SettlementMetadataV1 | None
+    settlement_mode: SettlementModeV1
+    settlement_reason: str
+    settlement_evidence: tuple[tuple[str, str], ...]
 
 
 def datetime_to_nanos(value: datetime) -> int:
@@ -109,25 +122,21 @@ def load_binary_option_from_config(
     first_update = _first_update(dataset, selected_asset_id=selected_asset_id)
     condition_id = str(config.get("condition_id") or first_update.market)
     token_id = str(config.get("token_id") or selected_asset_id or first_update.asset_id)
+    metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
     instrument_id = get_polymarket_instrument_id(condition_id, token_id)
     raw_symbol = Symbol(token_id)
-    finest_price_increment = _finest_price_increment(
-        dataset,
-        condition_id=condition_id,
-        token_id=token_id,
-    )
     raw_price_increment = config.get("price_increment")
     selected_price_increment = (
-        finest_price_increment
+        POLYMARKET_FINE_PRICE_INCREMENT
         if raw_price_increment is None
         else Decimal(str(raw_price_increment))
     )
-    if selected_price_increment > finest_price_increment:
+    if selected_price_increment > POLYMARKET_FINE_PRICE_INCREMENT:
         raise ValueError(
-            "instrument.price_increment is too coarse for Polymarket replay data: "
-            f"configured={selected_price_increment}, finest_required={finest_price_increment}. "
-            "Use the finest replay precision and rely on the effective tick-size guard "
-            "for strategy order legality.",
+            "instrument.price_increment is too coarse for Polymarket v1 replay: "
+            f"configured={selected_price_increment}, required={POLYMARKET_FINE_PRICE_INCREMENT}. "
+            "Polymarket binary options use 0.001 as the static expression precision; "
+            "effective order/data legality is enforced by the tick-size timeline.",
         )
     price_increment = Price.from_str(str(selected_price_increment))
     size_increment = Quantity.from_str(str(config.get("size_increment", "0.000001")))
@@ -148,7 +157,7 @@ def load_binary_option_from_config(
     return BinaryOption(
         instrument_id=instrument_id,
         raw_symbol=raw_symbol,
-        outcome=str(config.get("outcome", "Yes")),
+        outcome=str(config.get("outcome") or (metadata.outcome if metadata is not None else None) or "Yes"),
         description=str(config.get("description", dataset.metadata.dataset_id)),
         asset_class=AssetClass.ALTERNATIVE,
         currency=pUSD,
@@ -171,6 +180,7 @@ def load_binary_option_from_config(
             "effective_initial_tick_size": str(
                 _initial_tick_size(dataset, condition_id=condition_id, token_id=token_id),
             ),
+            "static_expression_price_increment": str(POLYMARKET_FINE_PRICE_INCREMENT),
             "source": "polymarket._core.nautilus_native.load_binary_option_from_config",
         },
     )
@@ -223,17 +233,13 @@ def _ensure_instrument_replay_precision(
     condition_id = get_polymarket_condition_id(instrument.id)
     token_id = _token_id_from_instrument(instrument.id)
     selected_price_increment = _decimal_from_price_like(instrument.price_increment)
-    finest_price_increment = _finest_price_increment(
-        dataset,
-        condition_id=condition_id,
-        token_id=token_id,
-    )
-    if selected_price_increment > finest_price_increment:
+    _first_update(dataset, selected_condition_id=condition_id, selected_asset_id=token_id)
+    if selected_price_increment > POLYMARKET_FINE_PRICE_INCREMENT:
         raise ValueError(
-            "instrument.price_increment is too coarse for Polymarket replay data: "
-            f"configured={selected_price_increment}, finest_required={finest_price_increment}. "
-            "Use the finest replay precision and rely on the effective tick-size guard "
-            "for strategy order legality.",
+            "instrument.price_increment is too coarse for Polymarket v1 replay: "
+            f"configured={selected_price_increment}, required={POLYMARKET_FINE_PRICE_INCREMENT}. "
+            "Polymarket binary options use 0.001 as the static expression precision; "
+            "effective order/data legality is enforced by the tick-size timeline.",
         )
 
 
@@ -243,30 +249,7 @@ def _initial_tick_size(
     condition_id: str,
     token_id: str,
 ) -> Decimal:
-    metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
-    if metadata is not None and metadata.minimum_tick_size is not None:
-        return metadata.minimum_tick_size
-    return Decimal("0.01")
-
-
-def _finest_price_increment(
-    dataset: PolymarketL2DatasetV1,
-    *,
-    condition_id: str,
-    token_id: str,
-) -> Decimal:
-    increments = {_initial_tick_size(dataset, condition_id=condition_id, token_id=token_id)}
-    for step in dataset.steps:
-        for update in step.updates:
-            if update.market != condition_id or update.asset_id != token_id:
-                continue
-            if update.event_type != "tick_size_change":
-                continue
-            if update.old_tick_size is not None:
-                increments.add(update.old_tick_size)
-            if update.new_tick_size is not None:
-                increments.add(update.new_tick_size)
-    return min(increments)
+    return POLYMARKET_INITIAL_EFFECTIVE_TICK_SIZE
 
 
 def convert_dataset_to_nautilus(
@@ -293,6 +276,9 @@ def convert_dataset_to_nautilus(
         token_id=selected_asset_id,
     )
     last_ts_init: int | None = None
+    terminal_bid_levels: dict[Decimal, Decimal] = {}
+    terminal_ask_levels: dict[Decimal, Decimal] = {}
+    terminal_last_trade: Decimal | None = None
 
     def next_ts_init(step: L2ReplayStepV1) -> int:
         nonlocal last_ts_init
@@ -335,6 +321,12 @@ def convert_dataset_to_nautilus(
                     update,
                     effective_tick_size=current_tick_size,
                 )
+                terminal_last_trade = _update_terminal_market_state(
+                    update,
+                    bid_levels=terminal_bid_levels,
+                    ask_levels=terminal_ask_levels,
+                    last_trade=terminal_last_trade,
+                )
             if update.event_type in {"book", "price_change"}:
                 pending_book_updates.append(update)
             elif update.event_type == "trade":
@@ -368,6 +360,12 @@ def convert_dataset_to_nautilus(
                         f"tick size at sequence={step.sequence}, asset_id={update.asset_id!r}: "
                         f"current={current_tick_size}, old_tick_size={update.old_tick_size}",
                     )
+                if update.new_tick_size != POLYMARKET_FINE_PRICE_INCREMENT:
+                    raise ValueError(
+                        "tick_size_change new_tick_size does not match Polymarket v1 "
+                        f"fine precision at sequence={step.sequence}, asset_id={update.asset_id!r}: "
+                        f"expected={POLYMARKET_FINE_PRICE_INCREMENT}, new_tick_size={update.new_tick_size}",
+                    )
                 effective_tick_size_changes.append(
                     EffectiveTickSizeChangeV1(
                         sequence=step.sequence,
@@ -386,10 +384,14 @@ def convert_dataset_to_nautilus(
                 skipped.append(update.event_type)
         append_book_updates(step, pending_book_updates)
 
-    settlement = _selected_settlement_metadata(
+    settlement, settlement_mode, settlement_reason, settlement_evidence = _selected_settlement_metadata(
         dataset,
         condition_id=selected_condition_id,
         token_id=selected_asset_id,
+        bid_levels=terminal_bid_levels,
+        ask_levels=terminal_ask_levels,
+        last_trade=terminal_last_trade,
+        last_ts_init=last_ts_init,
     )
     if settlement is not None:
         if last_ts_init is not None and settlement.resolution_time_ns < last_ts_init:
@@ -420,6 +422,9 @@ def convert_dataset_to_nautilus(
         ),
         effective_tick_size_changes=tuple(effective_tick_size_changes),
         settlement=settlement,
+        settlement_mode=settlement_mode,
+        settlement_reason=settlement_reason,
+        settlement_evidence=settlement_evidence,
     )
 
 
@@ -661,34 +666,205 @@ def _next_monotonic_ts_init(candidate: int, previous: int | None) -> int:
     return candidate
 
 
+def _update_terminal_market_state(
+    update: L2UpdateV1,
+    *,
+    bid_levels: dict[Decimal, Decimal],
+    ask_levels: dict[Decimal, Decimal],
+    last_trade: Decimal | None,
+) -> Decimal | None:
+    if update.event_type == "book":
+        bid_levels.clear()
+        ask_levels.clear()
+        bid_levels.update({level.price: level.size for level in update.bids if level.size > 0})
+        ask_levels.update({level.price: level.size for level in update.asks if level.size > 0})
+        return last_trade
+    if update.event_type == "price_change" and update.price is not None and update.size is not None:
+        levels = bid_levels if update.side == "BUY" else ask_levels if update.side == "SELL" else None
+        if levels is not None:
+            if update.size > 0:
+                levels[update.price] = update.size
+            else:
+                levels.pop(update.price, None)
+        return last_trade
+    if update.event_type == "trade" and update.price is not None:
+        return update.price
+    return last_trade
+
+
 def _selected_settlement_metadata(
     dataset: PolymarketL2DatasetV1,
     *,
     condition_id: str,
     token_id: str,
-) -> SettlementMetadataV1 | None:
+    bid_levels: Mapping[Decimal, Decimal],
+    ask_levels: Mapping[Decimal, Decimal],
+    last_trade: Decimal | None,
+    last_ts_init: int | None,
+) -> tuple[SettlementMetadataV1 | None, SettlementModeV1, str, tuple[tuple[str, str], ...]]:
     metadata = _find_market_metadata(dataset, condition_id=condition_id, token_id=token_id)
-    if metadata is None or metadata.token_payout is None:
+    official = _official_settlement_metadata(metadata, condition_id=condition_id, token_id=token_id)
+    if official is not None:
+        return official, "official", official.reason, official.evidence
+    inferred = _infer_terminal_settlement_metadata(
+        condition_id=condition_id,
+        token_id=token_id,
+        bid_levels=bid_levels,
+        ask_levels=ask_levels,
+        last_trade=last_trade,
+        last_ts_init=last_ts_init,
+    )
+    if inferred is not None:
+        return inferred, "inferred", inferred.reason, inferred.evidence
+    evidence = _terminal_market_evidence(bid_levels=bid_levels, ask_levels=ask_levels, last_trade=last_trade)
+    return (
+        None,
+        "open",
+        "no official settlement metadata and terminal market data did not clearly converge to 0 or 1",
+        tuple(evidence.items()),
+    )
+
+
+def _official_settlement_metadata(
+    metadata: MarketMetadataV1 | None,
+    *,
+    condition_id: str,
+    token_id: str,
+) -> SettlementMetadataV1 | None:
+    if metadata is None:
         return None
-    if metadata.resolution_time is None:
+    status = metadata.resolution_status.strip().lower() if metadata.resolution_status is not None else None
+    has_official_signal = (
+        metadata.token_payout is not None
+        or metadata.winner is not None
+        or metadata.resolution_time is not None
+        or status in OFFICIAL_SETTLEMENT_STATUSES
+    )
+    if not has_official_signal:
+        return None
+    payout = metadata.token_payout
+    if payout is None and metadata.winner is not None:
+        payout = Decimal("1") if metadata.winner else Decimal("0")
+    if payout is None:
         raise ValueError(
-            "resolved Polymarket token metadata requires resolution_time "
+            "official/resolved Polymarket token metadata requires token_payout or winner "
             f"for condition_id={condition_id!r}, token_id={token_id!r}",
         )
-    if metadata.token_payout < 0 or metadata.token_payout > 1:
+    if metadata.resolution_time is None:
+        raise ValueError(
+            "official/resolved Polymarket token metadata requires resolution_time "
+            f"for condition_id={condition_id!r}, token_id={token_id!r}",
+        )
+    if payout < 0 or payout > 1:
         raise ValueError(
             "resolved Polymarket token payout must be in [0, 1]: "
             f"condition_id={condition_id!r}, token_id={token_id!r}, "
-            f"payout={metadata.token_payout}",
+            f"payout={payout}",
         )
+    if metadata.winner is not None and payout in {Decimal("0"), Decimal("1")}:
+        expected = Decimal("1") if metadata.winner else Decimal("0")
+        if payout != expected:
+            raise ValueError(
+                "resolved Polymarket token winner and payout disagree: "
+                f"condition_id={condition_id!r}, token_id={token_id!r}, "
+                f"winner={metadata.winner}, payout={payout}",
+            )
     return SettlementMetadataV1(
         condition_id=condition_id,
         token_id=token_id,
+        mode="official",
         resolution_time_ns=datetime_to_nanos(metadata.resolution_time),
-        payout=metadata.token_payout,
+        payout=payout,
         source=metadata.resolution_source,
         status=metadata.resolution_status,
+        reason="official resolution metadata supplied payout",
+        evidence=(
+            ("resolution_status", str(metadata.resolution_status)),
+            ("resolution_source", metadata.resolution_source),
+            ("winner", str(metadata.winner)),
+            ("payout", str(payout)),
+        ),
     )
+
+
+def _infer_terminal_settlement_metadata(
+    *,
+    condition_id: str,
+    token_id: str,
+    bid_levels: Mapping[Decimal, Decimal],
+    ask_levels: Mapping[Decimal, Decimal],
+    last_trade: Decimal | None,
+    last_ts_init: int | None,
+) -> SettlementMetadataV1 | None:
+    if last_ts_init is None:
+        return None
+    evidence = _terminal_market_evidence(
+        bid_levels=bid_levels,
+        ask_levels=ask_levels,
+        last_trade=last_trade,
+    )
+    raw_mark = evidence.get("terminal_mark")
+    if raw_mark is None:
+        return None
+    mark = Decimal(raw_mark)
+    if mark >= SETTLEMENT_INFERENCE_HIGH:
+        payout = Decimal("1")
+        reason = (
+            f"no official settlement metadata; inferred payout=1 because terminal_mark={mark} "
+            f">= {SETTLEMENT_INFERENCE_HIGH}"
+        )
+    elif mark <= SETTLEMENT_INFERENCE_LOW:
+        payout = Decimal("0")
+        reason = (
+            f"no official settlement metadata; inferred payout=0 because terminal_mark={mark} "
+            f"<= {SETTLEMENT_INFERENCE_LOW}"
+        )
+    else:
+        return None
+    return SettlementMetadataV1(
+        condition_id=condition_id,
+        token_id=token_id,
+        mode="inferred",
+        resolution_time_ns=last_ts_init + 1,
+        payout=payout,
+        source="terminal_market_price_inference",
+        status="inferred",
+        reason=reason,
+        evidence=tuple(evidence.items()),
+    )
+
+
+def _terminal_market_evidence(
+    *,
+    bid_levels: Mapping[Decimal, Decimal],
+    ask_levels: Mapping[Decimal, Decimal],
+    last_trade: Decimal | None,
+) -> dict[str, str]:
+    best_bid = max(bid_levels) if bid_levels else None
+    best_ask = min(ask_levels) if ask_levels else None
+    evidence: dict[str, str] = {
+        "inference_low_threshold": str(SETTLEMENT_INFERENCE_LOW),
+        "inference_high_threshold": str(SETTLEMENT_INFERENCE_HIGH),
+    }
+    if best_bid is not None:
+        evidence["terminal_best_bid"] = str(best_bid)
+    if best_ask is not None:
+        evidence["terminal_best_ask"] = str(best_ask)
+    if last_trade is not None:
+        evidence["terminal_last_trade"] = str(last_trade)
+    if best_bid is not None and best_ask is not None:
+        evidence["terminal_mark_source"] = "bbo_mid"
+        evidence["terminal_mark"] = str((best_bid + best_ask) / Decimal("2"))
+    elif last_trade is not None:
+        evidence["terminal_mark_source"] = "last_trade"
+        evidence["terminal_mark"] = str(last_trade)
+    elif best_bid is not None:
+        evidence["terminal_mark_source"] = "best_bid"
+        evidence["terminal_mark"] = str(best_bid)
+    elif best_ask is not None:
+        evidence["terminal_mark_source"] = "best_ask"
+        evidence["terminal_mark"] = str(best_ask)
+    return evidence
 
 
 def _first_update(

@@ -101,7 +101,7 @@ def main() -> None:
                 }
                 for change in conversion.effective_tick_size_changes
             ],
-            "settlement": _settlement_to_dict(conversion.settlement),
+            "settlement": _settlement_to_dict(conversion),
             "items": [_native_item_to_dict(item) for item in conversion.data[: args.max_items]],
         },
     }
@@ -209,16 +209,26 @@ def _repo_relative(path: Path) -> str:
         return path.as_posix()
 
 
-def _settlement_to_dict(settlement: Any | None) -> dict[str, Any] | None:
+def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
+    settlement = conversion.settlement
     if settlement is None:
-        return None
+        return {
+            "mode": "open",
+            "enabled": False,
+            "reason": conversion.settlement_reason,
+            "evidence": dict(conversion.settlement_evidence),
+        }
     return {
+        "mode": settlement.mode,
+        "enabled": True,
         "condition_id": settlement.condition_id,
         "token_id": settlement.token_id,
         "resolution_time": _ts_dict(settlement.resolution_time_ns),
         "payout": str(settlement.payout),
         "source": settlement.source,
         "status": settlement.status,
+        "reason": settlement.reason,
+        "evidence": dict(settlement.evidence),
     }
 
 

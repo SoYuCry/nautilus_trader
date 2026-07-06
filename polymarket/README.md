@@ -99,14 +99,17 @@ substitute Polymarket source `timestamp` as receive time.
   adapter when available.
 - Trade prints (`last_trade_price`) are converted into Nautilus `TradeTick`.
 - Historical `tick_size_change` is supported as an effective tick-size
-  timeline.  The Nautilus instrument uses the finest price increment required
-  for replay precision, while the runner installs a strategy submit-time guard
-  so orders are rejected if their price is illegal under the effective tick at
-  the strategy clock time.  A manually configured `instrument.price_increment`
-  must not be coarser than the finest tick observed in the dataset.
-- Resolved market metadata is converted into Nautilus `InstrumentClose` plus
-  venue `settlement_prices`.  Settlement is a system close event and is not
-  represented as a market `TradeTick`.
+  timeline.  The Nautilus instrument uses Polymarket's static `0.001`
+  expression precision by rule, not by scanning future data.  The effective
+  trading tick starts at `0.01` and switches only when a `tick_size_change`
+  event arrives.  The runner installs a strategy submit-time guard so orders are
+  rejected if their price is illegal under the effective tick at the strategy
+  clock time.
+- Settlement is reported as `official`, `inferred`, or `open`.  Official
+  resolved metadata is converted into Nautilus `InstrumentClose` plus venue
+  `settlement_prices`; inferred settlement is explicitly marked as a
+  terminal-price guess; open mode leaves final positions unclosed.  Settlement
+  is a system close event and is not represented as a market `TradeTick`.
 - Strategy code must subclass `nautilus_trader.trading.strategy.Strategy`.
 
 ## Validation gap

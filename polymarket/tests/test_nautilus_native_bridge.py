@@ -92,6 +92,9 @@ def dataset_with_resolution_metadata(
     steps: list[L2ReplayStepV1],
     *,
     resolution_time: datetime | None = None,
+    token_payout: Decimal | None = Decimal("1"),
+    winner: bool | None = True,
+    resolution_status: str | None = "resolved",
 ) -> PolymarketL2DatasetV1:
     return PolymarketL2DatasetV1(
         metadata=DatasetMetadataV1(
@@ -107,10 +110,10 @@ def dataset_with_resolution_metadata(
                     taker_fee=Decimal("0.05"),
                     fee_source="clob_market_info.feeSchedule.rate",
                     minimum_tick_size=Decimal("0.01"),
-                    resolution_status="resolved",
+                    resolution_status=resolution_status,
                     resolution_time=resolution_time or ts(10),
-                    token_payout=Decimal("1"),
-                    winner=True,
+                    token_payout=token_payout,
+                    winner=winner,
                     resolution_source="test_resolution_metadata",
                 ),
             ),
@@ -195,6 +198,15 @@ def test_binary_option_uses_dataset_fee_metadata_when_config_omits_fee() -> None
     assert instrument.info["fee_source"] == "clob_market_info.feeSchedule.rate"
 
 
+def test_binary_option_uses_polymarket_static_fine_price_increment_without_future_scan() -> None:
+    data = dataset([step(1, [book()])])
+
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    assert str(instrument.price_increment) == "0.001"
+    assert instrument.price_precision == 3
+
+
 def test_binary_option_uses_fine_price_increment_when_dataset_has_tick_size_change() -> None:
     data = dataset(
         [
@@ -239,7 +251,7 @@ def test_binary_option_rejects_coarse_config_price_increment_when_tick_change_ne
         ],
     )
 
-    with pytest.raises(ValueError, match="price_increment is too coarse.*finest_required=0.001"):
+    with pytest.raises(ValueError, match="price_increment is too coarse.*required=0.001"):
         load_binary_option_from_config(
             {"price_increment": "0.01"},
             dataset=data,
@@ -250,36 +262,18 @@ def test_binary_option_rejects_coarse_config_price_increment_when_tick_change_ne
 def test_binary_option_rejects_coarse_dict_path_price_increment_when_tick_change_needs_finer_precision(
     tmp_path: Path,
 ) -> None:
-    coarse_data = dataset([step(1, [book()])])
-    coarse_instrument = load_binary_option_from_config(
-        {"price_increment": "0.01"},
-        dataset=coarse_data,
-        selected_asset_id="yes",
-    )
+    fine_data = dataset([step(1, [book()])])
+    coarse_instrument = load_binary_option_from_config({}, dataset=fine_data, selected_asset_id="yes")
+    instrument_dict = BinaryOption.to_dict(coarse_instrument)
+    instrument_dict["price_increment"] = "0.01"
+    instrument_dict["price_precision"] = 2
     dict_path = tmp_path / "instrument.json"
     dict_path.write_text(
-        json.dumps(BinaryOption.to_dict(coarse_instrument)),
+        json.dumps(instrument_dict),
         encoding="utf-8",
     )
-    fine_data = dataset(
-        [
-            step(1, [book()]),
-            step(
-                2,
-                [
-                    L2UpdateV1(
-                        event_type="tick_size_change",
-                        market="condition",
-                        asset_id="yes",
-                        old_tick_size=Decimal("0.01"),
-                        new_tick_size=Decimal("0.001"),
-                    ),
-                ],
-            ),
-        ],
-    )
 
-    with pytest.raises(ValueError, match="price_increment is too coarse.*finest_required=0.001"):
+    with pytest.raises(ValueError, match="price_increment is too coarse.*required=0.001"):
         load_binary_option_from_config(
             {"dict_path": str(dict_path)},
             dataset=fine_data,
@@ -556,9 +550,11 @@ def test_bridge_converts_resolution_metadata_to_instrument_close_not_trade_tick(
     assert not any(isinstance(item, TradeTick) for item in converted.data)
     close = converted.data[-1]
     assert isinstance(close, InstrumentClose)
-    assert str(close.close_price) == "1.00"
+    assert str(close.close_price) == "1.000"
     assert converted.settlement is not None
     assert converted.settlement.payout == Decimal("1")
+    assert converted.settlement.mode == "official"
+    assert converted.settlement_mode == "official"
 
 
 def test_bridge_rejects_settlement_time_before_last_replay_receive_time() -> None:
@@ -567,6 +563,70 @@ def test_bridge_rejects_settlement_time_before_last_replay_receive_time() -> Non
 
     with pytest.raises(ValueError, match="settlement time is before the last replay"):
         convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_rejects_resolved_metadata_without_payout_or_winner() -> None:
+    data = dataset_with_resolution_metadata(
+        [step(1, [book()])],
+        token_payout=None,
+        winner=None,
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match="requires token_payout or winner"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_rejects_winner_payout_mismatch() -> None:
+    data = dataset_with_resolution_metadata(
+        [step(1, [book()])],
+        token_payout=Decimal("1"),
+        winner=False,
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match="winner and payout disagree"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_infers_settlement_from_terminal_market_convergence() -> None:
+    data = dataset(
+        [
+            step(
+                1,
+                [
+                    L2UpdateV1(
+                        event_type="book",
+                        market="condition",
+                        asset_id="yes",
+                        bids=(LevelV1(Decimal("0.99"), Decimal("100")),),
+                        asks=(LevelV1(Decimal("1.00"), Decimal("100")),),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert converted.settlement is not None
+    assert converted.settlement.mode == "inferred"
+    assert converted.settlement.payout == Decimal("1")
+    assert converted.settlement_mode == "inferred"
+    assert [type(item) for item in converted.data] == [OrderBookDeltas, InstrumentClose]
+
+
+def test_bridge_leaves_settlement_open_when_terminal_market_does_not_converge() -> None:
+    data = dataset([step(1, [book()])])
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert converted.settlement is None
+    assert converted.settlement_mode == "open"
+    assert "did not clearly converge" in converted.settlement_reason
+    assert [type(item) for item in converted.data] == [OrderBookDeltas]
 
 
 def test_bridge_keeps_nautilus_init_timestamps_monotonic_when_receive_times_tie() -> None:

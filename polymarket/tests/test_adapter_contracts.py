@@ -213,3 +213,56 @@ def test_live_ws_loads_market_fee_metadata_sidecar(tmp_path: Path) -> None:
     assert market_metadata.token_payout == Decimal("1")
     assert market_metadata.winner is True
     assert market_metadata.resolution_status == "resolved"
+
+
+def test_live_ws_parses_string_winner_without_truthy_string_bug(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    ndjson_path.write_text(
+        json.dumps(
+            {
+                "local_msg_index": 1,
+                "recv_wall_time_utc": "2026-01-01T00:00:00Z",
+                "raw_json": {
+                    "event_type": "book",
+                    "market": "condition",
+                    "asset_id": "no",
+                    "timestamp": "2026-01-01T00:00:00Z",
+                    "bids": [["0.01", "10"]],
+                    "asks": [["0.02", "10"]],
+                },
+            },
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    metadata_path = tmp_path / "market_metadata.json"
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "markets": [
+                    {
+                        "condition_id": "condition",
+                        "resolution_status": "resolved",
+                        "resolution_time": "2026-01-01T00:01:00Z",
+                        "tokens": [
+                            {"token_id": "no", "outcome": "No", "winner": "false"},
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    dataset = LiveWsV1Adapter(repo_root=Path.cwd()).load(
+        {
+            "input": {
+                "ndjson_path": str(ndjson_path),
+                "market_metadata_path": str(metadata_path),
+            },
+        },
+    )
+
+    market_metadata = dataset.metadata.market_metadata[0]
+    assert market_metadata.winner is False
+    assert market_metadata.token_payout == Decimal("0")

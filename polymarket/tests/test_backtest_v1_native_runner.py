@@ -98,6 +98,24 @@ def write_ndjson_with_tick_change(path: Path) -> None:
     path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
 
 
+def write_ndjson_terminal_yes(path: Path) -> None:
+    rows = [
+        {
+            "local_msg_index": 1,
+            "recv_wall_time_utc": "2026-06-26T02:25:28.635Z",
+            "raw_json": {
+                "event_type": "book",
+                "market": "condition",
+                "asset_id": "yes",
+                "timestamp": "2026-06-26T02:25:28.600Z",
+                "bids": [["0.99", "100"]],
+                "asks": [["1.00", "100"]],
+            },
+        },
+    ]
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+
 def write_take_best_ask_once_strategy(path: Path) -> None:
     path.write_text(
         textwrap.dedent(
@@ -281,7 +299,7 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
             instrument:
               condition_id: "condition"
               token_id: "yes"
-              price_increment: "0.01"
+              price_increment: "0.001"
               size_increment: "0.000001"
               taker_fee: "0.05"
             fees:
@@ -485,7 +503,9 @@ def test_runner_settlement_metadata_closes_open_position_without_trade_tick(tmp_
 
     assert run_summary["trade_ticks_count"] == 1
     assert run_summary["instrument_close_count"] == 1
+    assert run_summary["settlement"]["mode"] == "official"
     assert run_summary["settlement"]["payout"] == "1"
+    assert resolved["settlement"]["mode"] == "official"
     assert resolved["settlement"]["mechanism"] == "Nautilus InstrumentClose + venue settlement_prices"
     assert "EXPIRATION" in fills_csv
     assert ",SELL," in fills_csv
@@ -493,7 +513,85 @@ def test_runner_settlement_metadata_closes_open_position_without_trade_tick(tmp_
     assert ",1.0," in positions_csv
     assert "0.388000 pUSD" in positions_csv
     assert "Settlement enabled: `true`" in run_report
+    assert "Settlement mode: `official`" in run_report
     assert "not converted into a market `TradeTick`" in run_report
+
+
+def test_runner_infers_settlement_and_marks_report_as_inferred(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "terminal_yes.ndjson"
+    write_ndjson_terminal_yes(ndjson_path)
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: settlement_inferred
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            strategy:
+              enabled: false
+            runtime:
+              run_id: settlement-inferred
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    summary = run_from_config(config_path)
+    run_summary = json.loads(Path(summary["outputs"]["summary"]).read_text(encoding="utf-8"))
+    run_report = Path(summary["outputs"]["run_report"]).read_text(encoding="utf-8")
+
+    assert run_summary["instrument_close_count"] == 1
+    assert run_summary["settlement"]["mode"] == "inferred"
+    assert run_summary["settlement"]["payout"] == "1"
+    assert run_summary["settlement"]["evidence"]["terminal_mark_source"] == "bbo_mid"
+    assert summary["settlement_mode"] == "inferred"
+    assert "Settlement mode: `inferred`" in run_report
+    assert "research convenience, not official" in run_report
+
+
+def test_runner_leaves_settlement_open_and_reports_positions(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    write_ndjson(ndjson_path)
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: settlement_open
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            strategy:
+              enabled: false
+            runtime:
+              run_id: settlement-open
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    summary = run_from_config(config_path)
+    run_summary = json.loads(Path(summary["outputs"]["summary"]).read_text(encoding="utf-8"))
+    run_report = Path(summary["outputs"]["run_report"]).read_text(encoding="utf-8")
+
+    assert run_summary["instrument_close_count"] == 0
+    assert run_summary["settlement"]["mode"] == "open"
+    assert run_summary["settlement"]["enabled"] is False
+    assert summary["settlement_mode"] == "open"
+    assert "Settlement mode: `open`" in run_report
+    assert "## Final open positions" in run_report
 
 
 def test_report_output_dir_must_stay_inside_experiment_runs(tmp_path: Path) -> None:

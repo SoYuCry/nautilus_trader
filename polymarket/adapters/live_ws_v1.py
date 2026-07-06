@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from polymarket.adapters.utils import (
+    as_bool,
     as_decimal,
     as_utc_datetime,
     normalize_side,
@@ -175,9 +176,9 @@ class LiveWsV1Adapter:
             or item.get("closed_time")
         )
         raw_payout = token_data.get("payout")
-        winner = token_data.get("winner")
+        winner = as_bool(token_data.get("winner"))
         if raw_payout is None and winner is not None:
-            raw_payout = "1" if bool(winner) else "0"
+            raw_payout = "1" if winner else "0"
         resolution_status = (
             item.get("resolution_status")
             or item.get("umaResolutionStatus")
@@ -196,7 +197,7 @@ class LiveWsV1Adapter:
             resolution_status=str(resolution_status) if resolution_status is not None else None,
             resolution_time=as_utc_datetime(resolution_time) if resolution_time is not None else None,
             token_payout=as_decimal(raw_payout) if raw_payout is not None else None,
-            winner=bool(winner) if winner is not None else None,
+            winner=winner,
             resolution_source=str(item.get("resolution_source") or "market_metadata"),
         )
 

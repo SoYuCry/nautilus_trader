@@ -14,7 +14,7 @@ selection:
 instrument:
   condition_id: "0x024b68f77bfc019341ee3db8f57c103334e4b9430bba4746d8c94aafd8b36fee"
   token_id: "9894510651052373088408067031031513212801618531203062911959630395716258202132"
-  price_increment: "0.01"
+  price_increment: "0.001"
   size_increment: "0.000001"
   maker_fee: "0"
   taker_fee: "0.05"

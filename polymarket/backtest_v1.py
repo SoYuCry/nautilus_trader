@@ -68,7 +68,7 @@ class NativeBacktestResultV1:
     instrument_close_count: int
     skipped_updates: tuple[str, ...]
     tick_size_changes: tuple[tuple[str, str], ...]
-    settlement: dict[str, Any] | None
+    settlement: dict[str, Any]
     data_health: dict[str, Any]
 
 
@@ -267,7 +267,10 @@ def _write_run_report_markdown(
         f"- OrderBookDeltas count: `{result.order_book_deltas_count}`",
         f"- TradeTick count: `{result.trade_ticks_count}`",
         f"- InstrumentClose count: `{result.instrument_close_count}`",
-        f"- Settlement enabled: `{str(result.settlement is not None).lower()}`",
+        f"- Settlement mode: `{result.settlement.get('mode', 'open')}`",
+        f"- Settlement enabled: `{str(result.settlement.get('enabled', False)).lower()}`",
+        f"- Settlement reason: {result.settlement.get('reason', 'unknown')}",
+        "- Settlement modes: `official` uses resolution metadata; `inferred` is a clearly marked terminal-price guess; `open` leaves final positions unclosed.",
         f"- Data health ok: `{str(result.data_health.get('ok')).lower()}`",
         f"- Receive-time inversions: `{health_summary.get('receive_time_inversion_count')}`",
         f"- Sequence inversions: `{health_summary.get('sequence_inversion_count')}`",
@@ -301,6 +304,18 @@ def _write_run_report_markdown(
         "- Strategy fills are recorded in `fills_report.csv`.",
         "- Fees use Nautilus' Polymarket fee model when enabled and read the instrument `maker_fee` / `taker_fee` fields.",
     ]
+    if result.settlement.get("mode") == "open":
+        lines.extend(
+            [
+                "- Open settlement mode means no `InstrumentClose` was generated; inspect the final positions below.",
+                "",
+                "## Final open positions",
+                "",
+                _frame_preview(positions),
+            ],
+        )
+    if result.settlement.get("mode") == "inferred":
+        lines.append("- Inferred settlement is a research convenience, not official Polymarket resolution evidence.")
     (run_dir / "run_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -311,16 +326,27 @@ def _frame_preview(frame: pd.DataFrame, *, max_rows: int = 10) -> str:
         return "```text\n" + str(frame.head(max_rows)) + "\n```"
 
 
-def _settlement_to_dict(settlement: Any | None) -> dict[str, Any] | None:
+def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
+    settlement = conversion.settlement
     if settlement is None:
-        return None
+        return {
+            "mode": "open",
+            "enabled": False,
+            "reason": conversion.settlement_reason,
+            "evidence": dict(conversion.settlement_evidence),
+            "mechanism": "no InstrumentClose generated; final positions remain open",
+        }
     return {
+        "mode": settlement.mode,
+        "enabled": True,
         "condition_id": settlement.condition_id,
         "token_id": settlement.token_id,
         "resolution_time_ns": settlement.resolution_time_ns,
         "payout": str(settlement.payout),
         "source": settlement.source,
         "status": settlement.status,
+        "reason": settlement.reason,
+        "evidence": dict(settlement.evidence),
         "mechanism": "Nautilus InstrumentClose + venue settlement_prices",
     }
 
@@ -381,7 +407,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             engine.add_strategy(strategy)
         engine.run()
 
-        settlement_dict = _settlement_to_dict(conversion.settlement)
+        settlement_dict = _settlement_to_dict(conversion)
         result = NativeBacktestResultV1(
             run_dir=run_dir,
             data_count=len(conversion.data),
@@ -459,7 +485,8 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "order_book_deltas_count": result.order_book_deltas_count,
             "trade_ticks_count": result.trade_ticks_count,
             "instrument_close_count": result.instrument_close_count,
-            "settlement_enabled": result.settlement is not None,
+            "settlement_mode": result.settlement.get("mode", "open"),
+            "settlement_enabled": bool(result.settlement.get("enabled", False)),
             "data_health_ok": data_health_report.ok,
         }
         print(json.dumps(summary, indent=2))
