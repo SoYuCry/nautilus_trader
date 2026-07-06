@@ -174,11 +174,17 @@ def test_live_ws_loads_market_fee_metadata_sidecar(tmp_path: Path) -> None:
                 "markets": [
                     {
                         "condition_id": "condition",
-                        "token_id": "yes",
+                        "minimum_tick_size": "0.01",
                         "maker_fee": "0",
                         "feeSchedule": {"rate": "0.05"},
                         "fee_source": "clob_market_info.feeSchedule.rate",
                         "category": "weather",
+                        "resolution_status": "resolved",
+                        "resolution_time": "2026-01-01T00:01:00Z",
+                        "tokens": [
+                            {"token_id": "yes", "outcome": "Yes", "payout": "1", "winner": True},
+                            {"token_id": "no", "outcome": "No", "payout": "0", "winner": False},
+                        ],
                     },
                 ],
             },
@@ -195,10 +201,15 @@ def test_live_ws_loads_market_fee_metadata_sidecar(tmp_path: Path) -> None:
         },
     )
 
-    assert len(dataset.metadata.market_metadata) == 1
-    market_metadata = dataset.metadata.market_metadata[0]
+    assert len(dataset.metadata.market_metadata) == 2
+    market_metadata = next(item for item in dataset.metadata.market_metadata if item.token_id == "yes")
     assert market_metadata.condition_id == "condition"
     assert market_metadata.token_id == "yes"
+    assert market_metadata.outcome == "Yes"
     assert market_metadata.maker_fee == Decimal("0")
     assert market_metadata.taker_fee == Decimal("0.05")
     assert market_metadata.fee_source == "clob_market_info.feeSchedule.rate"
+    assert market_metadata.minimum_tick_size == Decimal("0.01")
+    assert market_metadata.token_payout == Decimal("1")
+    assert market_metadata.winner is True
+    assert market_metadata.resolution_status == "resolved"

@@ -32,6 +32,6 @@ def test_runner_writes_data_health_before_nautilus_conversion() -> None:
     health_pos = source.index("data_health_report = analyze_dataset_health")
     health_file_pos = source.index('run_dir / "data_health.json"')
     conversion_pos = source.index("conversion = convert_dataset_to_nautilus")
-    engine_pos = source.index("engine = build_engine(config)")
+    engine_pos = source.index("engine = build_engine(config")
 
     assert health_pos < health_file_pos < conversion_pos < engine_pos

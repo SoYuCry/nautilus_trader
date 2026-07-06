@@ -2,25 +2,29 @@
 
 The accepted bridge is:
 
-    Polymarket source adapter -> Nautilus OrderBookDeltas/TradeTick
+    Polymarket source adapter -> Nautilus OrderBookDeltas/TradeTick/InstrumentClose
 
 and execution simulation must be delegated to NautilusTrader's BacktestEngine.
 """
 
 from __future__ import annotations
 
+import json
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 
 
 pytest.importorskip("nautilus_trader.core.data", reason="Nautilus compiled runtime is not built")
 
+from nautilus_trader.model.data import InstrumentClose  # noqa: E402
 from nautilus_trader.model.data import OrderBookDeltas  # noqa: E402
 from nautilus_trader.model.data import TradeTick  # noqa: E402
+from nautilus_trader.model.instruments import BinaryOption  # noqa: E402
 
 from polymarket._core.models import DatasetMetadataV1  # noqa: E402
 from polymarket._core.models import L2ReplayStepV1  # noqa: E402
@@ -29,7 +33,10 @@ from polymarket._core.models import LevelV1  # noqa: E402
 from polymarket._core.models import MarketMetadataV1  # noqa: E402
 from polymarket._core.models import PolymarketL2DatasetV1  # noqa: E402
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus  # noqa: E402
+from polymarket._core.nautilus_native import EffectiveTickSizeChangeV1  # noqa: E402
+from polymarket._core.nautilus_native import install_effective_tick_size_order_guard  # noqa: E402
 from polymarket._core.nautilus_native import load_binary_option_from_config  # noqa: E402
+from polymarket._core.nautilus_native import datetime_to_nanos  # noqa: E402
 
 
 BASE = datetime(2026, 1, 1, tzinfo=UTC)
@@ -74,6 +81,37 @@ def dataset_with_market_metadata(steps: list[L2ReplayStepV1]) -> PolymarketL2Dat
                     maker_fee=Decimal("0"),
                     taker_fee=Decimal("0.05"),
                     fee_source="clob_market_info.feeSchedule.rate",
+                ),
+            ),
+        ),
+        steps=tuple(steps),
+    )
+
+
+def dataset_with_resolution_metadata(
+    steps: list[L2ReplayStepV1],
+    *,
+    resolution_time: datetime | None = None,
+) -> PolymarketL2DatasetV1:
+    return PolymarketL2DatasetV1(
+        metadata=DatasetMetadataV1(
+            dataset_id="synthetic-nautilus-native",
+            adapter_name="synthetic",
+            adapter_version="v1",
+            source_type="test",
+            market_metadata=(
+                MarketMetadataV1(
+                    condition_id="condition",
+                    token_id="yes",
+                    maker_fee=Decimal("0"),
+                    taker_fee=Decimal("0.05"),
+                    fee_source="clob_market_info.feeSchedule.rate",
+                    minimum_tick_size=Decimal("0.01"),
+                    resolution_status="resolved",
+                    resolution_time=resolution_time or ts(10),
+                    token_payout=Decimal("1"),
+                    winner=True,
+                    resolution_source="test_resolution_metadata",
                 ),
             ),
         ),
@@ -157,7 +195,7 @@ def test_binary_option_uses_dataset_fee_metadata_when_config_omits_fee() -> None
     assert instrument.info["fee_source"] == "clob_market_info.feeSchedule.rate"
 
 
-def test_bridge_refuses_to_silently_replay_dynamic_tick_size() -> None:
+def test_binary_option_uses_fine_price_increment_when_dataset_has_tick_size_change() -> None:
     data = dataset(
         [
             step(1, [book()]),
@@ -175,13 +213,14 @@ def test_bridge_refuses_to_silently_replay_dynamic_tick_size() -> None:
             ),
         ],
     )
+
     instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
 
-    with pytest.raises(NotImplementedError, match="tick_size_change"):
-        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+    assert str(instrument.price_increment) == "0.001"
+    assert instrument.price_precision == 3
 
 
-def test_bridge_can_explicitly_skip_tick_size_change_for_smoke_runs() -> None:
+def test_binary_option_rejects_coarse_config_price_increment_when_tick_change_needs_finer_precision() -> None:
     data = dataset(
         [
             step(1, [book()]),
@@ -194,6 +233,134 @@ def test_bridge_can_explicitly_skip_tick_size_change_for_smoke_runs() -> None:
                         asset_id="yes",
                         old_tick_size=Decimal("0.01"),
                         new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    with pytest.raises(ValueError, match="price_increment is too coarse.*finest_required=0.001"):
+        load_binary_option_from_config(
+            {"price_increment": "0.01"},
+            dataset=data,
+            selected_asset_id="yes",
+        )
+
+
+def test_binary_option_rejects_coarse_dict_path_price_increment_when_tick_change_needs_finer_precision(
+    tmp_path: Path,
+) -> None:
+    coarse_data = dataset([step(1, [book()])])
+    coarse_instrument = load_binary_option_from_config(
+        {"price_increment": "0.01"},
+        dataset=coarse_data,
+        selected_asset_id="yes",
+    )
+    dict_path = tmp_path / "instrument.json"
+    dict_path.write_text(
+        json.dumps(BinaryOption.to_dict(coarse_instrument)),
+        encoding="utf-8",
+    )
+    fine_data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    with pytest.raises(ValueError, match="price_increment is too coarse.*finest_required=0.001"):
+        load_binary_option_from_config(
+            {"dict_path": str(dict_path)},
+            dataset=fine_data,
+            selected_asset_id="yes",
+        )
+
+
+def test_bridge_rejects_subpenny_price_before_tick_size_change() -> None:
+    data = dataset(
+        [
+            step(
+                1,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.501"),
+                        size=Decimal("10"),
+                    ),
+                ],
+            ),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match=r"effective tick size.*sequence=1.*price=0\.501.*0\.01"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_bridge_accepts_subpenny_price_after_tick_size_change() -> None:
+    data = dataset(
+        [
+            step(
+                1,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.50"),
+                        size=Decimal("10"),
+                    ),
+                ],
+            ),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+            step(
+                3,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.501"),
+                        size=Decimal("10"),
                     ),
                 ],
             ),
@@ -205,12 +372,201 @@ def test_bridge_can_explicitly_skip_tick_size_change_for_smoke_runs() -> None:
         data,
         instrument=instrument,
         selected_asset_id="yes",
-        fail_on_tick_size_change=False,
     )
 
+    assert str(converted.instrument.price_increment) == "0.001"
     assert converted.tick_size_changes == (("0.01", "0.001"),)
-    assert converted.skipped_updates == ("tick_size_change 0.01->0.001",)
-    assert [type(item) for item in converted.data] == [OrderBookDeltas]
+    assert converted.effective_tick_size_changes[0].new_tick_size == Decimal("0.001")
+    assert converted.skipped_updates == ("tick_size_change 0.01->0.001 (timeline_applied)",)
+    assert [type(item) for item in converted.data] == [
+        OrderBookDeltas,
+        OrderBookDeltas,
+    ]
+
+
+def test_bridge_applies_tick_size_change_before_later_updates_in_same_step() -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.501"),
+                        size=Decimal("10"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert converted.effective_tick_size_changes[0].sequence == 2
+    assert [type(item) for item in converted.data] == [OrderBookDeltas, OrderBookDeltas]
+
+
+def test_bridge_same_step_tick_change_effective_time_follows_pre_tick_flush() -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.50"),
+                        size=Decimal("10"),
+                    ),
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.501"),
+                        size=Decimal("10"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert [type(item) for item in converted.data] == [
+        OrderBookDeltas,
+        OrderBookDeltas,
+        OrderBookDeltas,
+    ]
+    change = converted.effective_tick_size_changes[0]
+    assert converted.data[1].ts_init < change.effective_from_ts_init
+    assert converted.data[2].ts_init == change.effective_from_ts_init
+
+
+def test_bridge_rejects_subpenny_update_before_later_tick_size_change_in_same_step() -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="price_change",
+                        market="condition",
+                        asset_id="yes",
+                        side="BUY",
+                        price=Decimal("0.501"),
+                        size=Decimal("10"),
+                    ),
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match=r"effective tick size.*sequence=2.*price=0\.501.*0\.01"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+
+def test_effective_tick_guard_rejects_invalid_modify_order_price_before_tick_change() -> None:
+    class DummyClock:
+        def __init__(self, ts_now: int) -> None:
+            self.ts_now = ts_now
+
+        def timestamp_ns(self) -> int:
+            return self.ts_now
+
+    class DummyOrder:
+        instrument_id = "condition-yes.POLYMARKET"
+
+    class DummyStrategy:
+        def __init__(self) -> None:
+            self.clock = DummyClock(datetime_to_nanos(ts(1)))
+            self.modified: list[Decimal] = []
+
+        def submit_order(self, order) -> None:
+            return None
+
+        def submit_order_list(self, order_list) -> None:
+            return None
+
+        def modify_order(self, order, quantity=None, price=None, trigger_price=None, client_id=None, params=None) -> None:
+            self.modified.append(price)
+
+    strategy = DummyStrategy()
+    guard_info = install_effective_tick_size_order_guard(
+        strategy,
+        initial_tick_size=Decimal("0.01"),
+        changes=(
+            EffectiveTickSizeChangeV1(
+                sequence=2,
+                effective_from_ts_init=datetime_to_nanos(ts(2)),
+                old_tick_size=Decimal("0.01"),
+                new_tick_size=Decimal("0.001"),
+            ),
+        ),
+    )
+
+    assert "modify_order" in guard_info["guarded_methods"]
+    with pytest.raises(ValueError, match=r"price violates effective tick size.*0\.501.*0\.01"):
+        strategy.modify_order(DummyOrder(), price=Decimal("0.501"))
+
+    strategy.clock.ts_now = datetime_to_nanos(ts(3))
+    strategy.modify_order(DummyOrder(), price=Decimal("0.501"))
+    assert strategy.modified == [Decimal("0.501")]
+
+
+def test_bridge_converts_resolution_metadata_to_instrument_close_not_trade_tick() -> None:
+    data = dataset_with_resolution_metadata([step(1, [book()])])
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert [type(item) for item in converted.data] == [OrderBookDeltas, InstrumentClose]
+    assert not any(isinstance(item, TradeTick) for item in converted.data)
+    close = converted.data[-1]
+    assert isinstance(close, InstrumentClose)
+    assert str(close.close_price) == "1.00"
+    assert converted.settlement is not None
+    assert converted.settlement.payout == Decimal("1")
+
+
+def test_bridge_rejects_settlement_time_before_last_replay_receive_time() -> None:
+    data = dataset_with_resolution_metadata([step(2, [book()])], resolution_time=ts(1))
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match="settlement time is before the last replay"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
 
 
 def test_bridge_keeps_nautilus_init_timestamps_monotonic_when_receive_times_tie() -> None:
