@@ -148,7 +148,9 @@ python -m pytest polymarket\tests\test_nautilus_native_bridge.py polymarket\test
 
 Each future `research/<date-topic>/` directory may own its `experiment.yml`,
 optional Nautilus-native `strategy.py`, `report.md`, and representative
-`runs/<run_id>/` outputs.  Runs write `original_config.yml`, `resolved_config.json`, `data_health.json`, CSV reports, txt previews, and `run_report.md`.  Any strategy script must subclass
+`runs/<run_id>/` outputs.  Runs write `original_config.yml`, `resolved_config.json`,
+`data_health.json`, curated `fills.csv` / `positions.csv` / `account.csv`,
+raw Nautilus CSV audit files under `raw_nautilus/`, and `run_report.md`.  Any strategy script must subclass
 `nautilus_trader.trading.strategy.Strategy`; this package stays focused on
 adapters, Nautilus-native conversion, and report post-processing.
 

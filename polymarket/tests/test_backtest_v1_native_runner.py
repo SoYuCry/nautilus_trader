@@ -11,7 +11,7 @@ import pytest
 
 pytest.importorskip("nautilus_trader.core.data", reason="Nautilus compiled runtime is not built")
 
-from polymarket.backtest_v1 import run_from_config  # noqa: E402
+from polymarket.backtest_v1 import run_from_config
 
 
 def write_ndjson(path: Path) -> None:
@@ -260,12 +260,15 @@ def test_runner_uses_nautilus_backtest_engine_and_native_reports(tmp_path: Path)
     assert resolved["engine"] == "nautilus_trader.backtest.engine.BacktestEngine"
     assert summary["order_book_deltas_count"] == 2
     assert summary["trade_ticks_count"] == 1
-    assert (run_dir / "account_report.txt").exists()
-    assert (run_dir / "account_report.csv").exists()
-    assert (run_dir / "fills_report.txt").exists()
-    assert (run_dir / "fills_report.csv").exists()
-    assert (run_dir / "positions_report.txt").exists()
-    assert (run_dir / "positions_report.csv").exists()
+    assert (run_dir / "account.csv").exists()
+    assert (run_dir / "fills.csv").exists()
+    assert (run_dir / "positions.csv").exists()
+    assert (run_dir / "raw_nautilus" / "account.csv").exists()
+    assert (run_dir / "raw_nautilus" / "fills.csv").exists()
+    assert (run_dir / "raw_nautilus" / "positions.csv").exists()
+    assert not (run_dir / "account_report.txt").exists()
+    assert not (run_dir / "fills_report.txt").exists()
+    assert not (run_dir / "positions_report.txt").exists()
     assert (run_dir / "run_report.md").exists()
 
 
@@ -371,9 +374,9 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     summary = run_from_config(config_path)
     run_summary = json.loads(Path(summary["outputs"]["summary"]).read_text(encoding="utf-8"))
     resolved = json.loads(Path(summary["outputs"]["resolved_config"]).read_text(encoding="utf-8"))
-    fills = Path(summary["outputs"]["fills_report"]).read_text(encoding="utf-8")
-    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
-    positions = Path(summary["outputs"]["positions_report"]).read_text(encoding="utf-8")
+    raw_fills = Path(summary["outputs"]["raw_nautilus_fills"]).read_text(encoding="utf-8")
+    fills_csv = Path(summary["outputs"]["fills"]).read_text(encoding="utf-8")
+    positions = Path(summary["outputs"]["positions"]).read_text(encoding="utf-8")
     run_report = Path(summary["outputs"]["run_report"]).read_text(encoding="utf-8")
 
     assert summary["engine"] == "nautilus_trader.backtest.engine.BacktestEngine"
@@ -387,18 +390,19 @@ def test_runner_executes_native_strategy_and_reports_fill(tmp_path: Path) -> Non
     assert resolved["fees"]["instrument_fee_source"] == "instrument_config"
     assert run_summary["fees"]["instrument_fee_source"] == "instrument_config"
     assert run_summary["fees"]["totals_from_fills_report"]["total_display"] == "0.012 pUSD"
-    assert "MARKET" in fills
-    assert "BUY" in fills
-    assert "FILLED" in fills
-    assert "1.000000" in fills
-    assert "0.012000 pUSD" in fills_csv
+    assert "MARKET" in raw_fills
+    assert "BUY" in raw_fills
+    assert "FILLED" in raw_fills
+    assert "1.000000" in raw_fills
+    assert "net_cashflow_pusd" in fills_csv
+    assert "0.012 pUSD" in fills_csv
     assert "LONG" in positions
     assert "avg_px_open" in positions
     assert "0.6" in positions
     assert "TradeTick count" in run_report
     assert "## Fees" in run_report
     assert "Fee source: `instrument_config`" in run_report
-    assert "Total fees from `fills_report`: `0.012 pUSD`" in run_report
+    assert "Total fees from `raw_nautilus/fills.csv`: `0.012 pUSD`" in run_report
 
 
 def test_runner_rejects_strategy_limit_price_outside_effective_tick(tmp_path: Path) -> None:
@@ -583,7 +587,7 @@ def test_runner_allows_strategy_base_rounded_limit_price(tmp_path: Path) -> None
     assert rounding["count"] == 1
     assert rounding["events"][0]["original_price"] == "0.601"
     assert rounding["events"][0]["rounded_price"] == "0.61"
-    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
+    fills_csv = Path(summary["outputs"]["fills"]).read_text(encoding="utf-8")
     assert "BUY" in fills_csv
     assert "0.6" in fills_csv
 
@@ -689,7 +693,7 @@ def test_runner_strategy_base_uses_post_tick_change_precision(tmp_path: Path) ->
     assert rounding["events"][0]["tick_size"] == "0.001"
     assert rounding["events"][0]["original_price"] == "0.6014"
     assert rounding["events"][0]["rounded_price"] == "0.602"
-    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
+    fills_csv = Path(summary["outputs"]["fills"]).read_text(encoding="utf-8")
     assert "BUY" in fills_csv
     assert "0.601" in fills_csv
 
@@ -761,8 +765,8 @@ def test_runner_settlement_metadata_closes_open_position_without_trade_tick(tmp_
     summary = run_from_config(config_path)
     run_summary = json.loads(Path(summary["outputs"]["summary"]).read_text(encoding="utf-8"))
     resolved = json.loads(Path(summary["outputs"]["resolved_config"]).read_text(encoding="utf-8"))
-    fills_csv = Path(summary["outputs"]["fills_report_csv"]).read_text(encoding="utf-8")
-    positions_csv = Path(summary["outputs"]["positions_report_csv"]).read_text(encoding="utf-8")
+    fills_csv = Path(summary["outputs"]["fills"]).read_text(encoding="utf-8")
+    positions_csv = Path(summary["outputs"]["positions"]).read_text(encoding="utf-8")
     run_report = Path(summary["outputs"]["run_report"]).read_text(encoding="utf-8")
 
     assert run_summary["trade_ticks_count"] == 1
@@ -886,7 +890,7 @@ def test_runner_require_explicit_fee_rejects_default_zero_fallback(tmp_path: Pat
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="fees.require_explicit=true.*fee_source=default_zero"):
+    with pytest.raises(ValueError, match=r"fees.require_explicit=true.*fee_source=default_zero"):
         run_from_config(config_path)
 
 

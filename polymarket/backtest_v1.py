@@ -13,12 +13,12 @@ import json
 import shutil
 import sys
 import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
-import pandas as pd
 import yaml
 
 from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
@@ -44,11 +44,11 @@ from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
 from polymarket._core.fees import build_fee_report
 from polymarket._core.fees import enforce_fee_report
-from polymarket._core.fees import summarize_fill_fee_totals
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket._core.nautilus_native import convert_dataset_to_nautilus
 from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
 from polymarket._core.nautilus_native import load_binary_option_from_config
+from polymarket._core.reports import write_backtest_reports
 from polymarket.strategy import PolymarketStrategyBase
 
 
@@ -261,150 +261,6 @@ def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int,
     return len(order_book_deltas), len(trade_ticks), len(instrument_closes)
 
 
-def write_reports(run_dir: Path, engine: BacktestEngine, result: NativeBacktestResultV1) -> dict[str, Any]:
-    account = engine.trader.generate_account_report(POLYMARKET_VENUE)
-    fills = engine.trader.generate_order_fills_report()
-    positions = engine.trader.generate_positions_report()
-    fee_totals = summarize_fill_fee_totals(fills)
-    fee_report = {**result.fees, "totals_from_fills_report": fee_totals}
-    with pd.option_context("display.max_rows", 200, "display.max_columns", None, "display.width", 300):
-        (run_dir / "account_report.txt").write_text(str(account), encoding="utf-8")
-        (run_dir / "fills_report.txt").write_text(str(fills), encoding="utf-8")
-        (run_dir / "positions_report.txt").write_text(str(positions), encoding="utf-8")
-    account.to_csv(run_dir / "account_report.csv")
-    fills.to_csv(run_dir / "fills_report.csv")
-    positions.to_csv(run_dir / "positions_report.csv")
-    _write_run_report_markdown(
-        run_dir=run_dir,
-        result=result,
-        account=account,
-        fills=fills,
-        positions=positions,
-        fee_totals=fee_totals,
-    )
-    (run_dir / "summary.json").write_text(
-        json.dumps(
-            {
-                "engine": "nautilus_trader.backtest.engine.BacktestEngine",
-                "data_count": result.data_count,
-                "order_book_deltas_count": result.order_book_deltas_count,
-                "trade_ticks_count": result.trade_ticks_count,
-                "instrument_close_count": result.instrument_close_count,
-                "skipped_updates": list(result.skipped_updates),
-                "tick_size_changes": list(result.tick_size_changes),
-                "settlement": result.settlement,
-                "data_health": result.data_health,
-                "fees": fee_report,
-                "reports": {
-                    "account_txt": "account_report.txt",
-                    "account_csv": "account_report.csv",
-                    "fills_txt": "fills_report.txt",
-                    "fills_csv": "fills_report.csv",
-                    "positions_txt": "positions_report.txt",
-                    "positions_csv": "positions_report.csv",
-                    "markdown": "run_report.md",
-                },
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-    return {"fees": fee_report}
-
-
-def _write_run_report_markdown(
-    *,
-    run_dir: Path,
-    result: NativeBacktestResultV1,
-    account: pd.DataFrame,
-    fills: pd.DataFrame,
-    positions: pd.DataFrame,
-    fee_totals: dict[str, Any],
-) -> None:
-    health_summary = result.data_health.get("summary", {})
-    lines = [
-        "# Polymarket backtest run report",
-        "",
-        "## Summary",
-        "",
-        "- Engine: `nautilus_trader.backtest.engine.BacktestEngine`",
-        f"- Nautilus data count: `{result.data_count}`",
-        f"- OrderBookDeltas count: `{result.order_book_deltas_count}`",
-        f"- TradeTick count: `{result.trade_ticks_count}`",
-        f"- InstrumentClose count: `{result.instrument_close_count}`",
-        f"- Settlement mode: `{result.settlement.get('mode', 'open')}`",
-        f"- Settlement enabled: `{str(result.settlement.get('enabled', False)).lower()}`",
-        f"- Settlement reason: {result.settlement.get('reason', 'unknown')}",
-        "- Settlement modes: `official` uses resolution metadata; `inferred` is a clearly marked terminal-price guess; `open` leaves final positions unclosed.",
-        f"- Data health ok: `{str(result.data_health.get('ok')).lower()}`",
-        f"- Receive-time inversions: `{health_summary.get('receive_time_inversion_count')}`",
-        f"- Sequence inversions: `{health_summary.get('sequence_inversion_count')}`",
-        f"- Source-time inversions: `{health_summary.get('source_time_inversion_count')}`",
-        f"- Future source-time count: `{health_summary.get('future_source_time_count')}`",
-        "",
-        "## Fees",
-        "",
-        f"- Fee model enabled: `{str(result.fees.get('enabled', False)).lower()}`",
-        f"- Fee model: `{result.fees.get('model', 'unknown')}`",
-        f"- Maker rebates enabled: `{str(result.fees.get('maker_rebates_enabled', False)).lower()}`",
-        f"- Require explicit fee metadata: `{str(result.fees.get('require_explicit', False)).lower()}`",
-        f"- Instrument maker fee: `{result.fees.get('instrument_maker_fee', 'unknown')}`",
-        f"- Instrument taker fee: `{result.fees.get('instrument_taker_fee', 'unknown')}`",
-        f"- Fee source: `{result.fees.get('instrument_fee_source', 'unknown')}`",
-        f"- Total fees from `fills_report`: `{fee_totals.get('total_display', 'unavailable')}`",
-        f"- Fee total source column: `{fee_totals.get('source_column')}`",
-        f"- Fee warning: {result.fees.get('warning') or 'none'}",
-        f"- Fee total warning: {fee_totals.get('warning') or 'none'}",
-        "",
-        "## Report files",
-        "",
-        "- `summary.json`",
-        "- `data_health.json`",
-        "- `fills_report.csv` / `fills_report.txt`",
-        "- `positions_report.csv` / `positions_report.txt`",
-        "- `account_report.csv` / `account_report.txt`",
-        "",
-        "## Fills preview",
-        "",
-        _frame_preview(fills),
-        "",
-        "## Positions preview",
-        "",
-        _frame_preview(positions),
-        "",
-        "## Account preview",
-        "",
-        _frame_preview(account),
-        "",
-        "## Notes",
-        "",
-        "- `TradeTick count` is selected-token `last_trade_price` converted into Nautilus `TradeTick`; it is not strategy fill count.",
-        "- Settlement uses Nautilus `InstrumentClose` + venue `settlement_prices`; it is not converted into a market `TradeTick`.",
-        "- Strategy fills are recorded in `fills_report.csv`.",
-        "- Fees use Nautilus' Polymarket fee model when enabled and read the instrument `maker_fee` / `taker_fee` fields.",
-    ]
-    if result.settlement.get("mode") == "open":
-        lines.extend(
-            [
-                "- Open settlement mode means no `InstrumentClose` was generated; inspect the final positions below.",
-                "",
-                "## Final open positions",
-                "",
-                _frame_preview(positions),
-            ],
-        )
-    if result.settlement.get("mode") == "inferred":
-        lines.append("- Inferred settlement is a research convenience, not official Polymarket resolution evidence.")
-    (run_dir / "run_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-
-def _frame_preview(frame: pd.DataFrame, *, max_rows: int = 10) -> str:
-    if frame.empty:
-        return "_empty_"
-    with pd.option_context("display.max_rows", max_rows, "display.max_columns", None, "display.width", 300):
-        return "```text\n" + str(frame.head(max_rows)) + "\n```"
-
-
 def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
     settlement = conversion.settlement
     if settlement is None:
@@ -543,7 +399,14 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
         }
         (run_dir / "resolved_config.json").write_text(json.dumps(resolved, indent=2), encoding="utf-8")
-        report_metadata = write_reports(run_dir, engine, result)
+        report_metadata = write_backtest_reports(
+            run_dir=run_dir,
+            result=result,
+            account=engine.trader.generate_account_report(POLYMARKET_VENUE),
+            fills=engine.trader.generate_order_fills_report(),
+            positions=engine.trader.generate_positions_report(),
+            instrument=instrument,
+        )
         summary = {
             "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
@@ -552,12 +415,21 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 "resolved_config": repo_relative_or_absolute(run_dir / "resolved_config.json", repo_root=REPO_ROOT),
                 "data_health": repo_relative_or_absolute(run_dir / "data_health.json", repo_root=REPO_ROOT),
                 "summary": repo_relative_or_absolute(run_dir / "summary.json", repo_root=REPO_ROOT),
-                "account_report": repo_relative_or_absolute(run_dir / "account_report.txt", repo_root=REPO_ROOT),
-                "account_report_csv": repo_relative_or_absolute(run_dir / "account_report.csv", repo_root=REPO_ROOT),
-                "fills_report": repo_relative_or_absolute(run_dir / "fills_report.txt", repo_root=REPO_ROOT),
-                "fills_report_csv": repo_relative_or_absolute(run_dir / "fills_report.csv", repo_root=REPO_ROOT),
-                "positions_report": repo_relative_or_absolute(run_dir / "positions_report.txt", repo_root=REPO_ROOT),
-                "positions_report_csv": repo_relative_or_absolute(run_dir / "positions_report.csv", repo_root=REPO_ROOT),
+                "account": repo_relative_or_absolute(run_dir / "account.csv", repo_root=REPO_ROOT),
+                "fills": repo_relative_or_absolute(run_dir / "fills.csv", repo_root=REPO_ROOT),
+                "positions": repo_relative_or_absolute(run_dir / "positions.csv", repo_root=REPO_ROOT),
+                "raw_nautilus_account": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "account.csv",
+                    repo_root=REPO_ROOT,
+                ),
+                "raw_nautilus_fills": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "fills.csv",
+                    repo_root=REPO_ROOT,
+                ),
+                "raw_nautilus_positions": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "positions.csv",
+                    repo_root=REPO_ROOT,
+                ),
                 "run_report": repo_relative_or_absolute(run_dir / "run_report.md", repo_root=REPO_ROOT),
             },
             "data_count": result.data_count,
@@ -567,7 +439,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "settlement_mode": result.settlement.get("mode", "open"),
             "settlement_enabled": bool(result.settlement.get("enabled", False)),
             "data_health_ok": data_health_report.ok,
-            "fees": report_metadata["fees"],
+            "fees": report_metadata.fees,
         }
         print(json.dumps(summary, indent=2))
         return summary
