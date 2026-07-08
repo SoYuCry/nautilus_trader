@@ -254,6 +254,9 @@ pub struct PolymarketDataClientConfig {
     /// Whether to subscribe to new market discovery events via WebSocket.
     #[builder(default)]
     pub subscribe_new_markets: bool,
+    /// Whether to drop quote ticks when bid or ask prices are missing.
+    #[builder(default = true)]
+    pub drop_quotes_missing_side: bool,
     /// Maximum concurrent instrument fetches spawned from `new_market` events.
     ///
     /// This bounds adapter-side fan-out during event bursts and prevents
@@ -557,8 +560,17 @@ resolve_poll_max_wait_secs = 1800
         assert_eq!(config.resolve_poll_interval_secs, 30);
         assert_eq!(config.resolve_poll_grace_secs, 10);
         assert_eq!(config.resolve_poll_max_wait_secs, 1800);
+        assert!(config.drop_quotes_missing_side);
         assert!(config.filters.is_empty());
         assert!(config.new_market_filter.is_none());
+    }
+
+    #[rstest]
+    fn test_data_config_toml_sets_drop_quotes_missing_side_false() {
+        let config: PolymarketDataClientConfig =
+            toml::from_str("drop_quotes_missing_side = false").unwrap();
+
+        assert!(!config.drop_quotes_missing_side);
     }
 
     #[rstest]

@@ -195,6 +195,7 @@ impl PolymarketExecutionClient {
         let http_client = self.http_client.clone();
         let clock = self.clock;
         let signature_type = self.config.signature_type;
+        let stopping = self.stopping.clone();
         let user_address = self
             .secrets
             .funder
@@ -235,7 +236,7 @@ impl PolymarketExecutionClient {
                                 )
                                 .await
                                 {
-                                    Ok(()) => log::info!(
+                                    Ok(()) => log::debug!(
                                         "Account state refreshed after finalized trade for {account_id}"
                                     ),
                                     Err(e) => log::warn!(
@@ -248,6 +249,25 @@ impl PolymarketExecutionClient {
                     Some(PolymarketWsMessage::Market(_)) => {}
                     Some(PolymarketWsMessage::Reconnected) => {
                         log::info!("User WebSocket reconnected");
+                        if stopping.load(Ordering::Acquire) {
+                            log::debug!("Skipping account refresh because execution client is stopping");
+                            continue;
+                        }
+
+                        let http = http_client.clone();
+                        let emit = emitter.clone();
+                        get_runtime().spawn(async move {
+                            match fetch_and_emit_account_state(&http, &emit, clock, signature_type)
+                                .await
+                            {
+                                Ok(()) => {
+                                    log::info!("Account state refreshed after WebSocket reconnect");
+                                }
+                                Err(e) => {
+                                    log::warn!("Failed to refresh account after reconnect: {e}");
+                                }
+                            }
+                        });
                     }
                     None => {
                         log::debug!("User WebSocket stream ended");
@@ -296,7 +316,7 @@ impl PolymarketExecutionClient {
             self.upsert_execution_lookup(inst);
         }
 
-        log::info!("Loaded {} instruments from cache", instruments.len());
+        log::debug!("Loaded {} instruments from cache", instruments.len());
     }
 
     pub(super) fn start_client(&mut self) {

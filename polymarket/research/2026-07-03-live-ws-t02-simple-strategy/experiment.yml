@@ -1,0 +1,58 @@
+experiment:
+  name: live_ws_t02_round_trip
+  description: "Use the 2026-06-26 T02 raw live WebSocket capture to run one minimal Nautilus-native round-trip strategy."
+
+adapter:
+  name: live_ws_v1
+  input:
+    ndjson_path: polymarket/research/2026-07-03-live-ws-t02-simple-strategy/data/live_ws_v1_20260626T022520Z.ndjson
+    dataset_id: live_ws_20260626T022520Z_t02
+
+selection:
+  asset_id: "9894510651052373088408067031031513212801618531203062911959630395716258202132"
+
+instrument:
+  condition_id: "0x024b68f77bfc019341ee3db8f57c103334e4b9430bba4746d8c94aafd8b36fee"
+  token_id: "9894510651052373088408067031031513212801618531203062911959630395716258202132"
+  price_increment: "0.001"
+  size_increment: "0.000001"
+  maker_fee: "0"
+  taker_fee: "0.05"
+  fee_source: "manual_override_until_market_metadata_is_available"
+
+fees:
+  enabled: true
+  maker_rebates_enabled: false
+
+strategy:
+  enabled: true
+  path: strategy_take_best_ask_exit_after.py
+  class: TakeBestAskExitAfter
+  params:
+    instrument_id: "0x024b68f77bfc019341ee3db8f57c103334e4b9430bba4746d8c94aafd8b36fee-9894510651052373088408067031031513212801618531203062911959630395716258202132.POLYMARKET"
+    quantity: "1"
+    exit_after_seconds: 60
+
+replay:
+  fail_on_tick_size_change: false
+
+data_health:
+  future_tolerance_ms: 50
+  delay_warning_ms: 1000
+
+engine:
+  trader_id: POLY-LIVE-T02-001
+  bypass_logging: true
+  run_analysis: false
+  trade_execution: true
+  liquidity_consumption: false
+  queue_position: false
+
+portfolio:
+  starting_balance: "10000 pUSD"
+
+runtime:
+  run_id: live-t02-round-trip-001
+
+report:
+  output_dir: ./runs

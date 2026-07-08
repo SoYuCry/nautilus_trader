@@ -949,11 +949,21 @@ orders are "ahead" of your order at a given price level.
    On the tick that clears the queue, only the excess volume (trade size minus queue ahead) is
    available for fill, preventing overfill.
 
-4. **Price level DELETE**: If the order book level is deleted (BookAction.DELETE), the queue clears
-   immediately, making the order fill-eligible. UPDATE actions are ignored (queue unchanged).
+4. **Book deletions**:
+   - L2 (and aggregate `F_MBP`/`F_TOB` deletes in L3 books): the DELETE removes the whole price
+     level, so the queue clears and the order becomes fill-eligible.
+   - L3 (MBO): a per-order DELETE advances the queue by that order's remaining tracked size.
+     Orders already consumed by trades or aggregate updates are not counted twice.
 
-5. **Order modification**: If the order is modified (price or quantity change), the queue position
-   resets. The order moves to the back of the queue at its new price level.
+5. **Book updates**:
+   - L2 (and aggregate `F_MBP`/`F_TOB` updates in L3 books): the UPDATE caps the quantity ahead
+     at the level's new displayed size.
+   - L3 (MBO): a per-order UPDATE tracks the order's size change. A decrease advances the queue
+     by the difference (time priority retained). An increase keeps the order ahead with its
+     larger size. A price change removes it from the queue.
+
+6. **Order modification**: A price change resets the queue position and the order joins the back
+   of the queue at its new price level. Quantity-only changes keep the accrued position.
 
 **Configuration:**
 

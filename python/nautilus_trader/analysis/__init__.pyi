@@ -3,7 +3,50 @@
 import typing
 
 from nautilus_trader import model
+from nautilus_trader.analysis.config import GridLayout as GridLayout
+from nautilus_trader.analysis.config import (
+    TearsheetBarsWithFillsChart as TearsheetBarsWithFillsChart,
+)
+from nautilus_trader.analysis.config import TearsheetChart as TearsheetChart
+from nautilus_trader.analysis.config import TearsheetConfig as TearsheetConfig
+from nautilus_trader.analysis.config import TearsheetCustomChart as TearsheetCustomChart
+from nautilus_trader.analysis.config import TearsheetDistributionChart as TearsheetDistributionChart
+from nautilus_trader.analysis.config import TearsheetDrawdownChart as TearsheetDrawdownChart
+from nautilus_trader.analysis.config import TearsheetEquityChart as TearsheetEquityChart
+from nautilus_trader.analysis.config import (
+    TearsheetMonthlyReturnsChart as TearsheetMonthlyReturnsChart,
+)
+from nautilus_trader.analysis.config import (
+    TearsheetRollingSharpeChart as TearsheetRollingSharpeChart,
+)
+from nautilus_trader.analysis.config import TearsheetRunInfoChart as TearsheetRunInfoChart
+from nautilus_trader.analysis.config import TearsheetStatsTableChart as TearsheetStatsTableChart
+from nautilus_trader.analysis.config import (
+    TearsheetYearlyReturnsChart as TearsheetYearlyReturnsChart,
+)
 from nautilus_trader.analysis.reporter import ReportProvider as ReportProvider
+from nautilus_trader.analysis.tearsheet import create_bars_with_fills as create_bars_with_fills
+from nautilus_trader.analysis.tearsheet import create_drawdown_chart as create_drawdown_chart
+from nautilus_trader.analysis.tearsheet import create_equity_curve as create_equity_curve
+from nautilus_trader.analysis.tearsheet import (
+    create_monthly_returns_heatmap as create_monthly_returns_heatmap,
+)
+from nautilus_trader.analysis.tearsheet import (
+    create_returns_distribution as create_returns_distribution,
+)
+from nautilus_trader.analysis.tearsheet import create_rolling_sharpe as create_rolling_sharpe
+from nautilus_trader.analysis.tearsheet import create_tearsheet as create_tearsheet
+from nautilus_trader.analysis.tearsheet import (
+    create_tearsheet_from_stats as create_tearsheet_from_stats,
+)
+from nautilus_trader.analysis.tearsheet import create_yearly_returns as create_yearly_returns
+from nautilus_trader.analysis.tearsheet import get_chart as get_chart
+from nautilus_trader.analysis.tearsheet import list_charts as list_charts
+from nautilus_trader.analysis.tearsheet import register_chart as register_chart
+from nautilus_trader.analysis.tearsheet import register_tearsheet_chart as register_tearsheet_chart
+from nautilus_trader.analysis.themes import get_theme as get_theme
+from nautilus_trader.analysis.themes import list_themes as list_themes
+from nautilus_trader.analysis.themes import register_theme as register_theme
 
 __all__ = [
     "CAGR",
@@ -12,7 +55,9 @@ __all__ = [
     "AvgWinner",
     "BetaRatio",
     "CalmarRatio",
+    "DownCaptureRatio",
     "Expectancy",
+    "ExpectedShortfall",
     "InformationRatio",
     "LongRatio",
     "MaxDrawdown",
@@ -20,18 +65,25 @@ __all__ = [
     "MaxWinner",
     "MinLoser",
     "MinWinner",
+    "OmegaRatio",
     "PortfolioAnalyzer",
     "PortfolioStatistics",
     "ProfitFactor",
     "ReturnsAverage",
     "ReturnsAverageLoss",
     "ReturnsAverageWin",
+    "ReturnsKurtosis",
+    "ReturnsSkewness",
     "ReturnsVolatility",
     "RiskReturnRatio",
     "SharpeRatio",
     "SortinoRatio",
+    "TailRatio",
     "TrackingError",
     "TreynorRatio",
+    "UlcerIndex",
+    "UpCaptureRatio",
+    "ValueAtRisk",
     "WinRate",
 ]
 
@@ -108,6 +160,20 @@ class CalmarRatio:
     def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
+class DownCaptureRatio:
+    def __init__(self, period: int | None = None) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, _returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+    def calculate_from_returns_with_benchmark(
+        self, returns: typing.Mapping[int, float], benchmark: typing.Mapping[int, float]
+    ) -> float | None: ...
+
+@typing.final
 class Expectancy:
     def __init__(self) -> None: ...
     @property
@@ -116,6 +182,17 @@ class Expectancy:
         self, realized_pnls: typing.Sequence[float]
     ) -> float | None: ...
     def calculate_from_returns(self, _returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
+class ExpectedShortfall:
+    def __init__(self, confidence: float | None = None) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
     def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
@@ -196,6 +273,17 @@ class MinWinner:
         self, realized_pnls: typing.Sequence[float]
     ) -> float | None: ...
     def calculate_from_returns(self, _returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
+class OmegaRatio:
+    def __init__(self, threshold: float | None = None) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
     def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
@@ -298,6 +386,28 @@ class ReturnsAverageWin:
     def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
+class ReturnsKurtosis:
+    def __init__(self) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
+class ReturnsSkewness:
+    def __init__(self) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
 class ReturnsVolatility:
     def __init__(self, period: int | None = None) -> None: ...
     @property
@@ -342,6 +452,17 @@ class SortinoRatio:
     def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
+class TailRatio:
+    def __init__(self) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
 class TrackingError:
     def __init__(self, period: int | None = None) -> None: ...
     @property
@@ -368,6 +489,42 @@ class TreynorRatio:
     def calculate_from_returns_with_benchmark(
         self, returns: typing.Mapping[int, float], benchmark: typing.Mapping[int, float]
     ) -> float | None: ...
+
+@typing.final
+class UlcerIndex:
+    def __init__(self) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+
+@typing.final
+class UpCaptureRatio:
+    def __init__(self, period: int | None = None) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, _returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
+    def calculate_from_returns_with_benchmark(
+        self, returns: typing.Mapping[int, float], benchmark: typing.Mapping[int, float]
+    ) -> float | None: ...
+
+@typing.final
+class ValueAtRisk:
+    def __init__(self, confidence: float | None = None) -> None: ...
+    @property
+    def name(self) -> str: ...
+    def calculate_from_returns(self, raw_returns: typing.Mapping[int, float]) -> float | None: ...
+    def calculate_from_realized_pnls(
+        self, _realized_pnls: typing.Sequence[float]
+    ) -> float | None: ...
+    def calculate_from_positions(self, _positions: typing.Sequence[typing.Any]) -> float | None: ...
 
 @typing.final
 class WinRate:

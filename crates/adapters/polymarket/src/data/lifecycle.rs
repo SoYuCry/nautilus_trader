@@ -91,7 +91,9 @@ impl PolymarketDataClient {
             pending_snapshot_after_tick_change: self.pending_snapshot_after_tick_change.clone(),
             new_market_inflight_keys: self.new_market_inflight_keys.clone(),
             new_market_fetch_semaphore: self.new_market_fetch_semaphore.clone(),
+            rtds_feed: self.rtds_feed.clone(),
             subscribe_new_markets: self.config.subscribe_new_markets,
+            drop_quotes_missing_side: self.config.drop_quotes_missing_side,
             new_market_filter: self.config.new_market_filter.clone(),
             cancellation_token: cancellation.clone(),
         };
@@ -163,7 +165,9 @@ impl PolymarketDataClient {
             pending_snapshot_after_tick_change: self.pending_snapshot_after_tick_change.clone(),
             new_market_inflight_keys: self.new_market_inflight_keys.clone(),
             new_market_fetch_semaphore: self.new_market_fetch_semaphore.clone(),
+            rtds_feed: self.rtds_feed.clone(),
             subscribe_new_markets: self.config.subscribe_new_markets,
+            drop_quotes_missing_side: self.config.drop_quotes_missing_side,
             new_market_filter: self.config.new_market_filter.clone(),
             cancellation_token: cancellation.clone(),
         };
@@ -234,7 +238,7 @@ impl PolymarketDataClient {
                         if !selection.condition_ids.is_empty()
                             || !selection.pause_condition_ids.is_empty()
                         {
-                            log::info!(
+                            log::debug!(
                                 "Polymarket resolve poll selected={} watched_conditions={} watched_instruments={} skipped_not_expired={} timed_out={} paused={} min_ready_in_secs={:?}",
                                 selection.condition_ids.len(),
                                 watched_conditions,
@@ -350,9 +354,9 @@ impl PolymarketDataClient {
 
         log::info!("Connecting Polymarket data client");
 
-        log::info!("Bootstrapping instruments from Gamma API...");
+        log::debug!("Bootstrapping instruments from Gamma API...");
         self.bootstrap_instruments().await?;
-        log::info!(
+        log::debug!(
             "Bootstrap complete, {} instruments loaded",
             self.instruments.load().len(),
         );
@@ -360,7 +364,7 @@ impl PolymarketDataClient {
         self.ws_client.connect().await?;
 
         if self.config.subscribe_new_markets {
-            log::info!("Subscribing to new markets...");
+            log::debug!("Subscribing to new markets...");
             self.ws_client.subscribe_market(vec![]).await?;
         }
 
@@ -373,9 +377,9 @@ impl PolymarketDataClient {
         self.spawn_instrument_refresh_task();
         self.spawn_resolve_poll_task();
 
-        if self.rtds_feed.has_subscriptions() {
-            self.rtds_feed.connect().await?;
-        }
+        // Connect unconditionally: this clears the feed's closing latch from a prior
+        // disconnect; without retained subscriptions no RTDS socket is opened.
+        self.rtds_feed.connect().await?;
 
         self.is_connected
             .store(true, std::sync::atomic::Ordering::Relaxed);

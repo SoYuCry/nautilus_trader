@@ -86,6 +86,10 @@ BANNER_RE = re.compile(r"^-{3,}.*-{3,}$")
 # Rust intra-doc link: [`Type::method`] or [`Type`](path)
 INTRA_DOC_LINK_RE = re.compile(r"\[`([^`]+)`\](?:\([^)]*\))?")
 
+# Attribute line that closes on this line, allowing a trailing line comment
+# (e.g. `#[allow(unused_imports)] // used in template pattern`)
+ATTR_END_RE = re.compile(r"\]\s*(?://.*)?$")
+
 
 def get_crate_src_dirs(crate_filter: str | None = None) -> list[tuple[str, Path]]:
     """
@@ -138,7 +142,7 @@ def collect_source_docs(src_dir: Path) -> dict[tuple[str | None, str], list[str]
             stripped = line.strip()
 
             if in_multiline_attr:
-                if stripped.endswith(("]", ")]")):
+                if ATTR_END_RE.search(stripped):
                     in_multiline_attr = False
                 continue
 
@@ -148,7 +152,7 @@ def collect_source_docs(src_dir: Path) -> dict[tuple[str | None, str], list[str]
                 continue
 
             if stripped.startswith("#["):
-                if not (stripped.endswith(("]", ")]"))):
+                if not ATTR_END_RE.search(stripped):
                     in_multiline_attr = True
                 continue
 
@@ -290,7 +294,7 @@ def parse_pyo3_items(lines: list[str]) -> list[dict]:  # noqa: C901
         stripped = line.strip()
 
         if in_ml_attr:
-            if stripped.endswith(("]", ")]")):
+            if ATTR_END_RE.search(stripped):
                 in_ml_attr = False
             continue
 
@@ -307,7 +311,7 @@ def parse_pyo3_items(lines: list[str]) -> list[dict]:  # noqa: C901
                 has_new = True
             if stripped in ("#[pymethods]", "#[pyo3::pymethods]"):
                 in_pymethods = True
-            if not (stripped.endswith(("]", ")]"))):
+            if not ATTR_END_RE.search(stripped):
                 in_ml_attr = True
             continue
 

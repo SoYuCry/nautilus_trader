@@ -25,8 +25,13 @@ use axum::{
     routing::post,
 };
 use nautilus_common::{providers::InstrumentProvider, testing::wait_until_async};
+use nautilus_core::UnixNanos;
 use nautilus_derive::{http::DeriveHttpClient, providers::DeriveInstrumentProvider};
-use nautilus_model::{identifiers::InstrumentId, instruments::InstrumentAny};
+use nautilus_model::{
+    identifiers::InstrumentId,
+    instruments::{Instrument, InstrumentAny},
+    types::Currency,
+};
 use nautilus_network::http::HttpClient;
 use rstest::rstest;
 use serde_json::{Value, json};
@@ -327,6 +332,14 @@ async fn test_load_all_fetches_parses_and_caches_instruments() {
     assert_eq!(provider.store().count(), 2);
     assert!(matches!(perp, InstrumentAny::CryptoPerpetual(_)));
     assert!(matches!(option, InstrumentAny::CryptoOption(_)));
+    // The mock serves the live wire shape (perp quote "USD", activation in
+    // UNIX seconds); the provider boundary must expose normalized values.
+    assert_eq!(perp.quote_currency(), Currency::USDC());
+    assert_eq!(perp.settlement_currency(), Currency::USDC());
+    assert_eq!(
+        option.activation_ns(),
+        Some(UnixNanos::from(1_700_000_000_000_000_000)),
+    );
 }
 
 #[rstest]

@@ -202,9 +202,9 @@ pub struct DeriveInstrument {
     pub perp_details: Option<DerivePerpPublicDetails>,
     /// Quote currency (e.g. `"USDC"`).
     pub quote_currency: Ustr,
-    /// Scheduled activation timestamp (UNIX ms; 0 if already active).
+    /// Scheduled activation timestamp (UNIX seconds).
     pub scheduled_activation: i64,
-    /// Scheduled deactivation timestamp (UNIX ms; `i64::MAX` if none).
+    /// Scheduled deactivation timestamp (UNIX seconds; `i64::MAX` if none).
     pub scheduled_deactivation: i64,
     /// Taker fee rate (fraction).
     #[serde(deserialize_with = "deserialize_decimal")]
@@ -432,9 +432,9 @@ pub struct DeriveTicker {
     pub perp_details: Option<DerivePerpPublicDetails>,
     /// Quote currency.
     pub quote_currency: Ustr,
-    /// Scheduled activation timestamp (UNIX ms).
+    /// Scheduled activation timestamp (UNIX seconds).
     pub scheduled_activation: i64,
-    /// Scheduled deactivation timestamp (UNIX ms).
+    /// Scheduled deactivation timestamp (UNIX seconds; `i64::MAX` if none).
     pub scheduled_deactivation: i64,
     /// 24-hour rolling statistics. Populated by the WebSocket ticker channel.
     #[serde(default, skip_serializing_if = "Option::is_none")]

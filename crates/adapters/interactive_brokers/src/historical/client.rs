@@ -59,6 +59,12 @@ use crate::{
         from_py_object
     )
 )]
+#[cfg_attr(
+    feature = "python",
+    pyo3_stub_gen::derive::gen_stub_pyclass(
+        module = "nautilus_trader.adapters.interactive_brokers"
+    )
+)]
 pub struct HistoricalInteractiveBrokersClient {
     /// IB API client.
     ib_client: Arc<Client>,
@@ -360,7 +366,7 @@ impl HistoricalInteractiveBrokersClient {
                     self.calculate_duration_segments(start_date_time, end_date_time, duration);
 
                 for (segment_end, segment_duration) in segments {
-                    tracing::info!(
+                    tracing::debug!(
                         "Requesting historical bars ending on {} with duration {}",
                         segment_end,
                         segment_duration
@@ -404,7 +410,7 @@ impl HistoricalInteractiveBrokersClient {
                         all_bars.push(nautilus_bar);
                     }
 
-                    tracing::info!("Retrieved {} bars in batch", historical_data.bars.len());
+                    tracing::debug!("Retrieved {} bars in batch", historical_data.bars.len());
                 }
             }
         }
@@ -878,7 +884,7 @@ impl HistoricalInteractiveBrokersClient {
 
                 // Fetch if not cached (matching Python: if not self._client._cache.instrument(instrument_id))
                 if self.instrument_provider.find(&instrument_id).is_none() {
-                    tracing::info!("Fetching Instrument for: {}", instrument_id);
+                    tracing::debug!("Fetching Instrument for: {}", instrument_id);
 
                     if let Err(e) = self
                         .instrument_provider
@@ -911,7 +917,7 @@ impl HistoricalInteractiveBrokersClient {
             }
         }
 
-        tracing::info!("Loaded {} instruments", loaded_instruments.len());
+        tracing::debug!("Loaded {} instruments", loaded_instruments.len());
 
         Ok(loaded_instruments)
     }

@@ -1,64 +1,84 @@
-"""Polymarket v1 research backtest entry point."""
+"""Polymarket v1 Nautilus-native research backtest entry point.
+
+This entry point deliberately uses NautilusTrader's native BacktestEngine. It
+must not implement independent order matching, fill accounting, cash, position,
+or PnL logic.
+"""
 
 from __future__ import annotations
 
 import argparse
-import csv
-import hashlib
 import importlib.util
 import json
 import shutil
 import sys
 import uuid
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal
 from pathlib import Path
-from types import ModuleType
-from typing import Any, Mapping
+from typing import Any
 
 import yaml
 
+from nautilus_trader.adapters.polymarket.common.constants import POLYMARKET_VENUE
+from nautilus_trader.adapters.polymarket.fee_model import PolymarketFeeModel
+from nautilus_trader.backtest.config import BacktestEngineConfig
+from nautilus_trader.backtest.engine import BacktestEngine
+from nautilus_trader.config import LoggingConfig
+from nautilus_trader.model.currencies import pUSD
+from nautilus_trader.model.data import OrderBookDeltas
+from nautilus_trader.model.data import InstrumentClose
+from nautilus_trader.model.data import TradeTick
+from nautilus_trader.model.enums import AccountType
+from nautilus_trader.model.enums import BookType
+from nautilus_trader.model.enums import OmsType
+from nautilus_trader.model.identifiers import TraderId
+from nautilus_trader.model.objects import Money
+from nautilus_trader.trading.strategy import Strategy
+
 from polymarket.adapters.live_event_bundle_v1 import LiveEventBundleV1Adapter
 from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
-from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
-from polymarket.adapters.pmxt_parquet_v1 import PMXTParquetV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
-from polymarket.models import L2ReplayStepV1, L2UpdateV1, PolymarketL2DatasetV1
-from polymarket.strategies.base import BasePolymarketStrategyV1
+from polymarket.data_health import DataHealthError
+from polymarket.data_health import analyze_dataset_health
+from polymarket._core.fees import build_fee_report
+from polymarket._core.fees import enforce_fee_report
+from polymarket._core.models import PolymarketL2DatasetV1
+from polymarket._core.nautilus_native import convert_dataset_to_nautilus
+from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
+from polymarket._core.nautilus_native import load_binary_option_from_config
+from polymarket._core.reports import write_backtest_reports
+from polymarket.strategy import PolymarketStrategyBase
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTERS = {
-    PMXTParquetV1Adapter.adapter_name: PMXTParquetV1Adapter,
-    PMXTEventV1Adapter.adapter_name: PMXTEventV1Adapter,
     LiveWsV1Adapter.adapter_name: LiveWsV1Adapter,
     LiveEventBundleV1Adapter.adapter_name: LiveEventBundleV1Adapter,
 }
 
 
-def as_decimal(value: Any) -> Decimal:
-    if isinstance(value, Decimal):
-        return value
-    return Decimal(str(value))
-
-
-def decimal_json(value: Decimal | None) -> str | None:
-    if value is None:
-        return None
-    return format(value.normalize(), "f")
+@dataclass(frozen=True, slots=True)
+class NativeBacktestResultV1:
+    run_dir: Path
+    data_count: int
+    order_book_deltas_count: int
+    trade_ticks_count: int
+    instrument_close_count: int
+    skipped_updates: tuple[str, ...]
+    tick_size_changes: tuple[tuple[str, str], ...]
+    settlement: dict[str, Any]
+    data_health: dict[str, Any]
+    fees: dict[str, Any]
 
 
 def now_run_id() -> str:
     return datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
-def ensure_child(parent: Path, child: Path) -> Path:
-    parent_resolved = parent.resolve()
-    child_resolved = child.resolve()
-    if parent_resolved != child_resolved and parent_resolved not in child_resolved.parents:
-        raise ValueError(f"refusing to write outside {parent}: {child}")
-    return child_resolved
+def load_yaml(path: Path) -> dict[str, Any]:
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
 def is_child(parent: Path, child: Path) -> bool:
@@ -67,288 +87,11 @@ def is_child(parent: Path, child: Path) -> bool:
     return parent_resolved == child_resolved or parent_resolved in child_resolved.parents
 
 
-@dataclass(slots=True)
-class BookStateV1:
-    bids: dict[Decimal, Decimal] = field(default_factory=dict)
-    asks: dict[Decimal, Decimal] = field(default_factory=dict)
-
-    def apply(self, update: L2UpdateV1) -> None:
-        if update.event_type == "book":
-            self.bids = {level.price: level.size for level in update.bids if level.size > 0}
-            self.asks = {level.price: level.size for level in update.asks if level.size > 0}
-            return
-        if update.event_type != "price_change" or update.price is None or update.size is None:
-            return
-        levels = self.bids if update.side == "BUY" else self.asks if update.side == "SELL" else None
-        if levels is None:
-            return
-        if update.size <= 0:
-            levels.pop(update.price, None)
-        else:
-            levels[update.price] = update.size
-
-    @property
-    def best_bid(self) -> Decimal | None:
-        return max(self.bids) if self.bids else None
-
-    @property
-    def best_ask(self) -> Decimal | None:
-        return min(self.asks) if self.asks else None
-
-    @property
-    def bid_size(self) -> Decimal:
-        bid = self.best_bid
-        return self.bids.get(bid, Decimal("0")) if bid is not None else Decimal("0")
-
-    @property
-    def ask_size(self) -> Decimal:
-        ask = self.best_ask
-        return self.asks.get(ask, Decimal("0")) if ask is not None else Decimal("0")
-
-
-@dataclass(frozen=True, slots=True)
-class L2BookViewV1:
-    asset_id: str | None
-    best_bid: Decimal | None
-    best_ask: Decimal | None
-    bid_size: Decimal
-    ask_size: Decimal
-    tick_size: Decimal
-
-
-@dataclass(slots=True)
-class RestingOrderV1:
-    order_id: str
-    side: str
-    price: Decimal
-    quantity: Decimal
-    remaining: Decimal
-    label: str
-    created_sequence: int
-    created_timestamp: str
-
-
-@dataclass(slots=True)
-class FillV1:
-    timestamp: str
-    sequence: int
-    side: str
-    price: Decimal
-    quantity: Decimal
-    order_id: str
-    label: str
-    liquidity: str
-
-
-class BacktestContextV1:
-    def __init__(self, engine: BacktestEngineV1) -> None:
-        self._engine = engine
-
-    @property
-    def position(self) -> Decimal:
-        return self._engine.position
-
-    @property
-    def cash(self) -> Decimal:
-        return self._engine.cash
-
-    def market_order(self, side: str, quantity: Decimal | str | int | float, *, label: str = "") -> None:
-        self._engine.submit_market_order(side=side, quantity=as_decimal(quantity), label=label)
-
-    def limit_order(
-        self,
-        side: str,
-        price: Decimal | str | int | float,
-        quantity: Decimal | str | int | float,
-        *,
-        label: str = "",
-    ) -> str:
-        return self._engine.submit_limit_order(
-            side=side,
-            price=as_decimal(price),
-            quantity=as_decimal(quantity),
-            label=label,
-        )
-
-    def cancel_all(self) -> None:
-        self._engine.resting_orders.clear()
-
-
-class BacktestEngineV1:
-    def __init__(
-        self,
-        *,
-        dataset: PolymarketL2DatasetV1,
-        strategy: BasePolymarketStrategyV1,
-        selected_asset_id: str | None = None,
-        initial_cash: Decimal = Decimal("0"),
-        initial_tick_size: Decimal = Decimal("0.01"),
-    ) -> None:
-        self.dataset = dataset
-        self.strategy = strategy
-        self.selected_asset_id = selected_asset_id
-        self.books: dict[str, BookStateV1] = {}
-        self.current_asset_id: str | None = selected_asset_id
-        self.current_step: L2ReplayStepV1 | None = None
-        self.tick_size = initial_tick_size
-        self.position = Decimal("0")
-        self.cash = initial_cash
-        self.fills: list[FillV1] = []
-        self.resting_orders: list[RestingOrderV1] = []
-        self.tick_size_changes_applied = 0
-
-    def run(self) -> dict[str, Any]:
-        context = BacktestContextV1(self)
-        self.strategy.on_start(context)
-        for step in self.dataset.steps:
-            self.current_step = step
-            self._apply_step(step)
-            self._fill_from_trades(step)
-            book = self.book_view()
-            self.strategy.on_replay_step(step, book, context)
-        self.strategy.on_finish(context)
-        final_mark = self.mark_price()
-        final_equity = self.cash + self.position * (final_mark or Decimal("0"))
-        return {
-            "steps": len(self.dataset.steps),
-            "fills": len(self.fills),
-            "cash": decimal_json(self.cash),
-            "position": decimal_json(self.position),
-            "final_mark_price": decimal_json(final_mark),
-            "final_equity": decimal_json(final_equity),
-            "tick_size_changes_applied": self.tick_size_changes_applied,
-            "final_tick_size": decimal_json(self.tick_size),
-        }
-
-    def _apply_step(self, step: L2ReplayStepV1) -> None:
-        for update in step.updates:
-            if self.selected_asset_id is not None and update.asset_id != self.selected_asset_id:
-                continue
-            self.current_asset_id = update.asset_id
-            if update.event_type in {"book", "price_change"}:
-                self.books.setdefault(update.asset_id, BookStateV1()).apply(update)
-            elif update.event_type == "tick_size_change" and update.new_tick_size is not None:
-                self.tick_size = update.new_tick_size
-                self.tick_size_changes_applied += 1
-
-    def _fill_from_trades(self, step: L2ReplayStepV1) -> None:
-        for update in step.updates:
-            if update.event_type != "trade" or update.price is None or update.size is None:
-                continue
-            if self.selected_asset_id is not None and update.asset_id != self.selected_asset_id:
-                continue
-            remaining_trade = update.size
-            for order in list(self.resting_orders):
-                if remaining_trade <= 0:
-                    break
-                if not self._trade_hits_order(update, order):
-                    continue
-                qty = min(order.remaining, remaining_trade)
-                self._record_fill(order.side, update.price, qty, order.order_id, order.label, "maker")
-                order.remaining -= qty
-                remaining_trade -= qty
-                if order.remaining <= 0:
-                    self.resting_orders.remove(order)
-
-    @staticmethod
-    def _trade_hits_order(update: L2UpdateV1, order: RestingOrderV1) -> bool:
-        if update.price is None:
-            return False
-        if order.side == "BUY":
-            compatible_side = update.side in {None, "SELL"}
-            return compatible_side and update.price <= order.price
-        compatible_side = update.side in {None, "BUY"}
-        return compatible_side and update.price >= order.price
-
-    def book_view(self) -> L2BookViewV1:
-        asset_id = self.current_asset_id
-        book = self.books.get(asset_id or "")
-        return L2BookViewV1(
-            asset_id=asset_id,
-            best_bid=book.best_bid if book else None,
-            best_ask=book.best_ask if book else None,
-            bid_size=book.bid_size if book else Decimal("0"),
-            ask_size=book.ask_size if book else Decimal("0"),
-            tick_size=self.tick_size,
-        )
-
-    def mark_price(self) -> Decimal | None:
-        view = self.book_view()
-        if view.best_bid is not None and view.best_ask is not None:
-            return (view.best_bid + view.best_ask) / Decimal("2")
-        return view.best_bid if view.best_bid is not None else view.best_ask
-
-    def submit_market_order(self, *, side: str, quantity: Decimal, label: str = "") -> None:
-        view = self.book_view()
-        if side.upper() == "BUY":
-            price = view.best_ask
-            available = view.ask_size
-        elif side.upper() == "SELL":
-            price = view.best_bid
-            available = view.bid_size
-        else:
-            raise ValueError(f"unsupported side: {side}")
-        if price is None or available <= 0:
-            return
-        qty = min(quantity, available)
-        if qty <= 0:
-            return
-        self._record_fill(side.upper(), price, qty, "market", label, "taker")
-
-    def submit_limit_order(self, *, side: str, price: Decimal, quantity: Decimal, label: str = "") -> str:
-        step = self.current_step
-        if step is None:
-            raise RuntimeError("cannot place order before replay starts")
-        order_id = f"L{len(self.resting_orders) + len(self.fills) + 1}"
-        self.resting_orders.append(
-            RestingOrderV1(
-                order_id=order_id,
-                side=side.upper(),
-                price=price,
-                quantity=quantity,
-                remaining=quantity,
-                label=label,
-                created_sequence=step.sequence,
-                created_timestamp=step.timestamp_received.isoformat().replace("+00:00", "Z"),
-            ),
-        )
-        return order_id
-
-    def _record_fill(
-        self,
-        side: str,
-        price: Decimal,
-        quantity: Decimal,
-        order_id: str,
-        label: str,
-        liquidity: str,
-    ) -> None:
-        if self.current_step is None:
-            raise RuntimeError("no current replay step")
-        if side == "BUY":
-            self.position += quantity
-            self.cash -= price * quantity
-        elif side == "SELL":
-            self.position -= quantity
-            self.cash += price * quantity
-        else:
-            raise ValueError(f"unsupported fill side: {side}")
-        self.fills.append(
-            FillV1(
-                timestamp=self.current_step.timestamp_received.isoformat().replace("+00:00", "Z"),
-                sequence=self.current_step.sequence,
-                side=side,
-                price=price,
-                quantity=quantity,
-                order_id=order_id,
-                label=label,
-                liquidity=liquidity,
-            ),
-        )
-
-
-def load_yaml(path: Path) -> dict[str, Any]:
-    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+def ensure_child(parent: Path, child: Path) -> Path:
+    child_resolved = child.resolve()
+    if not is_child(parent, child_resolved):
+        raise ValueError(f"refusing to write outside {parent}: {child}")
+    return child_resolved
 
 
 def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
@@ -359,104 +102,7 @@ def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
 
 
-def resolve_strategy_path(config_path: Path, strategy_config: Mapping[str, Any]) -> tuple[Path, str, list[str]]:
-    original = str(strategy_config.get("path"))
-    if original in {"", "None"}:
-        raise ValueError("strategy.path is required")
-    path = Path(original)
-    if not path.is_absolute():
-        path = config_path.parent / path
-    resolved = path.resolve()
-    warnings: list[str] = []
-    if not is_child(REPO_ROOT, resolved):
-        warnings.append("strategy.path resolves outside the repository; audit before sharing this run.")
-    return resolved, original, warnings
-
-
-def load_strategy(config_path: Path, strategy_config: Mapping[str, Any]) -> tuple[BasePolymarketStrategyV1, dict[str, Any]]:
-    source_path, original, warnings = resolve_strategy_path(config_path, strategy_config)
-    class_name = str(strategy_config.get("class"))
-    params = dict(strategy_config.get("params") or {})
-    module_name = f"_polymarket_strategy_{uuid.uuid4().hex}"
-    spec = importlib.util.spec_from_file_location(module_name, source_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load strategy file: {source_path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    strategy_class = getattr(module, class_name)
-    strategy = strategy_class(**params)
-    if not isinstance(strategy, BasePolymarketStrategyV1):
-        raise TypeError(f"{class_name} must subclass BasePolymarketStrategyV1")
-    provenance = {
-        "loader_mode": "path",
-        "source_path_original": original,
-        "source_path_resolved": repo_relative_or_absolute(source_path, repo_root=REPO_ROOT),
-        "class": class_name,
-        "params_resolved": params,
-        "source_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
-        "warnings": warnings,
-    }
-    return strategy, provenance
-
-
-def build_resolved_config(
-    *,
-    config: Mapping[str, Any],
-    config_path: Path,
-    run_dir: Path,
-    dataset: PolymarketL2DatasetV1,
-    strategy_provenance: Mapping[str, Any],
-    run_id: str,
-) -> dict[str, Any]:
-    return {
-        "experiment": dict(config.get("experiment") or {}),
-        "adapter": {
-            "name": dataset.metadata.adapter_name,
-            "adapter_version": dataset.metadata.adapter_version,
-            "source_type": dataset.metadata.source_type,
-            "source_files_resolved": list(dataset.metadata.source_files),
-            "assumptions": list(dataset.metadata.assumptions),
-            "warnings": list(dataset.metadata.warnings),
-        },
-        "strategy": dict(strategy_provenance),
-        "runtime": {
-            "run_id": run_id,
-            "created_at_utc": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
-            "config_path": repo_relative_or_absolute(config_path, repo_root=REPO_ROOT),
-            "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
-        },
-    }
-
-
-def write_outputs(run_dir: Path, engine: BacktestEngineV1, metrics: Mapping[str, Any]) -> None:
-    fills_path = run_dir / "fills.csv"
-    with fills_path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f,
-            fieldnames=["timestamp", "sequence", "side", "price", "quantity", "order_id", "label", "liquidity"],
-        )
-        writer.writeheader()
-        for fill in engine.fills:
-            writer.writerow(
-                {
-                    "timestamp": fill.timestamp,
-                    "sequence": fill.sequence,
-                    "side": fill.side,
-                    "price": decimal_json(fill.price),
-                    "quantity": decimal_json(fill.quantity),
-                    "order_id": fill.order_id,
-                    "label": fill.label,
-                    "liquidity": fill.liquidity,
-                },
-            )
-    (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-    (run_dir / "summary.json").write_text(json.dumps({"backtest": metrics}, indent=2), encoding="utf-8")
-
-
 def resolve_output_dir(config_path: Path, report_config: Mapping[str, Any]) -> Path:
-    """Resolve run output root and keep it inside the experiment-local runs tree."""
-
     runs_root = (config_path.parent / "runs").resolve()
     configured = report_config.get("output_dir", "./runs")
     output_dir = Path(str(configured))
@@ -471,49 +117,334 @@ def resolve_output_dir(config_path: Path, report_config: Mapping[str, Any]) -> P
     return output_dir
 
 
+def load_native_strategy(config_path: Path, strategy_config: Mapping[str, Any]) -> tuple[Strategy | None, dict[str, Any]]:
+    if not strategy_config or strategy_config.get("enabled") is False:
+        return None, {"enabled": False, "loader_mode": "none"}
+
+    source = strategy_config.get("path")
+    class_name = strategy_config.get("class")
+    if not source or not class_name:
+        raise ValueError("strategy.path and strategy.class are required for a Nautilus-native strategy")
+    source_path = Path(str(source))
+    if not source_path.is_absolute():
+        source_path = config_path.parent / source_path
+    source_path = source_path.resolve()
+    module_name = f"_polymarket_native_strategy_{uuid.uuid4().hex}"
+    spec = importlib.util.spec_from_file_location(module_name, source_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load strategy file: {source_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    strategy_cls = getattr(module, str(class_name))
+    params = dict(strategy_config.get("params") or {})
+    strategy = strategy_cls(**params)
+    if not isinstance(strategy, Strategy):
+        raise TypeError(
+            f"{class_name} must subclass nautilus_trader.trading.strategy.Strategy.",
+        )
+    return strategy, {
+        "enabled": True,
+        "loader_mode": "path",
+        "source_path_resolved": repo_relative_or_absolute(source_path, repo_root=REPO_ROOT),
+        "class": str(class_name),
+        "params_resolved": params,
+    }
+
+
+def configure_polymarket_strategy_timeline(strategy: Strategy, conversion: Any) -> dict[str, Any]:
+    """Inject Polymarket effective tick timeline into compatible strategies."""
+
+    if not isinstance(strategy, PolymarketStrategyBase):
+        return {
+            "enabled": False,
+            "reason": "strategy does not subclass PolymarketStrategyBase",
+        }
+    strategy.set_polymarket_tick_timeline(
+        initial_tick_size=conversion.initial_tick_size,
+        changes=conversion.effective_tick_size_changes,
+    )
+    return {
+        "enabled": True,
+        "initial_tick_size": str(conversion.initial_tick_size),
+        "changes": [
+            {
+                "sequence": change.sequence,
+                "effective_from_ts_init": change.effective_from_ts_init,
+                "old_tick_size": str(change.old_tick_size),
+                "new_tick_size": str(change.new_tick_size),
+            }
+            for change in conversion.effective_tick_size_changes
+        ],
+    }
+
+
+def collect_polymarket_strategy_rounding(strategy: Strategy | None) -> dict[str, Any]:
+    """Return strategy-level Polymarket price rounding audit data, if present."""
+
+    if strategy is None or not isinstance(strategy, PolymarketStrategyBase):
+        return {"enabled": False, "count": 0, "events": []}
+    events = strategy.polymarket_price_rounding_events
+    event_rows = [
+        {
+            "ts_ns": event.ts_ns,
+            "original_price": str(event.original_price),
+            "rounded_price": str(event.rounded_price),
+            "tick_size": str(event.tick_size),
+            "side": event.side,
+            "intent": event.intent,
+            "direction": event.direction,
+        }
+        for event in events
+    ]
+    return {"enabled": True, "count": len(event_rows), "events": event_rows}
+
+
+def collect_fee_report(config: Mapping[str, Any], instrument: Any) -> dict[str, Any]:
+    """Return the run's fee model/source contract in a serializable form."""
+    return build_fee_report(
+        config.get("fees") or {},
+        maker_fee=instrument.maker_fee,
+        taker_fee=instrument.taker_fee,
+        fee_source=str((getattr(instrument, "info", None) or {}).get("fee_source", "unknown")),
+    )
+
+
+def build_engine(
+    config: Mapping[str, Any],
+    *,
+    settlement_prices: Mapping[Any, float] | None = None,
+) -> BacktestEngine:
+    fees_config = config.get("fees") or {}
+    fee_model = None
+    if fees_config.get("enabled", True):
+        fee_model = PolymarketFeeModel(
+            maker_rebates_enabled=bool(fees_config.get("maker_rebates_enabled", False)),
+        )
+    engine_config = BacktestEngineConfig(
+        trader_id=TraderId(str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001"))),
+        logging=LoggingConfig(bypass_logging=bool((config.get("engine") or {}).get("bypass_logging", True))),
+        run_analysis=bool((config.get("engine") or {}).get("run_analysis", False)),
+    )
+    engine = BacktestEngine(config=engine_config)
+    engine.add_venue(
+        venue=POLYMARKET_VENUE,
+        oms_type=OmsType.NETTING,
+        account_type=AccountType.CASH,
+        base_currency=pUSD,
+        starting_balances=[Money.from_str(str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")))],
+        fee_model=fee_model,
+        book_type=BookType.L2_MBP,
+        trade_execution=bool((config.get("engine") or {}).get("trade_execution", True)),
+        liquidity_consumption=bool((config.get("engine") or {}).get("liquidity_consumption", False)),
+        queue_position=bool((config.get("engine") or {}).get("queue_position", False)),
+        settlement_prices=dict(settlement_prices or {}),
+    )
+    return engine
+
+
+def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int, int, int]:
+    order_book_deltas = [item for item in data if isinstance(item, OrderBookDeltas)]
+    trade_ticks = [item for item in data if isinstance(item, TradeTick)]
+    instrument_closes = [item for item in data if isinstance(item, InstrumentClose)]
+    if order_book_deltas:
+        engine.add_data(order_book_deltas, sort=False)
+    if trade_ticks:
+        engine.add_data(trade_ticks, sort=False)
+    if instrument_closes:
+        engine.add_data(instrument_closes, sort=False)
+    # The source dataset is not repaired or re-sorted to hide problems.  The
+    # mandatory pre-run data-health gate proves ts_init is receive-time
+    # monotonic; this Nautilus sort only syncs separately added native data
+    # types into a single ts_init-ordered stream required by BacktestEngine.
+    engine.sort_data()
+    return len(order_book_deltas), len(trade_ticks), len(instrument_closes)
+
+
+def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
+    settlement = conversion.settlement
+    if settlement is None:
+        return {
+            "mode": "open",
+            "enabled": False,
+            "reason": conversion.settlement_reason,
+            "evidence": dict(conversion.settlement_evidence),
+            "mechanism": "no InstrumentClose generated; final positions remain open",
+        }
+    return {
+        "mode": settlement.mode,
+        "enabled": True,
+        "condition_id": settlement.condition_id,
+        "token_id": settlement.token_id,
+        "resolution_time_ns": settlement.resolution_time_ns,
+        "payout": str(settlement.payout),
+        "source": settlement.source,
+        "status": settlement.status,
+        "reason": settlement.reason,
+        "evidence": dict(settlement.evidence),
+        "mechanism": "Nautilus InstrumentClose + venue settlement_prices",
+    }
+
+
 def run_from_config(config_path: Path) -> dict[str, Any]:
     config_path = config_path.resolve()
     config = load_yaml(config_path)
     run_id = str((config.get("runtime") or {}).get("run_id") or now_run_id())
-    report_config = config.get("report") or {}
-    output_dir = resolve_output_dir(config_path, report_config)
+    output_dir = resolve_output_dir(config_path, config.get("report") or {})
     run_dir = ensure_child(output_dir, output_dir / run_id)
     run_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(config_path, run_dir / "original_config.yml")
 
     dataset = load_adapter(config)
-    strategy, strategy_provenance = load_strategy(config_path, config.get("strategy") or {})
-    engine = BacktestEngineV1(
-        dataset=dataset,
-        strategy=strategy,
-        selected_asset_id=(config.get("selection") or {}).get("asset_id"),
-        initial_cash=as_decimal((config.get("portfolio") or {}).get("initial_cash", "0")),
-        initial_tick_size=as_decimal((config.get("replay") or {}).get("initial_tick_size", "0.01")),
+    health_config = config.get("data_health") or {}
+    data_health_report = analyze_dataset_health(
+        dataset,
+        future_tolerance_ms=float(health_config.get("future_tolerance_ms", 50.0)),
+        delay_warning_ms=float(health_config.get("delay_warning_ms", 1_000.0)),
     )
-    metrics = engine.run()
-    resolved = build_resolved_config(
-        config=config,
-        config_path=config_path,
-        run_dir=run_dir,
+    (run_dir / "data_health.json").write_text(data_health_report.to_json() + "\n", encoding="utf-8")
+    if not data_health_report.ok:
+        raise DataHealthError(
+            "Polymarket data-health check failed before Nautilus backtest. "
+            f"Inspect {repo_relative_or_absolute(run_dir / 'data_health.json', repo_root=REPO_ROOT)}; "
+            "do not sort the source data to make this pass.",
+        )
+
+    selected_asset_id = (config.get("selection") or {}).get("asset_id")
+    instrument = load_binary_option_from_config(
+        config.get("instrument") or {},
         dataset=dataset,
-        strategy_provenance=strategy_provenance,
-        run_id=run_id,
+        selected_asset_id=selected_asset_id,
+        config_base_dir=config_path.parent,
     )
-    shutil.copyfile(config_path, run_dir / "original_config.yml")
-    (run_dir / "resolved_config.json").write_text(json.dumps(resolved, indent=2), encoding="utf-8")
-    write_outputs(run_dir, engine, metrics)
-    summary = {
-        "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
-        "outputs": {
-            "original_config": repo_relative_or_absolute(run_dir / "original_config.yml", repo_root=REPO_ROOT),
-            "resolved_config": repo_relative_or_absolute(run_dir / "resolved_config.json", repo_root=REPO_ROOT),
-            "metrics": repo_relative_or_absolute(run_dir / "metrics.json", repo_root=REPO_ROOT),
-            "fills_csv": repo_relative_or_absolute(run_dir / "fills.csv", repo_root=REPO_ROOT),
-            "summary_json": repo_relative_or_absolute(run_dir / "summary.json", repo_root=REPO_ROOT),
-        },
-        "backtest": metrics,
-    }
-    print(json.dumps(summary, indent=2))
-    return summary
+    fee_report = collect_fee_report(config, instrument)
+    enforce_fee_report(fee_report)
+    conversion = convert_dataset_to_nautilus(
+        dataset,
+        instrument=instrument,
+        selected_asset_id=selected_asset_id,
+        fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
+    )
+
+    settlement_prices = (
+        {instrument.id: float(conversion.settlement.payout)}
+        if conversion.settlement is not None
+        else None
+    )
+    engine = build_engine(config, settlement_prices=settlement_prices)
+    try:
+        engine.add_instrument(instrument)
+        order_book_count, trade_count, instrument_close_count = add_native_data(engine, conversion.data)
+        strategy, strategy_provenance = load_native_strategy(config_path, config.get("strategy") or {})
+        if strategy is not None:
+            strategy_provenance["polymarket_strategy_base_tick_timeline"] = configure_polymarket_strategy_timeline(
+                strategy,
+                conversion,
+            )
+            strategy_provenance["effective_tick_size_order_guard"] = install_effective_tick_size_order_guard(
+                strategy,
+                initial_tick_size=conversion.initial_tick_size,
+                changes=conversion.effective_tick_size_changes,
+            )
+            engine.add_strategy(strategy)
+        engine.run()
+        strategy_provenance["polymarket_price_rounding"] = collect_polymarket_strategy_rounding(strategy)
+
+        settlement_dict = _settlement_to_dict(conversion)
+        result = NativeBacktestResultV1(
+            run_dir=run_dir,
+            data_count=len(conversion.data),
+            order_book_deltas_count=order_book_count,
+            trade_ticks_count=trade_count,
+            instrument_close_count=instrument_close_count,
+            skipped_updates=conversion.skipped_updates,
+            tick_size_changes=conversion.tick_size_changes,
+            settlement=settlement_dict,
+            data_health=data_health_report.to_dict(),
+            fees=fee_report,
+        )
+        resolved = {
+            "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "adapter": {
+                "name": dataset.metadata.adapter_name,
+                "adapter_version": dataset.metadata.adapter_version,
+                "source_type": dataset.metadata.source_type,
+                "source_files_resolved": list(dataset.metadata.source_files),
+                "assumptions": list(dataset.metadata.assumptions),
+                "warnings": list(dataset.metadata.warnings),
+            },
+            "instrument_id": str(instrument.id),
+            "strategy": strategy_provenance,
+            "tick_size": {
+                "instrument_price_increment": str(instrument.price_increment),
+                "initial_effective_tick_size": str(conversion.initial_tick_size),
+                "effective_tick_size_changes": [
+                    {
+                        "sequence": change.sequence,
+                        "effective_from_ts_init": change.effective_from_ts_init,
+                        "old_tick_size": str(change.old_tick_size),
+                        "new_tick_size": str(change.new_tick_size),
+                    }
+                    for change in conversion.effective_tick_size_changes
+                ],
+            },
+            "settlement": settlement_dict,
+            "fees": fee_report,
+            "data_health": data_health_report.to_dict(),
+            "runtime": {
+                "run_id": run_id,
+                "created_at_utc": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
+                "config_path": repo_relative_or_absolute(config_path, repo_root=REPO_ROOT),
+                "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
+            },
+        }
+        (run_dir / "resolved_config.json").write_text(json.dumps(resolved, indent=2), encoding="utf-8")
+        report_metadata = write_backtest_reports(
+            run_dir=run_dir,
+            result=result,
+            account=engine.trader.generate_account_report(POLYMARKET_VENUE),
+            fills=engine.trader.generate_order_fills_report(),
+            positions=engine.trader.generate_positions_report(),
+            instrument=instrument,
+        )
+        summary = {
+            "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
+            "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "outputs": {
+                "original_config": repo_relative_or_absolute(run_dir / "original_config.yml", repo_root=REPO_ROOT),
+                "resolved_config": repo_relative_or_absolute(run_dir / "resolved_config.json", repo_root=REPO_ROOT),
+                "data_health": repo_relative_or_absolute(run_dir / "data_health.json", repo_root=REPO_ROOT),
+                "summary": repo_relative_or_absolute(run_dir / "summary.json", repo_root=REPO_ROOT),
+                "account": repo_relative_or_absolute(run_dir / "account.csv", repo_root=REPO_ROOT),
+                "fills": repo_relative_or_absolute(run_dir / "fills.csv", repo_root=REPO_ROOT),
+                "positions": repo_relative_or_absolute(run_dir / "positions.csv", repo_root=REPO_ROOT),
+                "raw_nautilus_account": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "account.csv",
+                    repo_root=REPO_ROOT,
+                ),
+                "raw_nautilus_fills": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "fills.csv",
+                    repo_root=REPO_ROOT,
+                ),
+                "raw_nautilus_positions": repo_relative_or_absolute(
+                    run_dir / "raw_nautilus" / "positions.csv",
+                    repo_root=REPO_ROOT,
+                ),
+                "run_report": repo_relative_or_absolute(run_dir / "run_report.md", repo_root=REPO_ROOT),
+            },
+            "data_count": result.data_count,
+            "order_book_deltas_count": result.order_book_deltas_count,
+            "trade_ticks_count": result.trade_ticks_count,
+            "instrument_close_count": result.instrument_close_count,
+            "settlement_mode": result.settlement.get("mode", "open"),
+            "settlement_enabled": bool(result.settlement.get("enabled", False)),
+            "data_health_ok": data_health_report.ok,
+            "fees": report_metadata.fees,
+        }
+        print(json.dumps(summary, indent=2))
+        return summary
+    finally:
+        engine.dispose()
 
 
 def parse_args() -> argparse.Namespace:
@@ -529,3 +460,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

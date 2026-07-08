@@ -1,0 +1,4 @@
+﻿runs/
+data/*.ndjson
+*.tmp
+__pycache__/

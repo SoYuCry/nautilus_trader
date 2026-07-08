@@ -30,13 +30,17 @@ use crate::{
     Returns,
     analyzer::{PortfolioAnalyzer, Statistic},
     statistics::{
-        alpha::Alpha, beta_ratio::BetaRatio, expectancy::Expectancy,
+        alpha::Alpha, beta_ratio::BetaRatio, down_capture_ratio::DownCaptureRatio,
+        expectancy::Expectancy, expected_shortfall::ExpectedShortfall,
         information_ratio::InformationRatio, long_ratio::LongRatio, loser_avg::AvgLoser,
-        loser_max::MaxLoser, loser_min::MinLoser, profit_factor::ProfitFactor,
-        returns_avg::ReturnsAverage, returns_avg_loss::ReturnsAverageLoss,
-        returns_avg_win::ReturnsAverageWin, returns_volatility::ReturnsVolatility,
-        risk_return_ratio::RiskReturnRatio, sharpe_ratio::SharpeRatio, sortino_ratio::SortinoRatio,
-        tracking_error::TrackingError, treynor_ratio::TreynorRatio, win_rate::WinRate,
+        loser_max::MaxLoser, loser_min::MinLoser, omega_ratio::OmegaRatio,
+        profit_factor::ProfitFactor, returns_avg::ReturnsAverage,
+        returns_avg_loss::ReturnsAverageLoss, returns_avg_win::ReturnsAverageWin,
+        returns_kurtosis::ReturnsKurtosis, returns_skewness::ReturnsSkewness,
+        returns_volatility::ReturnsVolatility, risk_return_ratio::RiskReturnRatio,
+        sharpe_ratio::SharpeRatio, sortino_ratio::SortinoRatio, tail_ratio::TailRatio,
+        tracking_error::TrackingError, treynor_ratio::TreynorRatio, ulcer_index::UlcerIndex,
+        up_capture_ratio::UpCaptureRatio, value_at_risk::ValueAtRisk, win_rate::WinRate,
         winner_avg::AvgWinner, winner_max::MaxWinner, winner_min::MinWinner,
     },
 };
@@ -65,7 +69,7 @@ impl PortfolioAnalyzer {
         self.currencies().into_iter().copied().collect()
     }
 
-    /// Calculates total PnL including unrealized PnL if provided.
+    /// Gets all return-based performance statistics.
     #[pyo3(name = "get_performance_stats_returns")]
     fn py_get_performance_stats_returns(&self) -> HashMap<String, f64> {
         self.get_performance_stats_returns().into_iter().collect()
@@ -107,6 +111,7 @@ impl PortfolioAnalyzer {
             .collect()
     }
 
+    /// Gets all PnL-related performance statistics.
     #[pyo3(name = "get_performance_stats_pnls")]
     fn py_get_performance_stats_pnls(
         &self,
@@ -147,6 +152,7 @@ impl PortfolioAnalyzer {
     /// Registers a new portfolio statistic for calculation.
     #[pyo3(name = "register_statistic")]
     #[expect(clippy::needless_pass_by_value)]
+    #[expect(clippy::too_many_lines)]
     fn py_register_statistic(&mut self, py: Python, statistic: Py<PyAny>) -> PyResult<()> {
         let type_name = statistic
             .getattr(py, "__class__")?
@@ -230,6 +236,10 @@ impl PortfolioAnalyzer {
                 let stat = statistic.extract::<BetaRatio>(py)?;
                 self.register_statistic(Arc::new(stat));
             }
+            "DownCaptureRatio" => {
+                let stat = statistic.extract::<DownCaptureRatio>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
             "InformationRatio" => {
                 let stat = statistic.extract::<InformationRatio>(py)?;
                 self.register_statistic(Arc::new(stat));
@@ -240,6 +250,38 @@ impl PortfolioAnalyzer {
             }
             "TreynorRatio" => {
                 let stat = statistic.extract::<TreynorRatio>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "ReturnsSkewness" => {
+                let stat = statistic.extract::<ReturnsSkewness>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "ReturnsKurtosis" => {
+                let stat = statistic.extract::<ReturnsKurtosis>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "TailRatio" => {
+                let stat = statistic.extract::<TailRatio>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "UlcerIndex" => {
+                let stat = statistic.extract::<UlcerIndex>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "OmegaRatio" => {
+                let stat = statistic.extract::<OmegaRatio>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "ValueAtRisk" => {
+                let stat = statistic.extract::<ValueAtRisk>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "ExpectedShortfall" => {
+                let stat = statistic.extract::<ExpectedShortfall>(py)?;
+                self.register_statistic(Arc::new(stat));
+            }
+            "UpCaptureRatio" => {
+                let stat = statistic.extract::<UpCaptureRatio>(py)?;
                 self.register_statistic(Arc::new(stat));
             }
             _ => {
@@ -255,6 +297,7 @@ impl PortfolioAnalyzer {
     /// Removes a specific statistic from calculation.
     #[pyo3(name = "deregister_statistic")]
     #[expect(clippy::needless_pass_by_value)]
+    #[expect(clippy::too_many_lines)]
     fn py_deregister_statistic(&mut self, py: Python, statistic: Py<PyAny>) -> PyResult<()> {
         let type_name = statistic
             .getattr(py, "__class__")?
@@ -338,6 +381,10 @@ impl PortfolioAnalyzer {
                 let stat = statistic.extract::<BetaRatio>(py)?;
                 self.deregister_statistic(&(Arc::new(stat) as Statistic));
             }
+            "DownCaptureRatio" => {
+                let stat = statistic.extract::<DownCaptureRatio>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
             "InformationRatio" => {
                 let stat = statistic.extract::<InformationRatio>(py)?;
                 self.deregister_statistic(&(Arc::new(stat) as Statistic));
@@ -348,6 +395,38 @@ impl PortfolioAnalyzer {
             }
             "TreynorRatio" => {
                 let stat = statistic.extract::<TreynorRatio>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "ReturnsSkewness" => {
+                let stat = statistic.extract::<ReturnsSkewness>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "ReturnsKurtosis" => {
+                let stat = statistic.extract::<ReturnsKurtosis>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "TailRatio" => {
+                let stat = statistic.extract::<TailRatio>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "UlcerIndex" => {
+                let stat = statistic.extract::<UlcerIndex>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "OmegaRatio" => {
+                let stat = statistic.extract::<OmegaRatio>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "ValueAtRisk" => {
+                let stat = statistic.extract::<ValueAtRisk>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "ExpectedShortfall" => {
+                let stat = statistic.extract::<ExpectedShortfall>(py)?;
+                self.deregister_statistic(&(Arc::new(stat) as Statistic));
+            }
+            "UpCaptureRatio" => {
+                let stat = statistic.extract::<UpCaptureRatio>(py)?;
                 self.deregister_statistic(&(Arc::new(stat) as Statistic));
             }
             _ => {
@@ -467,6 +546,7 @@ impl PortfolioAnalyzer {
         }
     }
 
+    /// Calculates total PnL including unrealized PnL if provided.
     #[pyo3(name = "total_pnl")]
     fn py_total_pnl(
         &self,
@@ -477,6 +557,7 @@ impl PortfolioAnalyzer {
             .map_err(to_pyvalue_err)
     }
 
+    /// Calculates total PnL as a percentage of starting balance.
     #[pyo3(name = "total_pnl_percentage")]
     fn py_total_pnl_percentage(
         &self,

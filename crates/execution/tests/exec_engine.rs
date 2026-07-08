@@ -59,10 +59,12 @@ use nautilus_model::{
         OrderType, PositionSide, PositionSideSpecified, TimeInForce, TriggerType,
     },
     events::{
-        AccountState, OrderCanceled, OrderEventAny, OrderExpired, OrderFilled, OrderPendingUpdate,
-        OrderRejected, OrderUpdated, PositionEvent,
+        AccountState, OrderCancelRejected, OrderCanceled, OrderEventAny, OrderExpired, OrderFilled,
+        OrderModifyRejected, OrderPendingCancel, OrderPendingUpdate, OrderRejected, OrderUpdated,
+        PositionEvent,
         order::spec::{
-            OrderCanceledSpec, OrderExpiredSpec, OrderFilledSpec, OrderPendingUpdateSpec,
+            OrderCancelRejectedSpec, OrderCanceledSpec, OrderExpiredSpec, OrderFilledSpec,
+            OrderModifyRejectedSpec, OrderPendingCancelSpec, OrderPendingUpdateSpec,
             OrderRejectedSpec, OrderUpdatedSpec,
         },
     },
@@ -259,6 +261,60 @@ fn build_order_pending_update(
     venue_order_id: Option<VenueOrderId>,
 ) -> OrderPendingUpdate {
     OrderPendingUpdateSpec::builder()
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument_id)
+        .client_order_id(client_order_id)
+        .account_id(account_id)
+        .maybe_venue_order_id(venue_order_id)
+        .build()
+}
+
+fn build_order_pending_cancel(
+    trader_id: TraderId,
+    strategy_id: StrategyId,
+    instrument_id: InstrumentId,
+    client_order_id: ClientOrderId,
+    account_id: AccountId,
+    venue_order_id: Option<VenueOrderId>,
+) -> OrderPendingCancel {
+    OrderPendingCancelSpec::builder()
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument_id)
+        .client_order_id(client_order_id)
+        .account_id(account_id)
+        .maybe_venue_order_id(venue_order_id)
+        .build()
+}
+
+fn build_order_modify_rejected(
+    trader_id: TraderId,
+    strategy_id: StrategyId,
+    instrument_id: InstrumentId,
+    client_order_id: ClientOrderId,
+    account_id: AccountId,
+    venue_order_id: Option<VenueOrderId>,
+) -> OrderModifyRejected {
+    OrderModifyRejectedSpec::builder()
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument_id)
+        .client_order_id(client_order_id)
+        .account_id(account_id)
+        .maybe_venue_order_id(venue_order_id)
+        .build()
+}
+
+fn build_order_cancel_rejected(
+    trader_id: TraderId,
+    strategy_id: StrategyId,
+    instrument_id: InstrumentId,
+    client_order_id: ClientOrderId,
+    account_id: AccountId,
+    venue_order_id: Option<VenueOrderId>,
+) -> OrderCancelRejected {
+    OrderCancelRejectedSpec::builder()
         .trader_id(trader_id)
         .strategy_id(strategy_id)
         .instrument_id(instrument_id)
@@ -1450,9 +1506,9 @@ fn test_process_filled_order_publishes_fill_order_position_topics_in_order(
     *msgbus::get_message_bus().borrow_mut() = MessageBus::default();
 
     let (instrument, order) = prepare_accepted_order(&mut execution_engine);
-    let fills_topic = switchboard::get_order_fills_topic(instrument.id());
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
-    let position_topic = switchboard::get_event_positions_topic(order.strategy_id());
+    let fills_topic = switchboard::get_order_filled_topic(instrument.id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
+    let position_topic = switchboard::get_event_position_topic(order.strategy_id());
     let received = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_positions = Rc::new(RefCell::new(Vec::<PositionEvent>::new()));
     let topics = Rc::new(RefCell::new(Vec::<&'static str>::new()));
@@ -1526,9 +1582,9 @@ fn test_process_fill_resolved_by_venue_order_id_rewrites_client_order_id_and_pre
     *msgbus::get_message_bus().borrow_mut() = MessageBus::default();
 
     let (instrument, order) = prepare_accepted_order(&mut execution_engine);
-    let fills_topic = switchboard::get_order_fills_topic(instrument.id());
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
-    let position_topic = switchboard::get_event_positions_topic(order.strategy_id());
+    let fills_topic = switchboard::get_order_filled_topic(instrument.id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
+    let position_topic = switchboard::get_event_position_topic(order.strategy_id());
     let received_fills = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_orders = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_positions = Rc::new(RefCell::new(Vec::<PositionEvent>::new()));
@@ -1611,8 +1667,8 @@ fn test_process_non_fill_event_resolved_by_venue_order_id_rewrites_client_order_
     *msgbus::get_message_bus().borrow_mut() = MessageBus::default();
 
     let (instrument, order) = prepare_accepted_order(&mut execution_engine);
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
-    let cancels_topic = switchboard::get_order_cancels_topic(order.instrument_id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
+    let cancels_topic = switchboard::get_order_canceled_topic(order.instrument_id());
     let received_orders = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_cancels = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let order_handler = TypedHandler::from({
@@ -1689,8 +1745,8 @@ fn test_process_stale_cancel_after_fill_does_not_publish_order_event(
     ));
     execution_engine.process(&fill);
 
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
-    let cancels_topic = switchboard::get_order_cancels_topic(order.instrument_id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
+    let cancels_topic = switchboard::get_order_canceled_topic(order.instrument_id());
     let received_orders = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_cancels = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_portfolio = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
@@ -1772,9 +1828,9 @@ fn test_process_same_side_fill_publishes_position_changed_after_order_topic(
     ));
     execution_engine.process(&opening_fill);
 
-    let fills_topic = switchboard::get_order_fills_topic(instrument.id());
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
-    let position_topic = switchboard::get_event_positions_topic(order.strategy_id());
+    let fills_topic = switchboard::get_order_filled_topic(instrument.id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
+    let position_topic = switchboard::get_event_position_topic(order.strategy_id());
     let received_positions = Rc::new(RefCell::new(Vec::<PositionEvent>::new()));
     let topics = Rc::new(RefCell::new(Vec::<&'static str>::new()));
     let fills_handler = TypedHandler::from({
@@ -1888,7 +1944,7 @@ fn test_process_closing_fill_updates_cache_before_publishing_position_closed(
     );
     execution_engine.process(&closing_accepted);
 
-    let position_topic = switchboard::get_event_positions_topic(closing_order.strategy_id());
+    let position_topic = switchboard::get_event_position_topic(closing_order.strategy_id());
     let instrument_id = instrument.id();
     let venue = instrument_id.venue;
     let account_id = AccountId::test_default();
@@ -1947,9 +2003,9 @@ fn test_process_leg_fill_without_order_updates_position_and_publishes_order_befo
     let strategy_id = fill.strategy_id;
     let client_order_id = fill.client_order_id;
 
-    let fills_topic = switchboard::get_order_fills_topic(instrument.id());
-    let order_topic = switchboard::get_event_orders_topic(strategy_id);
-    let position_topic = switchboard::get_event_positions_topic(strategy_id);
+    let fills_topic = switchboard::get_order_filled_topic(instrument.id());
+    let order_topic = switchboard::get_event_order_topic(strategy_id);
+    let position_topic = switchboard::get_event_position_topic(strategy_id);
     let received_fills = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_orders = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let received_positions = Rc::new(RefCell::new(Vec::<PositionEvent>::new()));
@@ -2325,8 +2381,8 @@ fn test_process_canceled_order_publishes_order_cancels_topic(
     mut execution_engine: ExecutionEngine,
 ) {
     let (instrument, order) = prepare_accepted_order(&mut execution_engine);
-    let cancels_topic = switchboard::get_order_cancels_topic(instrument.id());
-    let order_topic = switchboard::get_event_orders_topic(order.strategy_id());
+    let cancels_topic = switchboard::get_order_canceled_topic(instrument.id());
+    let order_topic = switchboard::get_event_order_topic(order.strategy_id());
     let received = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
     let topics = Rc::new(RefCell::new(Vec::<&'static str>::new()));
     let cancels_handler = TypedHandler::from({
@@ -2364,8 +2420,216 @@ fn test_process_canceled_order_publishes_order_cancels_topic(
     assert_eq!(topics.borrow().as_slice(), ["orders", "cancels"]);
 }
 
+#[derive(Clone, Copy)]
+enum InstrumentOrderEventKind {
+    Submitted,
+    Rejected,
+    PendingUpdate,
+    PendingCancel,
+    ModifyRejected,
+    CancelRejected,
+}
+
+#[rstest]
+#[case::submitted(InstrumentOrderEventKind::Submitted)]
+#[case::rejected(InstrumentOrderEventKind::Rejected)]
+#[case::pending_update(InstrumentOrderEventKind::PendingUpdate)]
+#[case::pending_cancel(InstrumentOrderEventKind::PendingCancel)]
+#[case::modify_rejected(InstrumentOrderEventKind::ModifyRejected)]
+#[case::cancel_rejected(InstrumentOrderEventKind::CancelRejected)]
+fn test_process_order_event_publishes_instrument_order_event_topic(
+    mut execution_engine: ExecutionEngine,
+    #[case] event_kind: InstrumentOrderEventKind,
+) {
+    *msgbus::get_message_bus().borrow_mut() = MessageBus::default();
+
+    let account_id = AccountId::test_default();
+    let (instrument, order) = match event_kind {
+        InstrumentOrderEventKind::Submitted | InstrumentOrderEventKind::Rejected => {
+            prepare_initialized_market_order_with_account(
+                &execution_engine,
+                CashAccount::default().into(),
+            )
+        }
+        InstrumentOrderEventKind::PendingUpdate
+        | InstrumentOrderEventKind::PendingCancel
+        | InstrumentOrderEventKind::ModifyRejected
+        | InstrumentOrderEventKind::CancelRejected => prepare_accepted_order_with_account(
+            &mut execution_engine,
+            CashAccount::default().into(),
+        ),
+    };
+
+    let topic = match event_kind {
+        InstrumentOrderEventKind::Submitted => {
+            switchboard::get_order_submitted_topic(instrument.id())
+        }
+        InstrumentOrderEventKind::Rejected => {
+            switchboard::get_order_rejected_topic(instrument.id())
+        }
+        InstrumentOrderEventKind::PendingUpdate => {
+            switchboard::get_order_pending_update_topic(instrument.id())
+        }
+        InstrumentOrderEventKind::PendingCancel => {
+            switchboard::get_order_pending_cancel_topic(instrument.id())
+        }
+        InstrumentOrderEventKind::ModifyRejected => {
+            switchboard::get_order_modify_rejected_topic(instrument.id())
+        }
+        InstrumentOrderEventKind::CancelRejected => {
+            switchboard::get_order_cancel_rejected_topic(instrument.id())
+        }
+    };
+    let received = Rc::new(RefCell::new(Vec::<OrderEventAny>::new()));
+    let handler = TypedHandler::from({
+        let received = received.clone();
+        move |event: &OrderEventAny| {
+            received.borrow_mut().push(event.clone());
+        }
+    });
+    msgbus::subscribe_order_events(topic.into(), handler.clone(), None);
+
+    let event = match event_kind {
+        InstrumentOrderEventKind::Submitted => TestOrderEventStubs::submitted(&order, account_id),
+        InstrumentOrderEventKind::Rejected => OrderEventAny::Rejected(build_order_rejected(
+            order.trader_id(),
+            order.strategy_id(),
+            instrument.id(),
+            order.client_order_id(),
+            account_id,
+        )),
+        InstrumentOrderEventKind::PendingUpdate => {
+            OrderEventAny::PendingUpdate(build_order_pending_update(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ))
+        }
+        InstrumentOrderEventKind::PendingCancel => {
+            OrderEventAny::PendingCancel(build_order_pending_cancel(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ))
+        }
+        InstrumentOrderEventKind::ModifyRejected => {
+            let pending_update = OrderEventAny::PendingUpdate(build_order_pending_update(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ));
+            execution_engine.process(&pending_update);
+
+            OrderEventAny::ModifyRejected(build_order_modify_rejected(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ))
+        }
+        InstrumentOrderEventKind::CancelRejected => {
+            let pending_cancel = OrderEventAny::PendingCancel(build_order_pending_cancel(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ));
+            execution_engine.process(&pending_cancel);
+
+            OrderEventAny::CancelRejected(build_order_cancel_rejected(
+                order.trader_id(),
+                order.strategy_id(),
+                instrument.id(),
+                order.client_order_id(),
+                account_id,
+                Some(VenueOrderId::from("V-001")),
+            ))
+        }
+    };
+
+    execution_engine.process(&event);
+    msgbus::unsubscribe_order_events(topic.into(), &handler);
+
+    let received = received.borrow();
+    assert_eq!(received.len(), 1);
+    assert_eq!(received[0].client_order_id(), order.client_order_id());
+    assert_eq!(received[0].instrument_id(), instrument.id());
+
+    match event_kind {
+        InstrumentOrderEventKind::Submitted => {
+            assert!(matches!(received[0], OrderEventAny::Submitted(_)));
+        }
+        InstrumentOrderEventKind::Rejected => {
+            assert!(matches!(received[0], OrderEventAny::Rejected(_)));
+        }
+        InstrumentOrderEventKind::PendingUpdate => {
+            assert!(matches!(received[0], OrderEventAny::PendingUpdate(_)));
+        }
+        InstrumentOrderEventKind::PendingCancel => {
+            assert!(matches!(received[0], OrderEventAny::PendingCancel(_)));
+        }
+        InstrumentOrderEventKind::ModifyRejected => {
+            assert!(matches!(received[0], OrderEventAny::ModifyRejected(_)));
+        }
+        InstrumentOrderEventKind::CancelRejected => {
+            assert!(matches!(received[0], OrderEventAny::CancelRejected(_)));
+        }
+    }
+}
+
 fn prepare_accepted_order(execution_engine: &mut ExecutionEngine) -> (InstrumentAny, OrderAny) {
     prepare_accepted_order_with_account(execution_engine, CashAccount::default().into())
+}
+
+fn prepare_initialized_market_order_with_account(
+    execution_engine: &ExecutionEngine,
+    account: AccountAny,
+) -> (InstrumentAny, OrderAny) {
+    let trader_id = TraderId::test_default();
+    let strategy_id = StrategyId::test_default();
+    let instrument = InstrumentAny::from(audusd_sim());
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_instrument(instrument.clone())
+        .unwrap();
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_account(account)
+        .unwrap();
+
+    let order = OrderTestBuilder::new(OrderType::Market)
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument.id())
+        .client_order_id(ClientOrderId::from("O-19700101-000000-001-001-1"))
+        .side(OrderSide::Buy)
+        .quantity(Quantity::from(100_000))
+        .build();
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_order(order.clone(), None, Some(ClientId::from("STUB")), true)
+        .unwrap();
+
+    (instrument, order)
 }
 
 fn prepare_accepted_order_with_account(
@@ -8552,6 +8816,193 @@ fn test_filled_order_removes_from_own_book() {
 }
 
 #[rstest]
+fn test_partially_filled_order_shrinks_own_book_quantity() {
+    let clock = Rc::new(RefCell::new(TestClock::new()));
+    let cache = Rc::new(RefCell::new(Cache::default()));
+    let config = ExecutionEngineConfig {
+        debug: true,
+        snapshot_orders: true,
+        snapshot_positions: true,
+        manage_own_order_books: true,
+        ..Default::default()
+    };
+
+    let mut execution_engine = ExecutionEngine::new(clock, cache, Some(config));
+
+    let trader_id = TraderId::test_default();
+    let strategy_id = StrategyId::test_default();
+    let account_id = AccountId::test_default();
+    let instrument = audusd_sim();
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_instrument(instrument.clone().into())
+        .unwrap();
+
+    let stub_client = StubExecutionClient::new(
+        ClientId::from("STUB"),
+        account_id,
+        Venue::test_default(),
+        OmsType::Netting,
+        None,
+    );
+    execution_engine
+        .register_client(Box::new(stub_client))
+        .unwrap();
+
+    let order_bid = OrderTestBuilder::new(OrderType::Limit)
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument.id)
+        .client_order_id(ClientOrderId::from("O-20240101-000000-001-001-1"))
+        .side(OrderSide::Buy)
+        .quantity(Quantity::from(100_000))
+        .price(Price::from_str("10.0").unwrap())
+        .build();
+
+    let order_ask = OrderTestBuilder::new(OrderType::Limit)
+        .trader_id(trader_id)
+        .strategy_id(strategy_id)
+        .instrument_id(instrument.id)
+        .client_order_id(ClientOrderId::from("O-20240101-000000-001-001-2"))
+        .side(OrderSide::Sell)
+        .quantity(Quantity::from(100_000))
+        .price(Price::from_str("11.0").unwrap())
+        .build();
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_order(order_bid.clone(), None, Some(ClientId::from("STUB")), true)
+        .unwrap();
+
+    execution_engine
+        .cache()
+        .borrow_mut()
+        .add_order(order_ask.clone(), None, Some(ClientId::from("STUB")), true)
+        .unwrap();
+
+    let submit_order_bid = SubmitOrder {
+        trader_id,
+        strategy_id,
+        instrument_id: instrument.id,
+        client_order_id: order_bid.client_order_id(),
+        order_init: order_bid.init_event().clone(),
+        position_id: None,
+        params: None,
+        client_id: Some(ClientId::from("STUB")),
+        exec_algorithm_id: None,
+        command_id: UUID4::new(),
+        ts_init: UnixNanos::default(),
+        correlation_id: None,
+        causation_id: None,
+    };
+
+    let submit_order_ask = SubmitOrder {
+        trader_id,
+        strategy_id,
+        instrument_id: instrument.id,
+        client_order_id: order_ask.client_order_id(),
+        order_init: order_ask.init_event().clone(),
+        position_id: None,
+        params: None,
+        client_id: Some(ClientId::from("STUB")),
+        exec_algorithm_id: None,
+        command_id: UUID4::new(),
+        ts_init: UnixNanos::default(),
+        correlation_id: None,
+        causation_id: None,
+    };
+
+    execution_engine.execute(TradingCommand::SubmitOrder(submit_order_bid));
+    execution_engine.execute(TradingCommand::SubmitOrder(submit_order_ask));
+    let order_submitted_bid = TestOrderEventStubs::submitted(&order_bid, account_id);
+    let order_submitted_ask = TestOrderEventStubs::submitted(&order_ask, account_id);
+    execution_engine.process(&order_submitted_bid);
+    execution_engine.process(&order_submitted_ask);
+
+    let order_accepted_bid =
+        TestOrderEventStubs::accepted(&order_bid, account_id, VenueOrderId::from("V-001"));
+    let order_accepted_ask =
+        TestOrderEventStubs::accepted(&order_ask, account_id, VenueOrderId::from("V-002"));
+    execution_engine.process(&order_accepted_bid);
+    execution_engine.process(&order_accepted_ask);
+
+    {
+        let cache = execution_engine.cache().borrow();
+        let own_book = cache
+            .try_own_order_book(&instrument.id)
+            .expect("Own order book should exist");
+        let bid_quantities = own_book.bid_quantity(None, None, None, None, None);
+        let ask_quantities = own_book.ask_quantity(None, None, None, None, None);
+
+        assert_eq!(bid_quantities.get(&dec!(10.0)), Some(&dec!(100_000)));
+        assert_eq!(ask_quantities.get(&dec!(11.0)), Some(&dec!(100_000)));
+    }
+
+    let order_filled_bid = OrderEventAny::Filled(build_order_filled(
+        order_bid.trader_id(),
+        order_bid.strategy_id(),
+        instrument.id(),
+        order_bid.client_order_id(),
+        VenueOrderId::from("V-001"),
+        account_id,
+        TradeId::new("E-19700101-000000-001-001"),
+        order_bid.order_side(),
+        order_bid.order_type(),
+        Quantity::from(40_000), // last_qty: partial fill
+        Price::from_str("10.0").unwrap(),
+        instrument.quote_currency(),
+        LiquiditySide::Maker,
+        None, // position_id
+        None, // commission
+    ));
+    let order_filled_ask = OrderEventAny::Filled(build_order_filled(
+        order_ask.trader_id(),
+        order_ask.strategy_id(),
+        instrument.id(),
+        order_ask.client_order_id(),
+        VenueOrderId::from("V-002"),
+        account_id,
+        TradeId::new("E-19700101-000000-001-002"),
+        order_ask.order_side(),
+        order_ask.order_type(),
+        Quantity::from(40_000), // last_qty: partial fill
+        Price::from_str("11.0").unwrap(),
+        instrument.quote_currency(),
+        LiquiditySide::Maker,
+        None, // position_id
+        None, // commission
+    ));
+    execution_engine.process(&order_filled_bid);
+    execution_engine.process(&order_filled_ask);
+
+    let cache = execution_engine.cache().borrow();
+
+    let bid_order = cache
+        .order(&order_bid.client_order_id())
+        .expect("Bid order should exist in cache");
+    let ask_order = cache
+        .order(&order_ask.client_order_id())
+        .expect("Ask order should exist in cache");
+
+    let own_book = cache
+        .try_own_order_book(&instrument.id)
+        .expect("Own order book should exist");
+
+    let bid_quantities = own_book.bid_quantity(None, None, None, None, None);
+    let ask_quantities = own_book.ask_quantity(None, None, None, None, None);
+
+    assert_eq!(bid_order.status(), OrderStatus::PartiallyFilled);
+    assert_eq!(ask_order.status(), OrderStatus::PartiallyFilled);
+    assert_eq!(bid_order.leaves_qty(), Quantity::from(60_000));
+    assert_eq!(ask_order.leaves_qty(), Quantity::from(60_000));
+    assert_eq!(bid_quantities.get(&dec!(10.0)), Some(&dec!(60_000)));
+    assert_eq!(ask_quantities.get(&dec!(11.0)), Some(&dec!(60_000)));
+}
+
+#[rstest]
 fn test_order_updates_in_own_book() {
     let clock = Rc::new(RefCell::new(TestClock::new()));
     let cache = Rc::new(RefCell::new(Cache::default()));
@@ -13228,8 +13679,8 @@ fn test_snapshot_open_position_states_publishes_position_state_snapshot() {
 
     let engine = ExecutionEngine::new(clock, cache, None);
 
-    let topic = format!("snapshots.positions.{}", position.id);
-    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_str().into();
+    let topic = switchboard::get_snapshot_position_topic(position.id);
+    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_ref().into();
     let (handler, saver) = get_any_saving_handler::<PositionStateSnapshot>(None);
     msgbus::subscribe_any(pattern, handler.clone(), None);
 
@@ -13268,8 +13719,8 @@ fn test_snapshot_open_position_states_publishes_snapshot_without_quote() {
 
     let engine = ExecutionEngine::new(clock, cache, None);
 
-    let topic = format!("snapshots.positions.{}", position.id);
-    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_str().into();
+    let topic = switchboard::get_snapshot_position_topic(position.id);
+    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_ref().into();
     let (handler, saver) = get_any_saving_handler::<PositionStateSnapshot>(None);
     msgbus::subscribe_any(pattern, handler.clone(), None);
 
@@ -13315,8 +13766,8 @@ fn test_snapshot_timer_fires_callback_publishes_position_state_snapshot() {
     let mut engine = ExecutionEngine::new(clock.clone(), cache, Some(config));
     engine.start();
 
-    let topic = format!("snapshots.positions.{}", position.id);
-    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_str().into();
+    let topic = switchboard::get_snapshot_position_topic(position.id);
+    let pattern: msgbus::MStr<msgbus::Pattern> = topic.as_ref().into();
     let (handler, saver) = get_any_saving_handler::<PositionStateSnapshot>(None);
     msgbus::subscribe_any(pattern, handler.clone(), None);
 

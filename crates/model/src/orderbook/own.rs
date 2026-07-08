@@ -63,7 +63,7 @@ pub struct OwnBookOrder {
     pub side: OrderSideSpecified,
     /// The order price.
     pub price: Price,
-    /// The order size.
+    /// The remaining order size (leaves quantity).
     pub size: Quantity,
     /// The order type.
     pub order_type: OrderType,

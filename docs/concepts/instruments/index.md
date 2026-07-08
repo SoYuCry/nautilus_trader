@@ -99,7 +99,7 @@ complete constructor and struct fields for that type.
 | `info`              | Adapter metadata preserved from the venue or data source.               |
 | `ts_event`          | UNIX nanosecond timestamp for when the definition event occurred.       |
 | `ts_init`           | UNIX nanosecond timestamp for when Nautilus initialized the object.     |
-| `tick_scheme_name`  | Registered variable tick scheme name where the type supports one.       |
+| `tick_scheme`       | Registered variable tick scheme name where the type supports one.       |
 
 ## Symbology
 
@@ -128,10 +128,10 @@ Rust users work with the `nautilus_model` instrument structs and `InstrumentAny`
 use nautilus_model::instruments::{CurrencyPair, InstrumentAny};
 ```
 
-Python users normally work with instrument classes from `nautilus_trader.model.instruments`:
+Python users normally work with instrument classes from `nautilus_trader.model`:
 
 ```python
-from nautilus_trader.model.instruments import CurrencyPair
+from nautilus_trader.model import CurrencyPair
 ```
 
 Both surfaces represent the same instrument contract: identity, precision, increments,
@@ -182,13 +182,13 @@ When the `DataEngine` receives an instrument update, it passes the object to the
 
 ## Precision
 
-Precision defines the number of decimal places allowed for prices and quantities on an
-instrument. NautilusTrader enforces this strictly because exchanges validate the same
-constraints, and backtests should not fill orders at prices or sizes that cannot exist
-in production.
+Precision defines the canonical number of decimal places for prices and quantities on an
+instrument. NautilusTrader enforces the resulting price and size grids strictly because
+trading venues validate the same constraints, and backtests should not fill orders at
+prices or sizes that cannot exist in production.
 
-| Field             | Constrains                           | Example          |
-|-------------------|--------------------------------------|------------------|
+| Field             | Constrains                           | Example           |
+|-------------------|--------------------------------------|-------------------|
 | `price_precision` | Order prices, trigger prices, fills. | `2` -> `50000.01` |
 | `size_precision`  | Order quantities and fill sizes.     | `5` -> `1.00001`  |
 
@@ -235,7 +235,7 @@ unified Nautilus instrument API.
 
 ## Related guides
 
-- [Data](../data.md) covers market data types that reference instruments.
+- [Data](../data/) covers market data types that reference instruments.
 - [Orders](../orders/) covers order fields that reference instruments.
 - [Synthetics](../synthetics.md) covers local formula-derived instruments.
 - [Python API Reference](/docs/python-api-latest/model/instruments.html) lists Python

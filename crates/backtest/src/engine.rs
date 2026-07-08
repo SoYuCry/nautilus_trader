@@ -333,6 +333,8 @@ impl BacktestEngine {
     pub fn add_instrument(&mut self, instrument: &InstrumentAny) -> anyhow::Result<()> {
         let instrument_id = instrument.id();
         if let Some(exchange) = self.venues.get(&instrument.id().venue) {
+            let previous_expiration_ns = exchange.borrow().instrument_expiration(instrument_id);
+
             if matches!(
                 instrument,
                 InstrumentAny::CurrencyPair(_) | InstrumentAny::TokenizedAsset(_)
@@ -346,6 +348,19 @@ impl BacktestEngine {
             exchange.borrow_mut().add_instrument(instrument.clone())?;
             if let Some(expiration_ns) = instrument.expiration_ns() {
                 self.set_instrument_expiration_timer(exchange, instrument_id, expiration_ns)?;
+            }
+
+            if let Some(previous_expiration_ns) = previous_expiration_ns
+                && instrument.expiration_ns() != Some(previous_expiration_ns)
+                && !exchange
+                    .borrow()
+                    .has_unprocessed_instrument_expiration(previous_expiration_ns)
+            {
+                let timer_name = Self::instrument_expiration_timer_name(
+                    instrument_id.venue,
+                    previous_expiration_ns,
+                );
+                self.kernel.clock.borrow_mut().cancel_timer(&timer_name);
             }
         } else {
             anyhow::bail!(
@@ -492,34 +507,6 @@ impl BacktestEngine {
         Ok(())
     }
 
-    /// Adds a strategy to the backtest engine.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the strategy is already registered or the trader is in an invalid
-    /// state for strategy registration.
-    pub fn add_strategy<T>(&mut self, strategy: T) -> anyhow::Result<()>
-    where
-        T: Strategy + StrategyNative + DataActorNative + Component + Debug + 'static,
-    {
-        self.kernel.trader.borrow_mut().add_strategy(strategy)
-    }
-
-    /// Adds the given strategies to the backtest engine. Stops at the first error.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if any strategy fails to register; preceding strategies remain registered.
-    pub fn add_strategies<T>(&mut self, strategies: Vec<T>) -> anyhow::Result<()>
-    where
-        T: Strategy + StrategyNative + DataActorNative + Component + Debug + 'static,
-    {
-        for strategy in strategies {
-            self.add_strategy(strategy)?;
-        }
-        Ok(())
-    }
-
     /// Adds an actor to the backtest engine.
     ///
     /// # Errors
@@ -544,6 +531,50 @@ impl BacktestEngine {
     {
         for actor in actors {
             self.add_actor(actor)?;
+        }
+        Ok(())
+    }
+
+    /// Adds a strategy to the backtest engine.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the strategy is already registered or the trader is in an invalid
+    /// state for strategy registration.
+    pub fn add_strategy<T>(&mut self, mut strategy: T) -> anyhow::Result<()>
+    where
+        T: Strategy + StrategyNative + DataActorNative + Component + Debug + 'static,
+    {
+        let strategy_id = self
+            .kernel
+            .trader
+            .borrow()
+            .prepare_strategy_for_registration(&mut strategy)?;
+        let oms_type = StrategyNative::strategy_core(&strategy).config.oms_type;
+
+        self.kernel.trader.borrow_mut().add_strategy(strategy)?;
+
+        if let Some(oms_type) = oms_type {
+            self.kernel
+                .exec_engine
+                .borrow_mut()
+                .register_oms_type(strategy_id, oms_type);
+        }
+
+        Ok(())
+    }
+
+    /// Adds the given strategies to the backtest engine. Stops at the first error.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any strategy fails to register; preceding strategies remain registered.
+    pub fn add_strategies<T>(&mut self, strategies: Vec<T>) -> anyhow::Result<()>
+    where
+        T: Strategy + StrategyNative + DataActorNative + Component + Debug + 'static,
+    {
+        for strategy in strategies {
+            self.add_strategy(strategy)?;
         }
         Ok(())
     }
@@ -1356,7 +1387,12 @@ impl BacktestEngine {
             return Ok(());
         }
 
-        let timer_name = Self::instrument_expiration_timer_name(instrument_id);
+        let timer_name = Self::instrument_expiration_timer_name(instrument_id.venue, expiration_ns);
+        let timer_key = ustr::Ustr::from(timer_name.as_str());
+        if self.kernel.clock.borrow().timer_exists(&timer_key) {
+            return Ok(());
+        }
+
         let exchange: Weak<RefCell<SimulatedExchange>> = Rc::downgrade(exchange);
         let callback: Rc<dyn Fn(TimeEvent)> = Rc::new(move |event: TimeEvent| {
             if let Some(exchange) = exchange.upgrade() {
@@ -1365,11 +1401,7 @@ impl BacktestEngine {
                     .process_instrument_expirations(event.ts_event);
             }
         });
-        let timer_key = ustr::Ustr::from(timer_name.as_str());
         let mut clock = self.kernel.clock.borrow_mut();
-        if clock.timer_exists(&timer_key) {
-            clock.cancel_timer(&timer_name);
-        }
 
         clock.set_time_alert_ns(
             &timer_name,
@@ -1381,8 +1413,8 @@ impl BacktestEngine {
         Ok(())
     }
 
-    fn instrument_expiration_timer_name(instrument_id: InstrumentId) -> String {
-        format!("INSTRUMENT-EXPIRATION:{instrument_id}")
+    fn instrument_expiration_timer_name(venue: Venue, expiration_ns: UnixNanos) -> String {
+        format!("INSTRUMENT-EXPIRATION:{venue}:{expiration_ns}")
     }
 
     fn schedule_funding_settlement_if_required(
@@ -1415,11 +1447,7 @@ impl BacktestEngine {
                     .process_funding_settlement(instrument_id, event.ts_event);
             }
         });
-        let timer_key = ustr::Ustr::from(timer_name.as_str());
         let mut clock = self.kernel.clock.borrow_mut();
-        if clock.timer_exists(&timer_key) {
-            clock.cancel_timer(&timer_name);
-        }
 
         clock.set_time_alert_ns(
             &timer_name,
@@ -1805,10 +1833,11 @@ fn log_portfolio_performance(analyzer: &PortfolioAnalyzer) {
 #[cfg(test)]
 mod tests {
     use nautilus_common::{
+        actor::DataActor,
         enums::Environment,
         messages::{
             data::{DataCommand, UnsubscribeCommand},
-            execution::SubmitOrder,
+            execution::{SubmitOrder, TradingCommand},
         },
         msgbus::{
             self, MessagingSwitchboard,
@@ -1819,10 +1848,10 @@ mod tests {
     use nautilus_model::{
         data::{Data, InstrumentStatus},
         enums::{
-            AccountType, BookType, MarketStatus, MarketStatusAction, OmsType, OrderSide, OrderType,
-            TriggerType,
+            AccountType, BookType, MarketStatus, MarketStatusAction, OmsType, OrderSide,
+            OrderStatus, OrderType, TriggerType,
         },
-        identifiers::Venue,
+        identifiers::{ClientId, PositionId, StrategyId, Venue},
         instruments::{
             CryptoPerpetual, Instrument, InstrumentAny, stubs::crypto_perpetual_ethusdt,
         },
@@ -1830,6 +1859,10 @@ mod tests {
         types::{Money, Price, Quantity},
     };
     use nautilus_system::{KernelEventStore, RegisteredComponents};
+    use nautilus_trading::{
+        nautilus_strategy,
+        strategy::{config::StrategyConfig, core::StrategyCore},
+    };
     use rstest::*;
     use ustr::Ustr;
 
@@ -1885,6 +1918,23 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
+    struct TestStrategy {
+        core: StrategyCore,
+    }
+
+    impl TestStrategy {
+        fn new(config: StrategyConfig) -> Self {
+            Self {
+                core: StrategyCore::new(config),
+            }
+        }
+    }
+
+    impl DataActor for TestStrategy {}
+
+    nautilus_strategy!(TestStrategy);
+
     fn create_engine() -> BacktestEngine {
         let mut engine = BacktestEngine::new(BacktestEngineConfig::default()).unwrap();
         let venue_config = SimulatedVenueConfig::builder()
@@ -1897,6 +1947,75 @@ mod tests {
             .unwrap();
         engine.add_venue(venue_config).unwrap();
         engine
+    }
+
+    #[rstest]
+    fn test_add_strategy_registers_configured_hedging_oms_type() {
+        let mut engine = create_engine();
+        let instrument = crypto_perpetual_ethusdt();
+        let strategy_id = StrategyId::from("FUNDING_ARBITRAGE-001");
+
+        engine
+            .add_instrument(&InstrumentAny::CryptoPerpetual(instrument.clone()))
+            .unwrap();
+        engine
+            .add_strategy(TestStrategy::new(StrategyConfig {
+                strategy_id: Some(strategy_id),
+                oms_type: Some(OmsType::Hedging),
+                ..Default::default()
+            }))
+            .unwrap();
+
+        let order = OrderTestBuilder::new(OrderType::Market)
+            .trader_id(engine.trader_id())
+            .strategy_id(strategy_id)
+            .instrument_id(instrument.id())
+            .quantity(Quantity::from("1.000"))
+            .build();
+        let position_id = PositionId::new("CUSTOM-POSITION-001");
+
+        engine
+            .kernel
+            .exec_engine
+            .borrow()
+            .cache()
+            .borrow_mut()
+            .add_order(
+                order.clone(),
+                Some(position_id),
+                Some(ClientId::from("BINANCE")),
+                true,
+            )
+            .unwrap();
+
+        let submit_order = SubmitOrder::new(
+            order.trader_id(),
+            Some(ClientId::from("BINANCE")),
+            strategy_id,
+            instrument.id(),
+            order.client_order_id(),
+            order.init_event().clone(),
+            order.exec_algorithm_id(),
+            Some(position_id),
+            None,
+            UUID4::new(),
+            UnixNanos::default(),
+            None,
+        );
+
+        engine
+            .kernel
+            .exec_engine
+            .borrow()
+            .execute(TradingCommand::SubmitOrder(submit_order));
+
+        let exec_engine = engine.kernel.exec_engine.borrow();
+        let cache = exec_engine.cache().borrow();
+        let cached_order = cache
+            .order(&order.client_order_id())
+            .expect("Order should be cached");
+
+        assert_eq!(cached_order.status(), OrderStatus::Initialized);
     }
 
     fn create_engine_with_replay_store(fail_restore: bool) -> BacktestEngine {

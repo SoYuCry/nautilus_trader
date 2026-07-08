@@ -18,6 +18,8 @@ use std::sync::{
     atomic::{AtomicBool, AtomicU8, Ordering},
 };
 
+use super::metrics::{RunnerMetrics, RunnerMetricsSnapshot};
+
 /// Lifecycle state of the `LiveNode` runner.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[repr(u8)]
@@ -69,6 +71,7 @@ impl NodeState {
 pub struct LiveNodeHandle {
     pub(crate) stop_flag: Arc<AtomicBool>,
     pub(crate) state: Arc<AtomicU8>,
+    pub(crate) metrics: Arc<RunnerMetrics>,
 }
 
 impl Default for LiveNodeHandle {
@@ -84,6 +87,7 @@ impl LiveNodeHandle {
         Self {
             stop_flag: Arc::new(AtomicBool::new(false)),
             state: Arc::new(AtomicU8::new(NodeState::Idle.as_u8())),
+            metrics: Arc::new(RunnerMetrics::default()),
         }
     }
 
@@ -110,6 +114,12 @@ impl LiveNodeHandle {
     #[must_use]
     pub fn is_running(&self) -> bool {
         self.state().is_running()
+    }
+
+    /// Returns a by-value snapshot of `LiveNode::run` dispatch metrics after startup.
+    #[must_use]
+    pub fn metrics_snapshot(&self) -> RunnerMetricsSnapshot {
+        self.metrics.snapshot()
     }
 
     /// Signals the node to stop.
