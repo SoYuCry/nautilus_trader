@@ -41,7 +41,7 @@ polymarket/
   README.md                         ---- Polymarket v1 的总说明和使用入口
   DATA_CONTRACT_V1.md                ---- v1 数据合同说明，定义 IT / adapter 应交付什么数据
   backtest_v1.py                     ---- 回测 runner 主入口，负责加载数据、接 Nautilus engine、输出报告
-  data_health.py                     ---- 回测前数据健康检查，校验 receive time、sequence 等
+  data_health.py                     ---- 回测前数据健康检查，校验 receive time、内部 replay 行号等
   strategy.py                        ---- PolymarketStrategyBase，给 Nautilus Strategy 补动态 tick 下单 helper
   
   _core/                             ---- 核心纯逻辑和 Nautilus 桥接层
@@ -50,6 +50,7 @@ polymarket/
     fees.py                          ---- fee source / fee report / explicit fee 校验
     tick_size.py                     ---- 根据 timeline 解析当前 effective tick size
     price_rounding.py                ---- 把策略价格投影到合法 tick 上
+    reports.py                       ---- 生成研究友好的 account / fills / positions 报告，并保留 Nautilus 原始审计表
   
   adapters/                          ---- 数据源适配层，把 raw/event bundle 转成 v1 数据合同
     base.py                          ---- adapter protocol / 基础接口
@@ -61,11 +62,20 @@ polymarket/
     normalize_live_ws_v1.py          ---- 把旧 capture wrapper 规范化成 NDJSON（以后会删）
     inspect_nautilus_conversion.py   ---- 检查 Polymarket -> Nautilus 转换结果
   
-  research/                          ---- 研究 / smoke test 实验目录
+  research/                          ---- 研究 / smoke test 实验目录（这里只列 v1 主线相关）
+    2026-07-03-live-ws-data-health/  ---- live WS 数据健康检查研究记录
     2026-07-03-live-ws-mock-debug/   ---- mock live WS 调试实验
     2026-07-03-live-ws-t02-simple-strategy/ ---- live WS 抓包上的简单策略 round-trip 实验
+    2026-07-04-it-data-acceptance/   ---- IT event bundle / 数据验收口径
+
+  ideas/                             ---- 策略和后续方向的草稿，不进入 v1 runtime
+
+  boss_reports/                      ---- boss-facing 汇报材料
+    README.md                        ---- boss report 目录说明
+    2026-07-06-polymarket-nautilus-native-backtest-v1-closure-report.md ---- 当前 v1 收尾报告
 
   tests/                             ---- 各种单测
+    fixtures/                        ---- 测试用最小数据样例
 
 2.2 运行逻辑
 
@@ -122,12 +132,15 @@ Data Health Gate 的规则：
 输出包括：
 
 - original_config.yml ---- 本次提交给 runner 的原始 YAML；用于保留实验入口配置。
-- fills_report.csv / fills_report.txt ---- 成交订单汇总；一行是一个有成交的 order，能看成交均价、成交数量、方向、手续费和状态。
-- positions_report.csv / positions_report.txt ---- 持仓明细；一行是一个 position / snapshot，能看仓位如何打开、关闭，以及 realized / unrealized PnL。
-- account_report.csv / account_report.txt ---- 账户状态时间线；一行是一次 account state 里的一个币种余额，能看现金、余额、账户权益等账户层结果。
-- summary.json ---- 机器可读摘要；用于跑批对比和程序化读取指标。
 - resolved_config.json ---- 实际生效配置快照；用于复现实验，记录数据路径、strategy、instrument、fee、tick、settlement 等解析结果。
 - data_health.json ---- 数据健康检查结果；看 receive time、source time、adapter 输出顺序是否过关。
+- account.csv ---- 研究友好的账户状态时间线；一行是一次 account state 里的一个币种余额，字段比 Nautilus 原始表更短。
+- fills.csv ---- 研究友好的成交订单汇总；一行是一个有成交的 order，能看成交均价、成交数量、方向、手续费、gross / net cashflow 和状态。
+- positions.csv ---- 研究友好的持仓明细；一行是一个 position / snapshot，能看仓位如何打开、关闭，以及 realized / unrealized PnL。
+- raw_nautilus/account.csv ---- Nautilus 原始 account report；用于审计和 debug，不做字段裁剪。
+- raw_nautilus/fills.csv ---- Nautilus 原始 fills report；保留完整 order-level 字段，方便和 engine 原始输出对账。
+- raw_nautilus/positions.csv ---- Nautilus 原始 positions report；保留完整 position 字段，方便和 engine 原始输出对账。
+- summary.json ---- 机器可读摘要；用于跑批对比和程序化读取指标，也记录 curated report 和 raw_nautilus report 的路径。
 - run_report.md ---- 给人看的单次回测报告；快速复盘输入、输出、fee、settlement 和风险提示。
 这些输出后续用于策略复盘、数据验收和问题定位。
 
