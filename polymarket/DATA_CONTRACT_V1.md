@@ -201,5 +201,12 @@ The runner reports one of three settlement modes at the top of each run report:
 - `live_ws_v1`: current preferred local raw WebSocket capture path.
 - `normalize_live_ws_v1.py`: patch/normalizer for capture wrappers into the
   strict live WS contract shape.
-- `pmxt_*`: legacy/questionable research inputs only.
+- `pmxt_event_v1`: temporary research/history ingress for curated PMXT event
+  directories.  It requires `event_dir`, `condition_id`, and `asset_id`; filters
+  a single selected token; uses `timestamp_received` as the replay clock; and
+  preserves PMXT `best_bid` / `best_ask` only as diagnostic/reference fields,
+  not authoritative filtering or execution data.  PMXT event/message boundaries
+  are not recoverable from the row format.  The adapter records assumptions and
+  warnings so runner `resolved_config.json` exposes the caveats under
+  `adapter.assumptions` and `adapter.warnings`.
 

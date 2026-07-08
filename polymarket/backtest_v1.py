@@ -1,4 +1,5 @@
-"""Polymarket v1 Nautilus-native research backtest entry point.
+"""
+Polymarket v1 Nautilus-native research backtest entry point.
 
 This entry point deliberately uses NautilusTrader's native BacktestEngine. It
 must not implement independent order matching, fill accounting, cash, position,
@@ -15,7 +16,8 @@ import sys
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -27,8 +29,8 @@ from nautilus_trader.backtest.config import BacktestEngineConfig
 from nautilus_trader.backtest.engine import BacktestEngine
 from nautilus_trader.config import LoggingConfig
 from nautilus_trader.model.currencies import pUSD
-from nautilus_trader.model.data import OrderBookDeltas
 from nautilus_trader.model.data import InstrumentClose
+from nautilus_trader.model.data import OrderBookDeltas
 from nautilus_trader.model.data import TradeTick
 from nautilus_trader.model.enums import AccountType
 from nautilus_trader.model.enums import BookType
@@ -36,12 +38,6 @@ from nautilus_trader.model.enums import OmsType
 from nautilus_trader.model.identifiers import TraderId
 from nautilus_trader.model.objects import Money
 from nautilus_trader.trading.strategy import Strategy
-
-from polymarket.adapters.live_event_bundle_v1 import LiveEventBundleV1Adapter
-from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
-from polymarket.adapters.utils import repo_relative_or_absolute
-from polymarket.data_health import DataHealthError
-from polymarket.data_health import analyze_dataset_health
 from polymarket._core.fees import build_fee_report
 from polymarket._core.fees import enforce_fee_report
 from polymarket._core.models import PolymarketL2DatasetV1
@@ -49,6 +45,12 @@ from polymarket._core.nautilus_native import convert_dataset_to_nautilus
 from polymarket._core.nautilus_native import install_effective_tick_size_order_guard
 from polymarket._core.nautilus_native import load_binary_option_from_config
 from polymarket._core.reports import write_backtest_reports
+from polymarket.adapters.live_event_bundle_v1 import LiveEventBundleV1Adapter
+from polymarket.adapters.live_ws_v1 import LiveWsV1Adapter
+from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
+from polymarket.adapters.utils import repo_relative_or_absolute
+from polymarket.data_health import DataHealthError
+from polymarket.data_health import analyze_dataset_health
 from polymarket.strategy import PolymarketStrategyBase
 
 
@@ -56,6 +58,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTERS = {
     LiveWsV1Adapter.adapter_name: LiveWsV1Adapter,
     LiveEventBundleV1Adapter.adapter_name: LiveEventBundleV1Adapter,
+    PMXTEventV1Adapter.adapter_name: PMXTEventV1Adapter,
 }
 
 
@@ -154,7 +157,6 @@ def load_native_strategy(config_path: Path, strategy_config: Mapping[str, Any]) 
 
 def configure_polymarket_strategy_timeline(strategy: Strategy, conversion: Any) -> dict[str, Any]:
     """Inject Polymarket effective tick timeline into compatible strategies."""
-
     if not isinstance(strategy, PolymarketStrategyBase):
         return {
             "enabled": False,
@@ -181,7 +183,6 @@ def configure_polymarket_strategy_timeline(strategy: Strategy, conversion: Any) 
 
 def collect_polymarket_strategy_rounding(strategy: Strategy | None) -> dict[str, Any]:
     """Return strategy-level Polymarket price rounding audit data, if present."""
-
     if strategy is None or not isinstance(strategy, PolymarketStrategyBase):
         return {"enabled": False, "count": 0, "events": []}
     events = strategy.polymarket_price_rounding_events

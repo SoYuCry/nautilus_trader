@@ -49,10 +49,14 @@ These are current ingress paths, not equal long-term targets:
 - `live_ws_v1`: preferred current path for local raw WebSocket captures.
 - `live_event_bundle_v1`: provisional data-team event bundle boundary.  The
   final IT feed should be coordinated against `DATA_CONTRACT_V1.md`.
-
-Historical PMXT shims were removed from the runnable entry point for this
-live-data-first pass.  PMXT parquet remains a research reference only because
-it lacks raw WebSocket message boundaries and source timestamps may invert.
+- `pmxt_event_v1`: temporary research/history ingress for curated PMXT event
+  directories.  YAML input requires `event_dir`, `condition_id`, and `asset_id`.
+  It filters one selected token, replays on `timestamp_received`, and keeps PMXT
+  `best_bid` / `best_ask` fields only as diagnostic/reference fields, not as
+  authoritative filtering or execution truth.  PMXT raw event/message boundaries
+  are not recoverable from this row format.  Adapter assumptions and warnings,
+  including these PMXT caveats, are surfaced in `resolved_config.json` under
+  `adapter.assumptions` and `adapter.warnings`.
 
 ## Data-health gate before backtest
 

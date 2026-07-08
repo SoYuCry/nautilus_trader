@@ -1,0 +1,53 @@
+﻿experiment:
+  name: pmxt_history_v11_shanghai_20260609_25c_yes_smoke
+  description: "Initial PMXT event-history smoke for the Shanghai highest temperature June 9 2026 25C YES token."
+
+adapter:
+  name: pmxt_event_v1
+  input:
+    event_dir: "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026"
+    dataset_id: pmxt_history_v11_shanghai_20260609_25c_yes
+    condition_id: "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41"
+    asset_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"
+
+selection:
+  asset_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"
+
+instrument:
+  condition_id: "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41"
+  token_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"
+  outcome: "25C YES"
+  description: "Shanghai highest temperature June 9 2026, 25C YES; official payout 1"
+  price_increment: "0.001"
+  size_increment: "0.000001"
+
+fees:
+  enabled: true
+  maker_rebates_enabled: false
+
+strategy:
+  enabled: false
+
+replay:
+  fail_on_tick_size_change: false
+
+data_health:
+  future_tolerance_ms: 50
+  delay_warning_ms: 1000
+
+engine:
+  trader_id: POLY-PMXT-V11-001
+  bypass_logging: true
+  run_analysis: false
+  trade_execution: true
+  liquidity_consumption: false
+  queue_position: false
+
+portfolio:
+  starting_balance: "10000 pUSD"
+
+runtime:
+  run_id: pmxt-history-v11-shanghai-20260609-25c-yes-smoke-001
+
+report:
+  output_dir: ./runs

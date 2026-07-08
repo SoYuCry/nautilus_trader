@@ -1,0 +1,62 @@
+{
+  "dataset_id": "pmxt_history_v11_shanghai_20260609_25c_yes",
+  "adapter": "pmxt_event_v1",
+  "steps": 334501,
+  "update_counts": {
+    "price_change": 332608,
+    "book": 1275,
+    "trade": 617,
+    "tick_size_change": 1
+  },
+  "first_timestamp_received": "2026-06-07T04:34:30.268000+00:00",
+  "last_timestamp_received": "2026-06-09T11:59:15.163000+00:00",
+  "market_metadata_count": 2,
+  "selected_metadata": [
+    {
+      "condition_id": "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41",
+      "token_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+      "outcome": "Yes",
+      "maker_fee": "0",
+      "taker_fee": "0.05",
+      "fee_source": "gamma_event.raw.market.feeSchedule.rate",
+      "category": null,
+      "minimum_tick_size": "0.001",
+      "tick_size_source": "gamma_event.raw.market.orderPriceMinTickSize",
+      "resolution_status": "resolved",
+      "resolution_time": "2026-06-09 16:42:19+00:00",
+      "token_payout": "1",
+      "winner": true,
+      "resolution_source": "gamma_event.raw.market.outcomePrices"
+    }
+  ],
+  "data_health_ok": true,
+  "data_health_summary": {
+    "step_count": 334501,
+    "update_count": 334501,
+    "first_timestamp_received": "2026-06-07T04:34:30.268000Z",
+    "last_timestamp_received": "2026-06-09T11:59:15.163000Z",
+    "receive_time_inversion_count": 0,
+    "sequence_inversion_count": 0,
+    "source_timestamp_present_step_count": 334501,
+    "source_timestamp_missing_step_count": 0,
+    "source_timestamp_missing_update_count": 0,
+    "source_time_inversion_count": 89057,
+    "future_source_time_count": 0,
+    "max_future_source_time_ms": 19.0,
+    "source_delay_over_threshold_count": 177530,
+    "max_source_delay_ms": 330692.0
+  },
+  "load_seconds": 21.546,
+  "health_seconds": 3.496,
+  "assumptions": [
+    "PMXT orderbook.parquet rows are pre-contract WebSocket-derived observations normalized by adapter only.",
+    "Replay chronology uses receive-time ordering: stable sort by timestamp_received then original row index.",
+    "One selected PMXT orderbook row is emitted as one canonical replay step."
+  ],
+  "warnings": [
+    "PMXT caveat: source timestamps may invert relative to receive-time replay order; data_health should audit source-time diagnostics separately.",
+    "PMXT ordering diagnostic: selected_rows=334501, global_physical_receive_time_inversions=not_computed_filtered_adapter, selected_receive_time_inversions_before_sort=0, selected_receive_time_inversions_after_sort=0, selected_source_time_inversions_before_sort=89346, selected_source_time_inversions_after_sort=89346, duplicate_timestamp_received_group_count=71427, max_rows_per_timestamp_received=92, stable_sort_key=timestamp_received,_original_row_index, selected_receive_time_monotonic_after_sort=true.",
+    "PMXT ordering diagnostic: sequence values are reassigned after stable timestamp_received/original row sort and do not preserve original PMXT row numbering.",
+    "PMXT best_bid/best_ask values are preserved as audit/proxy fields only and are not trusted for filtering or execution truth."
+  ]
+}
