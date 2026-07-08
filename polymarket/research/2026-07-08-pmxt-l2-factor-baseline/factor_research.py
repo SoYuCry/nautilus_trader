@@ -1,4 +1,5 @@
-﻿"""
+# ruff: noqa: RUF001
+"""
 PMXT L2 factor baseline research artifact.
 
 Runnable from the repository root, for example:
@@ -6,14 +7,19 @@ Runnable from the repository root, for example:
     python polymarket/research/2026-07-08-pmxt-l2-factor-baseline/factor_research.py \
         --config polymarket/research/2026-07-08-pmxt-l2-factor-baseline/experiment.yml
 
-This is intentionally a research data script, not a Nautilus strategy.  It uses
-only the PMXT v1 adapter and data-health checker to load canonical replay steps,
-then reconstructs selected-token top-of-book/L2 state in receive-time order.
+This is intentionally a research data script, not a Nautilus strategy/backtest.
+It uses only the PMXT v1 adapter and data-health checker to load canonical
+replay steps, then reconstructs selected-token top-of-book/L2 state in
+receive-time order.
+
+Trust boundary: this script does not compute fills, fees, queue position, cash,
+positions, PnL, or execution results. Those belong to Nautilus strategy backtests.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -39,13 +45,11 @@ from polymarket.data_health import analyze_dataset_health  # noqa: E402
 
 
 DEFAULT_HORIZONS_SECONDS = (60, 300, 900)
-DEFAULT_SENSITIVITY_FEES = (0.0, 0.001, 0.002, 0.005)
-
-
-@dataclass(frozen=True)
-class FeeResolution:
-    taker_fee: float
-    source: str
+VALID_BOOK = "valid"
+LOCKED_BOOK = "locked"
+CROSSED_BOOK = "crossed"
+MISSING_BOOK = "missing"
+BOOK_VALIDITY_ORDER = (VALID_BOOK, LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK)
 
 
 @dataclass(frozen=True)
@@ -54,18 +58,24 @@ class RunSummary:
     output_dir: str
     rows_loaded: int
     factor_rows: int
+    analysis_rows: int
     first_timestamp_received: str | None
     last_timestamp_received: str | None
-    health_ok: bool
+    replay_order_ok: bool
     health_warning_count: int
     health_error_count: int
-    taker_fee: float
-    taker_fee_source: str
+    valid_book_rows: int
+    locked_book_rows: int
+    crossed_book_rows: int
+    missing_book_rows: int
     panel_path: str
     panel_format: str
     factor_summary_path: str
     quantile_returns_path: str
-    fee_sensitivity_path: str
+    book_validity_summary_path: str
+    spread_summary_path: str
+    label_slippage_summary_path: str
+    input_hashes_path: str
     report_path: str
 
 
@@ -80,45 +90,75 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     dataset = PMXTEventV1Adapter(repo_root=REPO_ROOT).load(config)
-    fee_resolution = resolve_taker_fee(config, dataset)
     health = analyze_dataset_health(dataset)
     health_path = output_dir / "data_health_summary.json"
-    health_path.write_text(json.dumps(compact_health_report(health), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    health_path.write_text(
+        json.dumps(compact_health_report(health), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    if not health.ok:
+        raise RuntimeError(
+            "PMXT factor research refuses to continue because replay-order data-health checks failed; "
+            f"inspect {health_path}",
+        )
 
     panel = build_factor_panel(dataset, config)
-    panel = add_labels(panel, config, fee_resolution=fee_resolution)
+    panel = add_labels(panel, config)
+    analysis_panel = valid_book_panel(panel)
 
     panel_path, panel_format = write_factor_panel(panel, output_dir)
-    factor_summary = build_factor_summary(panel, dataset, health, config, fee_resolution=fee_resolution)
+    factor_summary = build_factor_summary(analysis_panel, dataset, health, config, raw_panel=panel)
     factor_summary_path = output_dir / "factor_summary.csv"
     factor_summary.to_csv(factor_summary_path, index=False)
 
-    quantile_returns = build_quantile_returns(panel, config)
+    quantile_returns = build_quantile_returns(analysis_panel, config)
     quantile_returns_path = output_dir / "quantile_returns.csv"
     quantile_returns.to_csv(quantile_returns_path, index=False)
 
-    fee_sensitivity = build_fee_sensitivity(panel, config, fee_resolution=fee_resolution)
-    fee_sensitivity_path = output_dir / "fee_sensitivity.csv"
-    fee_sensitivity.to_csv(fee_sensitivity_path, index=False)
+    book_validity_summary = build_book_validity_summary(panel)
+    book_validity_summary_path = output_dir / "book_validity_summary.csv"
+    book_validity_summary.to_csv(book_validity_summary_path, index=False)
+
+    spread_summary = build_spread_summary(panel)
+    spread_summary_path = output_dir / "spread_summary.csv"
+    spread_summary.to_csv(spread_summary_path, index=False)
+
+    label_slippage_summary = build_label_slippage_summary(panel, config)
+    label_slippage_summary_path = output_dir / "label_slippage_summary.csv"
+    label_slippage_summary.to_csv(label_slippage_summary_path, index=False)
+
+    input_hashes = build_input_hashes(dataset)
+    input_hashes_path = output_dir / "input_hashes.json"
+    input_hashes_path.write_text(
+        json.dumps(input_hashes, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     issues = health.issues
+    validity_counts = book_validity_counts(panel)
     summary = RunSummary(
         config_path=str(config_path),
         output_dir=str(output_dir),
         rows_loaded=len(dataset.steps),
         factor_rows=len(panel),
+        analysis_rows=len(analysis_panel),
         first_timestamp_received=iso_or_none(panel["timestamp_received"].iloc[0]) if not panel.empty else None,
         last_timestamp_received=iso_or_none(panel["timestamp_received"].iloc[-1]) if not panel.empty else None,
-        health_ok=health.ok,
+        replay_order_ok=health.ok,
         health_warning_count=sum(1 for issue in issues if issue.severity == "warning"),
         health_error_count=sum(1 for issue in issues if issue.severity == "error"),
-        taker_fee=fee_resolution.taker_fee,
-        taker_fee_source=fee_resolution.source,
+        valid_book_rows=validity_counts[VALID_BOOK],
+        locked_book_rows=validity_counts[LOCKED_BOOK],
+        crossed_book_rows=validity_counts[CROSSED_BOOK],
+        missing_book_rows=validity_counts[MISSING_BOOK],
         panel_path=str(panel_path),
         panel_format=panel_format,
         factor_summary_path=str(factor_summary_path),
         quantile_returns_path=str(quantile_returns_path),
-        fee_sensitivity_path=str(fee_sensitivity_path),
+        book_validity_summary_path=str(book_validity_summary_path),
+        spread_summary_path=str(spread_summary_path),
+        label_slippage_summary_path=str(label_slippage_summary_path),
+        input_hashes_path=str(input_hashes_path),
         report_path=str(output_dir / "report.md"),
     )
     write_report(
@@ -128,8 +168,10 @@ def main() -> int:
         health,
         factor_summary,
         quantile_returns,
-        fee_sensitivity,
-        fee_resolution,
+        book_validity_summary,
+        spread_summary,
+        label_slippage_summary,
+        input_hashes,
     )
     (output_dir / "run_summary.json").write_text(
         json.dumps(asdict(summary), indent=2, ensure_ascii=False) + "\n",
@@ -158,8 +200,6 @@ def resolve_output_dir(config: dict[str, Any], config_path: Path) -> Path:
         path = Path(str(configured))
         return path if path.is_absolute() else (REPO_ROOT / path).resolve()
     return (config_path.parent / "outputs").resolve()
-
-
 
 
 def reconstruct_l2_book(updates: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -217,11 +257,13 @@ def calculate_l2_factors(states: list[dict[str, Any]]) -> pd.DataFrame:
         bid_size1 = float(bid_size1_dec) if bid_size1_dec is not None else math.nan
         ask_size1 = float(ask_size1_dec) if ask_size1_dec is not None else math.nan
         mid = (bid1 + ask1) / 2 if math.isfinite(bid1) and math.isfinite(ask1) else math.nan
+        spread = ask1 - bid1 if math.isfinite(bid1) and math.isfinite(ask1) else math.nan
         bid_depth_3 = decimal_depth(bid_levels, 3)
         ask_depth_3 = decimal_depth(ask_levels, 3)
         bid_depth_5 = decimal_depth(bid_levels, 5)
         ask_depth_5 = decimal_depth(ask_levels, 5)
         microprice = compute_microprice(bid1, ask1, bid_size1, ask_size1)
+        validity = classify_book_validity(bid1, ask1)
         rows.append(
             {
                 "timestamp_received": state["timestamp_received"],
@@ -231,9 +273,11 @@ def calculate_l2_factors(states: list[dict[str, Any]]) -> pd.DataFrame:
                 "bid_size1": bid_size1,
                 "ask_size1": ask_size1,
                 "mid": mid,
-                "spread": ask1 - bid1 if math.isfinite(bid1) and math.isfinite(ask1) else math.nan,
+                "spread": spread,
+                "book_validity": validity,
+                "is_valid_book": validity == VALID_BOOK,
                 "microprice": microprice,
-                "microprice_edge": microprice - mid if math.isfinite(microprice) and math.isfinite(mid) else math.nan,
+                "microprice_minus_mid": microprice - mid if math.isfinite(microprice) and math.isfinite(mid) else math.nan,
                 "depth_imbalance_1": imbalance(float(bid_size1_dec or 0), float(ask_size1_dec or 0)),
                 "depth_imbalance_3": imbalance(float(bid_depth_3), float(ask_depth_3)),
                 "depth_imbalance_5": imbalance(float(bid_depth_5), float(ask_depth_5)),
@@ -249,31 +293,15 @@ def calculate_l2_factors(states: list[dict[str, Any]]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_l2_factor_dataset(
-    updates: list[dict[str, Any]],
-    *,
-    horizon_rows: int,
-    taker_fee: Decimal = Decimal(0),
-) -> pd.DataFrame:
-    """Build factors plus row-offset labels for small deterministic tests."""
+def build_l2_factor_dataset(updates: list[dict[str, Any]], *, horizon_rows: int) -> pd.DataFrame:
+    """Build factors plus row-offset mid-return labels for deterministic tests."""
     frame = calculate_l2_factors(reconstruct_l2_book(updates))
     future_bid = frame["bid1"].shift(-horizon_rows)
     future_ask = frame["ask1"].shift(-horizon_rows)
-    future_updates = [updates[index + horizon_rows] if index + horizon_rows < len(updates) else {} for index in range(len(updates))]
-    future_bid = future_bid.copy()
-    future_ask = future_ask.copy()
-    for index, update in enumerate(future_updates):
-        if update.get("event_type") == "price_change" and update.get("price") is not None:
-            if update.get("side") == "BUY":
-                future_bid.iloc[index] = float(decimal_from(update["price"]))
-            elif update.get("side") == "SELL":
-                future_ask.iloc[index] = float(decimal_from(update["price"]))
-    fee = float(taker_fee)
+    future_mid = (future_bid + future_ask) / 2
     frame["future_bid1"] = future_bid
     frame["future_ask1"] = future_ask
-    frame["future_mid_return"] = ((future_bid + future_ask) / 2) - frame["mid"]
-    frame["tradeable_long_edge"] = future_bid - frame["ask1"] - fee
-    frame["tradeable_short_edge"] = frame["bid1"] - future_ask - fee
+    frame["future_mid_return"] = future_mid - frame["mid"]
     return frame
 
 
@@ -291,6 +319,7 @@ def decimal_from(value: Any) -> Decimal:
 
 def decimal_depth(levels: list[tuple[Decimal, Decimal]], count: int) -> Decimal:
     return sum((size for _, size in levels[:count]), Decimal(0))
+
 
 def compact_health_report(health: Any, issue_limit: int = 100) -> dict[str, Any]:
     data = health.to_dict()
@@ -310,7 +339,8 @@ def compact_health_report(health: Any, issue_limit: int = 100) -> dict[str, Any]
         "assumptions": data.get("assumptions", []),
     }
 
-def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:
+
+def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  # noqa: C901
     max_depth = int(config.get("factors", {}).get("max_depth_levels", 5))
     bids: dict[float, float] = {}
     asks: dict[float, float] = {}
@@ -324,6 +354,11 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:
     previous_ask_size1: float | None = None
 
     for step in dataset.steps:
+        if len(step.updates) != 1:
+            raise ValueError(
+                "PMXT L2 factor baseline expects one canonical update per replay step; "
+                f"sequence={step.sequence} update_count={len(step.updates)}",
+            )
         update = step.updates[0]
         trade_pressure_increment = 0.0
         if update.event_type == "book":
@@ -351,8 +386,9 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:
         ask1, ask_size1 = top_asks[0] if top_asks else (math.nan, math.nan)
         mid = (bid1 + ask1) / 2 if math.isfinite(bid1) and math.isfinite(ask1) else math.nan
         spread = ask1 - bid1 if math.isfinite(bid1) and math.isfinite(ask1) else math.nan
+        validity = classify_book_validity(bid1, ask1)
         microprice = compute_microprice(bid1, ask1, bid_size1, ask_size1)
-        microprice_edge = microprice - mid if math.isfinite(microprice) and math.isfinite(mid) else math.nan
+        microprice_minus_mid = microprice - mid if math.isfinite(microprice) and math.isfinite(mid) else math.nan
 
         ofi_increment = compute_ofi_increment(
             bid1,
@@ -378,16 +414,21 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:
         rows.append(
             {
                 "timestamp_received": step.timestamp_received,
+                "timestamp": step.timestamp,
                 "sequence": step.sequence,
                 "event_type": update.event_type,
+                "market": update.market,
+                "asset_id": update.asset_id,
                 "bid1": bid1,
                 "ask1": ask1,
                 "bid_size1": bid_size1,
                 "ask_size1": ask_size1,
                 "mid": mid,
                 "spread": spread,
+                "book_validity": validity,
+                "is_valid_book": validity == VALID_BOOK,
                 "microprice": microprice,
-                "microprice_edge": microprice_edge,
+                "microprice_minus_mid": microprice_minus_mid,
                 "depth_imbalance_1": imbalance(depth(top_bids, 1), depth(top_asks, 1)),
                 "depth_imbalance_3": imbalance(bid_depth_3, ask_depth_3),
                 "depth_imbalance_5": imbalance(bid_depth_5, ask_depth_5),
@@ -411,52 +452,60 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def add_labels(
-    panel: pd.DataFrame,
-    config: dict[str, Any],
-    *,
-    fee_resolution: FeeResolution | None = None,
-) -> pd.DataFrame:
+def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
     if panel.empty:
         return panel
     panel = panel.sort_values(["timestamp_received", "sequence"], kind="mergesort").reset_index(drop=True)
-    horizons = horizons_from_config(config)
-    taker_fee = (fee_resolution or resolve_taker_fee(config)).taker_fee
+    if "book_validity" not in panel:
+        panel["book_validity"] = [
+            classify_book_validity(float(bid), float(ask))
+            for bid, ask in zip(panel["bid1"], panel["ask1"], strict=True)
+        ]
+        panel["is_valid_book"] = panel["book_validity"] == VALID_BOOK
     base = (
-        panel[["timestamp_received", "sequence", "mid", "bid1", "ask1"]]
+        panel[["timestamp_received", "sequence", "mid", "bid1", "ask1", "book_validity"]]
         .sort_values(["timestamp_received", "sequence"], kind="mergesort")
         .groupby("timestamp_received", sort=False, as_index=False)
         .tail(1)
         .drop(columns=["sequence"])
     )
-    for horizon in horizons:
+    for horizon in horizons_from_config(config):
+        matched_col = f"label_matched_timestamp_{horizon}s"
+        target_col = f"label_target_timestamp_{horizon}s"
         future = base.rename(
-            columns={"mid": f"future_mid_{horizon}s", "bid1": f"future_bid_{horizon}s", "ask1": f"future_ask_{horizon}s"},
+            columns={
+                "timestamp_received": matched_col,
+                "mid": f"future_mid_{horizon}s",
+                "bid1": f"future_bid_{horizon}s",
+                "ask1": f"future_ask_{horizon}s",
+                "book_validity": f"future_book_validity_{horizon}s",
+            },
         )
         left = pd.DataFrame(
             {
-                "target_timestamp": panel["timestamp_received"] + pd.to_timedelta(horizon, unit="s"),
+                target_col: panel["timestamp_received"] + pd.to_timedelta(horizon, unit="s"),
                 "_row": panel.index,
             },
-        ).sort_values("target_timestamp", kind="mergesort")
-        right = future.sort_values("timestamp_received", kind="mergesort")
+        ).sort_values(target_col, kind="mergesort")
+        right = future.sort_values(matched_col, kind="mergesort")
         merged = pd.merge_asof(
             left,
             right,
-            left_on="target_timestamp",
-            right_on="timestamp_received",
+            left_on=target_col,
+            right_on=matched_col,
             direction="forward",
             allow_exact_matches=True,
         ).sort_values("_row")
         future_mid = merged[f"future_mid_{horizon}s"].reset_index(drop=True)
-        future_bid = merged[f"future_bid_{horizon}s"].reset_index(drop=True)
-        future_ask = merged[f"future_ask_{horizon}s"].reset_index(drop=True)
+        panel[target_col] = merged[target_col].reset_index(drop=True)
+        panel[matched_col] = merged[matched_col].reset_index(drop=True)
         panel[f"future_mid_{horizon}s"] = future_mid
-        panel[f"future_bid_{horizon}s"] = future_bid
-        panel[f"future_ask_{horizon}s"] = future_ask
+        panel[f"future_bid_{horizon}s"] = merged[f"future_bid_{horizon}s"].reset_index(drop=True)
+        panel[f"future_ask_{horizon}s"] = merged[f"future_ask_{horizon}s"].reset_index(drop=True)
+        panel[f"future_book_validity_{horizon}s"] = merged[f"future_book_validity_{horizon}s"].reset_index(drop=True)
         panel[f"future_mid_return_{horizon}s"] = future_mid - panel["mid"]
-        panel[f"long_edge_{horizon}s"] = future_bid - panel["ask1"] - taker_fee
-        panel[f"short_edge_{horizon}s"] = panel["bid1"] - future_ask - taker_fee
+        slippage = merged[matched_col].reset_index(drop=True) - panel[target_col]
+        panel[f"label_slippage_seconds_{horizon}s"] = slippage.dt.total_seconds()
     return panel
 
 
@@ -477,20 +526,24 @@ def build_factor_summary(
     health: Any,
     config: dict[str, Any],
     *,
-    fee_resolution: FeeResolution | None = None,
+    raw_panel: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
-    resolved_fee = fee_resolution or resolve_taker_fee(config, dataset)
+    raw = raw_panel if raw_panel is not None else panel
+    counts = book_validity_counts(raw)
     rows: list[dict[str, Any]] = [
         {"metric": "dataset_id", "value": dataset.metadata.dataset_id},
         {"metric": "adapter", "value": f"{dataset.metadata.adapter_name}:{dataset.metadata.adapter_version}"},
         {"metric": "steps", "value": len(dataset.steps)},
-        {"metric": "factor_rows", "value": len(panel)},
-        {"metric": "health_ok", "value": health.ok},
+        {"metric": "raw_factor_rows", "value": len(raw)},
+        {"metric": "analysis_rows_valid_current_book", "value": len(panel)},
+        {"metric": "replay_order_ok", "value": health.ok},
         {"metric": "health_issue_count", "value": len(health.issues)},
-        {"metric": "first_timestamp_received", "value": iso_or_none(panel["timestamp_received"].iloc[0]) if not panel.empty else ""},
-        {"metric": "last_timestamp_received", "value": iso_or_none(panel["timestamp_received"].iloc[-1]) if not panel.empty else ""},
-        {"metric": "taker_fee", "value": resolved_fee.taker_fee},
-        {"metric": "taker_fee_source", "value": resolved_fee.source},
+        {"metric": "book_valid_rows", "value": counts[VALID_BOOK]},
+        {"metric": "book_locked_rows", "value": counts[LOCKED_BOOK]},
+        {"metric": "book_crossed_rows", "value": counts[CROSSED_BOOK]},
+        {"metric": "book_missing_rows", "value": counts[MISSING_BOOK]},
+        {"metric": "first_timestamp_received", "value": iso_or_none(raw["timestamp_received"].iloc[0]) if not raw.empty else ""},
+        {"metric": "last_timestamp_received", "value": iso_or_none(raw["timestamp_received"].iloc[-1]) if not raw.empty else ""},
     ]
     numeric_columns = [
         "bid1",
@@ -499,7 +552,7 @@ def build_factor_summary(
         "ask_size1",
         "mid",
         "spread",
-        "microprice_edge",
+        "microprice_minus_mid",
         "depth_imbalance_1",
         "depth_imbalance_3",
         "depth_imbalance_5",
@@ -521,11 +574,15 @@ def build_factor_summary(
             )
     for horizon in horizons_from_config(config):
         col = f"future_mid_return_{horizon}s"
+        future_valid_col = f"future_book_validity_{horizon}s"
         if col in panel:
-            series = pd.to_numeric(panel[col], errors="coerce")
+            frame = panel
+            if future_valid_col in panel:
+                frame = frame[frame[future_valid_col] == VALID_BOOK]
+            series = pd.to_numeric(frame[col], errors="coerce")
             rows.extend(
                 [
-                    {"metric": f"{col}.count", "value": int(series.count())},
+                    {"metric": f"{col}.valid_current_and_future_count", "value": int(series.count())},
                     {"metric": f"{col}.mean", "value": series.mean()},
                     {"metric": f"{col}.p50", "value": series.quantile(0.50)},
                 ],
@@ -534,7 +591,7 @@ def build_factor_summary(
 
 
 def build_quantile_returns(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
-    factors = ["microprice_edge", "depth_imbalance_1", "depth_imbalance_3", "depth_imbalance_5", "ofi_30s", "trade_pressure_30s"]
+    factors = ["microprice_minus_mid", "depth_imbalance_1", "depth_imbalance_3", "depth_imbalance_5", "ofi_30s", "trade_pressure_30s"]
     rows: list[dict[str, Any]] = []
     for factor in factors:
         values = pd.to_numeric(panel.get(factor), errors="coerce")
@@ -546,9 +603,17 @@ def build_quantile_returns(panel: pd.DataFrame, config: dict[str, Any]) -> pd.Da
             continue
         for horizon in horizons_from_config(config):
             ret_col = f"future_mid_return_{horizon}s"
+            future_valid_col = f"future_book_validity_{horizon}s"
             if ret_col not in panel:
                 continue
-            frame = pd.DataFrame({"quantile": quantiles, "ret": pd.to_numeric(panel[ret_col], errors="coerce")}).dropna()
+            frame = pd.DataFrame(
+                {
+                    "quantile": quantiles,
+                    "ret": pd.to_numeric(panel[ret_col], errors="coerce"),
+                    "future_book_validity": panel.get(future_valid_col, VALID_BOOK),
+                },
+            )
+            frame = frame[frame["future_book_validity"] == VALID_BOOK].dropna(subset=["quantile", "ret"])
             grouped = frame.groupby("quantile", observed=True)["ret"]
             for quantile, series in grouped:
                 rows.append(
@@ -564,42 +629,107 @@ def build_quantile_returns(panel: pd.DataFrame, config: dict[str, Any]) -> pd.Da
     return pd.DataFrame(rows)
 
 
-def build_fee_sensitivity(
-    panel: pd.DataFrame,
-    config: dict[str, Any],
-    *,
-    fee_resolution: FeeResolution | None = None,
-) -> pd.DataFrame:
+def build_book_validity_summary(panel: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
-    configured_fees = list(config.get("fees", {}).get("sensitivity_taker_fees", DEFAULT_SENSITIVITY_FEES))
-    resolved_fee = fee_resolution or resolve_taker_fee(config)
-    if resolved_fee.taker_fee not in {float(value) for value in configured_fees}:
-        configured_fees.append(resolved_fee.taker_fee)
-    fees = sorted({float(value) for value in configured_fees})
-    for horizon in horizons_from_config(config):
-        future_bid_col = f"future_bid_{horizon}s"
-        future_ask_col = f"future_ask_{horizon}s"
-        if future_bid_col not in panel or future_ask_col not in panel:
-            continue
-        for fee in fees:
-            fee_float = float(fee)
-            long_edge = pd.to_numeric(panel[future_bid_col], errors="coerce") - pd.to_numeric(panel["ask1"], errors="coerce") - fee_float
-            short_edge = pd.to_numeric(panel["bid1"], errors="coerce") - pd.to_numeric(panel[future_ask_col], errors="coerce") - fee_float
-            valid_long = long_edge.dropna()
-            valid_short = short_edge.dropna()
-            rows.append(
-                {
-                    "horizon_seconds": horizon,
-                    "taker_fee": fee_float,
-                    "long_count": int(valid_long.count()),
-                    "long_positive_rate": float((valid_long > 0).mean()) if not valid_long.empty else math.nan,
-                    "long_mean_edge": valid_long.mean(),
-                    "short_count": int(valid_short.count()),
-                    "short_positive_rate": float((valid_short > 0).mean()) if not valid_short.empty else math.nan,
-                    "short_mean_edge": valid_short.mean(),
-                },
-            )
+    total = len(panel)
+    counts = book_validity_counts(panel)
+    for validity in BOOK_VALIDITY_ORDER:
+        count = counts[validity]
+        rows.append(
+            {
+                "book_validity": validity,
+                "count": count,
+                "share": count / total if total else math.nan,
+            },
+        )
     return pd.DataFrame(rows)
+
+
+def build_spread_summary(panel: pd.DataFrame) -> pd.DataFrame:
+    if panel.empty or "spread" not in panel:
+        return pd.DataFrame(columns=["metric", "value"])
+    spread = pd.to_numeric(panel["spread"], errors="coerce")
+    return pd.DataFrame(
+        [
+            {"metric": "spread_count", "value": int(spread.count())},
+            {"metric": "spread_min", "value": spread.min()},
+            {"metric": "spread_p05", "value": spread.quantile(0.05)},
+            {"metric": "spread_p50", "value": spread.quantile(0.50)},
+            {"metric": "spread_p95", "value": spread.quantile(0.95)},
+            {"metric": "spread_max", "value": spread.max()},
+        ],
+    )
+
+
+def build_label_slippage_summary(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    for horizon in horizons_from_config(config):
+        slip_col = f"label_slippage_seconds_{horizon}s"
+        matched_col = f"label_matched_timestamp_{horizon}s"
+        future_valid_col = f"future_book_validity_{horizon}s"
+        if slip_col not in panel:
+            continue
+        slippage = pd.to_numeric(panel[slip_col], errors="coerce")
+        matched = panel[matched_col].notna() if matched_col in panel else slippage.notna()
+        rows.append(
+            {
+                "horizon_seconds": horizon,
+                "rows": len(panel),
+                "matched_rows": int(matched.sum()),
+                "missing_future_rows": int((~matched).sum()),
+                "mean_slippage_seconds": slippage.mean(),
+                "p95_slippage_seconds": slippage.quantile(0.95),
+                "max_slippage_seconds": slippage.max(),
+                "future_valid_rows": int((panel.get(future_valid_col) == VALID_BOOK).sum()) if future_valid_col in panel else int(matched.sum()),
+                "future_invalid_rows": int((panel.get(future_valid_col) != VALID_BOOK).sum()) if future_valid_col in panel else 0,
+            },
+        )
+    return pd.DataFrame(rows)
+
+
+def build_input_hashes(dataset: Any) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for source_file in getattr(dataset.metadata, "source_files", ()) or ():
+        path = Path(str(source_file))
+        resolved = path if path.is_absolute() else (REPO_ROOT / path).resolve()
+        item: dict[str, Any] = {"source_file": str(source_file), "resolved_path": str(resolved), "exists": resolved.exists()}
+        if resolved.exists() and resolved.is_file():
+            item["size_bytes"] = resolved.stat().st_size
+            item["sha256"] = sha256_file(resolved)
+        rows.append(item)
+    return rows
+
+
+def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(chunk_size), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def classify_book_validity(bid1: float, ask1: float) -> str:
+    if not math.isfinite(bid1) or not math.isfinite(ask1):
+        return MISSING_BOOK
+    spread = ask1 - bid1
+    if spread < 0:
+        return CROSSED_BOOK
+    if spread == 0:
+        return LOCKED_BOOK
+    return VALID_BOOK
+
+
+def valid_book_panel(panel: pd.DataFrame) -> pd.DataFrame:
+    if "book_validity" not in panel:
+        return panel.copy()
+    return panel[panel["book_validity"] == VALID_BOOK].copy()
+
+
+def book_validity_counts(panel: pd.DataFrame) -> dict[str, int]:
+    if "book_validity" not in panel:
+        return dict.fromkeys(BOOK_VALIDITY_ORDER, 0)
+    raw_counts = panel["book_validity"].value_counts(dropna=False).to_dict()
+    return {validity: int(raw_counts.get(validity, 0)) for validity in BOOK_VALIDITY_ORDER}
 
 
 def write_report(
@@ -609,79 +739,110 @@ def write_report(
     health: Any,
     factor_summary: pd.DataFrame,
     quantile_returns: pd.DataFrame,
-    fee_sensitivity: pd.DataFrame,
-    fee_resolution: FeeResolution,
+    book_validity_summary: pd.DataFrame,
+    spread_summary: pd.DataFrame,
+    label_slippage_summary: pd.DataFrame,
+    input_hashes: list[dict[str, Any]],
 ) -> None:
     input_config = config.get("input", {})
     horizons = horizons_from_config(config)
+    health_report = compact_health_report(health, issue_limit=10)
+    health_summary = health_report.get("summary", {}) or {}
     lines: list[str] = [
-        "# PMXT L2 factor baseline report",
+        "# PMXT L2 因子研究报告",
         "",
-        f"Generated: {datetime.now(UTC).isoformat()}",
+        f"生成时间: {datetime.now(UTC).isoformat()}",
         "",
-        "## Scope",
+        "## 0. 信任边界",
         "",
-        "Research-only PMXT L2 factor panel; this is not a Nautilus strategy or backtest.",
-        "The script loads canonical replay steps through `PMXTEventV1Adapter`, validates them with `analyze_dataset_health`, and reconstructs selected-token book state in receive-time order.",
+        "这份报告是 **PMXT L2 因子研究**，不是 Nautilus 回测、成交、PnL 或可交易收益报告。",
         "",
-        "## Input",
+        "- 不计算手续费、返佣、订单状态、排队、部分成交、现金、仓位或 PnL。",
+        "- 不把 `future_bid - current_ask` 之类的量解释成可成交利润。",
+        "- fee/fill/PnL 必须放到 Nautilus 原生策略回测入口里处理。",
+        "- 本报告只回答：按 receive-time replay 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。",
+        "",
+        "## 1. 输入",
         "",
         f"- event_dir: `{input_config.get('event_dir')}`",
         f"- condition_id: `{input_config.get('condition_id')}`",
         f"- asset_id/token_id: `{input_config.get('asset_id')}`",
         f"- horizons_seconds: `{horizons}`",
-        f"- taker_fee used for configured edge labels: `{fee_resolution.taker_fee}`",
-        f"- taker_fee source: `{fee_resolution.source}`",
-    ]
-    if fee_resolution.source.startswith("fallback_zero"):
-        lines.append("- fee warning: `taker_fee=0` is a fallback because neither config nor market metadata supplied a fee.")
-    lines.extend([
         "",
-        "## Run summary",
+        "## 2. 运行摘要",
         "",
         f"- loaded replay steps: {summary.rows_loaded}",
-        f"- factor rows: {summary.factor_rows}",
+        f"- raw factor rows: {summary.factor_rows}",
+        f"- valid-book analysis rows: {summary.analysis_rows}",
         f"- receive-time span: {summary.first_timestamp_received} to {summary.last_timestamp_received}",
-        f"- data health ok: {summary.health_ok}",
-        f"- data health warnings/errors: {summary.health_warning_count}/{summary.health_error_count}",
+        f"- replay-order hard check ok: {summary.replay_order_ok}",
+        f"- data-health warnings/errors: {summary.health_warning_count}/{summary.health_error_count}",
+        f"- valid/locked/crossed/missing book rows: {summary.valid_book_rows}/{summary.locked_book_rows}/{summary.crossed_book_rows}/{summary.missing_book_rows}",
         f"- factor panel: `{Path(summary.panel_path).name}` ({summary.panel_format})",
         "",
-        "## Output files",
+        "## 3. 输出文件",
         "",
-        f"- `{Path(summary.panel_path).name}`",
-        "- `factor_summary.csv`",
-        "- `quantile_returns.csv`",
-        "- `fee_sensitivity.csv`",
-        "- `data_health_summary.json`",
-        "- `run_summary.json`",
-        "- `report.md`",
+        f"- `{Path(summary.panel_path).name}`: raw panel，保留全部 row，并带 `book_validity` 标记。",
+        "- `factor_summary.csv`: 只基于 valid current book 的摘要。",
+        "- `quantile_returns.csv`: 因子分位数 vs future mid-return；current/future book 都要求 valid。",
+        "- `book_validity_summary.csv`: crossed/locked/missing book 统计。",
+        "- `spread_summary.csv`: raw panel 的 spread 分布诊断。",
+        "- `label_slippage_summary.csv`: forward as-of 标签匹配的时间滑移统计。",
+        "- `input_hashes.json`: 输入文件大小和 sha256，用于复现实验。",
+        "- `data_health_summary.json`: receive/source time 诊断摘要。",
+        "- `run_summary.json` / `report.md`",
         "",
-        "## Factor construction notes",
+        "## 4. 数据健康解释",
         "",
-        "- `book` snapshots reset the selected token book.",
-        "- `price_change` updates or removes levels by side/price/size.",
-        "- `trade` contributes signed 30-second trade pressure but does not mutate the book.",
-        "- `tick_size_change` records the latest tick-size regime.",
-        "- Labels use forward as-of rows at each target receive timestamp; when multiple rows share the same receive timestamp, the label uses the last replay state at that timestamp.",
-        "- Factors use only current/past replay state.",
+        "`replay-order hard check ok` 只表示 receive-time replay 顺序没有硬错误；它不表示 source timestamp 完美。",
+        "PMXT source timestamp 的乱序和延迟只作为 warning 暴露，因子研究仍然按 `timestamp_received` 回放。",
         "",
-        "## Caveats",
+        f"- receive_time_inversion_count: {health_summary.get('receive_time_inversion_count')}",
+        f"- sequence_inversion_count: {health_summary.get('sequence_inversion_count')}",
+        f"- source_time_inversion_count: {health_summary.get('source_time_inversion_count')}",
+        f"- source_delay_over_threshold_count: {health_summary.get('source_delay_over_threshold_count')}",
+        f"- max_source_delay_ms: {health_summary.get('max_source_delay_ms')}",
+        f"- missing_source_timestamp_step_count: {health_summary.get('source_timestamp_missing_step_count')}",
         "",
-        "- The PMXT sample is receive-time ordered by the adapter; source-time inversions remain data-health diagnostics.",
-        "- Trade aggressor-side semantics are inherited from the adapter-normalized PMXT side field.",
-        "- Fee sensitivity is descriptive; it does not simulate queue position, fill probability, or market impact.",
-        "- Missing future rows near the end of the sample produce null labels for affected horizons.",
+        "## 5. 盘口有效性",
         "",
-        "## Selected summary metrics",
-        "",
-    ])
-    dataframe_to_markdown(factor_summary.head(24), lines)
-    lines.extend(["", "## Quantile return preview", ""])
-    dataframe_to_markdown(quantile_returns.head(30), lines)
-    lines.extend(["", "## Fee sensitivity", ""])
-    dataframe_to_markdown(fee_sensitivity, lines)
-    lines.extend(["", "## Data-health issue preview", ""])
-    health_report = compact_health_report(health, issue_limit=10)
+    ]
+    dataframe_to_markdown(book_validity_summary, lines)
+    lines.extend(["", "Spread 分布诊断:", ""])
+    dataframe_to_markdown(spread_summary, lines)
+    lines.extend(
+        [
+            "",
+            "说明：正式因子统计默认只使用 `book_validity == valid` 的 current row。",
+            "crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据和 replay 质量。",
+            "",
+            "## 6. 标签滑移",
+            "",
+        ],
+    )
+    dataframe_to_markdown(label_slippage_summary, lines)
+    lines.extend(
+        [
+            "",
+            "标签构造：对每个 row 的 `timestamp_received + horizon` 做 forward as-of，使用目标时间之后第一条 receive-time replay 状态。",
+            "如果同一 receive timestamp 有多条 replay row，标签用该 timestamp 的最后一个重建状态。",
+            "",
+            "## 7. 因子构造说明",
+            "",
+            "- `book` snapshot 重置 selected token book。",
+            "- `price_change` 按 side/price/size 更新或删除价位。",
+            "- `trade` 只贡献 signed 30-second trade pressure，不直接改 book。",
+            "- `tick_size_change` 只记录当前 tick-size regime，不参与订单撮合。",
+            "- 因子只用当前/过去 replay state；future label 单独生成。",
+            "",
+            "## 8. Selected summary metrics",
+            "",
+        ],
+    )
+    dataframe_to_markdown(factor_summary.head(30), lines)
+    lines.extend(["", "## 9. Quantile return preview", ""])
+    dataframe_to_markdown(quantile_returns.head(40), lines)
+    lines.extend(["", "## 10. Data-health issue preview", ""])
     issue_counts = health_report.get("issue_counts_by_code", {})
     if issue_counts:
         lines.extend(["Issue counts by code:", ""])
@@ -702,6 +863,8 @@ def write_report(
             lines.append(f"- ... {len(health.issues) - 10} additional issues summarized in data_health_summary.json")
     else:
         lines.append("- No issues reported.")
+    lines.extend(["", "## 11. Input hashes", ""])
+    dataframe_to_markdown(pd.DataFrame(input_hashes), lines)
     path.write_text("\n".join(str(line) for line in lines) + "\n", encoding="utf-8")
 
 def dataframe_to_markdown(frame: pd.DataFrame, lines: list[Any]) -> str:
@@ -717,10 +880,12 @@ def dataframe_to_markdown(frame: pd.DataFrame, lines: list[Any]) -> str:
 
 
 def escape_markdown_cell(value: Any) -> str:
-    if pd.isna(value):
-        text = ""
-    else:
-        text = str(value)
+    try:
+        missing_value = pd.isna(value)
+        missing = bool(missing_value) if not hasattr(missing_value, "__len__") else False
+    except (TypeError, ValueError):
+        missing = False
+    text = "" if missing else str(value)
     return text.replace("|", "\\|").replace("\n", " ")
 
 
@@ -728,28 +893,6 @@ def horizons_from_config(config: dict[str, Any]) -> list[int]:
     labels = config.get("labels", {})
     horizons = labels.get("horizons_seconds", DEFAULT_HORIZONS_SECONDS) if isinstance(labels, dict) else DEFAULT_HORIZONS_SECONDS
     return [int(value) for value in horizons]
-
-
-def resolve_taker_fee(config: dict[str, Any], dataset: Any | None = None) -> FeeResolution:
-    configured = config.get("fees", {}).get("taker_fee") if isinstance(config.get("fees", {}), dict) else None
-    if configured is not None:
-        return FeeResolution(float(configured), "experiment.yml:fees.taker_fee")
-
-    market_metadata = tuple(getattr(getattr(dataset, "metadata", None), "market_metadata", ()) or ()) if dataset is not None else ()
-    asset_id = str(config.get("input", {}).get("asset_id", "")) if isinstance(config.get("input", {}), dict) else ""
-    selected_market = next(
-        (
-            market
-            for market in market_metadata
-            if str(getattr(market, "token_id", "")) == asset_id and getattr(market, "taker_fee", None) is not None
-        ),
-        None,
-    )
-    if selected_market is not None:
-        source = getattr(selected_market, "fee_source", None) or "dataset.metadata.market_metadata.taker_fee"
-        return FeeResolution(float(selected_market.taker_fee), source)
-
-    return FeeResolution(0.0, "fallback_zero_no_config_or_market_metadata")
 
 
 def to_float(value: Decimal | float | None) -> float:

@@ -4,7 +4,6 @@ import importlib.util
 import sys
 from decimal import Decimal
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -117,14 +116,6 @@ def _label_updates() -> list[dict[str, Any]]:
     ]
 
 
-def _market_metadata(token: str, fee: str, source: str) -> Any:
-    market = SimpleNamespace()
-    market.token_id = token
-    market.taker_fee = Decimal(fee)
-    market.fee_source = source
-    return market
-
-
 @pytest.fixture
 def factor_research() -> Any:
     return _load_factor_research_module()
@@ -179,15 +170,16 @@ def test_calculate_l2_factors_emits_top_of_book_depth_and_boundary_metrics(
     assert row["depth_imbalance_5"] == pytest.approx((105 - 92) / (105 + 92))
     assert row["distance_to_boundary"] == pytest.approx(0.5)
     assert bool(row["tail_regime"]) is True
+    assert row["book_validity"] == "valid"
+    assert bool(row["is_valid_book"]) is True
 
 
-def test_labels_use_future_bid_ask_fee_and_do_not_leak_future_book_into_factors(
+def test_labels_use_reconstructed_future_top_of_book_without_fee_or_tradeable_profit(
     factor_research: Any,
 ) -> None:
     dataset = factor_research.build_l2_factor_dataset(
         _label_updates(),
         horizon_rows=2,
-        taker_fee=Decimal("0.01"),
     )
 
     first = dataset.iloc[0]
@@ -196,32 +188,10 @@ def test_labels_use_future_bid_ask_fee_and_do_not_leak_future_book_into_factors(
     assert first["mid"] == pytest.approx(0.50)
 
     assert first["future_bid1"] == pytest.approx(0.50)
-    assert first["future_ask1"] == pytest.approx(0.70)
-    assert first["future_mid_return"] == pytest.approx(0.10)
-    assert first["tradeable_long_edge"] == pytest.approx(0.50 - 0.60 - 0.01)
-    assert first["tradeable_short_edge"] == pytest.approx(0.40 - 0.70 - 0.01)
-
-
-def test_fee_resolution_uses_selected_market_metadata_instead_of_silent_zero(
-    factor_research: Any,
-) -> None:
-    dataset = SimpleNamespace(
-        metadata=SimpleNamespace(
-            market_metadata=(
-                _market_metadata("NO", "0.02", "wrong_token"),
-                _market_metadata("YES", "0.05", "gamma_fee_schedule"),
-            ),
-        ),
-    )
-
-    resolved = factor_research.resolve_taker_fee({"input": {"asset_id": "YES"}, "fees": {"taker_fee": None}}, dataset)
-
-    assert resolved.taker_fee == pytest.approx(0.05)
-    assert resolved.source == "gamma_fee_schedule"
-
-    missing = factor_research.resolve_taker_fee({"input": {"asset_id": "MISSING"}, "fees": {"taker_fee": None}}, dataset)
-    assert missing.taker_fee == pytest.approx(0.0)
-    assert missing.source == "fallback_zero_no_config_or_market_metadata"
+    assert first["future_ask1"] == pytest.approx(0.60)
+    assert first["future_mid_return"] == pytest.approx(0.05)
+    assert "microprice_minus_mid" in dataset.columns
+    assert_no_execution_columns(dataset.columns)
 
 
 def test_label_asof_uses_last_state_for_duplicate_receive_timestamp(
@@ -249,3 +219,34 @@ def test_label_asof_uses_last_state_for_duplicate_receive_timestamp(
     assert labelled.loc[0, "future_mid_1s"] == pytest.approx(0.55)
     assert labelled.loc[0, "future_bid_1s"] == pytest.approx(0.54)
     assert labelled.loc[0, "future_ask_1s"] == pytest.approx(0.56)
+    assert labelled.loc[0, "future_book_validity_1s"] == "valid"
+    assert labelled.loc[0, "label_slippage_seconds_1s"] == pytest.approx(0.0)
+    assert_no_execution_columns(labelled.columns)
+
+
+def test_book_validity_classifies_missing_locked_and_crossed_books(
+    factor_research: Any,
+) -> None:
+    assert factor_research.classify_book_validity(float("nan"), 0.51) == "missing"
+    assert factor_research.classify_book_validity(0.50, 0.50) == "locked"
+    assert factor_research.classify_book_validity(0.51, 0.50) == "crossed"
+    assert factor_research.classify_book_validity(0.49, 0.50) == "valid"
+
+
+def assert_no_execution_columns(columns: Any) -> None:
+    banned_exact = {"taker_fee", "fee_sensitivity", "pnl", "fill"}
+    banned_fragments = (
+        "edge",
+        "execution",
+        "executable",
+        "fee",
+        "fill",
+        "long_edge",
+        "pnl",
+        "profit",
+        "short_edge",
+        "tradeable",
+    )
+    names = [str(column).lower() for column in columns]
+    assert banned_exact.isdisjoint(names)
+    assert not any(fragment in name for name in names for fragment in banned_fragments)
