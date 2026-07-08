@@ -1,0 +1,1414 @@
+{
+  "ok": true,
+  "summary": {
+    "step_count": 334501,
+    "update_count": 334501,
+    "first_timestamp_received": "2026-06-07T04:34:30.268000Z",
+    "last_timestamp_received": "2026-06-09T11:59:15.163000Z",
+    "receive_time_inversion_count": 0,
+    "sequence_inversion_count": 0,
+    "source_timestamp_present_step_count": 334501,
+    "source_timestamp_missing_step_count": 0,
+    "source_timestamp_missing_update_count": 0,
+    "source_time_inversion_count": 89057,
+    "future_source_time_count": 0,
+    "max_future_source_time_ms": 19.0,
+    "source_delay_over_threshold_count": 177530,
+    "max_source_delay_ms": 330692.0
+  },
+  "issue_count": 266587,
+  "issue_counts_by_code": {
+    "source_time_inversion": 89057,
+    "source_delay_over_threshold": 177530
+  },
+  "issues_truncated": true,
+  "issue_sample_limit": 100,
+  "issue_sample": [
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 2,
+      "previous_sequence": 1,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:34:30.075000Z",
+        "timestamp": "2026-06-07T04:34:30.072000Z",
+        "backtrack_ms": 3.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 7,
+      "previous_sequence": 6,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:14.241000Z",
+        "timestamp": "2026-06-07T04:35:14.171000Z",
+        "backtrack_ms": 70.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 11,
+      "previous_sequence": 10,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:28.519000Z",
+        "timestamp": "2026-06-07T04:35:28.515000Z",
+        "backtrack_ms": 4.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 12,
+      "previous_sequence": 11,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:28.515000Z",
+        "timestamp": "2026-06-07T04:35:28.507000Z",
+        "backtrack_ms": 8.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 13,
+      "previous_sequence": 12,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:28.507000Z",
+        "timestamp": "2026-06-07T04:35:28.426000Z",
+        "backtrack_ms": 81.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 19,
+      "previous_sequence": 18,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:43.051000Z",
+        "timestamp": "2026-06-07T04:35:42.974000Z",
+        "backtrack_ms": 77.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 20,
+      "previous_sequence": 19,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:42.974000Z",
+        "timestamp": "2026-06-07T04:35:42.972000Z",
+        "backtrack_ms": 2.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 21,
+      "previous_sequence": 20,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:42.972000Z",
+        "timestamp": "2026-06-07T04:35:42.936000Z",
+        "backtrack_ms": 36.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 22,
+      "previous_sequence": 21,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:35:42.936000Z",
+        "timestamp": "2026-06-07T04:35:42.893000Z",
+        "backtrack_ms": 43.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 24,
+      "previous_sequence": 23,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:36:14.290000Z",
+        "timestamp": "2026-06-07T04:36:14.240000Z",
+        "backtrack_ms": 50.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 27,
+      "previous_sequence": 26,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:36:46.801000Z",
+        "timestamp": "2026-06-07T04:36:46.746000Z",
+        "backtrack_ms": 55.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 35,
+      "previous_sequence": 34,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.156000Z",
+        "timestamp": "2026-06-07T04:40:27.141000Z",
+        "backtrack_ms": 15.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 37,
+      "previous_sequence": 36,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.296000Z",
+        "timestamp": "2026-06-07T04:40:27.290000Z",
+        "backtrack_ms": 6.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 38,
+      "previous_sequence": 37,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.290000Z",
+        "timestamp": "2026-06-07T04:40:27.239000Z",
+        "backtrack_ms": 51.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 39,
+      "previous_sequence": 38,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.239000Z",
+        "timestamp": "2026-06-07T04:40:27.212000Z",
+        "backtrack_ms": 27.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 40,
+      "previous_sequence": 39,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.212000Z",
+        "timestamp": "2026-06-07T04:40:27.206000Z",
+        "backtrack_ms": 6.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 41,
+      "previous_sequence": 40,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:40:27.206000Z",
+        "timestamp": "2026-06-07T04:40:27.203000Z",
+        "backtrack_ms": 3.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 42,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:41:05.164000Z",
+        "timestamp_received": "2026-06-07T04:41:06.308000Z",
+        "delay_ms": 1144.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 43,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:41:05.879000Z",
+        "timestamp_received": "2026-06-07T04:41:07.002000Z",
+        "delay_ms": 1123.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 44,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:41:06.174000Z",
+        "timestamp_received": "2026-06-07T04:41:07.508000Z",
+        "delay_ms": 1334.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 45,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:41:06.903000Z",
+        "timestamp_received": "2026-06-07T04:41:07.960000Z",
+        "delay_ms": 1057.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 48,
+      "previous_sequence": 47,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:41:14.551000Z",
+        "timestamp": "2026-06-07T04:41:14.549000Z",
+        "backtrack_ms": 2.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 56,
+      "previous_sequence": 55,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:01.533000Z",
+        "timestamp": "2026-06-07T04:42:01.508000Z",
+        "backtrack_ms": 25.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 57,
+      "previous_sequence": 56,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:01.508000Z",
+        "timestamp": "2026-06-07T04:42:01.477000Z",
+        "backtrack_ms": 31.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 59,
+      "previous_sequence": 58,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:04.036000Z",
+        "timestamp": "2026-06-07T04:42:04.023000Z",
+        "backtrack_ms": 13.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 60,
+      "previous_sequence": 59,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:04.023000Z",
+        "timestamp": "2026-06-07T04:42:03.954000Z",
+        "backtrack_ms": 69.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 62,
+      "previous_sequence": 61,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:08.702000Z",
+        "timestamp": "2026-06-07T04:42:08.694000Z",
+        "backtrack_ms": 8.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 63,
+      "previous_sequence": 62,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:08.694000Z",
+        "timestamp": "2026-06-07T04:42:08.619000Z",
+        "backtrack_ms": 75.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 65,
+      "previous_sequence": 64,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:09.033000Z",
+        "timestamp": "2026-06-07T04:42:09.029000Z",
+        "backtrack_ms": 4.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 66,
+      "previous_sequence": 65,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:09.029000Z",
+        "timestamp": "2026-06-07T04:42:08.963000Z",
+        "backtrack_ms": 66.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 68,
+      "previous_sequence": 67,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:11.544000Z",
+        "timestamp": "2026-06-07T04:42:11.531000Z",
+        "backtrack_ms": 13.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 69,
+      "previous_sequence": 68,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:11.531000Z",
+        "timestamp": "2026-06-07T04:42:11.467000Z",
+        "backtrack_ms": 64.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 72,
+      "previous_sequence": 71,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:42:26.874000Z",
+        "timestamp": "2026-06-07T04:42:26.762000Z",
+        "backtrack_ms": 112.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 73,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:43:02.212000Z",
+        "timestamp_received": "2026-06-07T04:43:04.312000Z",
+        "delay_ms": 2100.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 79,
+      "previous_sequence": 78,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.096000Z",
+        "timestamp": "2026-06-07T04:43:29.082000Z",
+        "backtrack_ms": 14.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 80,
+      "previous_sequence": 79,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.082000Z",
+        "timestamp": "2026-06-07T04:43:29.078000Z",
+        "backtrack_ms": 4.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 82,
+      "previous_sequence": 81,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.178000Z",
+        "timestamp": "2026-06-07T04:43:29.171000Z",
+        "backtrack_ms": 7.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 83,
+      "previous_sequence": 82,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.171000Z",
+        "timestamp": "2026-06-07T04:43:29.170000Z",
+        "backtrack_ms": 1.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 84,
+      "previous_sequence": 83,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.170000Z",
+        "timestamp": "2026-06-07T04:43:29.169000Z",
+        "backtrack_ms": 1.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 85,
+      "previous_sequence": 84,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.169000Z",
+        "timestamp": "2026-06-07T04:43:29.166000Z",
+        "backtrack_ms": 3.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 86,
+      "previous_sequence": 85,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:43:29.166000Z",
+        "timestamp": "2026-06-07T04:43:29.157000Z",
+        "backtrack_ms": 9.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 91,
+      "previous_sequence": 90,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:46:35.579000Z",
+        "timestamp": "2026-06-07T04:46:35.510000Z",
+        "backtrack_ms": 69.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 94,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.132000Z",
+        "timestamp_received": "2026-06-07T04:47:09.067000Z",
+        "delay_ms": 1935.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 95,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.359000Z",
+        "timestamp_received": "2026-06-07T04:47:09.284000Z",
+        "delay_ms": 1925.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 96,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.358000Z",
+        "timestamp_received": "2026-06-07T04:47:09.284000Z",
+        "delay_ms": 1926.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 96,
+      "previous_sequence": 95,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:07.359000Z",
+        "timestamp": "2026-06-07T04:47:07.358000Z",
+        "backtrack_ms": 1.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 97,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.261000Z",
+        "timestamp_received": "2026-06-07T04:47:09.284000Z",
+        "delay_ms": 2023.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 97,
+      "previous_sequence": 96,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:07.358000Z",
+        "timestamp": "2026-06-07T04:47:07.261000Z",
+        "backtrack_ms": 97.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 98,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.215000Z",
+        "timestamp_received": "2026-06-07T04:47:09.284000Z",
+        "delay_ms": 2069.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 98,
+      "previous_sequence": 97,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:07.261000Z",
+        "timestamp": "2026-06-07T04:47:07.215000Z",
+        "backtrack_ms": 46.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 99,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.600000Z",
+        "timestamp_received": "2026-06-07T04:47:09.413000Z",
+        "delay_ms": 1813.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 100,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.587000Z",
+        "timestamp_received": "2026-06-07T04:47:09.413000Z",
+        "delay_ms": 1826.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 100,
+      "previous_sequence": 99,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:07.600000Z",
+        "timestamp": "2026-06-07T04:47:07.587000Z",
+        "backtrack_ms": 13.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 103,
+      "previous_sequence": 102,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:14.319000Z",
+        "timestamp": "2026-06-07T04:47:14.312000Z",
+        "backtrack_ms": 7.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 106,
+      "previous_sequence": 105,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:21.991000Z",
+        "timestamp": "2026-06-07T04:47:21.918000Z",
+        "backtrack_ms": 73.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 109,
+      "previous_sequence": 108,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:43.165000Z",
+        "timestamp": "2026-06-07T04:47:43.089000Z",
+        "backtrack_ms": 76.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 111,
+      "previous_sequence": 110,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:44.056000Z",
+        "timestamp": "2026-06-07T04:47:44.032000Z",
+        "backtrack_ms": 24.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 113,
+      "previous_sequence": 112,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:45.532000Z",
+        "timestamp": "2026-06-07T04:47:45.506000Z",
+        "backtrack_ms": 26.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 114,
+      "previous_sequence": 113,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:47:45.506000Z",
+        "timestamp": "2026-06-07T04:47:45.500000Z",
+        "backtrack_ms": 6.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 123,
+      "previous_sequence": 122,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:36.997000Z",
+        "timestamp": "2026-06-07T04:49:36.903000Z",
+        "backtrack_ms": 94.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 124,
+      "previous_sequence": 123,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:36.903000Z",
+        "timestamp": "2026-06-07T04:49:36.819000Z",
+        "backtrack_ms": 84.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 128,
+      "previous_sequence": 127,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.250000Z",
+        "timestamp": "2026-06-07T04:49:40.222000Z",
+        "backtrack_ms": 28.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 129,
+      "previous_sequence": 128,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.222000Z",
+        "timestamp": "2026-06-07T04:49:40.215000Z",
+        "backtrack_ms": 7.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 130,
+      "previous_sequence": 129,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.215000Z",
+        "timestamp": "2026-06-07T04:49:40.119000Z",
+        "backtrack_ms": 96.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 131,
+      "previous_sequence": 130,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.119000Z",
+        "timestamp": "2026-06-07T04:49:40.021000Z",
+        "backtrack_ms": 98.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 134,
+      "previous_sequence": 133,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.533000Z",
+        "timestamp": "2026-06-07T04:49:40.437000Z",
+        "backtrack_ms": 96.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 138,
+      "previous_sequence": 137,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:40.956000Z",
+        "timestamp": "2026-06-07T04:49:40.884000Z",
+        "backtrack_ms": 72.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 141,
+      "previous_sequence": 140,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:41.280000Z",
+        "timestamp": "2026-06-07T04:49:41.165000Z",
+        "backtrack_ms": 115.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 144,
+      "previous_sequence": 143,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:41.593000Z",
+        "timestamp": "2026-06-07T04:49:41.500000Z",
+        "backtrack_ms": 93.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 149,
+      "previous_sequence": 148,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:42.736000Z",
+        "timestamp": "2026-06-07T04:49:42.734000Z",
+        "backtrack_ms": 2.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 152,
+      "previous_sequence": 151,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:43.148000Z",
+        "timestamp": "2026-06-07T04:49:43.029000Z",
+        "backtrack_ms": 119.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 155,
+      "previous_sequence": 154,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:43.452000Z",
+        "timestamp": "2026-06-07T04:49:43.350000Z",
+        "backtrack_ms": 102.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 157,
+      "previous_sequence": 156,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:43.775000Z",
+        "timestamp": "2026-06-07T04:49:43.660000Z",
+        "backtrack_ms": 115.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 158,
+      "previous_sequence": 157,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:43.660000Z",
+        "timestamp": "2026-06-07T04:49:43.576000Z",
+        "backtrack_ms": 84.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 160,
+      "previous_sequence": 159,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:43.987000Z",
+        "timestamp": "2026-06-07T04:49:43.868000Z",
+        "backtrack_ms": 119.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 162,
+      "previous_sequence": 161,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:44.197000Z",
+        "timestamp": "2026-06-07T04:49:44.080000Z",
+        "backtrack_ms": 117.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 165,
+      "previous_sequence": 164,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:44.493000Z",
+        "timestamp": "2026-06-07T04:49:44.405000Z",
+        "backtrack_ms": 88.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 167,
+      "previous_sequence": 166,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:44.710000Z",
+        "timestamp": "2026-06-07T04:49:44.606000Z",
+        "backtrack_ms": 104.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 170,
+      "previous_sequence": 169,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:45.202000Z",
+        "timestamp": "2026-06-07T04:49:45.180000Z",
+        "backtrack_ms": 22.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 171,
+      "previous_sequence": 170,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:45.180000Z",
+        "timestamp": "2026-06-07T04:49:45.070000Z",
+        "backtrack_ms": 110.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 173,
+      "previous_sequence": 172,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:45.399000Z",
+        "timestamp": "2026-06-07T04:49:45.272000Z",
+        "backtrack_ms": 127.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 175,
+      "previous_sequence": 174,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:45.597000Z",
+        "timestamp": "2026-06-07T04:49:45.493000Z",
+        "backtrack_ms": 104.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 178,
+      "previous_sequence": 177,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:45.971000Z",
+        "timestamp": "2026-06-07T04:49:45.877000Z",
+        "backtrack_ms": 94.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 180,
+      "previous_sequence": 179,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:46.297000Z",
+        "timestamp": "2026-06-07T04:49:46.174000Z",
+        "backtrack_ms": 123.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 181,
+      "previous_sequence": 180,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:46.174000Z",
+        "timestamp": "2026-06-07T04:49:46.077000Z",
+        "backtrack_ms": 97.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 184,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:46.673000Z",
+        "timestamp_received": "2026-06-07T04:49:47.721000Z",
+        "delay_ms": 1048.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 184,
+      "previous_sequence": 183,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:46.753000Z",
+        "timestamp": "2026-06-07T04:49:46.673000Z",
+        "backtrack_ms": 80.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 185,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:46.904000Z",
+        "timestamp_received": "2026-06-07T04:49:48.024000Z",
+        "delay_ms": 1120.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 186,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.100000Z",
+        "timestamp_received": "2026-06-07T04:49:48.339000Z",
+        "delay_ms": 1239.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 187,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:46.994000Z",
+        "timestamp_received": "2026-06-07T04:49:48.339000Z",
+        "delay_ms": 1345.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 187,
+      "previous_sequence": 186,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:47.100000Z",
+        "timestamp": "2026-06-07T04:49:46.994000Z",
+        "backtrack_ms": 106.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 188,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.190000Z",
+        "timestamp_received": "2026-06-07T04:49:48.518000Z",
+        "delay_ms": 1328.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 189,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.403000Z",
+        "timestamp_received": "2026-06-07T04:49:48.713000Z",
+        "delay_ms": 1310.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 190,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.322000Z",
+        "timestamp_received": "2026-06-07T04:49:48.713000Z",
+        "delay_ms": 1391.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 190,
+      "previous_sequence": 189,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:47.403000Z",
+        "timestamp": "2026-06-07T04:49:47.322000Z",
+        "backtrack_ms": 81.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 191,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.618000Z",
+        "timestamp_received": "2026-06-07T04:49:48.778000Z",
+        "delay_ms": 1160.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 192,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.520000Z",
+        "timestamp_received": "2026-06-07T04:49:48.778000Z",
+        "delay_ms": 1258.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 192,
+      "previous_sequence": 191,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:47.618000Z",
+        "timestamp": "2026-06-07T04:49:47.520000Z",
+        "backtrack_ms": 98.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 194,
+      "previous_sequence": 193,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:48.543000Z",
+        "timestamp": "2026-06-07T04:49:48.451000Z",
+        "backtrack_ms": 92.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_time_inversion",
+      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "sequence": 196,
+      "previous_sequence": 195,
+      "details": {
+        "event_type": "price_change",
+        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+        "previous_timestamp": "2026-06-07T04:49:48.933000Z",
+        "timestamp": "2026-06-07T04:49:48.840000Z",
+        "backtrack_ms": 93.0
+      }
+    }
+  ],
+  "assumptions": [
+    "Replay chronology is timestamp_received order, not source timestamp order.",
+    "Hard failures are receive-time or local-sequence inversions.",
+    "Future/source-time issues are surfaced as diagnostics for severity review.",
+    "Missing source timestamps are counted so source-time diagnostics are not overread.",
+    "This check never sorts, drops, or repairs data."
+  ]
+}

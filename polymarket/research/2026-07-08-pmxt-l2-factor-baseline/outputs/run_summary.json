@@ -1,0 +1,19 @@
+{
+  "config_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\experiment.yml",
+  "output_dir": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs",
+  "rows_loaded": 334501,
+  "factor_rows": 334501,
+  "first_timestamp_received": "2026-06-07T04:34:30.268000+00:00",
+  "last_timestamp_received": "2026-06-09T11:59:15.163000+00:00",
+  "health_ok": true,
+  "health_warning_count": 266587,
+  "health_error_count": 0,
+  "taker_fee": 0.05,
+  "taker_fee_source": "gamma_event.raw.market.feeSchedule.rate",
+  "panel_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_panel.parquet",
+  "panel_format": "parquet",
+  "factor_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_summary.csv",
+  "quantile_returns_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\quantile_returns.csv",
+  "fee_sensitivity_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\fee_sensitivity.csv",
+  "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\report.md"
+}
