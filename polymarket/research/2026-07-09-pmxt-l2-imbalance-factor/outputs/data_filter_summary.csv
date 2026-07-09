@@ -1,0 +1,14 @@
+metric,value
+rows_total,334501.0
+current_valid_rows,329121.0
+current_valid_share,0.9839163410572763
+book_validity.valid,329121.0
+book_validity.locked,2962.0
+book_validity.crossed,2100.0
+book_validity.missing,318.0
+h60.current_and_future_valid_rows,324860.0
+h60.label_coverage_on_current_valid,0.98705339373665
+h300.current_and_future_valid_rows,324797.0
+h300.label_coverage_on_current_valid,0.9868619747752346
+h900.current_and_future_valid_rows,325288.0
+h900.label_coverage_on_current_valid,0.9883538273157896

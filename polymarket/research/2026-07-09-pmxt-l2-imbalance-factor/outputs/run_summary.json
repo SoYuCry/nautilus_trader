@@ -1,0 +1,18 @@
+{
+  "config_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\experiment.yml",
+  "output_dir": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs",
+  "panel_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_panel.parquet",
+  "rows_loaded": 334501,
+  "current_valid_rows": 329121,
+  "generated_at": "2026-07-09T07:23:49.961374+00:00",
+  "factor_count": 6,
+  "horizon_count": 3,
+  "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\report.md",
+  "svg_paths": [
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\spearman_corr_by_factor.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\depth_imbalance_1_quantile_returns.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\depth_imbalance_3_quantile_returns.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\depth_imbalance_5_quantile_returns.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\microprice_minus_mid_quantile_returns.svg"
+  ]
+}

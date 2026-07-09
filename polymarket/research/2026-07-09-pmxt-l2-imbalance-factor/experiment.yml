@@ -1,0 +1,19 @@
+﻿input:
+  baseline_panel: ../2026-07-08-pmxt-l2-factor-baseline/outputs/factor_panel.parquet
+  baseline_run_metadata: ../2026-07-08-pmxt-l2-factor-baseline/outputs/run_metadata.json
+analysis:
+  factors:
+    - depth_imbalance_1
+    - depth_imbalance_3
+    - depth_imbalance_5
+    - microprice_minus_mid
+    - ofi_30s
+    - trade_pressure_30s
+  horizons_seconds: [60, 300, 900]
+  quantiles: 5
+  spread_buckets: 3
+  time_buckets: 12
+  null_repeats: 50
+  bootstrap_repeats: 1000
+output:
+  dir: outputs

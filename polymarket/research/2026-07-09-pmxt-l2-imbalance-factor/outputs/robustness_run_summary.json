@@ -1,0 +1,20 @@
+{
+  "config_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\experiment.yml",
+  "output_dir": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs",
+  "panel_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_panel.parquet",
+  "rows_loaded": 334501,
+  "current_valid_rows": 329121,
+  "time_buckets": 12,
+  "null_repeats": 50,
+  "bootstrap_repeats": 1000,
+  "generated_at": "2026-07-09T07:45:11.236597+00:00",
+  "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\robustness_report.md",
+  "svg_paths": [
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\time_neutral_spearman_by_factor.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\same_sign_bucket_share_by_factor.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\depth_imbalance_3_temporal_ic.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\depth_imbalance_5_temporal_ic.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\microprice_minus_mid_temporal_ic.svg",
+    "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-09-pmxt-l2-imbalance-factor\\outputs\\ofi_30s_temporal_ic.svg"
+  ]
+}

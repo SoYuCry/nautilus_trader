@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="white"/>
+<text x="490.0" y="28" text-anchor="middle" font-size="20" font-family="Arial">ofi_30s: bucket Spearman IC</text>
+<line x1="150" y1="265.93" x2="950" y2="265.93" stroke="#111827" stroke-width="1"/>
+<line x1="150" y1="58" x2="150" y2="430" stroke="#111827" stroke-width="1"/>
+<text x="183.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 183.33,464)">1</text>
+<rect x="158.33" y="180.82" width="13.67" height="85.11" fill="#2563eb" opacity="0.88"><title>1 h60: 0.166019</title></rect>
+<rect x="175.00" y="153.97" width="13.67" height="111.96" fill="#dc2626" opacity="0.88"><title>1 h300: 0.21839</title></rect>
+<rect x="191.67" y="129.66" width="13.67" height="136.27" fill="#16a34a" opacity="0.88"><title>1 h900: 0.265812</title></rect>
+<text x="250.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 250.00,464)">2</text>
+<rect x="225.00" y="265.93" width="13.67" height="1.71" fill="#2563eb" opacity="0.88"><title>2 h60: -0.00332942</title></rect>
+<rect x="241.67" y="255.70" width="13.67" height="10.23" fill="#dc2626" opacity="0.88"><title>2 h300: 0.0199552</title></rect>
+<rect x="258.33" y="262.98" width="13.67" height="2.95" fill="#16a34a" opacity="0.88"><title>2 h900: 0.00576176</title></rect>
+<text x="316.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 316.67,464)">3</text>
+<rect x="291.67" y="231.11" width="13.67" height="34.82" fill="#2563eb" opacity="0.88"><title>3 h60: 0.0679231</title></rect>
+<rect x="308.33" y="229.46" width="13.67" height="36.47" fill="#dc2626" opacity="0.88"><title>3 h300: 0.071145</title></rect>
+<rect x="325.00" y="222.50" width="13.67" height="43.43" fill="#16a34a" opacity="0.88"><title>3 h900: 0.0847251</title></rect>
+<text x="383.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 383.33,464)">4</text>
+<rect x="358.33" y="265.93" width="13.67" height="28.84" fill="#2563eb" opacity="0.88"><title>4 h60: -0.0562594</title></rect>
+<rect x="375.00" y="265.93" width="13.67" height="7.54" fill="#dc2626" opacity="0.88"><title>4 h300: -0.0147105</title></rect>
+<rect x="391.67" y="209.96" width="13.67" height="55.97" fill="#16a34a" opacity="0.88"><title>4 h900: 0.109174</title></rect>
+<text x="450.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 450.00,464)">5</text>
+<rect x="425.00" y="248.77" width="13.67" height="17.16" fill="#2563eb" opacity="0.88"><title>5 h60: 0.0334651</title></rect>
+<rect x="441.67" y="170.75" width="13.67" height="95.18" fill="#dc2626" opacity="0.88"><title>5 h300: 0.185659</title></rect>
+<rect x="458.33" y="243.65" width="13.67" height="22.28" fill="#16a34a" opacity="0.88"><title>5 h900: 0.0434647</title></rect>
+<text x="516.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 516.67,464)">6</text>
+<rect x="491.67" y="240.23" width="13.67" height="25.70" fill="#2563eb" opacity="0.88"><title>6 h60: 0.0501244</title></rect>
+<rect x="508.33" y="231.29" width="13.67" height="34.64" fill="#dc2626" opacity="0.88"><title>6 h300: 0.0675725</title></rect>
+<rect x="525.00" y="222.30" width="13.67" height="43.63" fill="#16a34a" opacity="0.88"><title>6 h900: 0.0850983</title></rect>
+<text x="583.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 583.33,464)">7</text>
+<rect x="558.33" y="183.60" width="13.67" height="82.33" fill="#2563eb" opacity="0.88"><title>7 h60: 0.160589</title></rect>
+<rect x="575.00" y="265.93" width="13.67" height="1.25" fill="#dc2626" opacity="0.88"><title>7 h300: -0.00243328</title></rect>
+<rect x="591.67" y="265.93" width="13.67" height="52.00" fill="#16a34a" opacity="0.88"><title>7 h900: -0.101436</title></rect>
+<text x="650.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 650.00,464)">8</text>
+<rect x="625.00" y="232.58" width="13.67" height="33.35" fill="#2563eb" opacity="0.88"><title>8 h60: 0.0650505</title></rect>
+<rect x="641.67" y="265.93" width="13.67" height="2.14" fill="#dc2626" opacity="0.88"><title>8 h300: -0.004184</title></rect>
+<rect x="658.33" y="265.93" width="13.67" height="133.07" fill="#16a34a" opacity="0.88"><title>8 h900: -0.259571</title></rect>
+<text x="716.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 716.67,464)">9</text>
+<rect x="691.67" y="245.04" width="13.67" height="20.89" fill="#2563eb" opacity="0.88"><title>9 h60: 0.0407511</title></rect>
+<rect x="708.33" y="223.29" width="13.67" height="42.64" fill="#dc2626" opacity="0.88"><title>9 h300: 0.0831687</title></rect>
+<rect x="725.00" y="265.93" width="13.67" height="96.58" fill="#16a34a" opacity="0.88"><title>9 h900: -0.188389</title></rect>
+<text x="783.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 783.33,464)">10</text>
+<rect x="758.33" y="223.36" width="13.67" height="42.57" fill="#2563eb" opacity="0.88"><title>10 h60: 0.0830438</title></rect>
+<rect x="775.00" y="97.01" width="13.67" height="168.92" fill="#dc2626" opacity="0.88"><title>10 h300: 0.329503</title></rect>
+<rect x="791.67" y="265.93" width="13.67" height="109.67" fill="#16a34a" opacity="0.88"><title>10 h900: -0.213931</title></rect>
+<text x="850.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 850.00,464)">11</text>
+<rect x="825.00" y="180.53" width="13.67" height="85.40" fill="#2563eb" opacity="0.88"><title>11 h60: 0.16659</title></rect>
+<rect x="841.67" y="119.23" width="13.67" height="146.70" fill="#dc2626" opacity="0.88"><title>11 h300: 0.286166</title></rect>
+<rect x="858.33" y="130.17" width="13.67" height="135.76" fill="#16a34a" opacity="0.88"><title>11 h900: 0.264826</title></rect>
+<text x="916.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 916.67,464)">12</text>
+<rect x="891.67" y="131.27" width="13.67" height="134.66" fill="#2563eb" opacity="0.88"><title>12 h60: 0.262682</title></rect>
+<rect x="908.33" y="161.83" width="13.67" height="104.10" fill="#dc2626" opacity="0.88"><title>12 h300: 0.203057</title></rect>
+<rect x="925.00" y="89.00" width="13.67" height="176.93" fill="#16a34a" opacity="0.88"><title>12 h900: 0.345127</title></rect>
+<rect x="150" y="483" width="12" height="12" fill="#2563eb"/>
+<text x="168" y="495" font-size="12" font-family="Arial">h=60s</text>
+<rect x="270" y="483" width="12" height="12" fill="#dc2626"/>
+<text x="288" y="495" font-size="12" font-family="Arial">h=300s</text>
+<rect x="390" y="483" width="12" height="12" fill="#16a34a"/>
+<text x="408" y="495" font-size="12" font-family="Arial">h=900s</text>
+<text x="20" y="70" font-size="12" font-family="Arial">max 0.4056</text>
+<text x="20" y="430" font-size="12" font-family="Arial">min -0.32</text>
+</svg>
