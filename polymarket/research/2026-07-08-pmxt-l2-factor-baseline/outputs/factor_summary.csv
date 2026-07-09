@@ -1,4 +1,12 @@
 metric,value
+data_tier,TIER1_EXPLORATORY
+run_grade,TIER1_CAUTION_CLOCK_DISORDER
+replay_clock,timestamp_received
+ordering_key,"timestamp_received,_original_row_index"
+causality,receive_time_causal
+execution_claims_allowed,False
+source_time_policy,diagnostic_only
+not_for_pnl,True
 dataset_id,shanghai-june-9-2026-25c-yes-pmxt-l2
 adapter,pmxt_event_v1:v1
 steps,334501

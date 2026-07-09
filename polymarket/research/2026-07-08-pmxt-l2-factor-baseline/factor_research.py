@@ -50,6 +50,16 @@ LOCKED_BOOK = "locked"
 CROSSED_BOOK = "crossed"
 MISSING_BOOK = "missing"
 BOOK_VALIDITY_ORDER = (VALID_BOOK, LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK)
+TRUST_METADATA_BASE = {
+    "data_tier": "TIER1_EXPLORATORY",
+    "replay_clock": "timestamp_received",
+    "ordering_key": "timestamp_received,_original_row_index",
+    "causality": "receive_time_causal",
+    "execution_claims_allowed": False,
+    "source_time_policy": "diagnostic_only",
+    "not_for_pnl": True,
+    "diagnostic_non_causal": False,
+}
 
 
 @dataclass(frozen=True)
@@ -76,6 +86,8 @@ class RunSummary:
     spread_summary_path: str
     label_slippage_summary_path: str
     input_hashes_path: str
+    run_metadata_path: str
+    trust_metadata: dict[str, Any]
     report_path: str
 
 
@@ -133,6 +145,8 @@ def main() -> int:
         json.dumps(input_hashes, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    trust_metadata = build_trust_metadata(health, panel)
+    run_metadata_path = write_run_metadata(output_dir, trust_metadata, health)
 
     issues = health.issues
     validity_counts = book_validity_counts(panel)
@@ -159,6 +173,8 @@ def main() -> int:
         spread_summary_path=str(spread_summary_path),
         label_slippage_summary_path=str(label_slippage_summary_path),
         input_hashes_path=str(input_hashes_path),
+        run_metadata_path=str(run_metadata_path),
+        trust_metadata=trust_metadata,
         report_path=str(output_dir / "report.md"),
     )
     write_report(
@@ -172,6 +188,7 @@ def main() -> int:
         spread_summary,
         label_slippage_summary,
         input_hashes,
+        trust_metadata=trust_metadata,
     )
     (output_dir / "run_summary.json").write_text(
         json.dumps(asdict(summary), indent=2, ensure_ascii=False) + "\n",
@@ -338,6 +355,58 @@ def compact_health_report(health: Any, issue_limit: int = 100) -> dict[str, Any]
         "issue_sample": issues[:issue_limit],
         "assumptions": data.get("assumptions", []),
     }
+
+
+def build_trust_metadata(health: Any, panel: pd.DataFrame | None = None) -> dict[str, Any]:
+    """Return machine-readable trust/clock/execution-boundary metadata."""
+    health_summary = getattr(health, "summary", None)
+    source_time_diagnostics = {
+        "source_time_inversion_count": int(getattr(health_summary, "source_time_inversion_count", 0) or 0),
+        "source_delay_over_threshold_count": int(
+            getattr(health_summary, "source_delay_over_threshold_count", 0) or 0,
+        ),
+        "future_source_time_count": int(getattr(health_summary, "future_source_time_count", 0) or 0),
+        "source_timestamp_missing_step_count": int(
+            getattr(health_summary, "source_timestamp_missing_step_count", 0) or 0,
+        ),
+    }
+    book_counts = book_validity_counts(panel) if panel is not None else dict.fromkeys(BOOK_VALIDITY_ORDER, 0)
+    has_clock_warning = any(source_time_diagnostics.values()) or any(
+        getattr(issue, "severity", None) == "warning"
+        and str(getattr(issue, "code", "")).startswith(("source_", "future_source_time", "missing_source"))
+        for issue in getattr(health, "issues", ())
+    )
+    has_book_warning = any(book_counts.get(validity, 0) for validity in (LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK))
+    return {
+        **TRUST_METADATA_BASE,
+        "run_grade": "TIER1_CAUTION_CLOCK_DISORDER" if has_clock_warning or has_book_warning else "TIER1_OK_RECEIVE_TIME",
+        "source_time_diagnostics": source_time_diagnostics,
+        "book_validity_counts": {key: int(value) for key, value in book_counts.items()},
+        "book_validity_warning": has_book_warning,
+        "claim_boundary": (
+            "Exploratory receive-time-causal L2 factors and future mid-return labels only; "
+            "no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims."
+        ),
+    }
+
+
+def write_run_metadata(output_dir: Path, trust_metadata: dict[str, Any], health: Any) -> Path:
+    path = output_dir / "run_metadata.json"
+    health_report = compact_health_report(health, issue_limit=100)
+    path.write_text(
+        json.dumps(
+            {
+                "trust_metadata": trust_metadata,
+                "health_summary": health_report.get("summary", {}),
+                "health_issue_counts_by_code": health_report.get("issue_counts_by_code", {}),
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return path
 
 
 def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  # noqa: C901
@@ -530,7 +599,16 @@ def build_factor_summary(
 ) -> pd.DataFrame:
     raw = raw_panel if raw_panel is not None else panel
     counts = book_validity_counts(raw)
+    trust_metadata = build_trust_metadata(health, raw)
     rows: list[dict[str, Any]] = [
+        {"metric": "data_tier", "value": trust_metadata["data_tier"]},
+        {"metric": "run_grade", "value": trust_metadata["run_grade"]},
+        {"metric": "replay_clock", "value": trust_metadata["replay_clock"]},
+        {"metric": "ordering_key", "value": trust_metadata["ordering_key"]},
+        {"metric": "causality", "value": trust_metadata["causality"]},
+        {"metric": "execution_claims_allowed", "value": trust_metadata["execution_claims_allowed"]},
+        {"metric": "source_time_policy", "value": trust_metadata["source_time_policy"]},
+        {"metric": "not_for_pnl", "value": trust_metadata["not_for_pnl"]},
         {"metric": "dataset_id", "value": dataset.metadata.dataset_id},
         {"metric": "adapter", "value": f"{dataset.metadata.adapter_name}:{dataset.metadata.adapter_version}"},
         {"metric": "steps", "value": len(dataset.steps)},
@@ -743,11 +821,14 @@ def write_report(
     spread_summary: pd.DataFrame,
     label_slippage_summary: pd.DataFrame,
     input_hashes: list[dict[str, Any]],
+    *,
+    trust_metadata: dict[str, Any] | None = None,
 ) -> None:
     input_config = config.get("input", {})
     horizons = horizons_from_config(config)
     health_report = compact_health_report(health, issue_limit=10)
     health_summary = health_report.get("summary", {}) or {}
+    trust_metadata = trust_metadata or build_trust_metadata(health, None)
     lines: list[str] = [
         "# PMXT L2 因子研究报告",
         "",
@@ -761,6 +842,19 @@ def write_report(
         "- 不把 `future_bid - current_ask` 之类的量解释成可成交利润。",
         "- fee/fill/PnL 必须放到 Nautilus 原生策略回测入口里处理。",
         "- 本报告只回答：按 receive-time replay 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。",
+        "",
+        "Machine-readable boundary:",
+        "",
+        f"- data_tier: `{trust_metadata['data_tier']}`",
+        f"- run_grade: `{trust_metadata['run_grade']}`",
+        f"- replay_clock: `{trust_metadata['replay_clock']}`",
+        f"- ordering_key: `{trust_metadata['ordering_key']}`",
+        f"- causality: `{trust_metadata['causality']}`",
+        f"- execution_claims_allowed: `{str(trust_metadata['execution_claims_allowed']).lower()}`",
+        f"- source_time_policy: `{trust_metadata['source_time_policy']}`",
+        f"- not_for_pnl: `{str(trust_metadata['not_for_pnl']).lower()}`",
+        f"- diagnostic_non_causal: `{str(trust_metadata['diagnostic_non_causal']).lower()}`",
+        f"- claim_boundary: {trust_metadata['claim_boundary']}",
         "",
         "## 1. 输入",
         "",
@@ -790,6 +884,7 @@ def write_report(
         "- `label_slippage_summary.csv`: forward as-of 标签匹配的时间滑移统计。",
         "- `input_hashes.json`: 输入文件大小和 sha256，用于复现实验。",
         "- `data_health_summary.json`: receive/source time 诊断摘要。",
+        "- `run_metadata.json`: machine-readable trust tier/run grade/clock policy/claim boundary.",
         "- `run_summary.json` / `report.md`",
         "",
         "## 4. 数据健康解释",

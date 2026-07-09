@@ -61,7 +61,6 @@ ADAPTERS = {
     PMXTEventV1Adapter.adapter_name: PMXTEventV1Adapter,
 }
 
-
 @dataclass(frozen=True, slots=True)
 class NativeBacktestResultV1:
     run_dir: Path
@@ -103,6 +102,15 @@ def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     if name not in ADAPTERS:
         raise ValueError(f"unknown adapter {name!r}; expected one of {sorted(ADAPTERS)}")
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
+
+
+def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> None:
+    adapter_config = config.get("adapter") or {}
+    if str(adapter_config.get("name")) == PMXTEventV1Adapter.adapter_name:
+        raise ValueError(
+            "PMXT event data is exploratory and must use the PMXT factor research path, "
+            "not the Nautilus PnL/fill/fee/cash/position runner.",
+        )
 
 
 def resolve_output_dir(config_path: Path, report_config: Mapping[str, Any]) -> Path:
@@ -290,6 +298,7 @@ def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
 def run_from_config(config_path: Path) -> dict[str, Any]:
     config_path = config_path.resolve()
     config = load_yaml(config_path)
+    reject_pmxt_adapter_for_nautilus_backtest(config)
     run_id = str((config.get("runtime") or {}).get("run_id") or now_run_id())
     output_dir = resolve_output_dir(config_path, config.get("report") or {})
     run_dir = ensure_child(output_dir, output_dir / run_id)

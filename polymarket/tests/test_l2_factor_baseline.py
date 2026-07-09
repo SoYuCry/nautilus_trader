@@ -4,6 +4,7 @@ import importlib.util
 import sys
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -192,6 +193,143 @@ def test_labels_use_reconstructed_future_top_of_book_without_fee_or_tradeable_pr
     assert first["future_mid_return"] == pytest.approx(0.05)
     assert "microprice_minus_mid" in dataset.columns
     assert_no_execution_columns(dataset.columns)
+
+
+def test_factor_boundary_metadata_degrades_on_clock_and_book_warnings(factor_research: Any) -> None:
+    health = SimpleNamespace(
+        ok=True,
+        issues=[
+            SimpleNamespace(severity="warning", code="source_time_inversion"),
+            SimpleNamespace(severity="warning", code="source_delay_over_threshold"),
+        ],
+        summary=SimpleNamespace(
+            source_time_inversion_count=1,
+            source_delay_over_threshold_count=1,
+            future_source_time_count=0,
+            source_timestamp_missing_step_count=0,
+        ),
+    )
+    panel = factor_research.pd.DataFrame({"book_validity": ["valid", "crossed"]})
+
+    metadata = factor_research.build_trust_metadata(health, panel)
+
+    assert metadata["data_tier"] == "TIER1_EXPLORATORY"
+    assert metadata["run_grade"] == "TIER1_CAUTION_CLOCK_DISORDER"
+    assert metadata["replay_clock"] == "timestamp_received"
+    assert metadata["ordering_key"] == "timestamp_received,_original_row_index"
+    assert metadata["causality"] == "receive_time_causal"
+    assert metadata["execution_claims_allowed"] is False
+    assert metadata["source_time_policy"] == "diagnostic_only"
+    assert metadata["source_time_diagnostics"]["source_time_inversion_count"] == 1
+    assert metadata["book_validity_counts"]["crossed"] == 1
+    assert metadata["not_for_pnl"] is True
+    assert metadata["diagnostic_non_causal"] is False
+
+    health_without_clock_warnings = SimpleNamespace(
+        ok=True,
+        issues=[],
+        summary=SimpleNamespace(
+            source_time_inversion_count=0,
+            source_delay_over_threshold_count=0,
+            future_source_time_count=0,
+            source_timestamp_missing_step_count=0,
+        ),
+    )
+    book_only_metadata = factor_research.build_trust_metadata(health_without_clock_warnings, panel)
+    assert book_only_metadata["run_grade"] == "TIER1_CAUTION_CLOCK_DISORDER"
+
+
+def test_factor_metadata_json_and_report_include_claim_boundary(
+    factor_research: Any,
+    tmp_path: Path,
+) -> None:
+    health = SimpleNamespace(
+        ok=True,
+        issues=[],
+        summary=SimpleNamespace(
+            source_time_inversion_count=0,
+            source_delay_over_threshold_count=0,
+            future_source_time_count=0,
+            source_timestamp_missing_step_count=0,
+        ),
+        to_dict=lambda: {"ok": True, "summary": {}, "issues": [], "assumptions": []},
+    )
+    metadata = factor_research.build_trust_metadata(
+        health,
+        factor_research.pd.DataFrame({"book_validity": ["valid"]}),
+    )
+    path = factor_research.write_run_metadata(tmp_path, metadata, health)
+
+    loaded = factor_research.json.loads(path.read_text(encoding="utf-8"))
+    assert loaded["trust_metadata"]["execution_claims_allowed"] is False
+    assert loaded["trust_metadata"]["run_grade"] == "TIER1_OK_RECEIVE_TIME"
+
+    summary = SimpleNamespace(
+        rows_loaded=1,
+        factor_rows=1,
+        analysis_rows=1,
+        first_timestamp_received="2026-07-08T00:00:00Z",
+        last_timestamp_received="2026-07-08T00:00:00Z",
+        replay_order_ok=True,
+        health_warning_count=0,
+        health_error_count=0,
+        valid_book_rows=1,
+        locked_book_rows=0,
+        crossed_book_rows=0,
+        missing_book_rows=0,
+        panel_path=str(tmp_path / "factor_panel.csv"),
+        panel_format="csv",
+    )
+    run_summary = factor_research.RunSummary(
+        config_path=str(tmp_path / "experiment.yml"),
+        output_dir=str(tmp_path),
+        rows_loaded=1,
+        factor_rows=1,
+        analysis_rows=1,
+        first_timestamp_received="2026-07-08T00:00:00Z",
+        last_timestamp_received="2026-07-08T00:00:00Z",
+        replay_order_ok=True,
+        health_warning_count=0,
+        health_error_count=0,
+        valid_book_rows=1,
+        locked_book_rows=0,
+        crossed_book_rows=0,
+        missing_book_rows=0,
+        panel_path=str(tmp_path / "factor_panel.csv"),
+        panel_format="csv",
+        factor_summary_path=str(tmp_path / "factor_summary.csv"),
+        quantile_returns_path=str(tmp_path / "quantile_returns.csv"),
+        book_validity_summary_path=str(tmp_path / "book_validity_summary.csv"),
+        spread_summary_path=str(tmp_path / "spread_summary.csv"),
+        label_slippage_summary_path=str(tmp_path / "label_slippage_summary.csv"),
+        input_hashes_path=str(tmp_path / "input_hashes.json"),
+        run_metadata_path=str(path),
+        trust_metadata=metadata,
+        report_path=str(tmp_path / "report.md"),
+    )
+    run_summary_json = factor_research.asdict(run_summary)
+    assert run_summary_json["trust_metadata"]["execution_claims_allowed"] is False
+    assert run_summary_json["trust_metadata"]["run_grade"] == "TIER1_OK_RECEIVE_TIME"
+
+    report_path = tmp_path / "report.md"
+    factor_research.write_report(
+        report_path,
+        summary,
+        {"input": {}, "labels": {"horizons_seconds": [60]}},
+        health,
+        factor_research.pd.DataFrame(),
+        factor_research.pd.DataFrame(),
+        factor_research.pd.DataFrame({"book_validity": ["valid"], "count": [1], "share": [1.0]}),
+        factor_research.pd.DataFrame(),
+        factor_research.pd.DataFrame(),
+        [],
+        trust_metadata=metadata,
+    )
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "TIER1_EXPLORATORY" in report_text
+    assert "TIER1_OK_RECEIVE_TIME" in report_text
+    assert "execution_claims_allowed" in report_text
+    assert "false" in report_text
 
 
 def test_label_asof_uses_last_state_for_duplicate_receive_timestamp(

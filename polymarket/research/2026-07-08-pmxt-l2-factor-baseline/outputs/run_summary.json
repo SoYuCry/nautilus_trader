@@ -21,5 +21,31 @@
   "spread_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\spread_summary.csv",
   "label_slippage_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\label_slippage_summary.csv",
   "input_hashes_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\input_hashes.json",
+  "run_metadata_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\run_metadata.json",
+  "trust_metadata": {
+    "data_tier": "TIER1_EXPLORATORY",
+    "replay_clock": "timestamp_received",
+    "ordering_key": "timestamp_received,_original_row_index",
+    "causality": "receive_time_causal",
+    "execution_claims_allowed": false,
+    "source_time_policy": "diagnostic_only",
+    "not_for_pnl": true,
+    "diagnostic_non_causal": false,
+    "run_grade": "TIER1_CAUTION_CLOCK_DISORDER",
+    "source_time_diagnostics": {
+      "source_time_inversion_count": 89057,
+      "source_delay_over_threshold_count": 177530,
+      "future_source_time_count": 0,
+      "source_timestamp_missing_step_count": 0
+    },
+    "book_validity_counts": {
+      "valid": 329121,
+      "locked": 2962,
+      "crossed": 2100,
+      "missing": 318
+    },
+    "book_validity_warning": true,
+    "claim_boundary": "Exploratory receive-time-causal L2 factors and future mid-return labels only; no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims."
+  },
   "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\report.md"
 }

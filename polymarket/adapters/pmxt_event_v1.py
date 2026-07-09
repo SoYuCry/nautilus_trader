@@ -87,7 +87,10 @@ class PMXTEventV1Adapter:
                 event_index=event_index,
             )
 
-        selected["_timestamp_received_dt"] = selected["timestamp_received"].map(as_utc_datetime)
+        selected["_timestamp_received_dt"] = [
+            self._parse_required_timestamp_received(value, row_index=int(row_index))
+            for row_index, value in zip(selected["_original_row_index"], selected["timestamp_received"], strict=True)
+        ]
         selected["_source_timestamp_dt"] = selected["timestamp"].map(optional_utc_datetime)
         selected_ordering_diagnostic = self._selected_ordering_diagnostic(selected)
         selected = selected.sort_values(
@@ -121,12 +124,12 @@ class PMXTEventV1Adapter:
             assumptions=(
                 "PMXT orderbook.parquet rows are pre-contract WebSocket-derived observations normalized by adapter only.",
                 "Replay chronology uses receive-time ordering: stable sort by timestamp_received then original row index.",
-                "One selected PMXT orderbook row is emitted as one canonical replay step.",
+                "One selected PMXT orderbook row is emitted as one canonical replay step with post-sort local replay sequence.",
             ),
             warnings=(
                 "PMXT caveat: source timestamps may invert relative to receive-time replay order; data_health should audit source-time diagnostics separately.",
                 self._format_ordering_diagnostic(selected_ordering_diagnostic),
-                "PMXT ordering diagnostic: sequence values are reassigned after stable timestamp_received/original row sort and do not preserve original PMXT row numbering.",
+                "PMXT ordering diagnostic: sequence is a post-sort local replay sequence, not vendor/raw sequence; values are reassigned after stable timestamp_received/original row sort and do not preserve original PMXT row numbering.",
                 "PMXT best_bid/best_ask values are preserved as audit/proxy fields only and are not trusted for filtering or execution truth.",
             ),
             market_metadata=market_metadata,
@@ -252,6 +255,31 @@ class PMXTEventV1Adapter:
                 value = str(value).lower()
             formatted_values.append(f"{key}={value}")
         return "PMXT ordering diagnostic: " + ", ".join(formatted_values) + "."
+
+    @staticmethod
+    def _parse_required_timestamp_received(value: Any, *, row_index: int) -> Any:
+        if PMXTEventV1Adapter._is_missing(value):
+            raise ValueError(
+                "pmxt_event_v1 timestamp_received is missing for selected orderbook row "
+                f"_original_row_index={row_index}; receive-time replay cannot be sorted safely",
+            )
+        try:
+            return as_utc_datetime(value)
+        except Exception as exc:
+            raise ValueError(
+                "pmxt_event_v1 timestamp_received is unparseable for selected orderbook row "
+                f"_original_row_index={row_index}: {value!r}",
+            ) from exc
+
+    @staticmethod
+    def _is_missing(value: Any) -> bool:
+        if value is None:
+            return True
+        try:
+            missing = pd.isna(value)
+        except (TypeError, ValueError):
+            return False
+        return bool(missing) if not hasattr(missing, "__len__") else False
 
     def _required_path(self, input_config: Mapping[str, Any], key: str) -> Path:
         if input_config.get(key) is None:

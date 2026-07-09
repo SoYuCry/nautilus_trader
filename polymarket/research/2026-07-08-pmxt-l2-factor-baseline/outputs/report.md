@@ -1,6 +1,6 @@
 # PMXT L2 因子研究报告
 
-生成时间: 2026-07-08T09:43:21.521872+00:00
+生成时间: 2026-07-09T06:35:12.615437+00:00
 
 ## 0. 信任边界
 
@@ -10,6 +10,19 @@
 - 不把 `future_bid - current_ask` 之类的量解释成可成交利润。
 - fee/fill/PnL 必须放到 Nautilus 原生策略回测入口里处理。
 - 本报告只回答：按 receive-time replay 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。
+
+Machine-readable boundary:
+
+- data_tier: `TIER1_EXPLORATORY`
+- run_grade: `TIER1_CAUTION_CLOCK_DISORDER`
+- replay_clock: `timestamp_received`
+- ordering_key: `timestamp_received,_original_row_index`
+- causality: `receive_time_causal`
+- execution_claims_allowed: `false`
+- source_time_policy: `diagnostic_only`
+- not_for_pnl: `true`
+- diagnostic_non_causal: `false`
+- claim_boundary: Exploratory receive-time-causal L2 factors and future mid-return labels only; no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims.
 
 ## 1. 输入
 
@@ -39,6 +52,7 @@
 - `label_slippage_summary.csv`: forward as-of 标签匹配的时间滑移统计。
 - `input_hashes.json`: 输入文件大小和 sha256，用于复现实验。
 - `data_health_summary.json`: receive/source time 诊断摘要。
+- `run_metadata.json`: machine-readable trust tier/run grade/clock policy/claim boundary.
 - `run_summary.json` / `report.md`
 
 ## 4. 数据健康解释
@@ -99,6 +113,14 @@ crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据�
 
 | metric | value |
 | --- | --- |
+| data_tier | TIER1_EXPLORATORY |
+| run_grade | TIER1_CAUTION_CLOCK_DISORDER |
+| replay_clock | timestamp_received |
+| ordering_key | timestamp_received,_original_row_index |
+| causality | receive_time_causal |
+| execution_claims_allowed | False |
+| source_time_policy | diagnostic_only |
+| not_for_pnl | True |
 | dataset_id | shanghai-june-9-2026-25c-yes-pmxt-l2 |
 | adapter | pmxt_event_v1:v1 |
 | steps | 334501 |
@@ -121,14 +143,6 @@ crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据�
 | ask1.mean | 0.44351796147921285 |
 | ask1.p05 | 0.17 |
 | ask1.p50 | 0.38 |
-| ask1.p95 | 0.986 |
-| bid_size1.count | 329121 |
-| bid_size1.mean | 57.30105040395478 |
-| bid_size1.p05 | 5.0 |
-| bid_size1.p50 | 26.98 |
-| bid_size1.p95 | 178.41 |
-| ask_size1.count | 329121 |
-| ask_size1.mean | 64.03577191974989 |
 
 ## 9. Quantile return preview
 

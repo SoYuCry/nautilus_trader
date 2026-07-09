@@ -252,6 +252,8 @@ def test_sorts_replay_steps_by_receive_time_then_original_row_index_and_reassign
     assert "receive-time" in text
     assert "ordering" in text
     assert "diagnostic" in text
+    assert "post-sort local replay sequence" in text
+    assert "not vendor/raw sequence" in text
     diagnostic = _ordering_diagnostic(dataset)
     assert diagnostic == {
         "selected_rows": "4",
@@ -265,6 +267,22 @@ def test_sorts_replay_steps_by_receive_time_then_original_row_index_and_reassign
         "stable_sort_key": "timestamp_received,_original_row_index",
         "selected_receive_time_monotonic_after_sort": "true",
     }
+
+
+def test_missing_or_unparseable_timestamp_received_fails_before_sort(tmp_path: Path) -> None:
+    missing_root = tmp_path / "missing"
+    bad_root = tmp_path / "bad"
+    missing_root.mkdir()
+    bad_root.mkdir()
+    rows = _base_rows()
+    rows[1]["timestamp_received"] = None
+    with pytest.raises(ValueError, match=r"timestamp_received.*missing|missing.*timestamp_received"):
+        _load(_write_event_dir(missing_root, rows=rows))
+
+    rows = _base_rows()
+    rows[1]["timestamp_received"] = "not-a-timestamp"
+    with pytest.raises(ValueError, match=r"timestamp_received.*unparseable|unparseable.*timestamp_received"):
+        _load(_write_event_dir(bad_root, rows=rows))
 
 
 def test_ordering_diagnostic_counts_selected_receive_inversions_and_duplicate_ties(tmp_path: Path) -> None:
