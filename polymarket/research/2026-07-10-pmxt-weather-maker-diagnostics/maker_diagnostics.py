@@ -37,6 +37,7 @@ VALID_BOOK = "valid"
 TIME_BUCKET_ORDER = ("early_gt_24h", "last_24h", "last_6h", "final_1h", "post_close")
 BUY = "buy_bid"
 SELL = "sell_ask"
+PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS = frozenset({"receive_time_inversion"})
 
 
 @dataclass(frozen=True)
@@ -101,8 +102,14 @@ def main() -> int:
             token_config = build_token_config(config, event_dir, event_index, market, token_id)
             dataset = PMXTEventV1Adapter(repo_root=REPO_ROOT).load(token_config)
             health = analyze_dataset_health(dataset)
-            if not health.ok:
-                raise RuntimeError(f"data health failed for {event_index['eventSlug']} {market['label']} YES")
+            blocking_issues = pmxt_maker_blocking_health_issues(health)
+            if blocking_issues:
+                blocking_codes = sorted({issue.code for issue in blocking_issues})
+                raise RuntimeError(
+                    f"data health failed for {event_index['eventSlug']} {market['label']} YES; "
+                    f"blocking_error_codes={blocking_codes}",
+                )
+            source_quality = dict(dataset.metadata.source_quality)
 
             panel = baseline.build_factor_panel(dataset, token_config)
             panel = add_update_fields(panel, dataset)
@@ -116,8 +123,8 @@ def main() -> int:
                 probe_interval_seconds=probe_interval_seconds,
             )
             total_probes += len(probes)
-            inventories.append(build_inventory_row(event_index, market, token_id, panel, probes, health))
-            token_summaries.append(build_token_summary(event_index, market, token_id, probes, panel, health))
+            inventories.append(build_inventory_row(event_index, market, token_id, panel, probes, health, source_quality))
+            token_summaries.append(build_token_summary(event_index, market, token_id, probes, panel, health, source_quality))
             if probes.empty:
                 processed_tokens += 1
                 continue
@@ -275,9 +282,15 @@ def event_market_fields(event_index: dict[str, Any], market: dict[str, Any], tok
 
 def add_time_to_close(panel: pd.DataFrame) -> pd.DataFrame:
     panel = panel.copy()
-    panel["time_to_close_seconds"] = (panel["event_end"] - panel["timestamp_received"]).dt.total_seconds()
+    clock_col = replay_time_column(panel)
+    panel["time_to_close_seconds"] = (panel["event_end"] - panel[clock_col]).dt.total_seconds()
     panel["time_to_close_bucket"] = panel["time_to_close_seconds"].map(time_to_close_bucket)
     return panel
+
+
+def replay_time_column(panel: pd.DataFrame) -> str:
+    """Return the PMXT replay clock column for timestamp-ordered diagnostics."""
+    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
 
 
 def time_to_close_bucket(seconds: float) -> str:
@@ -299,6 +312,7 @@ def build_probe_frame(panel: pd.DataFrame, *, factor: str, quantiles: int, probe
     missing = [column for column in required if column not in panel]
     if missing:
         raise ValueError(f"panel missing required columns: {missing}")
+    clock_col = replay_time_column(panel)
     frame = panel[
         (panel["book_validity"] == VALID_BOOK)
         & np.isfinite(pd.to_numeric(panel["bid1"], errors="coerce"))
@@ -310,12 +324,12 @@ def build_probe_frame(panel: pd.DataFrame, *, factor: str, quantiles: int, probe
     ].copy()
     if frame.empty:
         return frame
-    frame["probe_bin"] = frame["timestamp_received"].dt.floor(f"{probe_interval_seconds}s")
+    frame["probe_bin"] = frame[clock_col].dt.floor(f"{probe_interval_seconds}s")
     frame = (
-        frame.sort_values(["timestamp_received", "sequence"], kind="mergesort")
+        frame.sort_values([clock_col, "sequence"], kind="mergesort")
         .groupby("probe_bin", sort=False, as_index=False)
         .tail(1)
-        .sort_values(["timestamp_received", "sequence"], kind="mergesort")
+        .sort_values([clock_col, "sequence"], kind="mergesort")
         .reset_index(drop=True)
     )
     frame["factor_quantile"] = factor_quantiles(frame[factor], quantiles)
@@ -395,15 +409,16 @@ def run_token_diagnostics(
 
 
 def build_trade_arrays(panel: pd.DataFrame) -> dict[str, np.ndarray]:
+    clock_col = replay_time_column(panel)
     trades = panel[
         (panel["event_type"] == "trade")
         & np.isfinite(pd.to_numeric(panel["update_price"], errors="coerce"))
         & np.isfinite(pd.to_numeric(panel["update_size"], errors="coerce"))
         & (pd.to_numeric(panel["update_size"], errors="coerce") > 0)
     ].copy()
-    trades = trades.sort_values(["timestamp_received", "sequence"], kind="mergesort")
+    trades = trades.sort_values([clock_col, "sequence"], kind="mergesort")
     return {
-        "time_ns": timestamps_to_ns(trades["timestamp_received"]),
+        "time_ns": timestamps_to_ns(trades[clock_col]),
         "price": pd.to_numeric(trades["update_price"], errors="coerce").to_numpy(dtype=float),
         "size": pd.to_numeric(trades["update_size"], errors="coerce").to_numpy(dtype=float),
         "side": trades["update_side"].astype(str).to_numpy(),
@@ -411,18 +426,19 @@ def build_trade_arrays(panel: pd.DataFrame) -> dict[str, np.ndarray]:
 
 
 def build_future_mid_arrays(panel: pd.DataFrame) -> dict[str, np.ndarray]:
+    clock_col = replay_time_column(panel)
     valid = (
         panel[
             (panel["book_validity"] == VALID_BOOK)
             & np.isfinite(pd.to_numeric(panel["mid"], errors="coerce"))
-        ][["timestamp_received", "sequence", "mid"]]
-        .sort_values(["timestamp_received", "sequence"], kind="mergesort")
-        .groupby("timestamp_received", sort=False, as_index=False)
+        ][[clock_col, "sequence", "mid"]]
+        .sort_values([clock_col, "sequence"], kind="mergesort")
+        .groupby(clock_col, sort=False, as_index=False)
         .tail(1)
-        .sort_values("timestamp_received", kind="mergesort")
+        .sort_values(clock_col, kind="mergesort")
     )
     return {
-        "time_ns": timestamps_to_ns(valid["timestamp_received"]),
+        "time_ns": timestamps_to_ns(valid[clock_col]),
         "mid": pd.to_numeric(valid["mid"], errors="coerce").to_numpy(dtype=float),
     }
 
@@ -449,7 +465,8 @@ def simulate_fills(
     results: list[FillResult] = []
     window_ns = int(fill_window_seconds * 1_000_000_000)
     for probe in probes.itertuples(index=False):
-        start_ns = int(probe.timestamp_received.value)
+        probe_time = getattr(probe, "replay_timestamp", probe.timestamp_received)
+        start_ns = int(probe_time.value)
         end_ns = start_ns + window_ns
         threshold = max(0.0, float(probe.displayed_top_size) * queue_fraction) + order_size
         fill = find_fill(
@@ -525,6 +542,7 @@ def compute_markout_metrics(
     for probe, fill in zip(probes.itertuples(index=False), fills, strict=True):
         record = {
             "timestamp_received": probe.timestamp_received,
+            "replay_timestamp": getattr(probe, "replay_timestamp", probe.timestamp_received),
             "time_to_close_bucket": probe.time_to_close_bucket,
             "factor_quantile": int(probe.factor_quantile),
             "factor_value": float(probe.depth_imbalance_1),
@@ -652,6 +670,7 @@ def sample_fills(
                 "fill_window_seconds": fill_window_seconds,
                 "markout_seconds": markout_seconds,
                 "timestamp_received": row.timestamp_received,
+                "replay_timestamp": row.replay_timestamp,
                 "fill_timestamp": row.fill_timestamp,
                 "quote_side": row.quote_side,
                 "factor_quantile": row.factor_quantile,
@@ -750,27 +769,78 @@ def build_event_summary(diagnostics: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_inventory_row(event_index: dict[str, Any], market: dict[str, Any], token_id: str, panel: pd.DataFrame, probes: pd.DataFrame, health: Any) -> dict[str, Any]:
+def pmxt_maker_blocking_health_issues(health: Any) -> list[Any]:
+    """Return hard data-health issues that still block PMXT maker diagnostics."""
+    return [
+        issue
+        for issue in health.issues
+        if issue.severity == "error" and issue.code not in PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS
+    ]
+
+
+def source_quality_fields(source_quality: dict[str, Any]) -> dict[str, Any]:
+    """Flatten PMXT sourceQuality manifest fields for CSV/report outputs."""
+    ordering_ambiguous_rows = int(source_quality.get("orderingAmbiguousRows", 0) or 0)
+    return {
+        "source_quality_coverage_status": source_quality.get("coverageStatus", "unknown"),
+        "source_quality_ordering_status": source_quality.get("orderingStatus", "unknown"),
+        "source_quality_snapshot_replay_status": source_quality.get("snapshotReplayStatus", "unknown"),
+        "source_quality_metadata_join_status": source_quality.get("metadataJoinStatus", "unknown"),
+        "source_quality_ordering_ambiguous_groups": int(source_quality.get("orderingAmbiguousGroups", 0) or 0),
+        "source_quality_ordering_ambiguous_rows": ordering_ambiguous_rows,
+        "source_quality_missing_source_timestamp_rows": int(source_quality.get("missingSourceTimestampRows", 0) or 0),
+        "source_quality_stable_sort_key": source_quality.get("stableSortKey", ""),
+        "ordering_ambiguous": str(source_quality.get("orderingStatus", "unknown")) == "ambiguous" or ordering_ambiguous_rows > 0,
+    }
+
+
+def build_inventory_row(
+    event_index: dict[str, Any],
+    market: dict[str, Any],
+    token_id: str,
+    panel: pd.DataFrame,
+    probes: pd.DataFrame,
+    health: Any,
+    source_quality: dict[str, Any],
+) -> dict[str, Any]:
     fields = event_market_fields(event_index, market, token_id)
     trades = panel[panel["event_type"] == "trade"]
+    clock_col = replay_time_column(panel)
     return {
         **fields,
+        **source_quality_fields(source_quality),
         "panel_rows": len(panel),
         "probe_rows": len(probes),
         "trade_rows": len(trades),
         "first_timestamp_received": iso_or_none(panel["timestamp_received"].min()) if not panel.empty else None,
         "last_timestamp_received": iso_or_none(panel["timestamp_received"].max()) if not panel.empty else None,
+        "first_replay_timestamp": iso_or_none(panel[clock_col].min()) if not panel.empty else None,
+        "last_replay_timestamp": iso_or_none(panel[clock_col].max()) if not panel.empty else None,
         "source_time_inversion_count": health.summary.source_time_inversion_count,
         "source_delay_over_threshold_count": health.summary.source_delay_over_threshold_count,
     }
 
 
-def build_token_summary(event_index: dict[str, Any], market: dict[str, Any], token_id: str, probes: pd.DataFrame, panel: pd.DataFrame, health: Any) -> dict[str, Any]:
+def build_token_summary(
+    event_index: dict[str, Any],
+    market: dict[str, Any],
+    token_id: str,
+    probes: pd.DataFrame,
+    panel: pd.DataFrame,
+    health: Any,
+    source_quality: dict[str, Any],
+) -> dict[str, Any]:
     fields = event_market_fields(event_index, market, token_id)
+    clock_col = replay_time_column(panel)
     return {
         **fields,
+        **source_quality_fields(source_quality),
         "probe_rows": len(probes),
         "trade_rows": int((panel["event_type"] == "trade").sum()),
+        "first_timestamp_received": iso_or_none(panel["timestamp_received"].min()) if not panel.empty else None,
+        "last_timestamp_received": iso_or_none(panel["timestamp_received"].max()) if not panel.empty else None,
+        "first_replay_timestamp": iso_or_none(panel[clock_col].min()) if not panel.empty else None,
+        "last_replay_timestamp": iso_or_none(panel[clock_col].max()) if not panel.empty else None,
         "median_spread": float(pd.to_numeric(probes.get("spread"), errors="coerce").median()) if not probes.empty else math.nan,
         "median_depth_imbalance_1": float(pd.to_numeric(probes.get("depth_imbalance_1"), errors="coerce").median()) if not probes.empty else math.nan,
         "source_time_inversion_count": health.summary.source_time_inversion_count,
@@ -880,7 +950,7 @@ def write_report(
         "## 1. 信任边界",
         "",
         "- 数据源：curated PMXT event parquet。",
-        "- 回放时钟：`timestamp_received`。",
+        "- 回放时钟：`replay_timestamp`，PMXT 中优先使用 source `timestamp`，缺失时才退回 `timestamp_received`。",
         f"- probe 抽样：每 `{config['probe']['probe_interval_seconds']}` 秒取最后一个 valid book state，避免每行都提交一个虚拟订单导致严重重复计数。",
         "- fill proxy：未来 trade touch/cross 当前 best bid/ask。",
         "- queue proxy：需要成交量 >= displayed top size × queue fraction + order size。",
@@ -906,7 +976,20 @@ def write_report(
     ]
     append_markdown_table(
         lines,
-        inventory[["event_slug", "market_index", "market_label", "panel_rows", "probe_rows", "trade_rows", "first_timestamp_received", "last_timestamp_received"]].head(50),
+        inventory[
+            [
+                "event_slug",
+                "market_index",
+                "market_label",
+                "panel_rows",
+                "probe_rows",
+                "trade_rows",
+                "first_replay_timestamp",
+                "last_replay_timestamp",
+                "source_quality_ordering_status",
+                "source_quality_ordering_ambiguous_rows",
+            ]
+        ].head(50),
     )
     lines.extend(["", "## 4. Strategy-tail 汇总", ""])
     lines.extend(

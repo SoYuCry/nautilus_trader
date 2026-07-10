@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="500" viewBox="0 0 920 500">
 <rect width="100%" height="100%" fill="white"/>
 <text x="460.0" y="28" text-anchor="middle" font-size="19" font-family="Arial">Strategy-tail median mean markout, fill window 60s</text>
-<line x1="130" y1="159.91" x2="890" y2="159.91" stroke="#111827" stroke-width="1"/>
+<line x1="130" y1="235.52" x2="890" y2="235.52" stroke="#111827" stroke-width="1"/>
 <line x1="130" y1="58" x2="130" y2="405" stroke="#111827" stroke-width="1"/>
 <text x="256.67" y="438" text-anchor="middle" font-size="12" font-family="Arial">full_queue</text>
-<rect x="193.33" y="159.91" width="103.87" height="216.17" fill="#2563eb" opacity="0.88"><title>full_queue 300: -0.006</title></rect>
+<rect x="193.33" y="235.52" width="103.87" height="140.57" fill="#2563eb" opacity="0.88"><title>full_queue 300: -0.0025</title></rect>
 <text x="510.00" y="438" text-anchor="middle" font-size="12" font-family="Arial">half_queue</text>
-<rect x="446.67" y="120.34" width="103.87" height="39.58" fill="#2563eb" opacity="0.88"><title>half_queue 300: 0.00109848</title></rect>
+<rect x="446.67" y="196.16" width="103.87" height="39.36" fill="#2563eb" opacity="0.88"><title>half_queue 300: 0.0007</title></rect>
 <text x="763.33" y="438" text-anchor="middle" font-size="12" font-family="Arial">optimistic</text>
-<rect x="700.00" y="86.92" width="103.87" height="73.00" fill="#2563eb" opacity="0.88"><title>optimistic 300: 0.00202604</title></rect>
+<rect x="700.00" y="86.92" width="103.87" height="148.60" fill="#2563eb" opacity="0.88"><title>optimistic 300: 0.00264286</title></rect>
 <rect x="130" y="465" width="12" height="12" fill="#2563eb"/>
 <text x="148" y="476" font-size="12" font-family="Arial">300</text>
 </svg>

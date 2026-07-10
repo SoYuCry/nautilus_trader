@@ -3,8 +3,8 @@
   "output_dir": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-10-pmxt-weather-maker-diagnostics\\outputs",
   "event_count": 2,
   "token_count": 22,
-  "probe_count": 56584,
+  "probe_count": 54359,
   "metric_rows": 12024,
-  "generated_at": "2026-07-10T03:07:30.091893+00:00",
+  "generated_at": "2026-07-10T05:26:51.338527+00:00",
   "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-10-pmxt-weather-maker-diagnostics\\outputs\\report.md"
 }

@@ -4,6 +4,7 @@ import importlib.util
 import math
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -148,6 +149,100 @@ def test_simulate_fills_handles_microsecond_timestamp_arrays_end_to_end():
 
     assert fills[0].filled
     assert fills[0].fill_timestamp == pd.Timestamp("2026-06-01T00:00:10.123456Z")
+
+
+def test_maker_diagnostics_prefers_replay_timestamp_for_trade_and_probe_clock():
+    module = load_module()
+    panel = pd.DataFrame(
+        {
+            "event_type": ["trade"],
+            "timestamp_received": [pd.Timestamp("2026-06-01T00:10:00Z")],
+            "replay_timestamp": [pd.Timestamp("2026-06-01T00:00:10Z")],
+            "sequence": [1],
+            "update_price": [0.50],
+            "update_size": [2.0],
+            "update_side": ["SELL"],
+        },
+    )
+    trades = module.build_trade_arrays(panel)
+    probes = pd.DataFrame(
+        {
+            "timestamp_received": [pd.Timestamp("2026-06-01T00:09:00Z")],
+            "replay_timestamp": [pd.Timestamp("2026-06-01T00:00:00Z")],
+            "quote_price": [0.50],
+            "displayed_top_size": [0.0],
+        },
+    )
+
+    fills = module.simulate_fills(
+        probes,
+        trades=trades,
+        quote_side=module.BUY,
+        queue_fraction=0.0,
+        order_size=1.0,
+        fill_window_seconds=60,
+    )
+
+    assert fills[0].filled
+    assert fills[0].fill_timestamp == pd.Timestamp("2026-06-01T00:00:10Z")
+
+
+def test_pmxt_maker_health_gate_allows_receive_time_inversion_only():
+    module = load_module()
+    receive_inversion = SimpleNamespace(severity="error", code="receive_time_inversion")
+    sequence_inversion = SimpleNamespace(severity="error", code="sequence_inversion")
+
+    assert module.pmxt_maker_blocking_health_issues(SimpleNamespace(issues=[receive_inversion])) == []
+    assert module.pmxt_maker_blocking_health_issues(
+        SimpleNamespace(issues=[receive_inversion, sequence_inversion]),
+    ) == [sequence_inversion]
+
+
+def test_maker_inventory_and_token_summary_propagate_source_quality():
+    module = load_module()
+    event_index = {"eventSlug": "weather-demo", "title": "Weather demo", "startDate": None, "endDate": None}
+    market = {"index": 1, "label": "30C", "conditionId": "0xcondition"}
+    panel = pd.DataFrame(
+        {
+            "event_type": ["price_change", "trade"],
+            "timestamp_received": [
+                pd.Timestamp("2026-06-01T00:10:00Z"),
+                pd.Timestamp("2026-06-01T00:01:00Z"),
+            ],
+            "replay_timestamp": [
+                pd.Timestamp("2026-06-01T00:00:00Z"),
+                pd.Timestamp("2026-06-01T00:00:01Z"),
+            ],
+        },
+    )
+    probes = pd.DataFrame({"spread": [0.02], "depth_imbalance_1": [0.5]})
+    health = SimpleNamespace(
+        summary=SimpleNamespace(
+            source_time_inversion_count=3,
+            source_delay_over_threshold_count=4,
+        ),
+    )
+    source_quality = {
+        "coverageStatus": "not_run",
+        "orderingStatus": "ambiguous",
+        "snapshotReplayStatus": "not_run",
+        "metadataJoinStatus": "pass",
+        "orderingAmbiguousGroups": 2,
+        "orderingAmbiguousRows": 7,
+        "missingSourceTimestampRows": 1,
+        "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+    }
+
+    inventory = module.build_inventory_row(event_index, market, "token-yes", panel, probes, health, source_quality)
+    token_summary = module.build_token_summary(event_index, market, "token-yes", probes, panel, health, source_quality)
+
+    for row in (inventory, token_summary):
+        assert row["source_quality_ordering_status"] == "ambiguous"
+        assert row["source_quality_ordering_ambiguous_groups"] == 2
+        assert row["source_quality_ordering_ambiguous_rows"] == 7
+        assert row["source_quality_metadata_join_status"] == "pass"
+        assert row["source_quality_stable_sort_key"] == "timestamp,timestamp_received,_original_row_index"
+        assert row["ordering_ambiguous"] is True
 
 
 def test_compute_markout_uses_buy_and_sell_sign_conventions():
