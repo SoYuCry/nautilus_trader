@@ -1,267 +1,29 @@
 {
-  "ok": true,
+  "ok": false,
   "summary": {
     "step_count": 334501,
     "update_count": 334501,
     "first_timestamp_received": "2026-06-07T04:34:30.268000Z",
     "last_timestamp_received": "2026-06-09T11:59:15.163000Z",
-    "receive_time_inversion_count": 0,
+    "receive_time_inversion_count": 1389,
     "sequence_inversion_count": 0,
     "source_timestamp_present_step_count": 334501,
     "source_timestamp_missing_step_count": 0,
     "source_timestamp_missing_update_count": 0,
-    "source_time_inversion_count": 89057,
+    "source_time_inversion_count": 0,
     "future_source_time_count": 0,
     "max_future_source_time_ms": 19.0,
     "source_delay_over_threshold_count": 177530,
     "max_source_delay_ms": 330692.0
   },
-  "issue_count": 266587,
+  "issue_count": 178919,
   "issue_counts_by_code": {
-    "source_time_inversion": 89057,
-    "source_delay_over_threshold": 177530
+    "source_delay_over_threshold": 177530,
+    "receive_time_inversion": 1389
   },
   "issues_truncated": true,
   "issue_sample_limit": 100,
   "issue_sample": [
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 2,
-      "previous_sequence": 1,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:34:30.075000Z",
-        "timestamp": "2026-06-07T04:34:30.072000Z",
-        "backtrack_ms": 3.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 7,
-      "previous_sequence": 6,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:14.241000Z",
-        "timestamp": "2026-06-07T04:35:14.171000Z",
-        "backtrack_ms": 70.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 11,
-      "previous_sequence": 10,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:28.519000Z",
-        "timestamp": "2026-06-07T04:35:28.515000Z",
-        "backtrack_ms": 4.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 12,
-      "previous_sequence": 11,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:28.515000Z",
-        "timestamp": "2026-06-07T04:35:28.507000Z",
-        "backtrack_ms": 8.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 13,
-      "previous_sequence": 12,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:28.507000Z",
-        "timestamp": "2026-06-07T04:35:28.426000Z",
-        "backtrack_ms": 81.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 19,
-      "previous_sequence": 18,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:43.051000Z",
-        "timestamp": "2026-06-07T04:35:42.974000Z",
-        "backtrack_ms": 77.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 20,
-      "previous_sequence": 19,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:42.974000Z",
-        "timestamp": "2026-06-07T04:35:42.972000Z",
-        "backtrack_ms": 2.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 21,
-      "previous_sequence": 20,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:42.972000Z",
-        "timestamp": "2026-06-07T04:35:42.936000Z",
-        "backtrack_ms": 36.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 22,
-      "previous_sequence": 21,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:35:42.936000Z",
-        "timestamp": "2026-06-07T04:35:42.893000Z",
-        "backtrack_ms": 43.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 24,
-      "previous_sequence": 23,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:36:14.290000Z",
-        "timestamp": "2026-06-07T04:36:14.240000Z",
-        "backtrack_ms": 50.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 27,
-      "previous_sequence": 26,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:36:46.801000Z",
-        "timestamp": "2026-06-07T04:36:46.746000Z",
-        "backtrack_ms": 55.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 35,
-      "previous_sequence": 34,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.156000Z",
-        "timestamp": "2026-06-07T04:40:27.141000Z",
-        "backtrack_ms": 15.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 37,
-      "previous_sequence": 36,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.296000Z",
-        "timestamp": "2026-06-07T04:40:27.290000Z",
-        "backtrack_ms": 6.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 38,
-      "previous_sequence": 37,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.290000Z",
-        "timestamp": "2026-06-07T04:40:27.239000Z",
-        "backtrack_ms": 51.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 39,
-      "previous_sequence": 38,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.239000Z",
-        "timestamp": "2026-06-07T04:40:27.212000Z",
-        "backtrack_ms": 27.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 40,
-      "previous_sequence": 39,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.212000Z",
-        "timestamp": "2026-06-07T04:40:27.206000Z",
-        "backtrack_ms": 6.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 41,
-      "previous_sequence": 40,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:40:27.206000Z",
-        "timestamp": "2026-06-07T04:40:27.203000Z",
-        "backtrack_ms": 3.0
-      }
-    },
     {
       "severity": "warning",
       "code": "source_delay_over_threshold",
@@ -316,174 +78,6 @@
     },
     {
       "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 48,
-      "previous_sequence": 47,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:41:14.551000Z",
-        "timestamp": "2026-06-07T04:41:14.549000Z",
-        "backtrack_ms": 2.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 56,
-      "previous_sequence": 55,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:01.533000Z",
-        "timestamp": "2026-06-07T04:42:01.508000Z",
-        "backtrack_ms": 25.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 57,
-      "previous_sequence": 56,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:01.508000Z",
-        "timestamp": "2026-06-07T04:42:01.477000Z",
-        "backtrack_ms": 31.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 59,
-      "previous_sequence": 58,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:04.036000Z",
-        "timestamp": "2026-06-07T04:42:04.023000Z",
-        "backtrack_ms": 13.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 60,
-      "previous_sequence": 59,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:04.023000Z",
-        "timestamp": "2026-06-07T04:42:03.954000Z",
-        "backtrack_ms": 69.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 62,
-      "previous_sequence": 61,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:08.702000Z",
-        "timestamp": "2026-06-07T04:42:08.694000Z",
-        "backtrack_ms": 8.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 63,
-      "previous_sequence": 62,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:08.694000Z",
-        "timestamp": "2026-06-07T04:42:08.619000Z",
-        "backtrack_ms": 75.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 65,
-      "previous_sequence": 64,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:09.033000Z",
-        "timestamp": "2026-06-07T04:42:09.029000Z",
-        "backtrack_ms": 4.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 66,
-      "previous_sequence": 65,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:09.029000Z",
-        "timestamp": "2026-06-07T04:42:08.963000Z",
-        "backtrack_ms": 66.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 68,
-      "previous_sequence": 67,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:11.544000Z",
-        "timestamp": "2026-06-07T04:42:11.531000Z",
-        "backtrack_ms": 13.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 69,
-      "previous_sequence": 68,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:11.531000Z",
-        "timestamp": "2026-06-07T04:42:11.467000Z",
-        "backtrack_ms": 64.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 72,
-      "previous_sequence": 71,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:42:26.874000Z",
-        "timestamp": "2026-06-07T04:42:26.762000Z",
-        "backtrack_ms": 112.0
-      }
-    },
-    {
-      "severity": "warning",
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
       "sequence": 73,
@@ -493,118 +87,6 @@
         "timestamp_received": "2026-06-07T04:43:04.312000Z",
         "delay_ms": 2100.0,
         "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 79,
-      "previous_sequence": 78,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.096000Z",
-        "timestamp": "2026-06-07T04:43:29.082000Z",
-        "backtrack_ms": 14.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 80,
-      "previous_sequence": 79,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.082000Z",
-        "timestamp": "2026-06-07T04:43:29.078000Z",
-        "backtrack_ms": 4.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 82,
-      "previous_sequence": 81,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.178000Z",
-        "timestamp": "2026-06-07T04:43:29.171000Z",
-        "backtrack_ms": 7.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 83,
-      "previous_sequence": 82,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.171000Z",
-        "timestamp": "2026-06-07T04:43:29.170000Z",
-        "backtrack_ms": 1.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 84,
-      "previous_sequence": 83,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.170000Z",
-        "timestamp": "2026-06-07T04:43:29.169000Z",
-        "backtrack_ms": 1.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 85,
-      "previous_sequence": 84,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.169000Z",
-        "timestamp": "2026-06-07T04:43:29.166000Z",
-        "backtrack_ms": 3.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 86,
-      "previous_sequence": 85,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:43:29.166000Z",
-        "timestamp": "2026-06-07T04:43:29.157000Z",
-        "backtrack_ms": 9.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 91,
-      "previous_sequence": 90,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:46:35.579000Z",
-        "timestamp": "2026-06-07T04:46:35.510000Z",
-        "backtrack_ms": 69.0
       }
     },
     {
@@ -627,9 +109,9 @@
       "sequence": 95,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:47:07.359000Z",
+        "timestamp": "2026-06-07T04:47:07.215000Z",
         "timestamp_received": "2026-06-07T04:47:09.284000Z",
-        "delay_ms": 1925.0,
+        "delay_ms": 2069.0,
         "delay_warning_ms": 1000.0
       }
     },
@@ -638,33 +120,6 @@
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
       "sequence": 96,
-      "previous_sequence": null,
-      "details": {
-        "timestamp": "2026-06-07T04:47:07.358000Z",
-        "timestamp_received": "2026-06-07T04:47:09.284000Z",
-        "delay_ms": 1926.0,
-        "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 96,
-      "previous_sequence": 95,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:07.359000Z",
-        "timestamp": "2026-06-07T04:47:07.358000Z",
-        "backtrack_ms": 1.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_delay_over_threshold",
-      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
-      "sequence": 97,
       "previous_sequence": null,
       "details": {
         "timestamp": "2026-06-07T04:47:07.261000Z",
@@ -675,16 +130,15 @@
     },
     {
       "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
       "sequence": 97,
-      "previous_sequence": 96,
+      "previous_sequence": null,
       "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:07.358000Z",
-        "timestamp": "2026-06-07T04:47:07.261000Z",
-        "backtrack_ms": 97.0
+        "timestamp": "2026-06-07T04:47:07.358000Z",
+        "timestamp_received": "2026-06-07T04:47:09.284000Z",
+        "delay_ms": 1926.0,
+        "delay_warning_ms": 1000.0
       }
     },
     {
@@ -694,24 +148,10 @@
       "sequence": 98,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:47:07.215000Z",
+        "timestamp": "2026-06-07T04:47:07.359000Z",
         "timestamp_received": "2026-06-07T04:47:09.284000Z",
-        "delay_ms": 2069.0,
+        "delay_ms": 1925.0,
         "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 98,
-      "previous_sequence": 97,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:07.261000Z",
-        "timestamp": "2026-06-07T04:47:07.215000Z",
-        "backtrack_ms": 46.0
       }
     },
     {
@@ -719,6 +159,19 @@
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
       "sequence": 99,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:47:07.587000Z",
+        "timestamp_received": "2026-06-07T04:47:09.413000Z",
+        "delay_ms": 1826.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 100,
       "previous_sequence": null,
       "details": {
         "timestamp": "2026-06-07T04:47:07.600000Z",
@@ -731,502 +184,13 @@
       "severity": "warning",
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
-      "sequence": 100,
-      "previous_sequence": null,
-      "details": {
-        "timestamp": "2026-06-07T04:47:07.587000Z",
-        "timestamp_received": "2026-06-07T04:47:09.413000Z",
-        "delay_ms": 1826.0,
-        "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 100,
-      "previous_sequence": 99,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:07.600000Z",
-        "timestamp": "2026-06-07T04:47:07.587000Z",
-        "backtrack_ms": 13.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 103,
-      "previous_sequence": 102,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:14.319000Z",
-        "timestamp": "2026-06-07T04:47:14.312000Z",
-        "backtrack_ms": 7.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 106,
-      "previous_sequence": 105,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:21.991000Z",
-        "timestamp": "2026-06-07T04:47:21.918000Z",
-        "backtrack_ms": 73.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 109,
-      "previous_sequence": 108,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:43.165000Z",
-        "timestamp": "2026-06-07T04:47:43.089000Z",
-        "backtrack_ms": 76.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 111,
-      "previous_sequence": 110,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:44.056000Z",
-        "timestamp": "2026-06-07T04:47:44.032000Z",
-        "backtrack_ms": 24.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 113,
-      "previous_sequence": 112,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:45.532000Z",
-        "timestamp": "2026-06-07T04:47:45.506000Z",
-        "backtrack_ms": 26.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 114,
-      "previous_sequence": 113,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:47:45.506000Z",
-        "timestamp": "2026-06-07T04:47:45.500000Z",
-        "backtrack_ms": 6.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 123,
-      "previous_sequence": 122,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:36.997000Z",
-        "timestamp": "2026-06-07T04:49:36.903000Z",
-        "backtrack_ms": 94.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 124,
-      "previous_sequence": 123,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:36.903000Z",
-        "timestamp": "2026-06-07T04:49:36.819000Z",
-        "backtrack_ms": 84.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 128,
-      "previous_sequence": 127,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.250000Z",
-        "timestamp": "2026-06-07T04:49:40.222000Z",
-        "backtrack_ms": 28.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 129,
-      "previous_sequence": 128,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.222000Z",
-        "timestamp": "2026-06-07T04:49:40.215000Z",
-        "backtrack_ms": 7.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 130,
-      "previous_sequence": 129,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.215000Z",
-        "timestamp": "2026-06-07T04:49:40.119000Z",
-        "backtrack_ms": 96.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 131,
-      "previous_sequence": 130,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.119000Z",
-        "timestamp": "2026-06-07T04:49:40.021000Z",
-        "backtrack_ms": 98.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 134,
-      "previous_sequence": 133,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.533000Z",
-        "timestamp": "2026-06-07T04:49:40.437000Z",
-        "backtrack_ms": 96.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 138,
-      "previous_sequence": 137,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:40.956000Z",
-        "timestamp": "2026-06-07T04:49:40.884000Z",
-        "backtrack_ms": 72.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 141,
-      "previous_sequence": 140,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:41.280000Z",
-        "timestamp": "2026-06-07T04:49:41.165000Z",
-        "backtrack_ms": 115.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 144,
-      "previous_sequence": 143,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:41.593000Z",
-        "timestamp": "2026-06-07T04:49:41.500000Z",
-        "backtrack_ms": 93.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 149,
-      "previous_sequence": 148,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:42.736000Z",
-        "timestamp": "2026-06-07T04:49:42.734000Z",
-        "backtrack_ms": 2.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 152,
-      "previous_sequence": 151,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:43.148000Z",
-        "timestamp": "2026-06-07T04:49:43.029000Z",
-        "backtrack_ms": 119.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 155,
-      "previous_sequence": 154,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:43.452000Z",
-        "timestamp": "2026-06-07T04:49:43.350000Z",
-        "backtrack_ms": 102.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 157,
-      "previous_sequence": 156,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:43.775000Z",
-        "timestamp": "2026-06-07T04:49:43.660000Z",
-        "backtrack_ms": 115.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 158,
-      "previous_sequence": 157,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:43.660000Z",
-        "timestamp": "2026-06-07T04:49:43.576000Z",
-        "backtrack_ms": 84.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 160,
-      "previous_sequence": 159,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:43.987000Z",
-        "timestamp": "2026-06-07T04:49:43.868000Z",
-        "backtrack_ms": 119.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 162,
-      "previous_sequence": 161,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:44.197000Z",
-        "timestamp": "2026-06-07T04:49:44.080000Z",
-        "backtrack_ms": 117.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 165,
-      "previous_sequence": 164,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:44.493000Z",
-        "timestamp": "2026-06-07T04:49:44.405000Z",
-        "backtrack_ms": 88.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 167,
-      "previous_sequence": 166,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:44.710000Z",
-        "timestamp": "2026-06-07T04:49:44.606000Z",
-        "backtrack_ms": 104.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 170,
-      "previous_sequence": 169,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:45.202000Z",
-        "timestamp": "2026-06-07T04:49:45.180000Z",
-        "backtrack_ms": 22.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 171,
-      "previous_sequence": 170,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:45.180000Z",
-        "timestamp": "2026-06-07T04:49:45.070000Z",
-        "backtrack_ms": 110.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 173,
-      "previous_sequence": 172,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:45.399000Z",
-        "timestamp": "2026-06-07T04:49:45.272000Z",
-        "backtrack_ms": 127.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 175,
-      "previous_sequence": 174,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:45.597000Z",
-        "timestamp": "2026-06-07T04:49:45.493000Z",
-        "backtrack_ms": 104.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 178,
-      "previous_sequence": 177,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:45.971000Z",
-        "timestamp": "2026-06-07T04:49:45.877000Z",
-        "backtrack_ms": 94.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 180,
-      "previous_sequence": 179,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:46.297000Z",
-        "timestamp": "2026-06-07T04:49:46.174000Z",
-        "backtrack_ms": 123.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 181,
-      "previous_sequence": 180,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:46.174000Z",
-        "timestamp": "2026-06-07T04:49:46.077000Z",
-        "backtrack_ms": 97.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_delay_over_threshold",
-      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
-      "sequence": 184,
+      "sequence": 183,
       "previous_sequence": null,
       "details": {
         "timestamp": "2026-06-07T04:49:46.673000Z",
         "timestamp_received": "2026-06-07T04:49:47.721000Z",
         "delay_ms": 1048.0,
         "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 184,
-      "previous_sequence": 183,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:46.753000Z",
-        "timestamp": "2026-06-07T04:49:46.673000Z",
-        "backtrack_ms": 80.0
       }
     },
     {
@@ -1249,9 +213,9 @@
       "sequence": 186,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:49:47.100000Z",
+        "timestamp": "2026-06-07T04:49:46.994000Z",
         "timestamp_received": "2026-06-07T04:49:48.339000Z",
-        "delay_ms": 1239.0,
+        "delay_ms": 1345.0,
         "delay_warning_ms": 1000.0
       }
     },
@@ -1262,24 +226,10 @@
       "sequence": 187,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:49:46.994000Z",
+        "timestamp": "2026-06-07T04:49:47.100000Z",
         "timestamp_received": "2026-06-07T04:49:48.339000Z",
-        "delay_ms": 1345.0,
+        "delay_ms": 1239.0,
         "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 187,
-      "previous_sequence": 186,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:47.100000Z",
-        "timestamp": "2026-06-07T04:49:46.994000Z",
-        "backtrack_ms": 106.0
       }
     },
     {
@@ -1302,9 +252,9 @@
       "sequence": 189,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:49:47.403000Z",
+        "timestamp": "2026-06-07T04:49:47.322000Z",
         "timestamp_received": "2026-06-07T04:49:48.713000Z",
-        "delay_ms": 1310.0,
+        "delay_ms": 1391.0,
         "delay_warning_ms": 1000.0
       }
     },
@@ -1315,24 +265,10 @@
       "sequence": 190,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:49:47.322000Z",
+        "timestamp": "2026-06-07T04:49:47.403000Z",
         "timestamp_received": "2026-06-07T04:49:48.713000Z",
-        "delay_ms": 1391.0,
+        "delay_ms": 1310.0,
         "delay_warning_ms": 1000.0
-      }
-    },
-    {
-      "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 190,
-      "previous_sequence": 189,
-      "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:47.403000Z",
-        "timestamp": "2026-06-07T04:49:47.322000Z",
-        "backtrack_ms": 81.0
       }
     },
     {
@@ -1340,6 +276,19 @@
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
       "sequence": 191,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:49:47.520000Z",
+        "timestamp_received": "2026-06-07T04:49:48.778000Z",
+        "delay_ms": 1258.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 192,
       "previous_sequence": null,
       "details": {
         "timestamp": "2026-06-07T04:49:47.618000Z",
@@ -1352,55 +301,1027 @@
       "severity": "warning",
       "code": "source_delay_over_threshold",
       "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
-      "sequence": 192,
+      "sequence": 232,
       "previous_sequence": null,
       "details": {
-        "timestamp": "2026-06-07T04:49:47.520000Z",
-        "timestamp_received": "2026-06-07T04:49:48.778000Z",
-        "delay_ms": 1258.0,
+        "timestamp": "2026-06-07T04:50:18.689000Z",
+        "timestamp_received": "2026-06-07T04:50:19.783000Z",
+        "delay_ms": 1094.0,
         "delay_warning_ms": 1000.0
       }
     },
     {
       "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 192,
-      "previous_sequence": 191,
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 293,
+      "previous_sequence": null,
       "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:47.618000Z",
-        "timestamp": "2026-06-07T04:49:47.520000Z",
-        "backtrack_ms": 98.0
+        "timestamp": "2026-06-07T04:50:48.542000Z",
+        "timestamp_received": "2026-06-07T04:50:49.572000Z",
+        "delay_ms": 1030.0,
+        "delay_warning_ms": 1000.0
       }
     },
     {
       "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 194,
-      "previous_sequence": 193,
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 295,
+      "previous_sequence": null,
       "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:48.543000Z",
-        "timestamp": "2026-06-07T04:49:48.451000Z",
-        "backtrack_ms": 92.0
+        "timestamp": "2026-06-07T04:50:48.750000Z",
+        "timestamp_received": "2026-06-07T04:50:49.811000Z",
+        "delay_ms": 1061.0,
+        "delay_warning_ms": 1000.0
       }
     },
     {
       "severity": "warning",
-      "code": "source_time_inversion",
-      "message": "source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time",
-      "sequence": 196,
-      "previous_sequence": 195,
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 297,
+      "previous_sequence": null,
       "details": {
-        "event_type": "price_change",
-        "asset_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
-        "previous_timestamp": "2026-06-07T04:49:48.933000Z",
-        "timestamp": "2026-06-07T04:49:48.840000Z",
-        "backtrack_ms": 93.0
+        "timestamp": "2026-06-07T04:50:48.956000Z",
+        "timestamp_received": "2026-06-07T04:50:50.062000Z",
+        "delay_ms": 1106.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 298,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.170000Z",
+        "timestamp_received": "2026-06-07T04:50:50.270000Z",
+        "delay_ms": 1100.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 299,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.260000Z",
+        "timestamp_received": "2026-06-07T04:50:50.270000Z",
+        "delay_ms": 1010.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 300,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.401000Z",
+        "timestamp_received": "2026-06-07T04:50:50.591000Z",
+        "delay_ms": 1190.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 301,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.499000Z",
+        "timestamp_received": "2026-06-07T04:50:50.591000Z",
+        "delay_ms": 1092.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 302,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.613000Z",
+        "timestamp_received": "2026-06-07T04:50:50.671000Z",
+        "delay_ms": 1058.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 303,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:50:49.704000Z",
+        "timestamp_received": "2026-06-07T04:50:50.728000Z",
+        "delay_ms": 1024.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 661,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:58:07.301000Z",
+        "timestamp_received": "2026-06-07T04:58:08.545000Z",
+        "delay_ms": 1244.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 662,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T04:58:07.308000Z",
+        "timestamp_received": "2026-06-07T04:58:08.545000Z",
+        "delay_ms": 1237.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 848,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:04:05.233000Z",
+        "timestamp_received": "2026-06-07T05:04:06.884000Z",
+        "delay_ms": 1651.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 849,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:04:05.380000Z",
+        "timestamp_received": "2026-06-07T05:04:07.098000Z",
+        "delay_ms": 1718.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 936,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:30.269000Z",
+        "timestamp_received": "2026-06-07T05:06:33.120000Z",
+        "delay_ms": 2851.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 937,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:30.272000Z",
+        "timestamp_received": "2026-06-07T05:06:33.120000Z",
+        "delay_ms": 2848.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 938,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:31.001000Z",
+        "timestamp_received": "2026-06-07T05:06:33.367000Z",
+        "delay_ms": 2366.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 939,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:31.141000Z",
+        "timestamp_received": "2026-06-07T05:06:33.612000Z",
+        "delay_ms": 2471.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 940,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.466000Z",
+        "timestamp_received": "2026-06-07T05:06:39.272000Z",
+        "delay_ms": 2806.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 941,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.477000Z",
+        "timestamp_received": "2026-06-07T05:06:39.272000Z",
+        "delay_ms": 2795.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 942,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.537000Z",
+        "timestamp_received": "2026-06-07T05:06:39.342000Z",
+        "delay_ms": 2805.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 943,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.561000Z",
+        "timestamp_received": "2026-06-07T05:06:39.342000Z",
+        "delay_ms": 2781.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 944,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.575000Z",
+        "timestamp_received": "2026-06-07T05:06:39.342000Z",
+        "delay_ms": 2767.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 945,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:06:36.577000Z",
+        "timestamp_received": "2026-06-07T05:06:39.342000Z",
+        "delay_ms": 2765.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 959,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:07:30.806000Z",
+        "timestamp_received": "2026-06-07T05:07:32.370000Z",
+        "delay_ms": 1564.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 960,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:07:30.878000Z",
+        "timestamp_received": "2026-06-07T05:07:32.436000Z",
+        "delay_ms": 1558.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 961,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:07:30.998000Z",
+        "timestamp_received": "2026-06-07T05:07:32.436000Z",
+        "delay_ms": 1438.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 962,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:07:31.454000Z",
+        "timestamp_received": "2026-06-07T05:07:32.607000Z",
+        "delay_ms": 1153.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 963,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:07:31.590000Z",
+        "timestamp_received": "2026-06-07T05:07:32.660000Z",
+        "delay_ms": 1070.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1990,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:28.841000Z",
+        "timestamp_received": "2026-06-07T05:42:30.160000Z",
+        "delay_ms": 1319.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1991,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:36.197000Z",
+        "timestamp_received": "2026-06-07T05:42:38.423000Z",
+        "delay_ms": 2226.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1992,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:36.244000Z",
+        "timestamp_received": "2026-06-07T05:42:38.423000Z",
+        "delay_ms": 2179.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1993,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:36.320000Z",
+        "timestamp_received": "2026-06-07T05:42:38.620000Z",
+        "delay_ms": 2300.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1994,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:37.127000Z",
+        "timestamp_received": "2026-06-07T05:42:39.975000Z",
+        "delay_ms": 2848.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1995,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:37.207000Z",
+        "timestamp_received": "2026-06-07T05:42:39.975000Z",
+        "delay_ms": 2768.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1996,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:37.256000Z",
+        "timestamp_received": "2026-06-07T05:42:39.975000Z",
+        "delay_ms": 2719.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1997,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:37.918000Z",
+        "timestamp_received": "2026-06-07T05:42:40.120000Z",
+        "delay_ms": 2202.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1998,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:38.914000Z",
+        "timestamp_received": "2026-06-07T05:42:40.330000Z",
+        "delay_ms": 1416.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 1999,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:38.933000Z",
+        "timestamp_received": "2026-06-07T05:42:40.330000Z",
+        "delay_ms": 1397.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2000,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:38.994000Z",
+        "timestamp_received": "2026-06-07T05:42:40.372000Z",
+        "delay_ms": 1378.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2001,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:38.998000Z",
+        "timestamp_received": "2026-06-07T05:42:40.372000Z",
+        "delay_ms": 1374.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2002,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:39.014000Z",
+        "timestamp_received": "2026-06-07T05:42:40.372000Z",
+        "delay_ms": 1358.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2003,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:39.018000Z",
+        "timestamp_received": "2026-06-07T05:42:40.372000Z",
+        "delay_ms": 1354.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2012,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:42:49.187000Z",
+        "timestamp_received": "2026-06-07T05:42:50.750000Z",
+        "delay_ms": 1563.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2028,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:43:11.572000Z",
+        "timestamp_received": "2026-06-07T05:43:14.905000Z",
+        "delay_ms": 3333.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2029,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:43:15.220000Z",
+        "timestamp_received": "2026-06-07T05:43:16.739000Z",
+        "delay_ms": 1519.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2030,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:43:15.310000Z",
+        "timestamp_received": "2026-06-07T05:43:16.803000Z",
+        "delay_ms": 1493.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 2031,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T05:43:15.327000Z",
+        "timestamp_received": "2026-06-07T05:43:16.803000Z",
+        "delay_ms": 1476.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3962,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:52.853000Z",
+        "timestamp_received": "2026-06-07T06:07:54.254000Z",
+        "delay_ms": 1401.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3963,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:52.945000Z",
+        "timestamp_received": "2026-06-07T06:07:54.745000Z",
+        "delay_ms": 1800.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3964,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:53.025000Z",
+        "timestamp_received": "2026-06-07T06:07:54.745000Z",
+        "delay_ms": 1720.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3965,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:53.114000Z",
+        "timestamp_received": "2026-06-07T06:07:55.184000Z",
+        "delay_ms": 2070.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3969,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.490000Z",
+        "timestamp_received": "2026-06-07T06:08:00.644000Z",
+        "delay_ms": 1154.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3970,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.593000Z",
+        "timestamp_received": "2026-06-07T06:08:00.644000Z",
+        "delay_ms": 1051.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3972,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.712000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1557.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3973,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.737000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1532.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3974,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.747000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1522.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3975,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.818000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1451.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3976,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.833000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1436.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3977,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.844000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1425.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3978,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.859000Z",
+        "timestamp_received": "2026-06-07T06:08:01.269000Z",
+        "delay_ms": 1410.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3979,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.904000Z",
+        "timestamp_received": "2026-06-07T06:08:01.874000Z",
+        "delay_ms": 1970.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3980,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:07:59.930000Z",
+        "timestamp_received": "2026-06-07T06:08:01.874000Z",
+        "delay_ms": 1944.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3981,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:00.004000Z",
+        "timestamp_received": "2026-06-07T06:08:01.874000Z",
+        "delay_ms": 1870.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3982,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:00.063000Z",
+        "timestamp_received": "2026-06-07T06:08:02.114000Z",
+        "delay_ms": 2051.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3983,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:00.098000Z",
+        "timestamp_received": "2026-06-07T06:08:02.114000Z",
+        "delay_ms": 2016.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3984,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:00.367000Z",
+        "timestamp_received": "2026-06-07T06:08:03.135000Z",
+        "delay_ms": 2768.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3985,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:01.082000Z",
+        "timestamp_received": "2026-06-07T06:08:04.111000Z",
+        "delay_ms": 3029.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3986,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:01.133000Z",
+        "timestamp_received": "2026-06-07T06:08:04.156000Z",
+        "delay_ms": 3023.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3987,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:01.437000Z",
+        "timestamp_received": "2026-06-07T06:08:04.259000Z",
+        "delay_ms": 2822.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3988,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:01.491000Z",
+        "timestamp_received": "2026-06-07T06:08:04.259000Z",
+        "delay_ms": 2768.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3989,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.170000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2332.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3990,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.275000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2227.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3991,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.280000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2222.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3992,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.320000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2182.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3993,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.348000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2154.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3994,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.354000Z",
+        "timestamp_received": "2026-06-07T06:08:04.502000Z",
+        "delay_ms": 2148.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3995,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.364000Z",
+        "timestamp_received": "2026-06-07T06:08:04.566000Z",
+        "delay_ms": 2202.0,
+        "delay_warning_ms": 1000.0
+      }
+    },
+    {
+      "severity": "warning",
+      "code": "source_delay_over_threshold",
+      "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+      "sequence": 3996,
+      "previous_sequence": null,
+      "details": {
+        "timestamp": "2026-06-07T06:08:02.444000Z",
+        "timestamp_received": "2026-06-07T06:08:04.566000Z",
+        "delay_ms": 2122.0,
+        "delay_warning_ms": 1000.0
       }
     }
   ],

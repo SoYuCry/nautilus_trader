@@ -214,16 +214,16 @@ def test_factor_boundary_metadata_degrades_on_clock_and_book_warnings(factor_res
     metadata = factor_research.build_trust_metadata(health, panel)
 
     assert metadata["data_tier"] == "TIER1_EXPLORATORY"
-    assert metadata["run_grade"] == "TIER1_CAUTION_CLOCK_DISORDER"
-    assert metadata["replay_clock"] == "timestamp_received"
-    assert metadata["ordering_key"] == "timestamp_received,_original_row_index"
-    assert metadata["causality"] == "receive_time_causal"
+    assert metadata["run_grade"] == "TIER1_CAUTION_PMXT_QUALITY"
+    assert metadata["replay_clock"] == "timestamp"
+    assert metadata["ordering_key"] == "timestamp,timestamp_received,_original_row_index"
+    assert metadata["causality"] == "pmxt_source_time_ordered_not_exchange_sequence"
     assert metadata["execution_claims_allowed"] is False
-    assert metadata["source_time_policy"] == "diagnostic_only"
+    assert metadata["source_time_policy"] == "primary_sort_key"
     assert metadata["source_time_diagnostics"]["source_time_inversion_count"] == 1
     assert metadata["book_validity_counts"]["crossed"] == 1
     assert metadata["not_for_pnl"] is True
-    assert metadata["diagnostic_non_causal"] is False
+    assert metadata["diagnostic_non_causal"] is True
 
     health_without_clock_warnings = SimpleNamespace(
         ok=True,
@@ -236,7 +236,7 @@ def test_factor_boundary_metadata_degrades_on_clock_and_book_warnings(factor_res
         ),
     )
     book_only_metadata = factor_research.build_trust_metadata(health_without_clock_warnings, panel)
-    assert book_only_metadata["run_grade"] == "TIER1_CAUTION_CLOCK_DISORDER"
+    assert book_only_metadata["run_grade"] == "TIER1_CAUTION_PMXT_QUALITY"
 
 
 def test_factor_metadata_json_and_report_include_claim_boundary(
@@ -262,7 +262,7 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
 
     loaded = factor_research.json.loads(path.read_text(encoding="utf-8"))
     assert loaded["trust_metadata"]["execution_claims_allowed"] is False
-    assert loaded["trust_metadata"]["run_grade"] == "TIER1_OK_RECEIVE_TIME"
+    assert loaded["trust_metadata"]["run_grade"] == "TIER1_OK_TIMESTAMP_ORDERED"
 
     summary = SimpleNamespace(
         rows_loaded=1,
@@ -270,6 +270,8 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
         analysis_rows=1,
         first_timestamp_received="2026-07-08T00:00:00Z",
         last_timestamp_received="2026-07-08T00:00:00Z",
+        first_replay_timestamp="2026-07-08T00:00:00Z",
+        last_replay_timestamp="2026-07-08T00:00:00Z",
         replay_order_ok=True,
         health_warning_count=0,
         health_error_count=0,
@@ -288,6 +290,8 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
         analysis_rows=1,
         first_timestamp_received="2026-07-08T00:00:00Z",
         last_timestamp_received="2026-07-08T00:00:00Z",
+        first_replay_timestamp="2026-07-08T00:00:00Z",
+        last_replay_timestamp="2026-07-08T00:00:00Z",
         replay_order_ok=True,
         health_warning_count=0,
         health_error_count=0,
@@ -309,7 +313,7 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
     )
     run_summary_json = factor_research.asdict(run_summary)
     assert run_summary_json["trust_metadata"]["execution_claims_allowed"] is False
-    assert run_summary_json["trust_metadata"]["run_grade"] == "TIER1_OK_RECEIVE_TIME"
+    assert run_summary_json["trust_metadata"]["run_grade"] == "TIER1_OK_TIMESTAMP_ORDERED"
 
     report_path = tmp_path / "report.md"
     factor_research.write_report(
@@ -327,7 +331,7 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
     )
     report_text = report_path.read_text(encoding="utf-8")
     assert "TIER1_EXPLORATORY" in report_text
-    assert "TIER1_OK_RECEIVE_TIME" in report_text
+    assert "TIER1_OK_TIMESTAMP_ORDERED" in report_text
     assert "execution_claims_allowed" in report_text
     assert "false" in report_text
 
@@ -360,6 +364,102 @@ def test_label_asof_uses_last_state_for_duplicate_receive_timestamp(
     assert labelled.loc[0, "future_book_validity_1s"] == "valid"
     assert labelled.loc[0, "label_slippage_seconds_1s"] == pytest.approx(0.0)
     assert_no_execution_columns(labelled.columns)
+
+
+def test_label_asof_prefers_replay_timestamp_when_pmxt_receive_time_is_non_monotonic(
+    factor_research: Any,
+) -> None:
+    panel = factor_research.pd.DataFrame(
+        {
+            "timestamp_received": factor_research.pd.to_datetime(
+                [
+                    "2026-07-08T00:00:03Z",
+                    "2026-07-08T00:00:01Z",
+                    "2026-07-08T00:00:02Z",
+                ],
+            ),
+            "replay_timestamp": factor_research.pd.to_datetime(
+                [
+                    "2026-07-08T00:00:00Z",
+                    "2026-07-08T00:00:01Z",
+                    "2026-07-08T00:00:02Z",
+                ],
+            ),
+            "sequence": [1, 2, 3],
+            "mid": [0.50, 0.55, 0.60],
+            "bid1": [0.49, 0.54, 0.59],
+            "ask1": [0.51, 0.56, 0.61],
+        },
+    )
+
+    labelled = factor_research.add_labels(panel, {"labels": {"horizons_seconds": [1]}})
+
+    assert labelled.loc[0, "future_mid_1s"] == pytest.approx(0.55)
+    assert labelled.loc[0, "label_matched_timestamp_1s"] == factor_research.pd.Timestamp("2026-07-08T00:00:01Z")
+    assert_no_execution_columns(labelled.columns)
+
+
+def test_pmxt_research_health_gate_allows_receive_time_inversion_only(factor_research: Any) -> None:
+    receive_inversion = SimpleNamespace(severity="error", code="receive_time_inversion")
+    sequence_inversion = SimpleNamespace(severity="error", code="sequence_inversion")
+
+    assert factor_research.pmxt_research_blocking_health_issues(
+        SimpleNamespace(issues=[receive_inversion]),
+    ) == []
+    assert factor_research.pmxt_research_blocking_health_issues(
+        SimpleNamespace(issues=[receive_inversion, sequence_inversion]),
+    ) == [sequence_inversion]
+
+
+def test_factor_summary_timestamp_received_audit_span_uses_min_max_not_replay_order(
+    factor_research: Any,
+) -> None:
+    raw = factor_research.pd.DataFrame(
+        {
+            "timestamp_received": factor_research.pd.to_datetime(
+                [
+                    "2026-07-08T00:10:00Z",
+                    "2026-07-08T00:01:00Z",
+                    "2026-07-08T00:05:00Z",
+                ],
+            ),
+            "replay_timestamp": factor_research.pd.to_datetime(
+                [
+                    "2026-07-08T00:00:02Z",
+                    "2026-07-08T00:00:00Z",
+                    "2026-07-08T00:00:01Z",
+                ],
+            ),
+            "book_validity": ["valid", "valid", "valid"],
+        },
+    )
+    dataset = SimpleNamespace(
+        metadata=SimpleNamespace(
+            dataset_id="synthetic",
+            adapter_name="pmxt_event_v1",
+            adapter_version="v1",
+            source_quality={},
+        ),
+        steps=[object(), object(), object()],
+    )
+    health = SimpleNamespace(
+        ok=True,
+        issues=[],
+        summary=SimpleNamespace(
+            source_time_inversion_count=0,
+            source_delay_over_threshold_count=0,
+            future_source_time_count=0,
+            source_timestamp_missing_step_count=0,
+        ),
+    )
+
+    summary = factor_research.build_factor_summary(raw, dataset, health, {"labels": {"horizons_seconds": []}}, raw_panel=raw)
+    metrics = dict(zip(summary["metric"], summary["value"], strict=True))
+
+    assert metrics["first_timestamp_received"] == "2026-07-08T00:01:00+00:00"
+    assert metrics["last_timestamp_received"] == "2026-07-08T00:10:00+00:00"
+    assert metrics["first_replay_timestamp"] == "2026-07-08T00:00:00+00:00"
+    assert metrics["last_replay_timestamp"] == "2026-07-08T00:00:02+00:00"
 
 
 def test_book_validity_classifies_missing_locked_and_crossed_books(

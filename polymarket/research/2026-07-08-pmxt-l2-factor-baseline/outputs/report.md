@@ -1,6 +1,6 @@
 # PMXT L2 因子研究报告
 
-生成时间: 2026-07-09T06:35:12.615437+00:00
+生成时间: 2026-07-10T04:52:00.463390+00:00
 
 ## 0. 信任边界
 
@@ -9,20 +9,23 @@
 - 不计算手续费、返佣、订单状态、排队、部分成交、现金、仓位或 PnL。
 - 不把 `future_bid - current_ask` 之类的量解释成可成交利润。
 - fee/fill/PnL 必须放到 Nautilus 原生策略回测入口里处理。
-- 本报告只回答：按 receive-time replay 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。
+- 本报告只回答：按 PMXT `replay_timestamp` 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。
 
 Machine-readable boundary:
 
 - data_tier: `TIER1_EXPLORATORY`
-- run_grade: `TIER1_CAUTION_CLOCK_DISORDER`
-- replay_clock: `timestamp_received`
-- ordering_key: `timestamp_received,_original_row_index`
-- causality: `receive_time_causal`
+- run_grade: `TIER1_CAUTION_ORDERING_AMBIGUOUS`
+- replay_clock: `timestamp`
+- ordering_key: `timestamp,timestamp_received,_original_row_index`
+- causality: `pmxt_source_time_ordered_not_exchange_sequence`
 - execution_claims_allowed: `false`
-- source_time_policy: `diagnostic_only`
+- source_time_policy: `primary_sort_key`
 - not_for_pnl: `true`
-- diagnostic_non_causal: `false`
-- claim_boundary: Exploratory receive-time-causal L2 factors and future mid-return labels only; no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims.
+- diagnostic_non_causal: `true`
+- ordering_ambiguous: `true`
+- source_quality.orderingStatus: `ambiguous`
+- source_quality.orderingAmbiguousRows: `9433`
+- claim_boundary: Exploratory PMXT timestamp-ordered L2 factors and future mid-return labels only; stable fallback is reproducible but not proof of true exchange/message order; no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims.
 
 ## 1. 输入
 
@@ -35,11 +38,12 @@ Machine-readable boundary:
 
 - loaded replay steps: 334501
 - raw factor rows: 334501
-- valid-book analysis rows: 329121
-- receive-time span: 2026-06-07T04:34:30.268000+00:00 to 2026-06-09T11:59:15.163000+00:00
-- replay-order hard check ok: True
-- data-health warnings/errors: 266587/0
-- valid/locked/crossed/missing book rows: 329121/2962/2100/318
+- valid-book analysis rows: 333419
+- replay_timestamp span: 2026-06-07T04:34:30.072000+00:00 to 2026-06-09T11:59:14.959000+00:00
+- timestamp_received audit span: 2026-06-07T04:34:30.268000+00:00 to 2026-06-09T11:59:15.163000+00:00
+- replay-order hard check ok: False
+- data-health warnings/errors: 177530/1389
+- valid/locked/crossed/missing book rows: 333419/697/65/320
 - factor panel: `factor_panel.parquet` (parquet)
 
 ## 3. 输出文件
@@ -57,12 +61,12 @@ Machine-readable boundary:
 
 ## 4. 数据健康解释
 
-`replay-order hard check ok` 只表示 receive-time replay 顺序没有硬错误；它不表示 source timestamp 完美。
-PMXT source timestamp 的乱序和延迟只作为 warning 暴露，因子研究仍然按 `timestamp_received` 回放。
+`replay-order hard check ok` 来自通用 receive-time data_health；PMXT timestamp-ordered 研究会把 receive-time inversion 视为诊断，不把它当作 PMXT 研究硬失败。
+PMXT v2 的当前口径按 `timestamp, timestamp_received, stable fallback` 排序；fallback 只保证可复现，不代表真实 WebSocket/message 顺序。
 
-- receive_time_inversion_count: 0
+- receive_time_inversion_count: 1389
 - sequence_inversion_count: 0
-- source_time_inversion_count: 89057
+- source_time_inversion_count: 0
 - source_delay_over_threshold_count: 177530
 - max_source_delay_ms: 330692.0
 - missing_source_timestamp_step_count: 0
@@ -71,21 +75,21 @@ PMXT source timestamp 的乱序和延迟只作为 warning 暴露，因子研究�
 
 | book_validity | count | share |
 | --- | --- | --- |
-| valid | 329121 | 0.9839163410572763 |
-| locked | 2962 | 0.008854981001551564 |
-| crossed | 2100 | 0.006278008137494357 |
-| missing | 318 | 0.000950669803677717 |
+| valid | 333419 | 0.9967653310453481 |
+| locked | 697 | 0.0020837007961112225 |
+| crossed | 65 | 0.00019431929949387296 |
+| missing | 320 | 0.0009566488590467592 |
 
 Spread 分布诊断:
 
 | metric | value |
 | --- | --- |
-| spread_count | 334183.0 |
-| spread_min | -0.10999999999999999 |
-| spread_p05 | 0.009000000000000008 |
+| spread_count | 334181.0 |
+| spread_min | -0.020000000000000018 |
+| spread_p05 | 0.009999999999999953 |
 | spread_p50 | 0.020000000000000018 |
 | spread_p95 | 0.07 |
-| spread_max | 0.868 |
+| spread_max | 0.873 |
 
 说明：正式因子统计默认只使用 `book_validity == valid` 的 current row。
 crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据和 replay 质量。
@@ -94,12 +98,12 @@ crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据�
 
 | horizon_seconds | rows | matched_rows | missing_future_rows | mean_slippage_seconds | p95_slippage_seconds | max_slippage_seconds | future_valid_rows | future_invalid_rows |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 60.0 | 334501.0 | 334498.0 | 3.0 | 1.9430056263415627 | 8.588149999999965 | 173.563 | 328915.0 | 5586.0 |
-| 300.0 | 334501.0 | 334492.0 | 9.0 | 2.3159137647537156 | 10.295 | 147.909 | 329297.0 | 5204.0 |
-| 900.0 | 334501.0 | 334471.0 | 30.0 | 2.5583437338364163 | 11.4575 | 174.518 | 330361.0 | 4140.0 |
+| 60.0 | 334501.0 | 334498.0 | 3.0 | 5.595066427900915 | 9.62129999999993 | 332.053 | 333254.0 | 1247.0 |
+| 300.0 | 334501.0 | 334492.0 | 9.0 | 12.240453466749578 | 95.39835000000004 | 332.151 | 333405.0 | 1096.0 |
+| 900.0 | 334501.0 | 334471.0 | 30.0 | 10.427521417402405 | 59.1305 | 308.722 | 333720.0 | 781.0 |
 
-标签构造：对每个 row 的 `timestamp_received + horizon` 做 forward as-of，使用目标时间之后第一条 receive-time replay 状态。
-如果同一 receive timestamp 有多条 replay row，标签用该 timestamp 的最后一个重建状态。
+标签构造：对每个 row 的 `replay_timestamp + horizon` 做 forward as-of；PMXT 中 `replay_timestamp` 优先使用 source `timestamp`，缺失时才退回 `timestamp_received`。
+如果同一 replay timestamp 有多条 replay row，标签用该 timestamp 的最后一个重建状态；若 tied group 内容不同，需要结合 ordering_ambiguous 和 sensitivity test 降级解读。
 
 ## 7. 因子构造说明
 
@@ -114,80 +118,80 @@ crossed/locked/missing row 不删除；它们留在 panel 中用于诊断数据�
 | metric | value |
 | --- | --- |
 | data_tier | TIER1_EXPLORATORY |
-| run_grade | TIER1_CAUTION_CLOCK_DISORDER |
-| replay_clock | timestamp_received |
-| ordering_key | timestamp_received,_original_row_index |
-| causality | receive_time_causal |
+| run_grade | TIER1_CAUTION_ORDERING_AMBIGUOUS |
+| replay_clock | timestamp |
+| ordering_key | timestamp,timestamp_received,_original_row_index |
+| causality | pmxt_source_time_ordered_not_exchange_sequence |
 | execution_claims_allowed | False |
-| source_time_policy | diagnostic_only |
+| source_time_policy | primary_sort_key |
 | not_for_pnl | True |
+| ordering_ambiguous | True |
+| source_quality.orderingStatus | ambiguous |
+| source_quality.orderingAmbiguousRows | 9433 |
 | dataset_id | shanghai-june-9-2026-25c-yes-pmxt-l2 |
 | adapter | pmxt_event_v1:v1 |
 | steps | 334501 |
 | raw_factor_rows | 334501 |
-| analysis_rows_valid_current_book | 329121 |
-| replay_order_ok | True |
-| health_issue_count | 266587 |
-| book_valid_rows | 329121 |
-| book_locked_rows | 2962 |
-| book_crossed_rows | 2100 |
-| book_missing_rows | 318 |
+| analysis_rows_valid_current_book | 333419 |
+| replay_order_ok | False |
+| health_issue_count | 178919 |
+| book_valid_rows | 333419 |
+| book_locked_rows | 697 |
+| book_crossed_rows | 65 |
+| book_missing_rows | 320 |
 | first_timestamp_received | 2026-06-07T04:34:30.268000+00:00 |
 | last_timestamp_received | 2026-06-09T11:59:15.163000+00:00 |
-| bid1.count | 329121 |
-| bid1.mean | 0.4125060509660581 |
+| first_replay_timestamp | 2026-06-07T04:34:30.072000+00:00 |
+| last_replay_timestamp | 2026-06-09T11:59:14.959000+00:00 |
+| bid1.count | 333419 |
+| bid1.mean | 0.4107261043911714 |
 | bid1.p05 | 0.14 |
 | bid1.p50 | 0.35 |
-| bid1.p95 | 0.975 |
-| ask1.count | 329121 |
-| ask1.mean | 0.44351796147921285 |
-| ask1.p05 | 0.17 |
-| ask1.p50 | 0.38 |
 
 ## 9. Quantile return preview
 
 | factor | horizon_seconds | quantile | count | mean_future_mid_return | median_future_mid_return |
 | --- | --- | --- | --- | --- | --- |
-| microprice_minus_mid | 60 | 1 | 65066 | 0.0051591614668183095 | 0.0 |
-| microprice_minus_mid | 60 | 2 | 65230 | 0.0010636823547447497 | 0.0 |
-| microprice_minus_mid | 60 | 3 | 65131 | 0.002501681227065452 | 0.0 |
-| microprice_minus_mid | 60 | 4 | 65132 | 0.004422042928207332 | 0.0 |
-| microprice_minus_mid | 60 | 5 | 64301 | 0.008135231178364257 | 0.0 |
-| microprice_minus_mid | 300 | 1 | 65344 | 0.01319463148873653 | 0.0 |
-| microprice_minus_mid | 300 | 2 | 65300 | 0.005369157733537519 | 0.0 |
-| microprice_minus_mid | 300 | 3 | 64832 | 0.012302929109081933 | 0.0 |
-| microprice_minus_mid | 300 | 4 | 64871 | 0.013198108553899279 | 0.0 |
-| microprice_minus_mid | 300 | 5 | 64450 | 0.026150853374709078 | 0.0 |
-| microprice_minus_mid | 900 | 1 | 64235 | 0.02949174904646999 | 0.0 |
-| microprice_minus_mid | 900 | 2 | 64647 | 0.020386831562176126 | 0.0 |
-| microprice_minus_mid | 900 | 3 | 65339 | 0.024236719264145456 | 0.0 |
-| microprice_minus_mid | 900 | 4 | 65531 | 0.030353153469350386 | 0.0 |
-| microprice_minus_mid | 900 | 5 | 65536 | 0.0698736343383789 | 0.0050000000000000044 |
-| depth_imbalance_1 | 60 | 1 | 65472 | 0.001386653836754644 | 0.0 |
-| depth_imbalance_1 | 60 | 2 | 64817 | 0.0034625638335621816 | 0.0 |
-| depth_imbalance_1 | 60 | 3 | 64886 | 0.007486414634898128 | 0.0 |
-| depth_imbalance_1 | 60 | 4 | 66893 | 0.0059145725262733035 | 0.0 |
-| depth_imbalance_1 | 60 | 5 | 62792 | 0.0029064212001528845 | 0.0 |
-| depth_imbalance_1 | 300 | 1 | 65787 | 0.005569253803943031 | 0.0 |
-| depth_imbalance_1 | 300 | 2 | 64883 | 0.01145038762079435 | 0.0 |
-| depth_imbalance_1 | 300 | 3 | 64615 | 0.021528414454847947 | 0.0 |
-| depth_imbalance_1 | 300 | 4 | 66588 | 0.022940124346729138 | 0.0 |
-| depth_imbalance_1 | 300 | 5 | 62924 | 0.008329111308880553 | 0.0 |
-| depth_imbalance_1 | 900 | 1 | 65132 | 0.014104572253270284 | 0.0 |
-| depth_imbalance_1 | 900 | 2 | 63900 | 0.03049807511737089 | 0.0 |
-| depth_imbalance_1 | 900 | 3 | 65264 | 0.04423523688404021 | 0.0014999999999999458 |
-| depth_imbalance_1 | 900 | 4 | 67420 | 0.054768191931177684 | 0.0 |
-| depth_imbalance_1 | 900 | 5 | 63572 | 0.030160101931668026 | 0.004999999999999977 |
-| depth_imbalance_3 | 60 | 1 | 65157 | 0.002295977408413525 | 0.0 |
-| depth_imbalance_3 | 60 | 2 | 65075 | 0.0063876680752977325 | 0.0 |
-| depth_imbalance_3 | 60 | 3 | 65189 | 0.00553427725536517 | 0.0 |
-| depth_imbalance_3 | 60 | 4 | 64635 | 0.004224181944766768 | 0.0 |
-| depth_imbalance_3 | 60 | 5 | 64804 | 0.0027783238688969796 | 0.0 |
-| depth_imbalance_3 | 300 | 1 | 65440 | 0.0038182839242053815 | 0.0 |
-| depth_imbalance_3 | 300 | 2 | 64605 | 0.014779390140082036 | 0.0 |
-| depth_imbalance_3 | 300 | 3 | 64704 | 0.01952999041790306 | 0.0 |
-| depth_imbalance_3 | 300 | 4 | 64735 | 0.018241445894801884 | 0.0 |
-| depth_imbalance_3 | 300 | 5 | 65313 | 0.013822623367476609 | 0.0014999999999999458 |
+| microprice_minus_mid | 60 | 1 | 66731 | 0.0047182643748782446 | 0.0 |
+| microprice_minus_mid | 60 | 2 | 66522 | 0.0011373756050629864 | 0.0 |
+| microprice_minus_mid | 60 | 3 | 66407 | 0.0029511572575180315 | 0.0 |
+| microprice_minus_mid | 60 | 4 | 67297 | 0.004613771787746853 | 0.0 |
+| microprice_minus_mid | 60 | 5 | 65708 | 0.008722035368600476 | 0.0 |
+| microprice_minus_mid | 300 | 1 | 66745 | 0.0157396958573676 | 0.0 |
+| microprice_minus_mid | 300 | 2 | 66455 | 0.005340079753216464 | 0.0 |
+| microprice_minus_mid | 300 | 3 | 66409 | 0.01495858995015736 | 0.0 |
+| microprice_minus_mid | 300 | 4 | 67377 | 0.014757810528815469 | 0.0 |
+| microprice_minus_mid | 300 | 5 | 65644 | 0.028210171531289994 | 0.004999999999999949 |
+| microprice_minus_mid | 900 | 1 | 66672 | 0.033835313174946 | 0.0050000000000000044 |
+| microprice_minus_mid | 900 | 2 | 66396 | 0.02122231760949455 | 0.0 |
+| microprice_minus_mid | 900 | 3 | 66601 | 0.032772263179231535 | 0.0 |
+| microprice_minus_mid | 900 | 4 | 67478 | 0.032895877174782893 | 0.0 |
+| microprice_minus_mid | 900 | 5 | 65798 | 0.07292376667983831 | 0.010000000000000009 |
+| depth_imbalance_1 | 60 | 1 | 66904 | 0.0005549145043644641 | 0.0 |
+| depth_imbalance_1 | 60 | 2 | 66324 | 0.004212336409142994 | 0.0 |
+| depth_imbalance_1 | 60 | 3 | 66473 | 0.007608239435560301 | 0.0 |
+| depth_imbalance_1 | 60 | 4 | 66838 | 0.006220772614381041 | 0.0 |
+| depth_imbalance_1 | 60 | 5 | 66126 | 0.0035093836010041428 | 0.0 |
+| depth_imbalance_1 | 300 | 1 | 66991 | 0.0049035094266394 | 0.0 |
+| depth_imbalance_1 | 300 | 2 | 66206 | 0.014872383167688729 | 0.0 |
+| depth_imbalance_1 | 300 | 3 | 66594 | 0.022659924317506082 | 0.0 |
+| depth_imbalance_1 | 300 | 4 | 66747 | 0.027311946604341764 | 0.0 |
+| depth_imbalance_1 | 300 | 5 | 66092 | 0.009075742903831022 | 0.0 |
+| depth_imbalance_1 | 900 | 1 | 66871 | 0.015149534177745214 | 0.0 |
+| depth_imbalance_1 | 900 | 2 | 66176 | 0.03662828669003869 | 0.0 |
+| depth_imbalance_1 | 900 | 3 | 66686 | 0.0488654590168851 | 0.0030000000000001137 |
+| depth_imbalance_1 | 900 | 4 | 67065 | 0.06266191008722881 | 0.0 |
+| depth_imbalance_1 | 900 | 5 | 66147 | 0.02974519630519902 | 0.0050000000000000044 |
+| depth_imbalance_3 | 60 | 1 | 66657 | 0.0015649444169404576 | 0.0 |
+| depth_imbalance_3 | 60 | 2 | 66582 | 0.006528543750563215 | 0.0 |
+| depth_imbalance_3 | 60 | 3 | 66565 | 0.006103365131826036 | 0.0 |
+| depth_imbalance_3 | 60 | 4 | 66815 | 0.00398873007558183 | 0.0 |
+| depth_imbalance_3 | 60 | 5 | 66046 | 0.003911175544317595 | 0.0 |
+| depth_imbalance_3 | 300 | 1 | 66673 | 0.003846962038606336 | 0.0 |
+| depth_imbalance_3 | 300 | 2 | 66533 | 0.017167578494882242 | 0.0 |
+| depth_imbalance_3 | 300 | 3 | 66346 | 0.02133745063756669 | 0.0 |
+| depth_imbalance_3 | 300 | 4 | 67082 | 0.020028323544318893 | 0.0 |
+| depth_imbalance_3 | 300 | 5 | 65996 | 0.016471877083459596 | 0.0050000000000000044 |
 
 ## 10. Data-health issue preview
 
@@ -196,19 +200,19 @@ Issue counts by code:
 | code | count |
 | --- | --- |
 | source_delay_over_threshold | 177530 |
-| source_time_inversion | 89057 |
+| receive_time_inversion | 1389 |
 
-- warning: source_time_inversion at sequence 2: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 7: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 11: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 12: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 13: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 19: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 20: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 21: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 22: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- warning: source_time_inversion at sequence 24: source timestamp moved backwards within event_type+asset_id; this is diagnostic only because replay uses receive time
-- ... 266577 additional issues summarized in data_health_summary.json
+- warning: source_delay_over_threshold at sequence 42: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 43: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 44: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 45: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 73: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 94: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 95: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 96: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 97: source timestamp is much earlier than receive time; reported for late-delivery severity
+- warning: source_delay_over_threshold at sequence 98: source timestamp is much earlier than receive time; reported for late-delivery severity
+- ... 178909 additional issues summarized in data_health_summary.json
 
 ## 11. Input hashes
 

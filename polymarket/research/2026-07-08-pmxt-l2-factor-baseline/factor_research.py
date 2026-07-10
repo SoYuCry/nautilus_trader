@@ -9,8 +9,8 @@ Runnable from the repository root, for example:
 
 This is intentionally a research data script, not a Nautilus strategy/backtest.
 It uses only the PMXT v1 adapter and data-health checker to load canonical
-replay steps, then reconstructs selected-token top-of-book/L2 state in
-receive-time order.
+replay steps, then reconstructs selected-token top-of-book/L2 state in PMXT
+timestamp order.
 
 Trust boundary: this script does not compute fills, fees, queue position, cash,
 positions, PnL, or execution results. Those belong to Nautilus strategy backtests.
@@ -52,13 +52,13 @@ MISSING_BOOK = "missing"
 BOOK_VALIDITY_ORDER = (VALID_BOOK, LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK)
 TRUST_METADATA_BASE = {
     "data_tier": "TIER1_EXPLORATORY",
-    "replay_clock": "timestamp_received",
-    "ordering_key": "timestamp_received,_original_row_index",
-    "causality": "receive_time_causal",
+    "replay_clock": "timestamp",
+    "ordering_key": "timestamp,timestamp_received,_original_row_index",
+    "causality": "pmxt_source_time_ordered_not_exchange_sequence",
     "execution_claims_allowed": False,
-    "source_time_policy": "diagnostic_only",
+    "source_time_policy": "primary_sort_key",
     "not_for_pnl": True,
-    "diagnostic_non_causal": False,
+    "diagnostic_non_causal": True,
 }
 
 
@@ -71,6 +71,8 @@ class RunSummary:
     analysis_rows: int
     first_timestamp_received: str | None
     last_timestamp_received: str | None
+    first_replay_timestamp: str | None
+    last_replay_timestamp: str | None
     replay_order_ok: bool
     health_warning_count: int
     health_error_count: int
@@ -108,10 +110,11 @@ def main() -> int:
         json.dumps(compact_health_report(health), indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    if not health.ok:
+    blocking_issues = pmxt_research_blocking_health_issues(health)
+    if blocking_issues:
         raise RuntimeError(
-            "PMXT factor research refuses to continue because replay-order data-health checks failed; "
-            f"inspect {health_path}",
+            "PMXT factor research refuses to continue because non-PMXT-ordering health checks failed; "
+            f"blocking_codes={sorted({issue.code for issue in blocking_issues})}; inspect {health_path}",
         )
 
     panel = build_factor_panel(dataset, config)
@@ -145,7 +148,7 @@ def main() -> int:
         json.dumps(input_hashes, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    trust_metadata = build_trust_metadata(health, panel)
+    trust_metadata = build_trust_metadata(health, panel, source_quality=dataset.metadata.source_quality)
     run_metadata_path = write_run_metadata(output_dir, trust_metadata, health)
 
     issues = health.issues
@@ -156,8 +159,10 @@ def main() -> int:
         rows_loaded=len(dataset.steps),
         factor_rows=len(panel),
         analysis_rows=len(analysis_panel),
-        first_timestamp_received=iso_or_none(panel["timestamp_received"].iloc[0]) if not panel.empty else None,
-        last_timestamp_received=iso_or_none(panel["timestamp_received"].iloc[-1]) if not panel.empty else None,
+        first_timestamp_received=iso_or_none(panel["timestamp_received"].min()) if not panel.empty else None,
+        last_timestamp_received=iso_or_none(panel["timestamp_received"].max()) if not panel.empty else None,
+        first_replay_timestamp=iso_or_none(panel["replay_timestamp"].min()) if not panel.empty else None,
+        last_replay_timestamp=iso_or_none(panel["replay_timestamp"].max()) if not panel.empty else None,
         replay_order_ok=health.ok,
         health_warning_count=sum(1 for issue in issues if issue.severity == "warning"),
         health_error_count=sum(1 for issue in issues if issue.severity == "error"),
@@ -357,9 +362,32 @@ def compact_health_report(health: Any, issue_limit: int = 100) -> dict[str, Any]
     }
 
 
-def build_trust_metadata(health: Any, panel: pd.DataFrame | None = None) -> dict[str, Any]:
+def pmxt_research_blocking_health_issues(health: Any) -> list[Any]:
+    """
+    Return health issues that still block PMXT timestamp-ordered research.
+
+    The generic data-health checker is receive-time oriented for live/Nautilus
+    inputs. PMXT v2 research is intentionally timestamp ordered, so receive-time
+    inversions are retained as diagnostics rather than used as a hard blocker.
+    """
+    ignored_error_codes = {"receive_time_inversion"}
+    return [
+        issue
+        for issue in getattr(health, "issues", ())
+        if getattr(issue, "severity", None) == "error"
+        and getattr(issue, "code", None) not in ignored_error_codes
+    ]
+
+
+def build_trust_metadata(
+    health: Any,
+    panel: pd.DataFrame | None = None,
+    *,
+    source_quality: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return machine-readable trust/clock/execution-boundary metadata."""
     health_summary = getattr(health, "summary", None)
+    source_quality = dict(source_quality or {})
     source_time_diagnostics = {
         "source_time_inversion_count": int(getattr(health_summary, "source_time_inversion_count", 0) or 0),
         "source_delay_over_threshold_count": int(
@@ -377,15 +405,25 @@ def build_trust_metadata(health: Any, panel: pd.DataFrame | None = None) -> dict
         for issue in getattr(health, "issues", ())
     )
     has_book_warning = any(book_counts.get(validity, 0) for validity in (LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK))
+    ordering_status = str(source_quality.get("orderingStatus", "unknown"))
+    ordering_ambiguous = ordering_status == "ambiguous" or bool(source_quality.get("orderingAmbiguousRows", 0))
+    run_grade = "TIER1_OK_TIMESTAMP_ORDERED"
+    if ordering_ambiguous:
+        run_grade = "TIER1_CAUTION_ORDERING_AMBIGUOUS"
+    elif has_clock_warning or has_book_warning:
+        run_grade = "TIER1_CAUTION_PMXT_QUALITY"
     return {
         **TRUST_METADATA_BASE,
-        "run_grade": "TIER1_CAUTION_CLOCK_DISORDER" if has_clock_warning or has_book_warning else "TIER1_OK_RECEIVE_TIME",
+        "run_grade": run_grade,
+        "source_quality": source_quality,
+        "ordering_ambiguous": ordering_ambiguous,
         "source_time_diagnostics": source_time_diagnostics,
         "book_validity_counts": {key: int(value) for key, value in book_counts.items()},
         "book_validity_warning": has_book_warning,
         "claim_boundary": (
-            "Exploratory receive-time-causal L2 factors and future mid-return labels only; "
-            "no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims."
+            "Exploratory PMXT timestamp-ordered L2 factors and future mid-return labels only; "
+            "stable fallback is reproducible but not proof of true exchange/message order; no fees, fills, "
+            "queue position, cash, positions, PnL, executable edge, or tradeable claims."
         ),
     }
 
@@ -397,6 +435,7 @@ def write_run_metadata(output_dir: Path, trust_metadata: dict[str, Any], health:
         json.dumps(
             {
                 "trust_metadata": trust_metadata,
+                "source_quality": trust_metadata.get("source_quality", {}),
                 "health_summary": health_report.get("summary", {}),
                 "health_issue_counts_by_code": health_report.get("issue_counts_by_code", {}),
             },
@@ -429,6 +468,7 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
                 f"sequence={step.sequence} update_count={len(step.updates)}",
             )
         update = step.updates[0]
+        replay_timestamp = step.timestamp or step.timestamp_received
         trade_pressure_increment = 0.0
         if update.event_type == "book":
             bids = {to_float(level.price): to_float(level.size) for level in update.bids if to_float(level.size) > 0}
@@ -445,7 +485,7 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
         elif update.event_type == "trade":
             signed = signed_size(update.side, update.size)
             trade_pressure_increment = signed
-            trade_window.append((step.timestamp_received, signed))
+            trade_window.append((replay_timestamp, signed))
         elif update.event_type == "tick_size_change":
             tick_size = to_float(update.new_tick_size) if update.new_tick_size is not None else tick_size
 
@@ -469,8 +509,8 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
             previous_bid_size1,
             previous_ask_size1,
         )
-        ofi_window.append((step.timestamp_received, ofi_increment))
-        expire_before = step.timestamp_received - timedelta(seconds=30)
+        ofi_window.append((replay_timestamp, ofi_increment))
+        expire_before = replay_timestamp - timedelta(seconds=30)
         while ofi_window and ofi_window[0][0] < expire_before:
             ofi_window.popleft()
         while trade_window and trade_window[0][0] < expire_before:
@@ -484,6 +524,7 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
             {
                 "timestamp_received": step.timestamp_received,
                 "timestamp": step.timestamp,
+                "replay_timestamp": replay_timestamp,
                 "sequence": step.sequence,
                 "event_type": update.event_type,
                 "market": update.market,
@@ -524,7 +565,8 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
 def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
     if panel.empty:
         return panel
-    panel = panel.sort_values(["timestamp_received", "sequence"], kind="mergesort").reset_index(drop=True)
+    clock_col = "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+    panel = panel.sort_values([clock_col, "sequence"], kind="mergesort").reset_index(drop=True)
     if "book_validity" not in panel:
         panel["book_validity"] = [
             classify_book_validity(float(bid), float(ask))
@@ -532,9 +574,9 @@ def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
         ]
         panel["is_valid_book"] = panel["book_validity"] == VALID_BOOK
     base = (
-        panel[["timestamp_received", "sequence", "mid", "bid1", "ask1", "book_validity"]]
-        .sort_values(["timestamp_received", "sequence"], kind="mergesort")
-        .groupby("timestamp_received", sort=False, as_index=False)
+        panel[[clock_col, "sequence", "mid", "bid1", "ask1", "book_validity"]]
+        .sort_values([clock_col, "sequence"], kind="mergesort")
+        .groupby(clock_col, sort=False, as_index=False)
         .tail(1)
         .drop(columns=["sequence"])
     )
@@ -543,7 +585,7 @@ def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
         target_col = f"label_target_timestamp_{horizon}s"
         future = base.rename(
             columns={
-                "timestamp_received": matched_col,
+                clock_col: matched_col,
                 "mid": f"future_mid_{horizon}s",
                 "bid1": f"future_bid_{horizon}s",
                 "ask1": f"future_ask_{horizon}s",
@@ -552,7 +594,7 @@ def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
         )
         left = pd.DataFrame(
             {
-                target_col: panel["timestamp_received"] + pd.to_timedelta(horizon, unit="s"),
+                target_col: panel[clock_col] + pd.to_timedelta(horizon, unit="s"),
                 "_row": panel.index,
             },
         ).sort_values(target_col, kind="mergesort")
@@ -599,7 +641,11 @@ def build_factor_summary(
 ) -> pd.DataFrame:
     raw = raw_panel if raw_panel is not None else panel
     counts = book_validity_counts(raw)
-    trust_metadata = build_trust_metadata(health, raw)
+    trust_metadata = build_trust_metadata(
+        health,
+        raw,
+        source_quality=getattr(dataset.metadata, "source_quality", {}),
+    )
     rows: list[dict[str, Any]] = [
         {"metric": "data_tier", "value": trust_metadata["data_tier"]},
         {"metric": "run_grade", "value": trust_metadata["run_grade"]},
@@ -609,6 +655,15 @@ def build_factor_summary(
         {"metric": "execution_claims_allowed", "value": trust_metadata["execution_claims_allowed"]},
         {"metric": "source_time_policy", "value": trust_metadata["source_time_policy"]},
         {"metric": "not_for_pnl", "value": trust_metadata["not_for_pnl"]},
+        {"metric": "ordering_ambiguous", "value": trust_metadata["ordering_ambiguous"]},
+        {
+            "metric": "source_quality.orderingStatus",
+            "value": trust_metadata.get("source_quality", {}).get("orderingStatus", "unknown"),
+        },
+        {
+            "metric": "source_quality.orderingAmbiguousRows",
+            "value": trust_metadata.get("source_quality", {}).get("orderingAmbiguousRows", 0),
+        },
         {"metric": "dataset_id", "value": dataset.metadata.dataset_id},
         {"metric": "adapter", "value": f"{dataset.metadata.adapter_name}:{dataset.metadata.adapter_version}"},
         {"metric": "steps", "value": len(dataset.steps)},
@@ -620,8 +675,16 @@ def build_factor_summary(
         {"metric": "book_locked_rows", "value": counts[LOCKED_BOOK]},
         {"metric": "book_crossed_rows", "value": counts[CROSSED_BOOK]},
         {"metric": "book_missing_rows", "value": counts[MISSING_BOOK]},
-        {"metric": "first_timestamp_received", "value": iso_or_none(raw["timestamp_received"].iloc[0]) if not raw.empty else ""},
-        {"metric": "last_timestamp_received", "value": iso_or_none(raw["timestamp_received"].iloc[-1]) if not raw.empty else ""},
+        {"metric": "first_timestamp_received", "value": iso_or_none(raw["timestamp_received"].min()) if not raw.empty else ""},
+        {"metric": "last_timestamp_received", "value": iso_or_none(raw["timestamp_received"].max()) if not raw.empty else ""},
+        {
+            "metric": "first_replay_timestamp",
+            "value": iso_or_none(raw["replay_timestamp"].min()) if not raw.empty and "replay_timestamp" in raw else "",
+        },
+        {
+            "metric": "last_replay_timestamp",
+            "value": iso_or_none(raw["replay_timestamp"].max()) if not raw.empty and "replay_timestamp" in raw else "",
+        },
     ]
     numeric_columns = [
         "bid1",
@@ -841,7 +904,7 @@ def write_report(
         "- 不计算手续费、返佣、订单状态、排队、部分成交、现金、仓位或 PnL。",
         "- 不把 `future_bid - current_ask` 之类的量解释成可成交利润。",
         "- fee/fill/PnL 必须放到 Nautilus 原生策略回测入口里处理。",
-        "- 本报告只回答：按 receive-time replay 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。",
+        "- 本报告只回答：按 PMXT `replay_timestamp` 重建 L2 后，盘口因子和未来 mid-return 标签是否可用于研究。",
         "",
         "Machine-readable boundary:",
         "",
@@ -854,6 +917,9 @@ def write_report(
         f"- source_time_policy: `{trust_metadata['source_time_policy']}`",
         f"- not_for_pnl: `{str(trust_metadata['not_for_pnl']).lower()}`",
         f"- diagnostic_non_causal: `{str(trust_metadata['diagnostic_non_causal']).lower()}`",
+        f"- ordering_ambiguous: `{str(trust_metadata['ordering_ambiguous']).lower()}`",
+        f"- source_quality.orderingStatus: `{trust_metadata.get('source_quality', {}).get('orderingStatus', 'unknown')}`",
+        f"- source_quality.orderingAmbiguousRows: `{trust_metadata.get('source_quality', {}).get('orderingAmbiguousRows', 0)}`",
         f"- claim_boundary: {trust_metadata['claim_boundary']}",
         "",
         "## 1. 输入",
@@ -868,7 +934,8 @@ def write_report(
         f"- loaded replay steps: {summary.rows_loaded}",
         f"- raw factor rows: {summary.factor_rows}",
         f"- valid-book analysis rows: {summary.analysis_rows}",
-        f"- receive-time span: {summary.first_timestamp_received} to {summary.last_timestamp_received}",
+        f"- replay_timestamp span: {summary.first_replay_timestamp} to {summary.last_replay_timestamp}",
+        f"- timestamp_received audit span: {summary.first_timestamp_received} to {summary.last_timestamp_received}",
         f"- replay-order hard check ok: {summary.replay_order_ok}",
         f"- data-health warnings/errors: {summary.health_warning_count}/{summary.health_error_count}",
         f"- valid/locked/crossed/missing book rows: {summary.valid_book_rows}/{summary.locked_book_rows}/{summary.crossed_book_rows}/{summary.missing_book_rows}",
@@ -889,8 +956,8 @@ def write_report(
         "",
         "## 4. 数据健康解释",
         "",
-        "`replay-order hard check ok` 只表示 receive-time replay 顺序没有硬错误；它不表示 source timestamp 完美。",
-        "PMXT source timestamp 的乱序和延迟只作为 warning 暴露，因子研究仍然按 `timestamp_received` 回放。",
+        "`replay-order hard check ok` 来自通用 receive-time data_health；PMXT timestamp-ordered 研究会把 receive-time inversion 视为诊断，不把它当作 PMXT 研究硬失败。",
+        "PMXT v2 的当前口径按 `timestamp, timestamp_received, stable fallback` 排序；fallback 只保证可复现，不代表真实 WebSocket/message 顺序。",
         "",
         f"- receive_time_inversion_count: {health_summary.get('receive_time_inversion_count')}",
         f"- sequence_inversion_count: {health_summary.get('sequence_inversion_count')}",
@@ -919,8 +986,8 @@ def write_report(
     lines.extend(
         [
             "",
-            "标签构造：对每个 row 的 `timestamp_received + horizon` 做 forward as-of，使用目标时间之后第一条 receive-time replay 状态。",
-            "如果同一 receive timestamp 有多条 replay row，标签用该 timestamp 的最后一个重建状态。",
+            "标签构造：对每个 row 的 `replay_timestamp + horizon` 做 forward as-of；PMXT 中 `replay_timestamp` 优先使用 source `timestamp`，缺失时才退回 `timestamp_received`。",
+            "如果同一 replay timestamp 有多条 replay row，标签用该 timestamp 的最后一个重建状态；若 tied group 内容不同，需要结合 ordering_ambiguous 和 sensitivity test 降级解读。",
             "",
             "## 7. 因子构造说明",
             "",
