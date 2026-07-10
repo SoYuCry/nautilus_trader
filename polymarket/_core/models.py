@@ -1,4 +1,5 @@
-"""Target Polymarket L2 data contract for research backtests.
+"""
+Target Polymarket L2 data contract for research backtests.
 
 These types describe the standard format we want the data/IT side to deliver.
 Temporary adapters and one-off scripts may patch pre-contract inputs into this
@@ -13,8 +14,10 @@ belong to NautilusTrader's native backtest engine, not this package.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 from typing import Literal
 
 
@@ -60,7 +63,8 @@ class L2ReplayStepV1:
 
 @dataclass(frozen=True, slots=True)
 class MarketMetadataV1:
-    """Market-level metadata snapshot needed to price and audit backtests.
+    """
+    Market-level metadata snapshot needed to price and audit backtests.
 
     This is dataset-level metadata, not replay data.  For fee modelling, the
     target feed should preserve the effective Polymarket fee schedule observed
@@ -70,7 +74,7 @@ class MarketMetadataV1:
     condition_id: str
     token_id: str | None = None
     outcome: str | None = None
-    maker_fee: Decimal = Decimal("0")
+    maker_fee: Decimal = Decimal(0)
     taker_fee: Decimal | None = None
     fee_source: str = "unknown"
     category: str | None = None
@@ -85,7 +89,8 @@ class MarketMetadataV1:
 
 @dataclass(frozen=True, slots=True)
 class DatasetMetadataV1:
-    """Source metadata for reporting and audit only.
+    """
+    Source metadata for reporting and audit only.
 
     Replay chronology and L2 conversion must not branch on provenance fields.
     Market metadata is allowed to supply explicit instrument economics such as
@@ -99,6 +104,7 @@ class DatasetMetadataV1:
     source_files: tuple[str, ...] = ()
     assumptions: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
+    source_quality: dict[str, Any] = field(default_factory=dict)
     market_metadata: tuple[MarketMetadataV1, ...] = ()
 
 

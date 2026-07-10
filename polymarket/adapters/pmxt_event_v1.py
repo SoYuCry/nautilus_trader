@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from collections.abc import Sequence
+from datetime import datetime
 from decimal import Decimal
 from itertools import pairwise
 from pathlib import Path
@@ -92,9 +93,17 @@ class PMXTEventV1Adapter:
             for row_index, value in zip(selected["_original_row_index"], selected["timestamp_received"], strict=True)
         ]
         selected["_source_timestamp_dt"] = selected["timestamp"].map(optional_utc_datetime)
+        selected["_source_timestamp_sort_dt"] = [
+            source_timestamp if not self._is_missing(source_timestamp) else timestamp_received
+            for source_timestamp, timestamp_received in zip(
+                selected["_source_timestamp_dt"],
+                selected["_timestamp_received_dt"],
+                strict=True,
+            )
+        ]
         selected_ordering_diagnostic = self._selected_ordering_diagnostic(selected)
         selected = selected.sort_values(
-            by=["_timestamp_received_dt", "_original_row_index"],
+            by=["_source_timestamp_sort_dt", "_timestamp_received_dt", "_original_row_index"],
             kind="mergesort",
         )
         selected_ordering_diagnostic.update(self._selected_ordering_diagnostic_after_sort(selected))
@@ -112,6 +121,10 @@ class PMXTEventV1Adapter:
             )
 
         market_metadata = self._gamma_market_metadata(gamma_event, condition_id=condition_id)
+        source_quality = self._source_quality(
+            selected_ordering_diagnostic,
+            market_metadata=market_metadata,
+        )
         metadata = DatasetMetadataV1(
             dataset_id=str(input_config.get("dataset_id") or event_dir.name),
             adapter_name=self.adapter_name,
@@ -123,15 +136,17 @@ class PMXTEventV1Adapter:
             ),
             assumptions=(
                 "PMXT orderbook.parquet rows are pre-contract WebSocket-derived observations normalized by adapter only.",
-                "Replay chronology uses receive-time ordering: stable sort by timestamp_received then original row index.",
+                "PMXT replay chronology uses source-time baseline ordering: stable sort by timestamp, timestamp_received, then original row index.",
                 "One selected PMXT orderbook row is emitted as one canonical replay step with post-sort local replay sequence.",
             ),
             warnings=(
-                "PMXT caveat: source timestamps may invert relative to receive-time replay order; data_health should audit source-time diagnostics separately.",
+                "PMXT caveat: stable fallback gives deterministic replay only, not true exchange/message order.",
                 self._format_ordering_diagnostic(selected_ordering_diagnostic),
-                "PMXT ordering diagnostic: sequence is a post-sort local replay sequence, not vendor/raw sequence; values are reassigned after stable timestamp_received/original row sort and do not preserve original PMXT row numbering.",
+                self._format_source_quality(source_quality),
+                "PMXT ordering diagnostic: sequence is a post-sort local replay sequence, not vendor/raw sequence; values are reassigned after stable timestamp/timestamp_received/original-row sort and do not preserve original PMXT row numbering.",
                 "PMXT best_bid/best_ask values are preserved as audit/proxy fields only and are not trusted for filtering or execution truth.",
             ),
+            source_quality=source_quality,
             market_metadata=market_metadata,
         )
         return PolymarketL2DatasetV1(metadata=metadata, steps=tuple(steps))
@@ -209,14 +224,21 @@ class PMXTEventV1Adapter:
         source_times = [value for value in selected["_source_timestamp_dt"] if value is not None]
         duplicate_counts = selected["_timestamp_received_dt"].value_counts(dropna=False)
         duplicate_groups = duplicate_counts[duplicate_counts > 1]
+        tied_diagnostic = cls._tied_group_diagnostic(selected)
+        missing_source_timestamp_count = int(selected["_source_timestamp_dt"].isna().sum())
         return {
             "selected_rows": len(selected),
             "global_physical_receive_time_inversions": "not_computed_filtered_adapter",
             "selected_receive_time_inversions_before_sort": cls._adjacent_inversion_count(receive_times),
             "selected_source_time_inversions_before_sort": cls._adjacent_inversion_count(source_times),
+            "missing_source_timestamp_count": missing_source_timestamp_count,
             "duplicate_timestamp_received_group_count": len(duplicate_groups),
             "max_rows_per_timestamp_received": int(duplicate_counts.max()) if not duplicate_counts.empty else 0,
-            "stable_sort_key": "timestamp_received,_original_row_index",
+            "tied_timestamp_group_count": tied_diagnostic["tied_timestamp_group_count"],
+            "tied_timestamp_row_count": tied_diagnostic["tied_timestamp_row_count"],
+            "ordering_ambiguous_groups": tied_diagnostic["ordering_ambiguous_groups"],
+            "ordering_ambiguous_rows": tied_diagnostic["ordering_ambiguous_rows"],
+            "stable_sort_key": "timestamp,timestamp_received,_original_row_index",
         }
 
     @classmethod
@@ -224,15 +246,113 @@ class PMXTEventV1Adapter:
         receive_times = list(selected["_timestamp_received_dt"])
         source_times = [value for value in selected["_source_timestamp_dt"] if value is not None]
         receive_inversions = cls._adjacent_inversion_count(receive_times)
+        source_inversions = cls._adjacent_inversion_count(source_times)
         return {
             "selected_receive_time_inversions_after_sort": receive_inversions,
-            "selected_source_time_inversions_after_sort": cls._adjacent_inversion_count(source_times),
+            "selected_source_time_inversions_after_sort": source_inversions,
             "selected_receive_time_monotonic_after_sort": receive_inversions == 0,
+            "selected_source_time_monotonic_after_sort": source_inversions == 0,
         }
 
     @staticmethod
     def _adjacent_inversion_count(values: Sequence[Any]) -> int:
         return sum(1 for previous, current in pairwise(values) if current < previous)
+
+    @classmethod
+    def _tied_group_diagnostic(cls, selected: pd.DataFrame) -> dict[str, int]:
+        """Count PMXT tied timestamp groups whose internal order is not knowable."""
+        group_columns = [
+            "_canonical_market",
+            "_canonical_asset_id",
+            "_source_timestamp_dt",
+            "_timestamp_received_dt",
+        ]
+        value_columns = [
+            "event_type",
+            "price",
+            "size",
+            "side",
+            "best_bid",
+            "best_ask",
+            "bids",
+            "asks",
+        ]
+        group_sizes = selected.groupby(group_columns, dropna=False, sort=False).size()
+        tied_sizes = group_sizes[group_sizes > 1]
+        if tied_sizes.empty:
+            return {
+                "tied_timestamp_group_count": 0,
+                "tied_timestamp_row_count": 0,
+                "ordering_ambiguous_groups": 0,
+                "ordering_ambiguous_rows": 0,
+            }
+
+        signature_frame = pd.DataFrame(index=selected.index)
+        for column in value_columns:
+            signature_frame[column] = selected[column].map(cls._value_signature)
+        row_signature = pd.util.hash_pandas_object(signature_frame, index=False)
+        signature_groups = (
+            selected.assign(_row_signature=row_signature)
+            .groupby(group_columns, dropna=False, sort=False)["_row_signature"]
+            .agg(size="size", unique="nunique")
+        )
+        ambiguous_sizes = signature_groups[(signature_groups["size"] > 1) & (signature_groups["unique"] > 1)]["size"]
+        return {
+            "tied_timestamp_group_count": len(tied_sizes),
+            "tied_timestamp_row_count": int(tied_sizes.sum()),
+            "ordering_ambiguous_groups": len(ambiguous_sizes),
+            "ordering_ambiguous_rows": int(ambiguous_sizes.sum()),
+        }
+
+    @staticmethod
+    def _value_signature(value: Any) -> str:
+        if PMXTEventV1Adapter._is_missing(value):
+            return "<missing>"
+        if isinstance(value, bytes):
+            return "0x" + value.hex()
+        if isinstance(value, (datetime, pd.Timestamp)):
+            return as_utc_datetime(value).isoformat()
+        return str(value)
+
+    @staticmethod
+    def _source_quality(
+        diagnostic: Mapping[str, Any],
+        *,
+        market_metadata: tuple[MarketMetadataV1, ...] | None,
+    ) -> dict[str, Any]:
+        ambiguous_groups = int(diagnostic.get("ordering_ambiguous_groups", 0) or 0)
+        ambiguous_rows = int(diagnostic.get("ordering_ambiguous_rows", 0) or 0)
+        missing_source_timestamp_count = int(diagnostic.get("missing_source_timestamp_count", 0) or 0)
+        ordering_status = (
+            "ambiguous"
+            if ambiguous_groups or ambiguous_rows or missing_source_timestamp_count
+            else "timestamp_ordered"
+        )
+        metadata_join_status = "not_run"
+        if market_metadata is not None:
+            metadata_join_status = "pass" if market_metadata else "partial"
+        notes = [
+            "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+            "Stable fallback is deterministic but not proof of true exchange/message order.",
+        ]
+        if ambiguous_groups:
+            notes.append("Tied timestamp groups with differing row content require sensitivity testing.")
+        if missing_source_timestamp_count:
+            notes.append("Some rows are missing PMXT source timestamp and fall back to timestamp_received for sorting.")
+        return {
+            "coverageStatus": "not_run",
+            "orderingStatus": ordering_status,
+            "snapshotReplayStatus": "not_run",
+            "metadataJoinStatus": metadata_join_status,
+            "knownArchiveGaps": [],
+            "orderingAmbiguousGroups": ambiguous_groups,
+            "orderingAmbiguousRows": ambiguous_rows,
+            "missingSourceTimestampRows": missing_source_timestamp_count,
+            "tiedTimestampGroups": int(diagnostic.get("tied_timestamp_group_count", 0) or 0),
+            "tiedTimestampRows": int(diagnostic.get("tied_timestamp_row_count", 0) or 0),
+            "stableSortKey": str(diagnostic.get("stable_sort_key", "")),
+            "notes": notes,
+        }
 
     @staticmethod
     def _format_ordering_diagnostic(diagnostic: Mapping[str, Any]) -> str:
@@ -243,10 +363,16 @@ class PMXTEventV1Adapter:
             "selected_receive_time_inversions_after_sort",
             "selected_source_time_inversions_before_sort",
             "selected_source_time_inversions_after_sort",
+            "missing_source_timestamp_count",
             "duplicate_timestamp_received_group_count",
             "max_rows_per_timestamp_received",
+            "tied_timestamp_group_count",
+            "tied_timestamp_row_count",
+            "ordering_ambiguous_groups",
+            "ordering_ambiguous_rows",
             "stable_sort_key",
             "selected_receive_time_monotonic_after_sort",
+            "selected_source_time_monotonic_after_sort",
         )
         formatted_values = []
         for key in ordered_keys:
@@ -255,6 +381,18 @@ class PMXTEventV1Adapter:
                 value = str(value).lower()
             formatted_values.append(f"{key}={value}")
         return "PMXT ordering diagnostic: " + ", ".join(formatted_values) + "."
+
+    @staticmethod
+    def _format_source_quality(source_quality: Mapping[str, Any]) -> str:
+        return (
+            "PMXT source quality: "
+            f"coverageStatus={source_quality['coverageStatus']}, "
+            f"orderingStatus={source_quality['orderingStatus']}, "
+            f"snapshotReplayStatus={source_quality['snapshotReplayStatus']}, "
+            f"metadataJoinStatus={source_quality['metadataJoinStatus']}, "
+            f"orderingAmbiguousGroups={source_quality['orderingAmbiguousGroups']}, "
+            f"orderingAmbiguousRows={source_quality['orderingAmbiguousRows']}."
+        )
 
     @staticmethod
     def _parse_required_timestamp_received(value: Any, *, row_index: int) -> Any:

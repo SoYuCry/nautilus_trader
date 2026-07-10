@@ -382,6 +382,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 "source_files_resolved": list(dataset.metadata.source_files),
                 "assumptions": list(dataset.metadata.assumptions),
                 "warnings": list(dataset.metadata.warnings),
+                "source_quality": dict(dataset.metadata.source_quality),
             },
             "instrument_id": str(instrument.id),
             "strategy": strategy_provenance,

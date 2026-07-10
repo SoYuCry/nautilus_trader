@@ -223,49 +223,60 @@ def test_converts_pmxt_event_types_to_canonical_update_types(tmp_path: Path) -> 
     dataset = _load(_write_event_dir(tmp_path))
 
     assert [update.event_type for update in _updates(dataset)] == [
-        "price_change",
         "trade",
         "tick_size_change",
         "book",
+        "price_change",
     ]
 
 
-def test_sorts_replay_steps_by_receive_time_then_original_row_index_and_reassigns_sequence(tmp_path: Path) -> None:
+def test_sorts_replay_steps_by_source_time_receive_time_then_original_row_index_and_reassigns_sequence(
+    tmp_path: Path,
+) -> None:
     dataset = _load(_write_event_dir(tmp_path))
 
     assert [step.sequence for step in dataset.steps] == [1, 2, 3, 4]
-    assert [step.timestamp_received for step in dataset.steps] == sorted(
-        step.timestamp_received for step in dataset.steps
+    assert [step.timestamp for step in dataset.steps if step.timestamp is not None] == sorted(
+        step.timestamp for step in dataset.steps if step.timestamp is not None
     )
     assert [step.updates[0].event_type for step in dataset.steps] == [
-        "price_change",
         "trade",
         "tick_size_change",
         "book",
+        "price_change",
     ]
     text = _metadata_text(dataset)
     assert "stable" in text
+    assert "timestamp," in text
     assert "timestamp_received" in text
     assert "original" in text
     assert "row" in text
     assert "pmxt" in text
-    assert "receive-time" in text
+    assert "source-time" in text
     assert "ordering" in text
     assert "diagnostic" in text
     assert "post-sort local replay sequence" in text
     assert "not vendor/raw sequence" in text
+    assert dataset.metadata.source_quality["orderingStatus"] == "timestamp_ordered"
+    assert dataset.metadata.source_quality["orderingAmbiguousGroups"] == 0
     diagnostic = _ordering_diagnostic(dataset)
     assert diagnostic == {
         "selected_rows": "4",
         "global_physical_receive_time_inversions": "not_computed_filtered_adapter",
         "selected_receive_time_inversions_before_sort": "1",
-        "selected_receive_time_inversions_after_sort": "0",
+        "selected_receive_time_inversions_after_sort": "1",
         "selected_source_time_inversions_before_sort": "1",
-        "selected_source_time_inversions_after_sort": "1",
+        "selected_source_time_inversions_after_sort": "0",
+        "missing_source_timestamp_count": "0",
         "duplicate_timestamp_received_group_count": "1",
         "max_rows_per_timestamp_received": "2",
-        "stable_sort_key": "timestamp_received,_original_row_index",
-        "selected_receive_time_monotonic_after_sort": "true",
+        "tied_timestamp_group_count": "0",
+        "tied_timestamp_row_count": "0",
+        "ordering_ambiguous_groups": "0",
+        "ordering_ambiguous_rows": "0",
+        "stable_sort_key": "timestamp,timestamp_received,_original_row_index",
+        "selected_receive_time_monotonic_after_sort": "false",
+        "selected_source_time_monotonic_after_sort": "true",
     }
 
 
@@ -285,7 +296,7 @@ def test_missing_or_unparseable_timestamp_received_fails_before_sort(tmp_path: P
         _load(_write_event_dir(bad_root, rows=rows))
 
 
-def test_ordering_diagnostic_counts_selected_receive_inversions_and_duplicate_ties(tmp_path: Path) -> None:
+def test_ordering_diagnostic_counts_source_ordering_and_duplicate_receive_times(tmp_path: Path) -> None:
     rows = _base_rows()
     rows[0]["timestamp_received"] = _iso(4)
     rows[1]["timestamp_received"] = _iso(1)
@@ -298,22 +309,25 @@ def test_ordering_diagnostic_counts_selected_receive_inversions_and_duplicate_ti
 
     dataset = _load(_write_event_dir(tmp_path, rows=rows))
 
-    assert [step.timestamp_received for step in dataset.steps] == sorted(
-        step.timestamp_received for step in dataset.steps
+    assert [step.timestamp for step in dataset.steps if step.timestamp is not None] == sorted(
+        step.timestamp for step in dataset.steps if step.timestamp is not None
     )
     diagnostic = _ordering_diagnostic(dataset)
     assert diagnostic["selected_rows"] == "4"
     assert diagnostic["selected_receive_time_inversions_before_sort"] == "2"
-    assert diagnostic["selected_receive_time_inversions_after_sort"] == "0"
+    assert diagnostic["selected_receive_time_inversions_after_sort"] == "1"
     assert diagnostic["selected_source_time_inversions_before_sort"] == "1"
-    assert diagnostic["selected_source_time_inversions_after_sort"] == "1"
+    assert diagnostic["selected_source_time_inversions_after_sort"] == "0"
     assert diagnostic["duplicate_timestamp_received_group_count"] == "1"
     assert diagnostic["max_rows_per_timestamp_received"] == "2"
-    assert diagnostic["stable_sort_key"] == "timestamp_received,_original_row_index"
-    assert diagnostic["selected_receive_time_monotonic_after_sort"] == "true"
+    assert diagnostic["stable_sort_key"] == "timestamp,timestamp_received,_original_row_index"
+    assert diagnostic["selected_receive_time_monotonic_after_sort"] == "false"
+    assert diagnostic["selected_source_time_monotonic_after_sort"] == "true"
 
 
-def test_source_timestamp_inversion_within_same_event_type_and_asset_survives_for_data_health(tmp_path: Path) -> None:
+def test_pmxt_source_time_ordering_can_make_receive_time_health_fail_without_blocking_metadata(
+    tmp_path: Path,
+) -> None:
     rows = _base_rows()
     rows[1]["event_type"] = "price_change"
     rows[1]["timestamp_received"] = _iso(1)
@@ -325,10 +339,52 @@ def test_source_timestamp_inversion_within_same_event_type_and_asset_survives_fo
 
     report = analyze_dataset_health(dataset)
 
-    assert report.ok is True
-    assert report.summary.receive_time_inversion_count == 0
-    assert report.summary.source_time_inversion_count >= 1
-    assert any(issue.code == "source_time_inversion" for issue in report.issues)
+    assert report.ok is False
+    assert report.summary.receive_time_inversion_count >= 1
+    assert any(issue.code == "receive_time_inversion" for issue in report.issues)
+    assert dataset.metadata.source_quality["orderingStatus"] == "timestamp_ordered"
+
+
+def test_flags_ambiguous_tied_timestamp_groups(tmp_path: Path) -> None:
+    rows = _base_rows()
+    rows[1]["timestamp_received"] = _iso(2)
+    rows[1]["timestamp"] = _iso(2)
+    rows[1]["price"] = "0.41"
+    rows[3]["event_type"] = "price_change"
+    rows[3]["side"] = "BUY"
+    rows[3]["price"] = "0.42"
+    rows[3]["size"] = "7"
+
+    dataset = _load(_write_event_dir(tmp_path, rows=rows))
+
+    diagnostic = _ordering_diagnostic(dataset)
+    assert diagnostic["tied_timestamp_group_count"] == "1"
+    assert diagnostic["tied_timestamp_row_count"] == "2"
+    assert diagnostic["ordering_ambiguous_groups"] == "1"
+    assert diagnostic["ordering_ambiguous_rows"] == "2"
+    assert dataset.metadata.source_quality["orderingStatus"] == "ambiguous"
+    assert dataset.metadata.source_quality["orderingAmbiguousGroups"] == 1
+    assert dataset.metadata.source_quality["orderingAmbiguousRows"] == 2
+
+
+def test_missing_source_timestamp_sorts_by_timestamp_received_fallback(tmp_path: Path) -> None:
+    rows = _base_rows()
+    rows[1]["timestamp"] = None
+    rows[1]["timestamp_received"] = _iso(1)
+    rows[2]["timestamp"] = _iso(2)
+    rows[2]["timestamp_received"] = _iso(4)
+    rows[3]["timestamp"] = _iso(3)
+    rows[3]["timestamp_received"] = _iso(3)
+    rows[0]["timestamp"] = _iso(4)
+    rows[0]["timestamp_received"] = _iso(2)
+
+    dataset = _load(_write_event_dir(tmp_path, rows=rows))
+
+    assert dataset.steps[0].updates[0].event_type == "price_change"
+    assert dataset.steps[0].timestamp is None
+    assert dataset.steps[0].timestamp_received == datetime(2026, 1, 1, 0, 0, 1, tzinfo=UTC)
+    assert dataset.metadata.source_quality["missingSourceTimestampRows"] == 1
+    assert dataset.metadata.source_quality["orderingStatus"] == "ambiguous"
 
 
 def test_decodes_gamma_json_string_metadata_into_fee_and_settlement_for_yes_no(tmp_path: Path) -> None:
