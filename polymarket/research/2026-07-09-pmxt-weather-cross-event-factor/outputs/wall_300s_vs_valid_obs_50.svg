@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="540" viewBox="0 0 1040 540">
+<rect width="100%" height="100%" fill="white"/>
+<text x="520.0" y="28" text-anchor="middle" font-size="20" font-family="Arial">Fixed 300s vs adaptive 50 valid observations</text>
+<line x1="180" y1="403.58" x2="1010" y2="403.58" stroke="#111827" stroke-width="1"/>
+<line x1="180" y1="58" x2="180" y2="435" stroke="#111827" stroke-width="1"/>
+<text x="283.75" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 283.75,473)">depth_imbalance_1</text>
+<rect x="214.58" y="172.57" width="56.72" height="231.01" fill="#2563eb" opacity="0.88"><title>depth_imbalance_1 valid_obs_50: 0.0963617</title></rect>
+<rect x="283.75" y="89.42" width="56.72" height="314.17" fill="#dc2626" opacity="0.88"><title>depth_imbalance_1 wall_300s: 0.131047</title></rect>
+<text x="491.25" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 491.25,473)">depth_imbalance_3</text>
+<rect x="422.08" y="234.47" width="56.72" height="169.11" fill="#2563eb" opacity="0.88"><title>depth_imbalance_3 valid_obs_50: 0.0705413</title></rect>
+<rect x="491.25" y="205.70" width="56.72" height="197.88" fill="#dc2626" opacity="0.88"><title>depth_imbalance_3 wall_300s: 0.0825429</title></rect>
+<text x="698.75" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 698.75,473)">depth_imbalance_5</text>
+<rect x="629.58" y="305.94" width="56.72" height="97.64" fill="#2563eb" opacity="0.88"><title>depth_imbalance_5 valid_obs_50: 0.0407283</title></rect>
+<rect x="698.75" y="204.72" width="56.72" height="198.86" fill="#dc2626" opacity="0.88"><title>depth_imbalance_5 wall_300s: 0.0829511</title></rect>
+<text x="906.25" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 906.25,473)">microprice_minus_mid</text>
+<rect x="837.08" y="218.71" width="56.72" height="184.87" fill="#2563eb" opacity="0.88"><title>microprice_minus_mid valid_obs_50: 0.077116</title></rect>
+<rect x="906.25" y="183.48" width="56.72" height="220.11" fill="#dc2626" opacity="0.88"><title>microprice_minus_mid wall_300s: 0.0918127</title></rect>
+<rect x="180" y="503" width="12" height="12" fill="#2563eb"/>
+<text x="198" y="515" font-size="12" font-family="Arial">valid_obs_50</text>
+<rect x="350" y="503" width="12" height="12" fill="#dc2626"/>
+<text x="368" y="515" font-size="12" font-family="Arial">wall_300s</text>
+</svg>
