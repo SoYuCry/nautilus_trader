@@ -1,0 +1,33 @@
+input:
+  event_dirs:
+    - C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026
+    - C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-10-2026
+  token_side: yes
+  token_selection: all_yes
+
+probe:
+  factor: depth_imbalance_1
+  quantiles: 5
+  probe_interval_seconds: 60
+  order_size: 1.0
+  fill_windows_seconds: [60, 300]
+  markout_seconds: [60, 300, 900]
+  queue_models:
+    optimistic:
+      queue_ahead_fraction: 0.0
+    half_queue:
+      queue_ahead_fraction: 0.5
+    full_queue:
+      queue_ahead_fraction: 1.0
+
+factors:
+  rolling_window: 30s
+  max_depth_levels: 5
+
+analysis:
+  min_probes_per_bucket: 20
+  min_fills_per_metric: 5
+  fill_event_sample_limit: 500
+
+output:
+  dir: polymarket/research/2026-07-10-pmxt-weather-maker-diagnostics/outputs
