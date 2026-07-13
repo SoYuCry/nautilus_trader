@@ -1,0 +1,965 @@
+[
+  {
+    "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+    "hard_break_status": "not_flagged_by_representative_role",
+    "modes": {
+      "M1": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 0,
+        "artifact_path": null,
+        "artifact_payload_bytes": 0,
+        "cache_key": "087ec6c62694bf5f43deb4c365f04d6701a1c07cd6101b042432ecdddb4ad52d",
+        "cache_manifest_bytes": 0,
+        "cache_status": "direct_no_persistent_derivative",
+        "cold_elapsed_seconds": 4.920110000006389,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+        "event_type_counts": {
+          "book": 220,
+          "price_change": 74373,
+          "trade": 61
+        },
+        "mode": "M1",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 8536,
+            "timestamp": "2026-06-08T04:26:36.602000Z",
+            "timestamp_received": "2026-06-08T04:26:37.710000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 37328,
+            "source_row_index": 1219738,
+            "timestamp": "2026-06-08T22:09:48.281000Z",
+            "timestamp_received": "2026-06-08T22:09:48.411000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 74654,
+            "source_row_index": 5318242,
+            "timestamp": "2026-06-10T11:59:57.519000Z",
+            "timestamp_received": "2026-06-10T11:59:57.957000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "39e4604ca79e4d2d53784dd59e48a0a842810f44db6c5fde494a139722f55592",
+        "parity_digest": "64a8cc937b05f6f998c0d09247966d6a7546dda99fdc92a09f31d9e8c820b641",
+        "peak_rss_bytes": 410767360,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 74654,
+        "process_logical_read_bytes": 41221892,
+        "process_logical_write_bytes": 0,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 74654,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": null,
+            "event_type": "price_change",
+            "price": "0.5400",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": "0.9990",
+            "best_bid": "0.998",
+            "event_type": "price_change",
+            "price": "0.9820",
+            "sequence": 37328,
+            "side": "BUY",
+            "size": "21.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.9990",
+            "sequence": 74654,
+            "side": "BUY",
+            "size": "6010.130000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 660,
+        "source_file_bytes_upper_bound": 42456696,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 659,
+        "source_rows_scanned": 5323117,
+        "token_count": 1,
+        "warm_cache_status": "direct_no_persistent_derivative",
+        "warm_elapsed_seconds": 4.798640900000464,
+        "warm_peak_rss_bytes": 429105152,
+        "warm_process_logical_read_bytes": 41221781,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 1
+      },
+      "M2": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 428441,
+        "artifact_path": "outputs/cache/a77e46767d759c640377afa64cbf34bc504d336c57502fa8b43e51b8291023ef-m2.json",
+        "artifact_payload_bytes": 427131,
+        "cache_key": "a77e46767d759c640377afa64cbf34bc504d336c57502fa8b43e51b8291023ef",
+        "cache_manifest_bytes": 1310,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 5.025042499997653,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+        "event_type_counts": {
+          "book": 220,
+          "price_change": 74373,
+          "trade": 61
+        },
+        "mode": "M2",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 8536,
+            "timestamp": "2026-06-08T04:26:36.602000Z",
+            "timestamp_received": "2026-06-08T04:26:37.710000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 37328,
+            "source_row_index": 1219738,
+            "timestamp": "2026-06-08T22:09:48.281000Z",
+            "timestamp_received": "2026-06-08T22:09:48.411000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 74654,
+            "source_row_index": 5318242,
+            "timestamp": "2026-06-10T11:59:57.519000Z",
+            "timestamp_received": "2026-06-10T11:59:57.957000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "39e4604ca79e4d2d53784dd59e48a0a842810f44db6c5fde494a139722f55592",
+        "parity_digest": "64a8cc937b05f6f998c0d09247966d6a7546dda99fdc92a09f31d9e8c820b641",
+        "peak_rss_bytes": 514252800,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 74654,
+        "process_logical_read_bytes": 41648912,
+        "process_logical_write_bytes": 428441,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 74654,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": null,
+            "event_type": "price_change",
+            "price": "0.5400",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": "0.9990",
+            "best_bid": "0.998",
+            "event_type": "price_change",
+            "price": "0.9820",
+            "sequence": 37328,
+            "side": "BUY",
+            "size": "21.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.9990",
+            "sequence": 74654,
+            "side": "BUY",
+            "size": "6010.130000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 660,
+        "source_file_bytes_upper_bound": 42456696,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 659,
+        "source_rows_scanned": 5323117,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.009987699973862618,
+        "warm_peak_rss_bytes": 500338688,
+        "warm_process_logical_read_bytes": 855572,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      },
+      "M3": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 48157491,
+        "artifact_path": "outputs/cache/c83dbf230dd4ff16effe585cd0acff126da4e5fa388e469cfd1032a4013afd33-m3.json",
+        "artifact_payload_bytes": 48156218,
+        "cache_key": "c83dbf230dd4ff16effe585cd0acff126da4e5fa388e469cfd1032a4013afd33",
+        "cache_manifest_bytes": 1273,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 6.815082200046163,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+        "event_type_counts": {
+          "book": 220,
+          "price_change": 74373,
+          "trade": 61
+        },
+        "mode": "M3",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 8536,
+            "timestamp": "2026-06-08T04:26:36.602000Z",
+            "timestamp_received": "2026-06-08T04:26:37.710000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 37328,
+            "source_row_index": 1219738,
+            "timestamp": "2026-06-08T22:09:48.281000Z",
+            "timestamp_received": "2026-06-08T22:09:48.411000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 74654,
+            "source_row_index": 5318242,
+            "timestamp": "2026-06-10T11:59:57.519000Z",
+            "timestamp_received": "2026-06-10T11:59:57.957000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "39e4604ca79e4d2d53784dd59e48a0a842810f44db6c5fde494a139722f55592",
+        "parity_digest": "64a8cc937b05f6f998c0d09247966d6a7546dda99fdc92a09f31d9e8c820b641",
+        "peak_rss_bytes": 602394624,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 74654,
+        "process_logical_read_bytes": 89377999,
+        "process_logical_write_bytes": 48157491,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 74654,
+        "row_count": 74654,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": null,
+            "event_type": "price_change",
+            "price": "0.5400",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": "0.9990",
+            "best_bid": "0.998",
+            "event_type": "price_change",
+            "price": "0.9820",
+            "sequence": 37328,
+            "side": "BUY",
+            "size": "21.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.9990",
+            "sequence": 74654,
+            "side": "BUY",
+            "size": "6010.130000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 660,
+        "source_file_bytes_upper_bound": 42456696,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 659,
+        "source_rows_scanned": 5323117,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.3795643000048585,
+        "warm_peak_rss_bytes": 574722048,
+        "warm_process_logical_read_bytes": 96313709,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      }
+    },
+    "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
+    "parity_pass": true,
+    "role": "largest_event"
+  },
+  {
+    "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+    "hard_break_status": "not_flagged_by_representative_role",
+    "modes": {
+      "M1": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 0,
+        "artifact_path": null,
+        "artifact_payload_bytes": 0,
+        "cache_key": "9c9ffae29878cbc1c9f4806c3d80a7e44d05ec5abf20707ecec733af8dcda9c2",
+        "cache_manifest_bytes": 0,
+        "cache_status": "direct_no_persistent_derivative",
+        "cold_elapsed_seconds": 1.7418483999790624,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+        "event_type_counts": {
+          "book": 88,
+          "price_change": 28292,
+          "trade": 6
+        },
+        "mode": "M1",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 7011,
+            "timestamp": "2026-06-08T01:26:20.667000Z",
+            "timestamp_received": "2026-06-08T01:26:45.359000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 14194,
+            "source_row_index": 982631,
+            "timestamp": "2026-06-09T07:40:02.235000Z",
+            "timestamp_received": "2026-06-09T07:40:02.270000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 28386,
+            "source_row_index": 1463163,
+            "timestamp": "2026-06-09T11:59:59.605000Z",
+            "timestamp_received": "2026-06-09T11:59:59.752000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "dbb03e38b411465fd68a4d6a36096b34d6e30f6269d419248d99c46b7123f271",
+        "parity_digest": "7035c04a160441dd8b79c8d80bbf1f1b3110adc529f96667aefeef59ac9c95c4",
+        "peak_rss_bytes": 540319744,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 28386,
+        "process_logical_read_bytes": 12224535,
+        "process_logical_write_bytes": 0,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 28386,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.0010",
+            "event_type": "price_change",
+            "price": "0.0010",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "150.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 14194,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 28386,
+            "side": "BUY",
+            "size": "148.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 383,
+        "source_file_bytes_upper_bound": 12498543,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 383,
+        "source_rows_scanned": 1495960,
+        "token_count": 1,
+        "warm_cache_status": "direct_no_persistent_derivative",
+        "warm_elapsed_seconds": 1.700543499959167,
+        "warm_peak_rss_bytes": 558325760,
+        "warm_process_logical_read_bytes": 12224535,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 1
+      },
+      "M2": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 135356,
+        "artifact_path": "outputs/cache/4044fe22cfa5089cc0b995685ddc60c00f2a6a6728abe8e2c8ddd19bd92f1635-m2.json",
+        "artifact_payload_bytes": 134050,
+        "cache_key": "4044fe22cfa5089cc0b995685ddc60c00f2a6a6728abe8e2c8ddd19bd92f1635",
+        "cache_manifest_bytes": 1306,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 1.8135760000441223,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+        "event_type_counts": {
+          "book": 88,
+          "price_change": 28292,
+          "trade": 6
+        },
+        "mode": "M2",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 7011,
+            "timestamp": "2026-06-08T01:26:20.667000Z",
+            "timestamp_received": "2026-06-08T01:26:45.359000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 14194,
+            "source_row_index": 982631,
+            "timestamp": "2026-06-09T07:40:02.235000Z",
+            "timestamp_received": "2026-06-09T07:40:02.270000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 28386,
+            "source_row_index": 1463163,
+            "timestamp": "2026-06-09T11:59:59.605000Z",
+            "timestamp_received": "2026-06-09T11:59:59.752000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "dbb03e38b411465fd68a4d6a36096b34d6e30f6269d419248d99c46b7123f271",
+        "parity_digest": "7035c04a160441dd8b79c8d80bbf1f1b3110adc529f96667aefeef59ac9c95c4",
+        "peak_rss_bytes": 556724224,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 28386,
+        "process_logical_read_bytes": 12358585,
+        "process_logical_write_bytes": 135356,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 28386,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.0010",
+            "event_type": "price_change",
+            "price": "0.0010",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "150.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 14194,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 28386,
+            "side": "BUY",
+            "size": "148.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 383,
+        "source_file_bytes_upper_bound": 12498543,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 383,
+        "source_rows_scanned": 1495960,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.008159900025930256,
+        "warm_peak_rss_bytes": 542801920,
+        "warm_process_logical_read_bytes": 269406,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      },
+      "M3": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 18134602,
+        "artifact_path": "outputs/cache/a0deafaab7c24bf0b573e0fa957ff5b7251ccf86ed07dda71a38b7cf63a8609f-m3.json",
+        "artifact_payload_bytes": 18133333,
+        "cache_key": "a0deafaab7c24bf0b573e0fa957ff5b7251ccf86ed07dda71a38b7cf63a8609f",
+        "cache_manifest_bytes": 1269,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 2.6885796999558806,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+        "event_type_counts": {
+          "book": 88,
+          "price_change": 28292,
+          "trade": 6
+        },
+        "mode": "M3",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 7011,
+            "timestamp": "2026-06-08T01:26:20.667000Z",
+            "timestamp_received": "2026-06-08T01:26:45.359000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 14194,
+            "source_row_index": 982631,
+            "timestamp": "2026-06-09T07:40:02.235000Z",
+            "timestamp_received": "2026-06-09T07:40:02.270000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 28386,
+            "source_row_index": 1463163,
+            "timestamp": "2026-06-09T11:59:59.605000Z",
+            "timestamp_received": "2026-06-09T11:59:59.752000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "dbb03e38b411465fd68a4d6a36096b34d6e30f6269d419248d99c46b7123f271",
+        "parity_digest": "7035c04a160441dd8b79c8d80bbf1f1b3110adc529f96667aefeef59ac9c95c4",
+        "peak_rss_bytes": 551514112,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 28386,
+        "process_logical_read_bytes": 30357868,
+        "process_logical_write_bytes": 18134602,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 28386,
+        "row_count": 28386,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.0010",
+            "event_type": "price_change",
+            "price": "0.0010",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "150.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 14194,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.6010",
+            "sequence": 28386,
+            "side": "BUY",
+            "size": "148.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 383,
+        "source_file_bytes_upper_bound": 12498543,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 383,
+        "source_rows_scanned": 1495960,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.17155090003507212,
+        "warm_peak_rss_bytes": 561168384,
+        "warm_process_logical_read_bytes": 36267935,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      }
+    },
+    "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
+    "parity_pass": true,
+    "role": "median_volume_event"
+  },
+  {
+    "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+    "hard_break_status": "inventory_role_degraded_case_requires_manifest_intersection_evidence",
+    "modes": {
+      "M1": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 0,
+        "artifact_path": null,
+        "artifact_payload_bytes": 0,
+        "cache_key": "4ebc9a842ecdeef6e9e06ad6db41d84825e7fff13f221c861a65f8ddf32b536d",
+        "cache_manifest_bytes": 0,
+        "cache_status": "direct_no_persistent_derivative",
+        "cold_elapsed_seconds": 0.08269650000147521,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+        "event_type_counts": {
+          "book": 10,
+          "price_change": 900,
+          "trade": 2
+        },
+        "mode": "M1",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 11296,
+            "timestamp": "2026-06-05T04:24:07.264000Z",
+            "timestamp_received": "2026-06-05T04:24:08.896000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 457,
+            "source_row_index": 75160,
+            "timestamp": "2026-06-05T07:38:29.653000Z",
+            "timestamp_received": "2026-06-05T07:38:29.735000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 912,
+            "source_row_index": 96821,
+            "timestamp": "2026-06-05T08:57:56.422000Z",
+            "timestamp_received": "2026-06-05T08:58:53.576000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "c855e6949aff933d1e62168d8e9f499d62e89aed1e35dc68564403705b9350e9",
+        "parity_digest": "2698710bca21d079938bd30c50357d2359bf2c42cd6dbb161e0c5a0946c1b2fc",
+        "peak_rss_bytes": 544321536,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 912,
+        "process_logical_read_bytes": 1086586,
+        "process_logical_write_bytes": 0,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 912,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.9900",
+            "event_type": "price_change",
+            "price": "0.9900",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "290.200000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.9960",
+            "event_type": "price_change",
+            "price": "0.9650",
+            "sequence": 457,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.2000",
+            "sequence": 912,
+            "side": "BUY",
+            "size": "850.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 57,
+        "source_file_bytes_upper_bound": 1069103,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 57,
+        "source_rows_scanned": 96822,
+        "token_count": 1,
+        "warm_cache_status": "direct_no_persistent_derivative",
+        "warm_elapsed_seconds": 0.11851749999914318,
+        "warm_peak_rss_bytes": 542257152,
+        "warm_process_logical_read_bytes": 1086586,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 1
+      },
+      "M2": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 11093,
+        "artifact_path": "outputs/cache/a6160a9d2d49c51a6c2b78a6aaccda92e6a9bcf2f1cc2d3845504f3e3711986b-m2.json",
+        "artifact_payload_bytes": 9787,
+        "cache_key": "a6160a9d2d49c51a6c2b78a6aaccda92e6a9bcf2f1cc2d3845504f3e3711986b",
+        "cache_manifest_bytes": 1306,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 0.09291849995497614,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+        "event_type_counts": {
+          "book": 10,
+          "price_change": 900,
+          "trade": 2
+        },
+        "mode": "M2",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 11296,
+            "timestamp": "2026-06-05T04:24:07.264000Z",
+            "timestamp_received": "2026-06-05T04:24:08.896000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 457,
+            "source_row_index": 75160,
+            "timestamp": "2026-06-05T07:38:29.653000Z",
+            "timestamp_received": "2026-06-05T07:38:29.735000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 912,
+            "source_row_index": 96821,
+            "timestamp": "2026-06-05T08:57:56.422000Z",
+            "timestamp_received": "2026-06-05T08:58:53.576000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "c855e6949aff933d1e62168d8e9f499d62e89aed1e35dc68564403705b9350e9",
+        "parity_digest": "2698710bca21d079938bd30c50357d2359bf2c42cd6dbb161e0c5a0946c1b2fc",
+        "peak_rss_bytes": 541458432,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 912,
+        "process_logical_read_bytes": 1096373,
+        "process_logical_write_bytes": 11093,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 0,
+        "row_count": 912,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.9900",
+            "event_type": "price_change",
+            "price": "0.9900",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "290.200000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.9960",
+            "event_type": "price_change",
+            "price": "0.9650",
+            "sequence": 457,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.2000",
+            "sequence": 912,
+            "side": "BUY",
+            "size": "850.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 57,
+        "source_file_bytes_upper_bound": 1069103,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 57,
+        "source_rows_scanned": 96822,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.007272400020156056,
+        "warm_peak_rss_bytes": 539426816,
+        "warm_process_logical_read_bytes": 20880,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      },
+      "M3": {
+        "application_cold_os_cache": "unknown",
+        "artifact_bytes": 587118,
+        "artifact_path": "outputs/cache/764891e35f84a13a60a636ab4912fb77ae853b8e907bfba1226b9712ed70c357-m3.json",
+        "artifact_payload_bytes": 585849,
+        "cache_key": "764891e35f84a13a60a636ab4912fb77ae853b8e907bfba1226b9712ed70c357",
+        "cache_manifest_bytes": 1269,
+        "cache_status": "cold_committed",
+        "cold_elapsed_seconds": 0.1281215000199154,
+        "event_count": 1,
+        "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+        "event_type_counts": {
+          "book": 10,
+          "price_change": 900,
+          "trade": 2
+        },
+        "mode": "M3",
+        "ordering_checkpoints": [
+          {
+            "event_type": "price_change",
+            "sequence": 1,
+            "source_row_index": 11296,
+            "timestamp": "2026-06-05T04:24:07.264000Z",
+            "timestamp_received": "2026-06-05T04:24:08.896000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 457,
+            "source_row_index": 75160,
+            "timestamp": "2026-06-05T07:38:29.653000Z",
+            "timestamp_received": "2026-06-05T07:38:29.735000Z"
+          },
+          {
+            "event_type": "price_change",
+            "sequence": 912,
+            "source_row_index": 96821,
+            "timestamp": "2026-06-05T08:57:56.422000Z",
+            "timestamp_received": "2026-06-05T08:58:53.576000Z"
+          }
+        ],
+        "ordering_contract_version": "O1_selected_token_replay_order:timestamp-source-fallback_received_physical-ordinal-v1",
+        "ordering_digest": "c855e6949aff933d1e62168d8e9f499d62e89aed1e35dc68564403705b9350e9",
+        "parity_digest": "2698710bca21d079938bd30c50357d2359bf2c42cd6dbb161e0c5a0946c1b2fc",
+        "peak_rss_bytes": 539463680,
+        "peak_rss_method": "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms",
+        "peak_rss_scope": "sampled_process_working_set_during_call",
+        "primitive_count": 912,
+        "process_logical_read_bytes": 1672435,
+        "process_logical_write_bytes": 587118,
+        "resume_behavior": {
+          "committed_matching_payload_only": true,
+          "failure_isolation": "per_event_token_cache_identity",
+          "ignored_partial_artifacts": 0,
+          "invalid_cache_reason": null,
+          "removed_partial_artifacts": 0,
+          "reused_completed_artifact": false
+        },
+        "retained_primitive_record_count": 912,
+        "row_count": 912,
+        "semantic_checkpoints": [
+          {
+            "best_ask": null,
+            "best_bid": "0.9900",
+            "event_type": "price_change",
+            "price": "0.9900",
+            "sequence": 1,
+            "side": "BUY",
+            "size": "290.200000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.9960",
+            "event_type": "price_change",
+            "price": "0.9650",
+            "sequence": 457,
+            "side": "BUY",
+            "size": "0.000000",
+            "tick_size": null
+          },
+          {
+            "best_ask": null,
+            "best_bid": "0.999",
+            "event_type": "price_change",
+            "price": "0.2000",
+            "sequence": 912,
+            "side": "BUY",
+            "size": "850.000000",
+            "tick_size": null
+          }
+        ],
+        "source_batches_scanned": 57,
+        "source_file_bytes_upper_bound": 1069103,
+        "source_pass_count": 1,
+        "source_row_groups_scanned": 57,
+        "source_rows_scanned": 96822,
+        "token_count": 1,
+        "warm_cache_status": "warm_reused_committed_matching_payload",
+        "warm_elapsed_seconds": 0.014215100032743067,
+        "warm_peak_rss_bytes": 540160000,
+        "warm_process_logical_read_bytes": 1172967,
+        "warm_process_logical_write_bytes": 0,
+        "warm_source_pass_count": 0
+      }
+    },
+    "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
+    "parity_pass": true,
+    "role": "degraded_event_local_missing_case"
+  }
+]

@@ -1,0 +1,407 @@
+{
+  "expected_task_count": 49,
+  "full_49_event_m3_attempted": false,
+  "manifest_available_event_count": 49,
+  "manifest_feasibility_only_count": 49,
+  "manifest_projected_m3_artifact_bytes": 453465148,
+  "manifest_projected_rows_total": 47168018,
+  "manifest_projected_source_file_bytes_upper_bound_total": 379865225,
+  "projection_scope": "capacity_projection_only_not_a_complete_date_benchmark",
+  "reason": "all 49 frozen Jun4 task IDs are manifest-feasibility-only; no full-date M1/M2/M3 execution or completion is claimed",
+  "representative_m3_artifact_to_source_file_upper_bound_ratio": 1.1937527262703058,
+  "status": "deferred",
+  "task_statuses": [
+    {
+      "event_slug": "highest-temperature-in-amsterdam-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1220326,
+      "manifest_projected_source_file_bytes_upper_bound": 9176202,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-amsterdam-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-ankara-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 406524,
+      "manifest_projected_source_file_bytes_upper_bound": 3950441,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-ankara-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-atlanta-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 709925,
+      "manifest_projected_source_file_bytes_upper_bound": 5899279,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-atlanta-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-austin-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 759978,
+      "manifest_projected_source_file_bytes_upper_bound": 6098896,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-austin-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-beijing-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1850582,
+      "manifest_projected_source_file_bytes_upper_bound": 15214341,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-beijing-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-buenos-aires-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 603754,
+      "manifest_projected_source_file_bytes_upper_bound": 4986361,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-buenos-aires-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-busan-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1431300,
+      "manifest_projected_source_file_bytes_upper_bound": 11057239,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-busan-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-cape-town-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 534214,
+      "manifest_projected_source_file_bytes_upper_bound": 4587777,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-cape-town-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-chengdu-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 2132866,
+      "manifest_projected_source_file_bytes_upper_bound": 16509773,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-chengdu-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-chicago-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 17690,
+      "manifest_projected_source_file_bytes_upper_bound": 1002239,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-chicago-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-chongqing-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1114774,
+      "manifest_projected_source_file_bytes_upper_bound": 8899152,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-chongqing-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-dallas-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1134746,
+      "manifest_projected_source_file_bytes_upper_bound": 8827564,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-dallas-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-denver-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 44972,
+      "manifest_projected_source_file_bytes_upper_bound": 1250909,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-denver-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-guangzhou-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1628868,
+      "manifest_projected_source_file_bytes_upper_bound": 12718021,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-guangzhou-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-helsinki-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 885184,
+      "manifest_projected_source_file_bytes_upper_bound": 7089467,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-helsinki-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-hong-kong-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 536532,
+      "manifest_projected_source_file_bytes_upper_bound": 4972533,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-hong-kong-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-houston-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1078852,
+      "manifest_projected_source_file_bytes_upper_bound": 8373686,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-houston-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-istanbul-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 680527,
+      "manifest_projected_source_file_bytes_upper_bound": 5356024,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-istanbul-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-jeddah-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 2233274,
+      "manifest_projected_source_file_bytes_upper_bound": 16382675,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-jeddah-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-karachi-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1000069,
+      "manifest_projected_source_file_bytes_upper_bound": 7483575,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-karachi-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-kuala-lumpur-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1201131,
+      "manifest_projected_source_file_bytes_upper_bound": 9210948,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-kuala-lumpur-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-london-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1090833,
+      "manifest_projected_source_file_bytes_upper_bound": 9204373,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-london-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-los-angeles-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 738381,
+      "manifest_projected_source_file_bytes_upper_bound": 6345680,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-los-angeles-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-lucknow-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 390637,
+      "manifest_projected_source_file_bytes_upper_bound": 3645059,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-lucknow-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-madrid-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 966565,
+      "manifest_projected_source_file_bytes_upper_bound": 8167878,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-madrid-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-manila-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 861876,
+      "manifest_projected_source_file_bytes_upper_bound": 6653531,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-manila-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-mexico-city-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 438623,
+      "manifest_projected_source_file_bytes_upper_bound": 4055747,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-mexico-city-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-miami-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 682894,
+      "manifest_projected_source_file_bytes_upper_bound": 6015647,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-miami-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-milan-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 988483,
+      "manifest_projected_source_file_bytes_upper_bound": 7463703,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-milan-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-moscow-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 2033482,
+      "manifest_projected_source_file_bytes_upper_bound": 15213010,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-moscow-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-munich-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 934111,
+      "manifest_projected_source_file_bytes_upper_bound": 7528349,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-munich-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-nyc-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1106508,
+      "manifest_projected_source_file_bytes_upper_bound": 9048032,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-nyc-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-panama-city-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 527161,
+      "manifest_projected_source_file_bytes_upper_bound": 4336245,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-panama-city-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-paris-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1308507,
+      "manifest_projected_source_file_bytes_upper_bound": 10322338,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-paris-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-qingdao-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 633658,
+      "manifest_projected_source_file_bytes_upper_bound": 5016372,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-qingdao-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-san-francisco-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 663572,
+      "manifest_projected_source_file_bytes_upper_bound": 5406147,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-san-francisco-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-sao-paulo-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 456368,
+      "manifest_projected_source_file_bytes_upper_bound": 3975070,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-sao-paulo-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-seattle-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 570656,
+      "manifest_projected_source_file_bytes_upper_bound": 5034430,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-seattle-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-seoul-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1127723,
+      "manifest_projected_source_file_bytes_upper_bound": 9467808,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-seoul-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-shanghai-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1821608,
+      "manifest_projected_source_file_bytes_upper_bound": 14876117,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-shanghai-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-shenzhen-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 773359,
+      "manifest_projected_source_file_bytes_upper_bound": 6341101,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-shenzhen-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-singapore-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 839623,
+      "manifest_projected_source_file_bytes_upper_bound": 6566371,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-singapore-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-taipei-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 907326,
+      "manifest_projected_source_file_bytes_upper_bound": 7598486,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-taipei-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-tel-aviv-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1104882,
+      "manifest_projected_source_file_bytes_upper_bound": 8466805,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-tel-aviv-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-tokyo-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 925648,
+      "manifest_projected_source_file_bytes_upper_bound": 7741827,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-tokyo-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-toronto-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 678909,
+      "manifest_projected_source_file_bytes_upper_bound": 5520944,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-toronto-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-warsaw-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1210295,
+      "manifest_projected_source_file_bytes_upper_bound": 9586262,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-warsaw-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-wellington-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 1231569,
+      "manifest_projected_source_file_bytes_upper_bound": 9957580,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-wellington-on-june-4-2026"
+    },
+    {
+      "event_slug": "highest-temperature-in-wuhan-on-june-4-2026",
+      "manifest_available": true,
+      "manifest_projected_rows": 948673,
+      "manifest_projected_source_file_bytes_upper_bound": 7263211,
+      "status": "manifest_feasibility_only",
+      "task_id": "highest-temperature-in-wuhan-on-june-4-2026"
+    }
+  ]
+}

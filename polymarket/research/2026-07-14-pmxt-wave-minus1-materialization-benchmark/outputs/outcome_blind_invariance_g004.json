@@ -1,0 +1,82 @@
+{
+  "equivalent": true,
+  "method": "baseline_benign_prohibited_sentinels_then_mutated_poisoned_then_removed_through_one_strict_allowlisted_decision_resource_function",
+  "poisoned_field_classes": [
+    "aliases",
+    "outcomes",
+    "settlement",
+    "future_returns",
+    "factors",
+    "signals",
+    "strategies",
+    "fills",
+    "PnL"
+  ],
+  "raw_hash_unique_count": 3,
+  "raw_inputs_distinct": true,
+  "runs": [
+    {
+      "decision_output": {
+        "not_for_pnl": true,
+        "performance_claims_allowed": false,
+        "status": "deferred"
+      },
+      "decision_output_hash": "33c921583f6b0b30407406bab28e6964e4640b4194d73f37ba07e6488a4902e8",
+      "raw_input_hash": "6613f4d23606d7d18ed293bd1ae6ca65d1af61161d1f65f3d753b89ae1c0d54d",
+      "resource_output": {
+        "artifact_bytes_total": 67454101,
+        "cold_elapsed_seconds_total": 23.307975300005637,
+        "event_count": 3,
+        "mode_count": 9,
+        "source_file_bytes_upper_bound_total_by_mode": 168073026
+      },
+      "resource_output_hash": "0a0f4ae278a8aba15f6d8b08ba2a77e16cca7f550c6f599dab9d7310ceb68260",
+      "sanitized_input_hash": "ee641d8f8ca6ca2b9171f159881988492df57e8d469f03ef7d007da27fb93e7e",
+      "variant": "baseline"
+    },
+    {
+      "decision_output": {
+        "not_for_pnl": true,
+        "performance_claims_allowed": false,
+        "status": "deferred"
+      },
+      "decision_output_hash": "33c921583f6b0b30407406bab28e6964e4640b4194d73f37ba07e6488a4902e8",
+      "raw_input_hash": "301235f0023002535d6de13a5435b97a4f9a73ba5dd8a18c9a25676fceb44438",
+      "resource_output": {
+        "artifact_bytes_total": 67454101,
+        "cold_elapsed_seconds_total": 23.307975300005637,
+        "event_count": 3,
+        "mode_count": 9,
+        "source_file_bytes_upper_bound_total_by_mode": 168073026
+      },
+      "resource_output_hash": "0a0f4ae278a8aba15f6d8b08ba2a77e16cca7f550c6f599dab9d7310ceb68260",
+      "sanitized_input_hash": "ee641d8f8ca6ca2b9171f159881988492df57e8d469f03ef7d007da27fb93e7e",
+      "variant": "poisoned"
+    },
+    {
+      "decision_output": {
+        "not_for_pnl": true,
+        "performance_claims_allowed": false,
+        "status": "deferred"
+      },
+      "decision_output_hash": "33c921583f6b0b30407406bab28e6964e4640b4194d73f37ba07e6488a4902e8",
+      "raw_input_hash": "2bbefc52858f271dfd014e0b9178bc87058970d846b2531a7bc4fc346914f269",
+      "resource_output": {
+        "artifact_bytes_total": 67454101,
+        "cold_elapsed_seconds_total": 23.307975300005637,
+        "event_count": 3,
+        "mode_count": 9,
+        "source_file_bytes_upper_bound_total_by_mode": 168073026
+      },
+      "resource_output_hash": "0a0f4ae278a8aba15f6d8b08ba2a77e16cca7f550c6f599dab9d7310ceb68260",
+      "sanitized_input_hash": "ee641d8f8ca6ca2b9171f159881988492df57e8d469f03ef7d007da27fb93e7e",
+      "variant": "removed"
+    }
+  ],
+  "strict_allowed_surface": [
+    "event identity/role",
+    "M1/M2/M3 resource metrics and parity",
+    "ambiguity status",
+    "complete-date feasibility status/count"
+  ]
+}
