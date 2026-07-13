@@ -1,4 +1,5 @@
-"""Nautilus-native bridge for Polymarket research data.
+"""
+Nautilus-native bridge for Polymarket research data.
 
 This module is intentionally *not* a backtest engine.  Its job is to convert the
 repository-local Polymarket source-normalization model into NautilusTrader data
@@ -8,10 +9,14 @@ objects that can be passed to :class:`nautilus_trader.backtest.engine.BacktestEn
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Literal, Mapping
+from typing import Any
+from typing import Literal
+from typing import Mapping
 
 from nautilus_trader.adapters.polymarket.common.enums import PolymarketOrderSide
 from nautilus_trader.adapters.polymarket.common.parsing import determine_trade_id
@@ -36,16 +41,19 @@ from nautilus_trader.model.identifiers import Symbol
 from nautilus_trader.model.instruments import BinaryOption
 from nautilus_trader.model.objects import Price
 from nautilus_trader.model.objects import Quantity
-
 from polymarket._core.models import L2ReplayStepV1
 from polymarket._core.models import L2UpdateV1
 from polymarket._core.models import MarketMetadataV1
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket._core.tick_size import resolve_effective_tick_size
+from polymarket.replay_contract import PMXT_REPLAY_CLOCK
+from polymarket.replay_contract import RECEIVE_TIME_REPLAY_CLOCK
+from polymarket.replay_contract import replay_timestamp
 
 
 NativePolymarketData = OrderBookDeltas | TradeTick | InstrumentClose
 SettlementModeV1 = Literal["official", "inferred", "open"]
+ReplayClockV1 = Literal["timestamp_received", "pmxt_replay_timestamp"]
 
 POLYMARKET_FINE_PRICE_INCREMENT = Decimal("0.001")
 POLYMARKET_INITIAL_EFFECTIVE_TICK_SIZE = Decimal("0.01")
@@ -109,7 +117,6 @@ def load_binary_option_from_config(
     config_base_dir: Path | None = None,
 ) -> BinaryOption:
     """Build a Nautilus ``BinaryOption`` from explicit config or dataset IDs."""
-
     if config.get("dict_path") is not None:
         path = Path(str(config["dict_path"]))
         if not path.is_absolute():
@@ -205,7 +212,7 @@ def _resolve_fee_fields(
     if metadata is not None and metadata.taker_fee is not None:
         return metadata.maker_fee, metadata.taker_fee, metadata.fee_source
 
-    return Decimal("0"), Decimal("0"), "default_zero"
+    return Decimal(0), Decimal(0), "default_zero"
 
 
 def _find_market_metadata(
@@ -259,8 +266,28 @@ def convert_dataset_to_nautilus(
     instrument: BinaryOption,
     selected_asset_id: str | None = None,
     fail_on_tick_size_change: bool = False,
+    replay_clock: ReplayClockV1 = RECEIVE_TIME_REPLAY_CLOCK,
 ) -> NautilusConversionResultV1:
-    """Convert normalized Polymarket L2 data into Nautilus-native data objects."""
+    """
+    Convert normalized Polymarket L2 data into Nautilus-native data objects.
+
+    ``replay_clock`` selects the step clock used for ``ts_event``/``ts_init``:
+
+    - ``timestamp_received`` (default): strict-capture receive-time replay.
+      Source timestamps remain diagnostics/provenance and must not reorder
+      replay or create a look-ahead path.
+    - ``pmxt_replay_timestamp``: the shared PMXT research contract clock
+      (source ``timestamp`` with ``timestamp_received`` fallback), matching the
+      order the PMXT adapter sorted on and the clock factor research replays
+      on.  Only the explicit pmxt_research runner mode selects this.
+    """
+    if replay_clock not in (RECEIVE_TIME_REPLAY_CLOCK, PMXT_REPLAY_CLOCK):
+        raise ValueError(f"unsupported replay_clock: {replay_clock!r}")
+
+    def step_event_ns(step: L2ReplayStepV1) -> int:
+        if replay_clock == PMXT_REPLAY_CLOCK:
+            return datetime_to_nanos(replay_timestamp(step))
+        return datetime_to_nanos(step.timestamp_received)
 
     data: list[NativePolymarketData] = []
     skipped: list[str] = []
@@ -283,7 +310,7 @@ def convert_dataset_to_nautilus(
 
     def next_ts_init(step: L2ReplayStepV1) -> int:
         nonlocal last_ts_init
-        ts_init = datetime_to_nanos(step.timestamp_received)
+        ts_init = step_event_ns(step)
         if last_ts_init is not None and ts_init <= last_ts_init:
             ts_init = last_ts_init + 1
         last_ts_init = ts_init
@@ -299,6 +326,7 @@ def convert_dataset_to_nautilus(
             step,
             book_updates,
             instrument=instrument,
+            ts_event=step_event_ns(step),
             ts_init=next_ts_init(step),
         )
         if deltas is not None:
@@ -337,6 +365,7 @@ def convert_dataset_to_nautilus(
                         step,
                         update,
                         instrument=instrument,
+                        ts_event=step_event_ns(step),
                         ts_init=next_ts_init(step),
                     ),
                 )
@@ -371,7 +400,7 @@ def convert_dataset_to_nautilus(
                     EffectiveTickSizeChangeV1(
                         sequence=step.sequence,
                         effective_from_ts_init=_next_monotonic_ts_init(
-                            _ts_event(step),
+                            step_event_ns(step),
                             last_ts_init,
                         ),
                         old_tick_size=update.old_tick_size,
@@ -398,7 +427,7 @@ def convert_dataset_to_nautilus(
         if last_ts_init is not None and settlement.resolution_time_ns < last_ts_init:
             raise ValueError(
                 "resolved Polymarket token settlement time is before the last replay "
-                "timestamp_received for the selected token: "
+                "clock timestamp for the selected token: "
                 f"resolution_time_ns={settlement.resolution_time_ns}, last_replay_ts_init={last_ts_init}",
             )
         data.append(
@@ -434,14 +463,17 @@ def _step_to_order_book_deltas(
     updates: list[L2UpdateV1],
     *,
     instrument: BinaryOption,
+    ts_event: int,
     ts_init: int,
 ) -> OrderBookDeltas | None:
     deltas: list[OrderBookDelta] = []
     for update in updates:
         if update.event_type == "book":
-            deltas.extend(_snapshot_to_deltas(step, update, instrument=instrument, ts_init=ts_init))
+            deltas.extend(
+                _snapshot_to_deltas(step, update, instrument=instrument, ts_event=ts_event, ts_init=ts_init),
+            )
         elif update.event_type == "price_change":
-            delta = _price_change_to_delta(step, update, instrument=instrument, ts_init=ts_init)
+            delta = _price_change_to_delta(step, update, instrument=instrument, ts_event=ts_event, ts_init=ts_init)
             deltas.append(delta)
 
     if not deltas:
@@ -465,12 +497,12 @@ def _snapshot_to_deltas(
     update: L2UpdateV1,
     *,
     instrument: BinaryOption,
+    ts_event: int,
     ts_init: int,
 ) -> list[OrderBookDelta]:
     if not update.bids and not update.asks:
         return []
 
-    ts_event = _ts_event(step)
     deltas = [
         OrderBookDelta(
             instrument_id=instrument.id,
@@ -492,6 +524,7 @@ def _snapshot_to_deltas(
                 price=level.price,
                 size=level.size,
                 flags=RecordFlag.F_SNAPSHOT,
+                ts_event=ts_event,
                 ts_init=ts_init,
             ),
         )
@@ -505,6 +538,7 @@ def _snapshot_to_deltas(
                 price=level.price,
                 size=level.size,
                 flags=RecordFlag.F_SNAPSHOT,
+                ts_event=ts_event,
                 ts_init=ts_init,
             ),
         )
@@ -516,6 +550,7 @@ def _price_change_to_delta(
     update: L2UpdateV1,
     *,
     instrument: BinaryOption,
+    ts_event: int,
     ts_init: int,
 ) -> OrderBookDelta:
     if update.price is None or update.size is None:
@@ -543,6 +578,7 @@ def _price_change_to_delta(
         price=update.price,
         size=update.size,
         flags=0,
+        ts_event=ts_event,
         ts_init=ts_init,
     )
 
@@ -599,6 +635,7 @@ def _level_delta(
     price: Decimal,
     size: Decimal,
     flags: int,
+    ts_event: int,
     ts_init: int,
 ) -> OrderBookDelta:
     order = BookOrder(
@@ -613,7 +650,7 @@ def _level_delta(
         order=order,
         flags=flags,
         sequence=step.sequence,
-        ts_event=_ts_event(step),
+        ts_event=ts_event,
         ts_init=ts_init,
     )
 
@@ -623,6 +660,7 @@ def _trade_to_tick(
     update: L2UpdateV1,
     *,
     instrument: BinaryOption,
+    ts_event: int,
     ts_init: int,
 ) -> TradeTick:
     if update.price is None or update.size is None:
@@ -635,7 +673,7 @@ def _trade_to_tick(
         polymarket_side = PolymarketOrderSide.SELL
     else:
         raise ValueError(f"unsupported trade side: {update.side!r}")
-    timestamp = str(int(_ts_event(step) / 1_000_000))
+    timestamp = str(int(ts_event / 1_000_000))
     trade_id = determine_trade_id(
         asset_id=update.asset_id,
         side=polymarket_side,
@@ -649,16 +687,9 @@ def _trade_to_tick(
         size=instrument.make_qty(float(update.size)),
         aggressor_side=aggressor,
         trade_id=trade_id,
-        ts_event=_ts_event(step),
+        ts_event=ts_event,
         ts_init=ts_init,
     )
-
-
-def _ts_event(step: L2ReplayStepV1) -> int:
-    # Historical replay is receive-time ordered.  Source timestamps remain
-    # diagnostics/provenance in data_health.json; they must not reorder replay
-    # or create a look-ahead path when they are future-stamped or inverted.
-    return datetime_to_nanos(step.timestamp_received)
 
 
 def _next_monotonic_ts_init(candidate: int, previous: int | None) -> int:
@@ -745,7 +776,7 @@ def _official_settlement_metadata(
         return None
     payout = metadata.token_payout
     if payout is None and metadata.winner is not None:
-        payout = Decimal("1") if metadata.winner else Decimal("0")
+        payout = Decimal(1) if metadata.winner else Decimal(0)
     if payout is None:
         raise ValueError(
             "official/resolved Polymarket token metadata requires token_payout or winner "
@@ -762,8 +793,8 @@ def _official_settlement_metadata(
             f"condition_id={condition_id!r}, token_id={token_id!r}, "
             f"payout={payout}",
         )
-    if metadata.winner is not None and payout in {Decimal("0"), Decimal("1")}:
-        expected = Decimal("1") if metadata.winner else Decimal("0")
+    if metadata.winner is not None and payout in {Decimal(0), Decimal(1)}:
+        expected = Decimal(1) if metadata.winner else Decimal(0)
         if payout != expected:
             raise ValueError(
                 "resolved Polymarket token winner and payout disagree: "
@@ -809,13 +840,13 @@ def _infer_terminal_settlement_metadata(
         return None
     mark = Decimal(raw_mark)
     if mark >= SETTLEMENT_INFERENCE_HIGH:
-        payout = Decimal("1")
+        payout = Decimal(1)
         reason = (
             f"no official settlement metadata; inferred payout=1 because terminal_mark={mark} "
             f">= {SETTLEMENT_INFERENCE_HIGH}"
         )
     elif mark <= SETTLEMENT_INFERENCE_LOW:
-        payout = Decimal("0")
+        payout = Decimal(0)
         reason = (
             f"no official settlement metadata; inferred payout=0 because terminal_mark={mark} "
             f"<= {SETTLEMENT_INFERENCE_LOW}"
@@ -855,7 +886,7 @@ def _terminal_market_evidence(
         evidence["terminal_last_trade"] = str(last_trade)
     if best_bid is not None and best_ask is not None:
         evidence["terminal_mark_source"] = "bbo_mid"
-        evidence["terminal_mark"] = str((best_bid + best_ask) / Decimal("2"))
+        evidence["terminal_mark"] = str((best_bid + best_ask) / Decimal(2))
     elif last_trade is not None:
         evidence["terminal_mark_source"] = "last_trade"
         evidence["terminal_mark"] = str(last_trade)
@@ -916,7 +947,8 @@ def install_effective_tick_size_order_guard(
     initial_tick_size: Decimal,
     changes: tuple[EffectiveTickSizeChangeV1, ...],
 ) -> dict[str, Any]:
-    """Install a Polymarket v1 submit-time price guard on one strategy instance.
+    """
+    Install a Polymarket v1 submit-time price guard on one strategy instance.
 
     The Nautilus instrument uses the finest price increment required for replay
     precision, but Polymarket's effective minimum tick can be coarser earlier in
@@ -928,7 +960,6 @@ def install_effective_tick_size_order_guard(
     patched methods are ``submit_order``, ``submit_order_list``, and
     ``modify_order``; regression tests cover all three paths.
     """
-
     original_submit_order = strategy.submit_order
     original_submit_order_list = strategy.submit_order_list
     original_modify_order = strategy.modify_order

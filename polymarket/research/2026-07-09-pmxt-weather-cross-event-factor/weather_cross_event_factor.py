@@ -256,9 +256,15 @@ def event_market_fields(event_index: dict[str, Any], market: dict[str, Any], tok
     }
 
 
+def replay_time_column(panel: pd.DataFrame) -> str:
+    """Prefer the shared PMXT research replay clock; fall back for old panels."""
+    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+
+
 def add_time_to_close(panel: pd.DataFrame) -> pd.DataFrame:
     panel = panel.copy()
-    panel["time_to_close_seconds"] = (panel["event_end"] - panel["timestamp_received"]).dt.total_seconds()
+    clock_col = replay_time_column(panel)
+    panel["time_to_close_seconds"] = (panel["event_end"] - panel[clock_col]).dt.total_seconds()
     panel["time_to_close_bucket"] = panel["time_to_close_seconds"].map(time_to_close_bucket)
     return panel
 
@@ -280,30 +286,31 @@ def time_to_close_bucket(seconds: float) -> str:
 def add_valid_observation_labels(panel: pd.DataFrame, valid_steps: list[int]) -> pd.DataFrame:
     if panel.empty:
         return panel
-    panel = panel.sort_values(["timestamp_received", "sequence"], kind="mergesort").reset_index(drop=True)
+    clock_col = replay_time_column(panel)
+    panel = panel.sort_values([clock_col, "sequence"], kind="mergesort").reset_index(drop=True)
     valid = panel[panel["book_validity"] == VALID_BOOK].copy()
     base = (
-        valid[["timestamp_received", "sequence", "mid", "bid1", "ask1"]]
-        .sort_values(["timestamp_received", "sequence"], kind="mergesort")
-        .groupby("timestamp_received", sort=False, as_index=False)
+        valid[[clock_col, "sequence", "mid", "bid1", "ask1"]]
+        .sort_values([clock_col, "sequence"], kind="mergesort")
+        .groupby(clock_col, sort=False, as_index=False)
         .tail(1)
-        .sort_values("timestamp_received", kind="mergesort")
+        .sort_values(clock_col, kind="mergesort")
         .reset_index(drop=True)
     )
     if base.empty:
         return panel
-    mapping = pd.DataFrame({"timestamp_received": panel["timestamp_received"], "_row": panel.index})
+    mapping = pd.DataFrame({clock_col: panel[clock_col], "_row": panel.index})
     for steps in valid_steps:
         future = pd.DataFrame(
             {
-                "timestamp_received": base["timestamp_received"],
+                clock_col: base[clock_col],
                 f"future_mid_valid_obs_{steps}": base["mid"].shift(-steps),
                 f"future_bid_valid_obs_{steps}": base["bid1"].shift(-steps),
                 f"future_ask_valid_obs_{steps}": base["ask1"].shift(-steps),
-                f"label_matched_timestamp_valid_obs_{steps}": base["timestamp_received"].shift(-steps),
+                f"label_matched_timestamp_valid_obs_{steps}": base[clock_col].shift(-steps),
             },
         )
-        merged = mapping.merge(future, on="timestamp_received", how="left").sort_values("_row")
+        merged = mapping.merge(future, on=clock_col, how="left").sort_values("_row")
         future_mid = merged[f"future_mid_valid_obs_{steps}"].reset_index(drop=True)
         matched_ts = merged[f"label_matched_timestamp_valid_obs_{steps}"].reset_index(drop=True)
         panel[f"future_mid_valid_obs_{steps}"] = future_mid
@@ -311,7 +318,7 @@ def add_valid_observation_labels(panel: pd.DataFrame, valid_steps: list[int]) ->
         panel[f"future_ask_valid_obs_{steps}"] = merged[f"future_ask_valid_obs_{steps}"].reset_index(drop=True)
         panel[f"label_matched_timestamp_valid_obs_{steps}"] = matched_ts
         panel[f"future_mid_return_valid_obs_{steps}"] = future_mid - panel["mid"]
-        panel[f"label_elapsed_seconds_valid_obs_{steps}"] = (matched_ts - panel["timestamp_received"]).dt.total_seconds()
+        panel[f"label_elapsed_seconds_valid_obs_{steps}"] = (matched_ts - panel[clock_col]).dt.total_seconds()
         valid_col = f"future_book_validity_valid_obs_{steps}"
         panel[valid_col] = VALID_BOOK
         panel.loc[future_mid.isna(), valid_col] = pd.NA

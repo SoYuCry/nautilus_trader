@@ -80,6 +80,7 @@ def write_backtest_reports(
         json.dumps(
             {
                 "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+                "replay": getattr(result, "replay", {}),
                 "data_count": result.data_count,
                 "order_book_deltas_count": result.order_book_deltas_count,
                 "trade_ticks_count": result.trade_ticks_count,
@@ -244,8 +245,22 @@ def _write_run_report_markdown(
     instrument_context: Mapping[str, Any],
 ) -> None:
     health_summary = result.data_health.get("summary", {})
+    replay = getattr(result, "replay", {}) or {}
     lines = [
         "# Polymarket backtest run report",
+        "",
+        "## Replay trust boundary",
+        "",
+        f"- Replay mode: `{replay.get('mode', 'unknown')}`",
+        f"- Replay clock: `{replay.get('replay_clock', 'unknown')}`",
+        f"- Ordering key: `{replay.get('ordering_key', 'unknown')}`",
+        f"- Tie-breaker: `{replay.get('tie_breaker', 'unknown')}`",
+        f"- Data credibility: `{replay.get('data_credibility', 'unknown')}`",
+        f"- Adapter: `{replay.get('adapter', 'unknown')}`",
+        f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`",
+        f"- Execution claims allowed: `{str(replay.get('execution_claims_allowed', False)).lower()}`",
+        f"- Matching-level truth: `{str(replay.get('matching_level_truth', False)).lower()}`",
+        f"- Boundary: {replay.get('disclaimer', 'unknown')}",
         "",
         "## Result summary",
         "",

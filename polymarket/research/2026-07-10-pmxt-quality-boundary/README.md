@@ -96,6 +96,12 @@ event_type, price, size, side, best_bid, best_ask, bids, asks
 
 4. **PMXT 仍不进入 Nautilus PnL/fill runner**  
    这不是缺功能，而是边界约束：目前 PMXT 更适合因子探索和可视化，不适合正式成交/PnL 回测。
+   > 2026-07-13 更新：无条件拒绝已改为显式 mode gate。默认 `strict_capture`
+   > 仍拒绝 PMXT；config 显式声明 `replay: {mode: pmxt_research}` 时允许进入
+   > Nautilus 原生 BacktestEngine 的 research backtest，输出带
+   > `pmxt_research_reconstructed_order*` 可信度标记与非撮合级声明。
+   > 见 `polymarket/replay_contract.py` 与
+   > `polymarket/research/2026-07-13-pmxt-research-backtest-v1/`。
 
 ## 4. 当前可以如何用 PMXT
 

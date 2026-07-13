@@ -42,6 +42,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter  # noqa: E402
 from polymarket.data_health import analyze_dataset_health  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY  # noqa: E402
+from polymarket.replay_contract import replay_timestamp as contract_replay_timestamp  # noqa: E402
 
 
 DEFAULT_HORIZONS_SECONDS = (60, 300, 900)
@@ -53,7 +56,7 @@ BOOK_VALIDITY_ORDER = (VALID_BOOK, LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK)
 TRUST_METADATA_BASE = {
     "data_tier": "TIER1_EXPLORATORY",
     "replay_clock": "timestamp",
-    "ordering_key": "timestamp,timestamp_received,_original_row_index",
+    "ordering_key": PMXT_RESEARCH_ORDERING_KEY,
     "causality": "pmxt_source_time_ordered_not_exchange_sequence",
     "execution_claims_allowed": False,
     "source_time_policy": "primary_sort_key",
@@ -369,13 +372,14 @@ def pmxt_research_blocking_health_issues(health: Any) -> list[Any]:
     The generic data-health checker is receive-time oriented for live/Nautilus
     inputs. PMXT v2 research is intentionally timestamp ordered, so receive-time
     inversions are retained as diagnostics rather than used as a hard blocker.
+    The allowed-error set is the shared PMXT research contract definition, so
+    factor research and the pmxt_research backtest mode block on the same codes.
     """
-    ignored_error_codes = {"receive_time_inversion"}
     return [
         issue
         for issue in getattr(health, "issues", ())
         if getattr(issue, "severity", None) == "error"
-        and getattr(issue, "code", None) not in ignored_error_codes
+        and getattr(issue, "code", None) not in PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES
     ]
 
 
@@ -468,7 +472,7 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
                 f"sequence={step.sequence} update_count={len(step.updates)}",
             )
         update = step.updates[0]
-        replay_timestamp = step.timestamp or step.timestamp_received
+        replay_timestamp = contract_replay_timestamp(step)
         trade_pressure_increment = 0.0
         if update.event_type == "book":
             bids = {to_float(level.price): to_float(level.size) for level in update.bids if to_float(level.size) > 0}

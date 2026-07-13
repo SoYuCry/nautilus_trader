@@ -65,8 +65,9 @@ def main() -> int:
     bootstrap_repeats = int(config.get("analysis", {}).get("bootstrap_repeats", DEFAULT_BOOTSTRAP_REPEATS))
 
     current_valid = panel[panel.get("book_validity") == VALID_BOOK].copy()
-    current_valid = current_valid.sort_values(["timestamp_received", "sequence"], kind="mergesort")
-    current_valid["time_bucket"] = assign_time_buckets(current_valid["timestamp_received"], time_buckets)
+    clock_col = replay_time_column(current_valid)
+    current_valid = current_valid.sort_values([clock_col, "sequence"], kind="mergesort")
+    current_valid["time_bucket"] = assign_time_buckets(current_valid[clock_col], time_buckets)
 
     temporal_ic = compute_temporal_ic(current_valid, factors, horizons)
     summary = compute_robustness_summary(current_valid, factors, horizons, temporal_ic, null_repeats, bootstrap_repeats)
@@ -116,6 +117,11 @@ def resolve_output_dir(config: dict[str, Any], config_path: Path) -> Path:
 def resolve_input_path(config_path: Path, raw: str) -> Path:
     path = Path(str(raw))
     return path.resolve() if path.is_absolute() else (config_path.parent / path).resolve()
+
+
+def replay_time_column(panel: pd.DataFrame) -> str:
+    """Prefer the shared PMXT research replay clock; fall back for old panels."""
+    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
 
 
 def assign_time_buckets(timestamp: pd.Series, bucket_count: int) -> pd.Series:
@@ -179,7 +185,7 @@ def compute_robustness_summary(
                 continue
             frame = pd.DataFrame(
                 {
-                    "timestamp_received": panel["timestamp_received"],
+                    "replay_time": panel[replay_time_column(panel)],
                     "asset_id": panel.get("asset_id", "asset"),
                     "time_bucket": panel["time_bucket"],
                     "factor": factor_values,
@@ -285,10 +291,10 @@ def time_demeaned_spearman(frame: pd.DataFrame) -> float:
 def select_non_overlapping(frame: pd.DataFrame, horizon_seconds: int) -> pd.DataFrame:
     selected_parts: list[pd.DataFrame] = []
     delta = pd.Timedelta(seconds=horizon_seconds)
-    for _, group in frame.sort_values("timestamp_received", kind="mergesort").groupby("asset_id", observed=True):
+    for _, group in frame.sort_values("replay_time", kind="mergesort").groupby("asset_id", observed=True):
         selected_index: list[Any] = []
         next_allowed = pd.Timestamp("1900-01-01", tz="UTC")
-        for idx, timestamp in group["timestamp_received"].items():
+        for idx, timestamp in group["replay_time"].items():
             if pd.isna(timestamp):
                 continue
             if timestamp >= next_allowed:
@@ -298,7 +304,7 @@ def select_non_overlapping(frame: pd.DataFrame, horizon_seconds: int) -> pd.Data
             selected_parts.append(group.loc[selected_index])
     if not selected_parts:
         return frame.iloc[0:0]
-    return pd.concat(selected_parts, axis=0).sort_values("timestamp_received", kind="mergesort")
+    return pd.concat(selected_parts, axis=0).sort_values("replay_time", kind="mergesort")
 
 
 def directional_hit_nonzero(frame: pd.DataFrame) -> float:
@@ -500,7 +506,7 @@ def write_report(
             "",
             "## 1. 方法",
             "",
-            f"- time buckets: `{run_summary.time_buckets}`，按 `timestamp_received` 等量切片。",
+            f"- time buckets: `{run_summary.time_buckets}`，按 replay clock（`replay_timestamp`，旧 panel 回退 `timestamp_received`）等量切片。",
             f"- null repeats: `{run_summary.null_repeats}`，随机打散 future return 后计算 |Spearman| 的 95% 分位。",
             f"- bootstrap repeats: `{run_summary.bootstrap_repeats}`，在时间切片 IC 上做 block/bootstrap 风格均值置信区间。",
             "- raw Spearman: 全样本因子 rank vs future mid-return rank。",

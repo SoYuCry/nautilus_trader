@@ -51,6 +51,13 @@ from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
 from polymarket.adapters.utils import repo_relative_or_absolute
 from polymarket.data_health import DataHealthError
 from polymarket.data_health import analyze_dataset_health
+from polymarket.replay_contract import PMXT_REPLAY_CLOCK
+from polymarket.replay_contract import PMXT_RESEARCH_MODE
+from polymarket.replay_contract import RECEIVE_TIME_REPLAY_CLOCK
+from polymarket.replay_contract import blocking_health_issues
+from polymarket.replay_contract import build_replay_provenance
+from polymarket.replay_contract import enforce_replay_mode_gate
+from polymarket.replay_contract import verify_pmxt_replay_clock_order
 from polymarket.strategy import PolymarketStrategyBase
 
 
@@ -73,6 +80,7 @@ class NativeBacktestResultV1:
     settlement: dict[str, Any]
     data_health: dict[str, Any]
     fees: dict[str, Any]
+    replay: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -104,13 +112,14 @@ def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
 
 
-def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> None:
-    adapter_config = config.get("adapter") or {}
-    if str(adapter_config.get("name")) == PMXTEventV1Adapter.adapter_name:
-        raise ValueError(
-            "PMXT event data is exploratory and must use the PMXT factor research path, "
-            "not the Nautilus PnL/fill/fee/cash/position runner.",
-        )
+def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> str:
+    """
+    Replay-mode gate: PMXT data only enters the runner in explicit pmxt_research mode.
+
+    The default strict_capture mode still rejects PMXT exploratory data; the
+    pairing rules live in :mod:`polymarket.replay_contract`.
+    """
+    return enforce_replay_mode_gate(config)
 
 
 def resolve_output_dir(config_path: Path, report_config: Mapping[str, Any]) -> Path:
@@ -263,9 +272,10 @@ def add_native_data(engine: BacktestEngine, data: tuple[Any, ...]) -> tuple[int,
     if instrument_closes:
         engine.add_data(instrument_closes, sort=False)
     # The source dataset is not repaired or re-sorted to hide problems.  The
-    # mandatory pre-run data-health gate proves ts_init is receive-time
-    # monotonic; this Nautilus sort only syncs separately added native data
-    # types into a single ts_init-ordered stream required by BacktestEngine.
+    # mandatory pre-run gate proves ts_init is monotonic on the mode's replay
+    # clock (receive time in strict_capture, the shared PMXT contract clock in
+    # pmxt_research); this Nautilus sort only syncs separately added native
+    # data types into a single ts_init-ordered stream required by BacktestEngine.
     engine.sort_data()
     return len(order_book_deltas), len(trade_ticks), len(instrument_closes)
 
@@ -298,7 +308,7 @@ def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
 def run_from_config(config_path: Path) -> dict[str, Any]:
     config_path = config_path.resolve()
     config = load_yaml(config_path)
-    reject_pmxt_adapter_for_nautilus_backtest(config)
+    replay_mode = reject_pmxt_adapter_for_nautilus_backtest(config)
     run_id = str((config.get("runtime") or {}).get("run_id") or now_run_id())
     output_dir = resolve_output_dir(config_path, config.get("report") or {})
     run_dir = ensure_child(output_dir, output_dir / run_id)
@@ -313,12 +323,22 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         delay_warning_ms=float(health_config.get("delay_warning_ms", 1_000.0)),
     )
     (run_dir / "data_health.json").write_text(data_health_report.to_json() + "\n", encoding="utf-8")
-    if not data_health_report.ok:
+    blocking_issues = blocking_health_issues(data_health_report, mode=replay_mode)
+    if blocking_issues:
+        blocking_codes = sorted({issue.code for issue in blocking_issues})
         raise DataHealthError(
-            "Polymarket data-health check failed before Nautilus backtest. "
+            "Polymarket data-health check failed before Nautilus backtest; "
+            f"replay_mode={replay_mode}, blocking_codes={blocking_codes}. "
             f"Inspect {repo_relative_or_absolute(run_dir / 'data_health.json', repo_root=REPO_ROOT)}; "
             "do not sort the source data to make this pass.",
         )
+    replay_clock_check: dict[str, Any] = {}
+    if replay_mode == PMXT_RESEARCH_MODE:
+        # Receive-time inversions are diagnostics in this mode; instead prove
+        # the shared PMXT research replay clock is safe to consume as-is.
+        replay_clock_check = verify_pmxt_replay_clock_order(dataset)
+    replay_provenance = build_replay_provenance(mode=replay_mode, dataset_metadata=dataset.metadata)
+    replay_provenance["replay_clock_check"] = replay_clock_check
 
     selected_asset_id = (config.get("selection") or {}).get("asset_id")
     instrument = load_binary_option_from_config(
@@ -334,6 +354,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         instrument=instrument,
         selected_asset_id=selected_asset_id,
         fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
+        replay_clock=PMXT_REPLAY_CLOCK if replay_mode == PMXT_RESEARCH_MODE else RECEIVE_TIME_REPLAY_CLOCK,
     )
 
     settlement_prices = (
@@ -372,9 +393,11 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             settlement=settlement_dict,
             data_health=data_health_report.to_dict(),
             fees=fee_report,
+            replay=replay_provenance,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "replay": replay_provenance,
             "adapter": {
                 "name": dataset.metadata.adapter_name,
                 "adapter_version": dataset.metadata.adapter_version,
@@ -421,6 +444,9 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         summary = {
             "run_dir": repo_relative_or_absolute(run_dir, repo_root=REPO_ROOT),
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "replay_mode": replay_provenance["mode"],
+            "replay_clock": replay_provenance["replay_clock"],
+            "data_credibility": replay_provenance["data_credibility"],
             "outputs": {
                 "original_config": repo_relative_or_absolute(run_dir / "original_config.yml", repo_root=REPO_ROOT),
                 "resolved_config": repo_relative_or_absolute(run_dir / "resolved_config.json", repo_root=REPO_ROOT),

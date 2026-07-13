@@ -25,6 +25,7 @@ from polymarket.adapters.utils import optional_utc_datetime
 from polymarket.adapters.utils import parse_jsonish
 from polymarket.adapters.utils import parse_levels
 from polymarket.adapters.utils import repo_relative_or_absolute
+from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
 
 
 class PMXTEventV1Adapter:
@@ -238,7 +239,7 @@ class PMXTEventV1Adapter:
             "tied_timestamp_row_count": tied_diagnostic["tied_timestamp_row_count"],
             "ordering_ambiguous_groups": tied_diagnostic["ordering_ambiguous_groups"],
             "ordering_ambiguous_rows": tied_diagnostic["ordering_ambiguous_rows"],
-            "stable_sort_key": "timestamp,timestamp_received,_original_row_index",
+            "stable_sort_key": PMXT_RESEARCH_ORDERING_KEY,
         }
 
     @classmethod

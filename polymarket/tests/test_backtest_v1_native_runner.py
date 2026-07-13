@@ -922,3 +922,213 @@ def test_report_output_dir_must_stay_inside_experiment_runs(tmp_path: Path) -> N
 
     with pytest.raises(ValueError, match="experiment-local runs"):
         run_from_config(config_path)
+
+
+PMXT_CONDITION_ID = "0xabc123"
+PMXT_YES_TOKEN = "1111111111111111111111111111111111111111111111111111111111111111"  # noqa: S105 - synthetic fixture token, not a secret
+PMXT_NO_TOKEN = "2222222222222222222222222222222222222222222222222222222222222222"  # noqa: S105 - synthetic fixture token, not a secret
+
+
+def write_pmxt_event_dir(tmp_path: Path) -> Path:
+    """Synthetic PMXT event dir whose receive times invert after the source-time sort."""
+    pd = pytest.importorskip("pandas")
+
+    def iso(seconds: int) -> str:
+        return f"2026-01-01T00:00:{seconds:02d}Z"
+
+    rows = [
+        {
+            "event_type": "price_change",
+            "market": PMXT_CONDITION_ID.encode(),
+            "asset_id": PMXT_YES_TOKEN,
+            "timestamp_received": iso(9),
+            "timestamp": iso(2),
+            "bids": None,
+            "asks": None,
+            "side": "BUY",
+            "price": "0.41",
+            "size": "5",
+            "best_bid": None,
+            "best_ask": None,
+            "old_tick_size": None,
+            "new_tick_size": None,
+        },
+        {
+            "event_type": "book",
+            "market": PMXT_CONDITION_ID.encode(),
+            "asset_id": PMXT_YES_TOKEN,
+            "timestamp_received": iso(3),
+            "timestamp": iso(1),
+            "bids": json.dumps([["0.40", "10"]]),
+            "asks": json.dumps([["0.60", "9"]]),
+            "side": None,
+            "price": None,
+            "size": None,
+            "best_bid": None,
+            "best_ask": None,
+            "old_tick_size": None,
+            "new_tick_size": None,
+        },
+        {
+            "event_type": "last_trade_price",
+            "market": PMXT_CONDITION_ID.encode(),
+            "asset_id": PMXT_YES_TOKEN,
+            "timestamp_received": iso(4),
+            "timestamp": iso(3),
+            "bids": None,
+            "asks": None,
+            "side": "SELL",
+            "price": "0.40",
+            "size": "2",
+            "best_bid": None,
+            "best_ask": None,
+            "old_tick_size": None,
+            "new_tick_size": None,
+        },
+    ]
+    event_dir = tmp_path / "pmxt-event"
+    event_dir.mkdir()
+    pd.DataFrame(rows).to_parquet(event_dir / "orderbook.parquet", index=False)
+    (event_dir / "gamma_event.raw.json").write_text(
+        json.dumps(
+            {
+                "markets": [
+                    {
+                        "conditionId": PMXT_CONDITION_ID,
+                        "outcomes": json.dumps(["Yes", "No"]),
+                        "outcomePrices": json.dumps(["1", "0"]),
+                        "clobTokenIds": json.dumps([PMXT_YES_TOKEN, PMXT_NO_TOKEN]),
+                        "feeSchedule": json.dumps({"rate": "0.02"}),
+                        "umaResolutionStatus": "resolved",
+                        "closedTime": "2026-01-02T03:04:05Z",
+                        "orderPriceMinTickSize": "0.001",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    (event_dir / "event_index.json").write_text(
+        json.dumps(
+            {
+                "markets": [
+                    {
+                        "conditionId": PMXT_CONDITION_ID,
+                        "yesToken": PMXT_YES_TOKEN,
+                        "noToken": PMXT_NO_TOKEN,
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    (event_dir / "manifest.json").write_text(json.dumps({"source": "synthetic-pmxt-test"}), encoding="utf-8")
+    return event_dir
+
+
+def write_pmxt_config(config_path: Path, event_dir: Path, *, replay_mode: str | None) -> None:
+    replay_block = f"replay:\n  mode: {replay_mode}\n" if replay_mode is not None else ""
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: pmxt_research_backtest
+            adapter:
+              name: pmxt_event_v1
+              input:
+                event_dir: {event_dir.as_posix()}
+                condition_id: "{PMXT_CONDITION_ID}"
+                asset_id: "{PMXT_YES_TOKEN}"
+            selection:
+              asset_id: "{PMXT_YES_TOKEN}"
+            strategy:
+              enabled: false
+            runtime:
+              run_id: pmxt-research-mode
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip()
+        + replay_block,
+        encoding="utf-8",
+    )
+
+
+def test_runner_rejects_pmxt_adapter_without_explicit_research_mode(tmp_path: Path) -> None:
+    event_dir = write_pmxt_event_dir(tmp_path)
+    config_path = tmp_path / "experiment.yml"
+    write_pmxt_config(config_path, event_dir, replay_mode=None)
+
+    with pytest.raises(ValueError, match="PMXT event data is exploratory"):
+        run_from_config(config_path)
+
+
+def test_runner_runs_pmxt_research_mode_with_marked_outputs(tmp_path: Path) -> None:
+    event_dir = write_pmxt_event_dir(tmp_path)
+    config_path = tmp_path / "experiment.yml"
+    write_pmxt_config(config_path, event_dir, replay_mode="pmxt_research")
+
+    summary = run_from_config(config_path)
+    run_dir = Path(summary["run_dir"])
+    resolved = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    run_summary = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
+    data_health = json.loads((run_dir / "data_health.json").read_text(encoding="utf-8"))
+    run_report = (run_dir / "run_report.md").read_text(encoding="utf-8")
+
+    # PMXT source-time sort makes receive time non-monotonic: still diagnostic,
+    # not a blocker, in pmxt_research mode.
+    assert data_health["summary"]["receive_time_inversion_count"] > 0
+    assert summary["replay_mode"] == "pmxt_research"
+    assert summary["replay_clock"] == "pmxt_replay_timestamp"
+    assert summary["data_credibility"].startswith("pmxt_research_reconstructed_order")
+    assert resolved["replay"]["mode"] == "pmxt_research"
+    assert resolved["replay"]["ordering_key"] == "timestamp,timestamp_received,_original_row_index"
+    assert resolved["replay"]["execution_claims_allowed"] is False
+    assert resolved["replay"]["replay_clock_check"]["replay_clock_monotonic"] is True
+    assert run_summary["replay"]["mode"] == "pmxt_research"
+    assert "## Replay trust boundary" in run_report
+    assert "Replay mode: `pmxt_research`" in run_report
+    assert "not" in run_summary["replay"]["disclaimer"]
+    # The engine still replayed the data and settled the resolved token.
+    assert summary["order_book_deltas_count"] == 2
+    assert summary["trade_ticks_count"] == 1
+    assert summary["instrument_close_count"] == 1
+    assert summary["settlement_mode"] == "official"
+
+
+def test_runner_strict_mode_keeps_marking_and_receive_time_gate(tmp_path: Path) -> None:
+    ndjson_path = tmp_path / "live.ndjson"
+    write_ndjson(ndjson_path)
+    config_path = tmp_path / "experiment.yml"
+    config_path.write_text(
+        textwrap.dedent(
+            f"""
+            experiment:
+              name: strict_capture_marking
+            adapter:
+              name: live_ws_v1
+              input:
+                ndjson_path: {ndjson_path.as_posix()}
+            selection:
+              asset_id: "yes"
+            strategy:
+              enabled: false
+            runtime:
+              run_id: strict-marking
+            report:
+              output_dir: ./runs
+            """,
+        ).lstrip(),
+        encoding="utf-8",
+    )
+
+    summary = run_from_config(config_path)
+    run_dir = Path(summary["run_dir"])
+    resolved = json.loads((run_dir / "resolved_config.json").read_text(encoding="utf-8"))
+    run_report = (run_dir / "run_report.md").read_text(encoding="utf-8")
+
+    assert summary["replay_mode"] == "strict_capture"
+    assert summary["replay_clock"] == "timestamp_received"
+    assert summary["data_credibility"] == "strict_capture_receive_time"
+    assert resolved["replay"]["mode"] == "strict_capture"
+    assert "Replay mode: `strict_capture`" in run_report

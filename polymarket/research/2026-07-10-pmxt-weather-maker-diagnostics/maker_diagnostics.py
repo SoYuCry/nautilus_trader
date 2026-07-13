@@ -31,13 +31,16 @@ if str(REPO_ROOT) not in sys.path:
 
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter  # noqa: E402
 from polymarket.data_health import analyze_dataset_health  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES  # noqa: E402
 
 BASELINE_MODULE_PATH = REPO_ROOT / "polymarket/research/2026-07-08-pmxt-l2-factor-baseline/factor_research.py"
 VALID_BOOK = "valid"
 TIME_BUCKET_ORDER = ("early_gt_24h", "last_24h", "last_6h", "final_1h", "post_close")
 BUY = "buy_bid"
 SELL = "sell_ask"
-PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS = frozenset({"receive_time_inversion"})
+# Shared PMXT research contract definition; keep the old local name as an alias
+# so existing tests/consumers keep working.
+PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS = PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES
 
 
 @dataclass(frozen=True)

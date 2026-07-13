@@ -1,0 +1,24 @@
+experiment:
+  name: pmxt_research_backtest_v1_strategy
+adapter:
+  name: pmxt_event_v1
+  input:
+    event_dir: C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026
+    condition_id: "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41"
+    asset_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"
+    dataset_id: shanghai-june-9-2026-25c-yes-pmxt-l2
+selection:
+  asset_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"
+replay:
+  mode: pmxt_research
+strategy:
+  enabled: true
+  path: ./strategy_take_best_ask_once.py
+  class: TakeBestAskOnce
+  params:
+    instrument_id: "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41-93683348120137447419301462197228170067558545967622008841151707439369216600718.POLYMARKET"
+    quantity: "1"
+runtime:
+  run_id: pmxt-research-strategy-001
+report:
+  output_dir: ./runs
