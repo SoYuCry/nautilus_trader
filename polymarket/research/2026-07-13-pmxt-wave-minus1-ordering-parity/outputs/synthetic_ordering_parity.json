@@ -1,0 +1,593 @@
+{
+  "ambiguity": {
+    "ordering_ambiguous": true,
+    "provenance": {
+      "adapter": "pmxt_event_v1",
+      "ambiguous_ties_sensitivity_status": "not_run",
+      "claim_scope": "plumbing_only",
+      "data_credibility": "pmxt_research_reconstructed_order_ambiguous_ties",
+      "disclaimer": "PMXT research backtest: replay order is the deterministic reconstructed PMXT ordering (timestamp, timestamp_received, original row index), not true exchange/message order and not L3 queue truth. Fills, positions, and PnL are research results computed by Nautilus BacktestEngine on a reconstructed L2 replay; they are not matching-level evidence and must not be read as production execution predictions.",
+      "execution_claims_allowed": false,
+      "matching_level_truth": false,
+      "mode": "pmxt_research",
+      "ordering_ambiguous": true,
+      "ordering_key": "timestamp,timestamp_received,_original_row_index",
+      "performance_claims_allowed": false,
+      "replay_clock": "pmxt_replay_timestamp",
+      "source_files": [
+        "C:/Users/xhth/AppData/Local/Temp/pmxt-ordering-parity-iszilccb/synthetic-pmxt-event/orderbook.parquet",
+        "C:/Users/xhth/AppData/Local/Temp/pmxt-ordering-parity-iszilccb/synthetic-pmxt-event/event_index.json",
+        "C:/Users/xhth/AppData/Local/Temp/pmxt-ordering-parity-iszilccb/synthetic-pmxt-event/gamma_event.raw.json",
+        "C:/Users/xhth/AppData/Local/Temp/pmxt-ordering-parity-iszilccb/synthetic-pmxt-event/manifest.json"
+      ],
+      "source_quality": {
+        "coverageStatus": "not_run",
+        "knownArchiveGaps": [],
+        "metadataJoinStatus": "pass",
+        "missingSourceTimestampRows": 0,
+        "notes": [
+          "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+          "Stable fallback is deterministic but not proof of true exchange/message order.",
+          "Tied timestamp groups with differing row content require sensitivity testing."
+        ],
+        "orderingAmbiguousGroups": 1,
+        "orderingAmbiguousRows": 3,
+        "orderingStatus": "ambiguous",
+        "snapshotReplayStatus": "not_run",
+        "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+        "tiedTimestampGroups": 1,
+        "tiedTimestampRows": 3
+      },
+      "tie_breaker": "timestamp_received,_original_row_index (stable mergesort)"
+    },
+    "source_quality": {
+      "coverageStatus": "not_run",
+      "knownArchiveGaps": [],
+      "metadataJoinStatus": "pass",
+      "missingSourceTimestampRows": 0,
+      "notes": [
+        "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+        "Stable fallback is deterministic but not proof of true exchange/message order.",
+        "Tied timestamp groups with differing row content require sensitivity testing."
+      ],
+      "orderingAmbiguousGroups": 1,
+      "orderingAmbiguousRows": 3,
+      "orderingStatus": "ambiguous",
+      "snapshotReplayStatus": "not_run",
+      "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+      "tiedTimestampGroups": 1,
+      "tiedTimestampRows": 3
+    },
+    "stable_fallback_scope": "reproducibility_only_not_true_sequence"
+  },
+  "claim_scope": "plumbing_only",
+  "conversion_preserves_o1_to_native_order": true,
+  "invalid_crossed_empty_book_handling": [
+    {
+      "case": "invalid_price_rejected",
+      "error_type": "ValueError",
+      "message": "Polymarket price must be in [0, 1] at sequence=1, asset_id='1111111111111111111111111111111111111111111111111111111111111111', price=1.01",
+      "status": "error"
+    },
+    {
+      "case": "empty_book_skipped",
+      "native_counts": {
+        "InstrumentClose": 1
+      },
+      "skipped_updates": [],
+      "status": "converted"
+    },
+    {
+      "case": "crossed_book_materialized",
+      "native_counts": {
+        "InstrumentClose": 1,
+        "OrderBookDeltas": 1
+      },
+      "skipped_updates": [],
+      "status": "converted"
+    }
+  ],
+  "max_verification_level": "nautilus_plumbing_verified",
+  "o1": {
+    "count": 7,
+    "order_signature": "34dc274985045b0bc811af8f9a940055f43984ed5d87deaeb7cc6088258c4998",
+    "records": [
+      {
+        "identity": {
+          "asks": [
+            [
+              "0.60",
+              "9"
+            ]
+          ],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [
+            [
+              "0.40",
+              "10"
+            ]
+          ],
+          "event_type": "book",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": null,
+          "side": null,
+          "size": null
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:01Z",
+        "sequence": 1,
+        "source_row_index": 1,
+        "timestamp": "2026-01-01T00:00:01Z",
+        "timestamp_received": "2026-01-01T00:00:04Z"
+      },
+      {
+        "identity": {
+          "asks": [],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [],
+          "event_type": "tick_size_change",
+          "market": "0xorderingparity",
+          "new_tick_size": "0.001",
+          "old_tick_size": "0.01",
+          "price": null,
+          "side": null,
+          "size": null
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:02Z",
+        "sequence": 2,
+        "source_row_index": 3,
+        "timestamp": "2026-01-01T00:00:02Z",
+        "timestamp_received": "2026-01-01T00:00:02Z"
+      },
+      {
+        "identity": {
+          "asks": [],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [],
+          "event_type": "trade",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": "0.420",
+          "side": "SELL",
+          "size": "3"
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:02Z",
+        "sequence": 3,
+        "source_row_index": 5,
+        "timestamp": "2026-01-01T00:00:02Z",
+        "timestamp_received": "2026-01-01T00:00:02Z"
+      },
+      {
+        "identity": {
+          "asks": [],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [],
+          "event_type": "price_change",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": "0.501",
+          "side": "BUY",
+          "size": "7"
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:02Z",
+        "sequence": 4,
+        "source_row_index": 6,
+        "timestamp": "2026-01-01T00:00:02Z",
+        "timestamp_received": "2026-01-01T00:00:02Z"
+      },
+      {
+        "identity": {
+          "asks": [
+            [
+              "0.60",
+              "1"
+            ]
+          ],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [
+            [
+              "0.70",
+              "1"
+            ]
+          ],
+          "event_type": "book",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": null,
+          "side": null,
+          "size": null
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:03Z",
+        "sequence": 5,
+        "source_row_index": 2,
+        "timestamp": "2026-01-01T00:00:03Z",
+        "timestamp_received": "2026-01-01T00:00:03Z"
+      },
+      {
+        "identity": {
+          "asks": [],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [],
+          "event_type": "book",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": null,
+          "side": null,
+          "size": null
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:04Z",
+        "sequence": 6,
+        "source_row_index": 7,
+        "timestamp": "2026-01-01T00:00:04Z",
+        "timestamp_received": "2026-01-01T00:00:06Z"
+      },
+      {
+        "identity": {
+          "asks": [],
+          "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+          "bids": [],
+          "event_type": "price_change",
+          "market": "0xorderingparity",
+          "new_tick_size": null,
+          "old_tick_size": null,
+          "price": "0.520",
+          "side": "BUY",
+          "size": "8"
+        },
+        "o": "O1",
+        "replay_timestamp": "2026-01-01T00:00:05Z",
+        "sequence": 7,
+        "source_row_index": 0,
+        "timestamp": "2026-01-01T00:00:05Z",
+        "timestamp_received": "2026-01-01T00:00:01Z"
+      }
+    ],
+    "replay_clock_check": {
+      "replay_clock": "pmxt_replay_timestamp",
+      "replay_clock_monotonic": true,
+      "sequence_strictly_increasing": true,
+      "source_row_index_available": true,
+      "step_count": 7,
+      "tie_break_checked_pairs": 2,
+      "tie_breaker_verified": true
+    },
+    "source_quality": {
+      "coverageStatus": "not_run",
+      "knownArchiveGaps": [],
+      "metadataJoinStatus": "pass",
+      "missingSourceTimestampRows": 0,
+      "notes": [
+        "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+        "Stable fallback is deterministic but not proof of true exchange/message order.",
+        "Tied timestamp groups with differing row content require sensitivity testing."
+      ],
+      "orderingAmbiguousGroups": 1,
+      "orderingAmbiguousRows": 3,
+      "orderingStatus": "ambiguous",
+      "snapshotReplayStatus": "not_run",
+      "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+      "tiedTimestampGroups": 1,
+      "tiedTimestampRows": 3
+    }
+  },
+  "o1_actual_source_row_indices": [
+    1,
+    3,
+    5,
+    6,
+    2,
+    7,
+    0
+  ],
+  "o1_expected_source_row_indices": [
+    1,
+    3,
+    5,
+    6,
+    2,
+    7,
+    0
+  ],
+  "o1_matches_independent_expected_order": true,
+  "o2": {
+    "count": 8,
+    "diagnostic_only": true,
+    "not_execution_truth": true,
+    "order_signature": "99f12c4a350d401d55a6ee1fbe5f19913da75c9cbc212efcbd240459fac9c48f",
+    "records": [
+      {
+        "asset_id": "3333333333333333333333333333333333333333333333333333333333333333",
+        "diagnostic_only": true,
+        "event_type": "book",
+        "key": [
+          "2026-01-01T00:00:00Z",
+          "2026-01-01T00:00:00Z",
+          4
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 4
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "book",
+        "key": [
+          "2026-01-01T00:00:01Z",
+          "2026-01-01T00:00:04Z",
+          1
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 1
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "tick_size_change",
+        "key": [
+          "2026-01-01T00:00:02Z",
+          "2026-01-01T00:00:02Z",
+          3
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 3
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "last_trade_price",
+        "key": [
+          "2026-01-01T00:00:02Z",
+          "2026-01-01T00:00:02Z",
+          5
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 5
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "price_change",
+        "key": [
+          "2026-01-01T00:00:02Z",
+          "2026-01-01T00:00:02Z",
+          6
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 6
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "book",
+        "key": [
+          "2026-01-01T00:00:03Z",
+          "2026-01-01T00:00:03Z",
+          2
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 2
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "book",
+        "key": [
+          "2026-01-01T00:00:04Z",
+          "2026-01-01T00:00:06Z",
+          7
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 7
+      },
+      {
+        "asset_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "diagnostic_only": true,
+        "event_type": "price_change",
+        "key": [
+          "2026-01-01T00:00:05Z",
+          "2026-01-01T00:00:01Z",
+          0
+        ],
+        "market": "0xorderingparity",
+        "o": "O2",
+        "source_row_index": 0
+      }
+    ]
+  },
+  "o3_engine_callbacks": {
+    "callback_count": 5,
+    "callback_order_signature": "b8d3d4d41fb59721bde0e6f7b1c847413e207ed6ee4b1c44a0a2b6de444cd8aa",
+    "callbacks": [
+      {
+        "callback_type": "OrderBookDeltas",
+        "sequences": [
+          1,
+          1,
+          1
+        ],
+        "ts_event": 1767225601000000000,
+        "ts_init": 1767225601000000000
+      },
+      {
+        "callback_type": "TradeTick",
+        "price": "0.420",
+        "size": "3.000000",
+        "ts_event": 1767225602000000000,
+        "ts_init": 1767225602000000000
+      },
+      {
+        "callback_type": "OrderBookDeltas",
+        "sequences": [
+          4
+        ],
+        "ts_event": 1767225602000000000,
+        "ts_init": 1767225602000000001
+      },
+      {
+        "callback_type": "OrderBookDeltas",
+        "sequences": [
+          5,
+          5,
+          5
+        ],
+        "ts_event": 1767225603000000000,
+        "ts_init": 1767225603000000000
+      },
+      {
+        "callback_type": "OrderBookDeltas",
+        "sequences": [
+          7
+        ],
+        "ts_event": 1767225605000000000,
+        "ts_init": 1767225605000000000
+      }
+    ],
+    "engine_contract": "BacktestEngine.sort_data merges separately-added native data by ts_init; callback stream is compared to that native input contract.",
+    "legal_reorder": "none_observed",
+    "matches_native_input_contract": true,
+    "native_callback_input_count": 5,
+    "native_callback_input_signature": "f09fb85a90819cf210c2fb9e272c3e65ebbebb3ce9d51587761ad28940b80751",
+    "observable": "Nautilus strategy callbacks"
+  },
+  "o3_native": {
+    "counts": {
+      "InstrumentClose": 1,
+      "OrderBookDeltas": 4,
+      "TradeTick": 1
+    },
+    "instrument_id": "0xorderingparity-1111111111111111111111111111111111111111111111111111111111111111.POLYMARKET",
+    "order_signature": "48ccd29b3e53b42a9a3cbbd624a32a992e481dbdddcd072e2f540ca80f150864",
+    "records": [
+      {
+        "actions": [
+          "4",
+          "1",
+          "1"
+        ],
+        "delta_count": 3,
+        "input_index": 0,
+        "native_type": "OrderBookDeltas",
+        "o": "O3",
+        "sequences": [
+          1,
+          1,
+          1
+        ],
+        "ts_event": 1767225601000000000,
+        "ts_init": 1767225601000000000
+      },
+      {
+        "input_index": 1,
+        "native_type": "TradeTick",
+        "o": "O3",
+        "price": "0.420",
+        "size": "3.000000",
+        "trade_id": "becda346f3d65fab",
+        "ts_event": 1767225602000000000,
+        "ts_init": 1767225602000000000
+      },
+      {
+        "actions": [
+          "2"
+        ],
+        "delta_count": 1,
+        "input_index": 2,
+        "native_type": "OrderBookDeltas",
+        "o": "O3",
+        "sequences": [
+          4
+        ],
+        "ts_event": 1767225602000000000,
+        "ts_init": 1767225602000000001
+      },
+      {
+        "actions": [
+          "4",
+          "1",
+          "1"
+        ],
+        "delta_count": 3,
+        "input_index": 3,
+        "native_type": "OrderBookDeltas",
+        "o": "O3",
+        "sequences": [
+          5,
+          5,
+          5
+        ],
+        "ts_event": 1767225603000000000,
+        "ts_init": 1767225603000000000
+      },
+      {
+        "actions": [
+          "2"
+        ],
+        "delta_count": 1,
+        "input_index": 4,
+        "native_type": "OrderBookDeltas",
+        "o": "O3",
+        "sequences": [
+          7
+        ],
+        "ts_event": 1767225605000000000,
+        "ts_init": 1767225605000000000
+      },
+      {
+        "close_price": "0.500",
+        "input_index": 5,
+        "native_type": "InstrumentClose",
+        "o": "O3",
+        "ts_event": 1767312000000000000,
+        "ts_init": 1767312000000000000
+      }
+    ],
+    "skipped_updates": [
+      "tick_size_change 0.01->0.001 (timeline_applied)"
+    ],
+    "tick_size_changes": [
+      [
+        "0.01",
+        "0.001"
+      ]
+    ],
+    "ts_init_audit": {
+      "adjusted_event_count": 1,
+      "max_synthetic_offset_ns": 1,
+      "note": "Events sharing a replay-clock timestamp are serialized by +1ns increments so Nautilus ts_init stays strictly increasing; the strategy observes these events sequentially even though the source clock cannot distinguish their order.",
+      "replay_clock": "pmxt_replay_timestamp",
+      "ts_init_policy": "synthetic_monotonic_source_time"
+    }
+  },
+  "orders": {
+    "O1": "selected-token deterministic replay order; key=(source timestamp,timestamp_received,original row ordinal)",
+    "O2": "event-wide diagnostic/materialization order only; not execution truth",
+    "O3": "Nautilus native object / engine callback observable order"
+  },
+  "program": "pmxt-wave-minus1-ordering-parity",
+  "program_version": "2026-07-13.v1",
+  "scope": {
+    "execution_claims_allowed": false,
+    "factor_outcome_strategy_pnl_computed": false,
+    "generic_nautilus_engine_architecture_modified": false,
+    "performance_claims_allowed": false,
+    "research_only": true
+  }
+}

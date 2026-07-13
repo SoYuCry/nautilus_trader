@@ -531,3 +531,65 @@ def test_empty_filter_result_falls_back_when_canonical_diagnostics_match(
     assert {update.asset_id for update in _updates(dataset)} == {YES_TOKEN}
     assert sum(1 for call in calls if "filters" in call) == 2
     assert any(call.get("columns") == list(PMXTEventV1Adapter._DIAGNOSTIC_COLUMNS) for call in calls)
+
+
+
+def test_filter_pushdown_preserves_physical_original_row_indices_across_row_groups(tmp_path: Path) -> None:
+    rows = [
+        {**_base_rows()[4], "timestamp": _iso(0), "timestamp_received": _iso(0)},
+        {**_base_rows()[0], "timestamp": _iso(1), "timestamp_received": _iso(1)},
+        {**_base_rows()[4], "timestamp": _iso(2), "timestamp_received": _iso(2)},
+        {**_base_rows()[1], "timestamp": _iso(3), "timestamp_received": _iso(3)},
+        {**_base_rows()[4], "timestamp": _iso(4), "timestamp_received": _iso(4)},
+        {**_base_rows()[2], "timestamp": _iso(5), "timestamp_received": _iso(5)},
+    ]
+    event_dir = tmp_path / "pmxt-event"
+    event_dir.mkdir()
+    pd.DataFrame(rows).to_parquet(event_dir / "orderbook.parquet", index=False, row_group_size=2)
+    (event_dir / "gamma_event.raw.json").write_text(json.dumps({"markets": [_gamma_market()]}), encoding="utf-8")
+    (event_dir / "event_index.json").write_text(
+        json.dumps({"markets": [{"conditionId": CONDITION_ID, "yesToken": YES_TOKEN, "noToken": NO_TOKEN}]}),
+        encoding="utf-8",
+    )
+    (event_dir / "manifest.json").write_text(json.dumps({"source": "synthetic-pmxt-test"}), encoding="utf-8")
+
+    dataset = _load(event_dir)
+
+    assert [step.source_row_index for step in dataset.steps] == [1, 3, 5]
+    assert [step.updates[0].event_type for step in dataset.steps] == ["book", "price_change", "trade"]
+
+
+def test_original_row_index_mapping_fails_closed_when_diagnostics_cannot_prove_physical_ordinals(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    frame = pd.DataFrame(
+        [
+            {"market": CONDITION_ID.encode(), "asset_id": YES_TOKEN},
+            {"market": CONDITION_ID.encode(), "asset_id": YES_TOKEN},
+        ],
+    )
+
+    def empty_diagnostics(*args: Any, **kwargs: Any) -> pd.DataFrame:
+        return pd.DataFrame(columns=list(PMXTEventV1Adapter._DIAGNOSTIC_COLUMNS))
+
+    monkeypatch.setattr(PMXTEventV1Adapter, "_read_parquet_columns", staticmethod(empty_diagnostics))
+    with pytest.raises(ValueError, match=r"cannot prove physical original row ordinal.*filtered-local ordinal"):
+        PMXTEventV1Adapter._with_original_row_indices(
+            tmp_path / "orderbook.parquet",
+            frame,
+            condition_id=CONDITION_ID,
+            asset_id=YES_TOKEN,
+        )
+
+    def mismatched_diagnostics(*args: Any, **kwargs: Any) -> pd.DataFrame:
+        return pd.DataFrame([{"market": CONDITION_ID.encode(), "asset_id": YES_TOKEN}])
+
+    monkeypatch.setattr(PMXTEventV1Adapter, "_read_parquet_columns", staticmethod(mismatched_diagnostics))
+    with pytest.raises(ValueError, match=r"diagnostics selected 1 row\(s\) but filtered frame has 2 row\(s\)"):
+        PMXTEventV1Adapter._with_original_row_indices(
+            tmp_path / "orderbook.parquet",
+            frame,
+            condition_id=CONDITION_ID,
+            asset_id=YES_TOKEN,
+        )

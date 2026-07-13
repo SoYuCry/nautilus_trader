@@ -1,0 +1,16 @@
+﻿program: pmxt-wave-minus1-ordering-parity
+program_version: 2026-07-13.v1
+output_dir: polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs
+inventory_dir: polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs
+scope:
+  research_only: true
+  performance_claims_allowed: false
+  execution_claims_allowed: false
+  factors: false
+  outcomes: false
+  strategy_or_pnl: false
+  generic_nautilus_engine_changes: false
+ordering_layers:
+  O1: selected-token deterministic replay order; key=(source timestamp,timestamp_received,original row ordinal)
+  O2: event-wide diagnostic/materialization order only; not execution truth
+  O3: Nautilus native object / engine callback observable order

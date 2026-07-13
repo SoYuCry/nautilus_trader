@@ -1,0 +1,18 @@
+{
+  "checks": {
+    "real_smoke_status": "pass",
+    "synthetic_o1_expected_order": true,
+    "synthetic_o1_to_native_monotonic": true,
+    "synthetic_o3_callbacks_match_native_input_contract": true
+  },
+  "claim_scope": "plumbing_only",
+  "generated_at": "2026-07-13T16:05:14.580400Z",
+  "max_verification_level": "nautilus_plumbing_verified",
+  "outputs": {
+    "real_curated_smoke": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-13-pmxt-wave-minus1-ordering-parity\\outputs\\real_curated_smoke_parity.json",
+    "synthetic": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-13-pmxt-wave-minus1-ordering-parity\\outputs\\synthetic_ordering_parity.json"
+  },
+  "performance_claims_allowed": false,
+  "program": "pmxt-wave-minus1-ordering-parity",
+  "program_version": "2026-07-13.v1"
+}
