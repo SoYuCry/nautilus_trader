@@ -46,6 +46,47 @@ python -m polymarket.backtest_v1 --config polymarket/research/2026-07-13-pmxt-re
 python -m polymarket.backtest_v1 --config polymarket/research/2026-07-13-pmxt-research-backtest-v1/experiment_with_strategy.yml
 ```
 
+## Ambiguous ties gate
+
+该 event 有 4,694 组 / 9,433 行 ordering-ambiguous tied timestamps。启用策略的
+run 必须在 config 显式写 `replay: {allow_ambiguous_ties: true}` 才会运行,
+否则 fail closed(fills 可能依赖 tie 的任意排列)。接受与否会记录在
+`resolved_config.json`、`summary.json` 和 `run_report.md` 中。数据-only replay
+不需要该开关。
+
+## Claim scope（重要）
+
+该 event 存在 ordering-ambiguous ties 且 tie-order sensitivity replay 尚未实现,
+因此本目录所有 run 的输出强制标记:
+
+- `claim_scope: plumbing_only`
+- `ambiguous_ties_sensitivity_status: not_run`
+- `performance_claims_allowed: false`
+
+即:这些 fills/PnL 只证明"数据能正确穿过 Nautilus BacktestEngine 并形成
+边界完整的产物",**不构成任何因子或策略绩效结论**。
+
+完整环境与命令证据见 `VALIDATION_2026-07-13.md`。
+
+## 2026-07-13 真实引擎验证（官方 1.229.0 编译 wheel）
+
+本仓库 checkout 无编译产物;验证是把 `polymarket/` 复制到独立工作区、
+против pip 安装的官方 `nautilus_trader==1.229.0` wheel 执行的:
+
+- `test_nautilus_native_bridge.py` + `test_backtest_v1_native_runner.py` +
+  `test_strategy_base.py`: **41 passed, 2 failed**。两个失败
+  (`settlement EXPIRATION fill`、`post_tick_change precision`)在**改动前
+  代码上同样失败**——是 1.229 与 1.231-dev 的引擎行为差异,非本次回归。
+- strict 回归(`2026-07-03-live-ws-t02-simple-strategy`):2 fills,
+  `replay_mode=strict_capture`,fills.csv 每行带 credibility 标记。
+- PMXT research 策略回测(本目录 `experiment_with_strategy.yml`):
+  334,501 steps 全部进入 BacktestEngine;未加 `allow_ambiguous_ties` 时
+  正确 fail closed;显式接受后:BUY 1 @ 0.81(taker fee 0.00769 pUSD),
+  official settlement payout=1 平仓;`raw_health_ok=false`(1,389 个
+  receive-time inversion 诊断)而 `mode_health_gate_passed=true`、
+  `replay_clock_verified=true`。代表性产物已存入
+  `runs/pmxt-research-strategy-001/`。
+
 ## 2026-07-13 contract 检查结果（真实数据）
 
 对 `highest-temperature-in-shanghai-on-june-9-2026` 的 25°C YES token

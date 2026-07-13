@@ -9,8 +9,10 @@ or PnL logic.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import sys
 import uuid
@@ -56,6 +58,7 @@ from polymarket.replay_contract import PMXT_RESEARCH_MODE
 from polymarket.replay_contract import RECEIVE_TIME_REPLAY_CLOCK
 from polymarket.replay_contract import blocking_health_issues
 from polymarket.replay_contract import build_replay_provenance
+from polymarket.replay_contract import enforce_ambiguous_ties_gate
 from polymarket.replay_contract import enforce_replay_mode_gate
 from polymarket.replay_contract import verify_pmxt_replay_clock_order
 from polymarket.strategy import PolymarketStrategyBase
@@ -81,6 +84,10 @@ class NativeBacktestResultV1:
     data_health: dict[str, Any]
     fees: dict[str, Any]
     replay: dict[str, Any]
+    health_gate: dict[str, Any]
+    engine_config: dict[str, Any]
+    input_hashes: list[dict[str, Any]]
+    data_health_artifact: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -104,12 +111,94 @@ def ensure_child(parent: Path, child: Path) -> Path:
     return child_resolved
 
 
+def expand_config_paths(config: dict[str, Any]) -> dict[str, Any]:
+    """Expand environment variables in adapter input paths (e.g. ${POLYREAPER_EVENT_DIR})."""
+    input_config = (config.get("adapter") or {}).get("input")
+    if isinstance(input_config, dict):
+        for key in ("event_dir", "ndjson_path", "bundle_dir"):
+            if isinstance(input_config.get(key), str):
+                input_config[key] = os.path.expandvars(input_config[key])
+    return config
+
+
 def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     adapter_config = config.get("adapter") or {}
     name = str(adapter_config.get("name"))
     if name not in ADAPTERS:
         raise ValueError(f"unknown adapter {name!r}; expected one of {sorted(ADAPTERS)}")
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
+
+
+def sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def build_input_hashes(dataset: PolymarketL2DatasetV1) -> list[dict[str, Any]]:
+    """Return size/sha256 for each adapter source file so runs pin their inputs."""
+    rows: list[dict[str, Any]] = []
+    for source_file in dataset.metadata.source_files:
+        path = Path(str(source_file))
+        resolved = path if path.is_absolute() else (REPO_ROOT / path).resolve()
+        row: dict[str, Any] = {"source_file": str(source_file), "exists": resolved.is_file()}
+        if resolved.is_file():
+            row["size_bytes"] = resolved.stat().st_size
+            row["sha256"] = sha256_path(resolved)
+        rows.append(row)
+    return rows
+
+
+# Artifacts above this size are declared omitted-from-git in the canonical
+# report index; OMITTED_ARTIFACTS.json pins their integrity metadata instead.
+GIT_OMIT_SIZE_BYTES = 5_000_000
+
+
+def describe_data_health_artifact(run_dir: Path) -> dict[str, Any]:
+    """Describe data_health.json for the canonical report index.
+
+    Large runs produce per-issue diagnostics too big to commit; the runner
+    writes OMITTED_ARTIFACTS.json alongside so a reader of summary.json can
+    tell deliberate omission apart from a corrupt or forgotten file.
+    """
+    path = run_dir / "data_health.json"
+    size_bytes = path.stat().st_size
+    sha256 = sha256_path(path)
+    artifact: dict[str, Any] = {
+        "path": "data_health.json",
+        "size_bytes": size_bytes,
+        "sha256": sha256,
+    }
+    if size_bytes <= GIT_OMIT_SIZE_BYTES:
+        artifact["status"] = "present"
+        return artifact
+    artifact["status"] = "omitted_from_git"
+    artifact["manifest"] = "OMITTED_ARTIFACTS.json"
+    (run_dir / "OMITTED_ARTIFACTS.json").write_text(
+        json.dumps(
+            {
+                "omitted": [
+                    {
+                        "path": "data_health.json",
+                        "committed": False,
+                        "reason": (
+                            "full per-issue diagnostics exceed the git-commit size "
+                            f"threshold ({GIT_OMIT_SIZE_BYTES} bytes); regenerate by "
+                            "re-running the experiment config"
+                        ),
+                        "size_bytes": size_bytes,
+                        "sha256": sha256,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return artifact
 
 
 def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> str:
@@ -305,9 +394,12 @@ def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
     }
 
 
-def run_from_config(config_path: Path) -> dict[str, Any]:
+def run_from_config(config_path: Path, *, event_dir_override: Path | None = None) -> dict[str, Any]:
     config_path = config_path.resolve()
-    config = load_yaml(config_path)
+    config = expand_config_paths(load_yaml(config_path))
+    if event_dir_override is not None:
+        adapter_input = config.setdefault("adapter", {}).setdefault("input", {})
+        adapter_input["event_dir"] = str(event_dir_override)
     replay_mode = reject_pmxt_adapter_for_nautilus_backtest(config)
     run_id = str((config.get("runtime") or {}).get("run_id") or now_run_id())
     output_dir = resolve_output_dir(config_path, config.get("report") or {})
@@ -316,6 +408,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     shutil.copyfile(config_path, run_dir / "original_config.yml")
 
     dataset = load_adapter(config)
+    input_hashes = build_input_hashes(dataset)
     health_config = config.get("data_health") or {}
     data_health_report = analyze_dataset_health(
         dataset,
@@ -323,6 +416,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         delay_warning_ms=float(health_config.get("delay_warning_ms", 1_000.0)),
     )
     (run_dir / "data_health.json").write_text(data_health_report.to_json() + "\n", encoding="utf-8")
+    data_health_artifact = describe_data_health_artifact(run_dir)
     blocking_issues = blocking_health_issues(data_health_report, mode=replay_mode)
     if blocking_issues:
         blocking_codes = sorted({issue.code for issue in blocking_issues})
@@ -340,6 +434,77 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     replay_provenance = build_replay_provenance(mode=replay_mode, dataset_metadata=dataset.metadata)
     replay_provenance["replay_clock_check"] = replay_clock_check
 
+    strategy_config = config.get("strategy") or {}
+    strategy_enabled = bool(strategy_config) and strategy_config.get("enabled") is not False
+    allow_ambiguous_ties = bool((config.get("replay") or {}).get("allow_ambiguous_ties", False))
+    enforce_ambiguous_ties_gate(
+        mode=replay_mode,
+        strategy_enabled=strategy_enabled,
+        ordering_ambiguous=bool(replay_provenance.get("ordering_ambiguous", False)),
+        allow_ambiguous_ties=allow_ambiguous_ties,
+    )
+    if replay_mode == PMXT_RESEARCH_MODE:
+        replay_provenance["ambiguous_ties_accepted"] = allow_ambiguous_ties
+    health_gate = {
+        "raw_health_ok": data_health_report.ok,
+        "mode_health_gate_passed": True,
+        "blocking_codes": [],
+        "replay_clock_verified": bool(replay_clock_check.get("replay_clock_monotonic", replay_mode != PMXT_RESEARCH_MODE)),
+    }
+    # Full issue detail lives in data_health.json only; the copies embedded in
+    # resolved_config.json / summary.json stay compact (PMXT-scale runs can
+    # produce tens of thousands of diagnostic issues).
+    issue_counts_by_code: dict[str, int] = {}
+    for issue in data_health_report.issues:
+        issue_counts_by_code[issue.code] = issue_counts_by_code.get(issue.code, 0) + 1
+    full_health = data_health_report.to_dict()
+    raw_checker_assumptions = list(full_health["assumptions"])
+    if replay_mode == PMXT_RESEARCH_MODE:
+        # The generic checker frames replay as receive-time ordered with
+        # receive-time inversions as hard failures.  Neither statement applies
+        # under the pmxt_research gate, so the inapplicable lines are rewritten
+        # instead of appended-to; the raw checker's own framing stays only in
+        # data_health.json (the raw checker artifact).
+        mode_corrections = {
+            "Replay chronology is timestamp_received order, not source timestamp order.": (
+                "Replay chronology is the PMXT contract clock "
+                "(timestamp, fallback timestamp_received), not receive-time order."
+            ),
+            "Hard failures are receive-time or local-sequence inversions.": (
+                "Hard failures are local-sequence inversions and other non-PMXT error "
+                "codes; receive-time inversions are diagnostics in pmxt_research mode."
+            ),
+        }
+        health_assumptions = [
+            mode_corrections.get(assumption, assumption) for assumption in raw_checker_assumptions
+        ]
+        mode_gate_assumptions = [
+            "pmxt_research mode: replay chronology is the PMXT contract clock "
+            "(timestamp, fallback timestamp_received); receive-time inversions are "
+            "diagnostics here, not blockers, and 'ok: false' from the generic "
+            "receive-time check does not mean the mode gate failed.",
+        ]
+    else:
+        health_assumptions = raw_checker_assumptions
+        mode_gate_assumptions = [
+            "strict_capture mode: replay chronology is timestamp_received in capture "
+            "order; receive-time and local-sequence inversions are hard failures.",
+        ]
+    compact_health = {
+        "ok": full_health["ok"],
+        "replay_mode": replay_mode,
+        "summary": full_health["summary"],
+        "assumptions": health_assumptions,
+        "mode_gate_assumptions": mode_gate_assumptions,
+        "raw_checker_artifact": "data_health.json",
+        "issue_count": len(full_health["issues"]),
+        "issue_counts_by_code": issue_counts_by_code,
+        "issue_sample_limit": 20,
+        "issue_sample": full_health["issues"][:20],
+        "full_detail": "data_health.json",
+        "artifact": data_health_artifact,
+    }
+
     selected_asset_id = (config.get("selection") or {}).get("asset_id")
     instrument = load_binary_option_from_config(
         config.get("instrument") or {},
@@ -356,6 +521,19 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
         replay_clock=PMXT_REPLAY_CLOCK if replay_mode == PMXT_RESEARCH_MODE else RECEIVE_TIME_REPLAY_CLOCK,
     )
+    replay_provenance["ts_init_audit"] = dict(conversion.ts_init_audit or {})
+    engine_config_resolved = {
+        "trader_id": str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001")),
+        "book_type": "L2_MBP",
+        "oms_type": "NETTING",
+        "account_type": "CASH",
+        "starting_balance": str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")),
+        "trade_execution": bool((config.get("engine") or {}).get("trade_execution", True)),
+        "liquidity_consumption": bool((config.get("engine") or {}).get("liquidity_consumption", False)),
+        "queue_position": bool((config.get("engine") or {}).get("queue_position", False)),
+        "fee_model_enabled": bool((config.get("fees") or {}).get("enabled", True)),
+        "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
+    }
 
     settlement_prices = (
         {instrument.id: float(conversion.settlement.payout)}
@@ -391,18 +569,25 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             skipped_updates=conversion.skipped_updates,
             tick_size_changes=conversion.tick_size_changes,
             settlement=settlement_dict,
-            data_health=data_health_report.to_dict(),
+            data_health=compact_health,
             fees=fee_report,
             replay=replay_provenance,
+            health_gate=health_gate,
+            engine_config=engine_config_resolved,
+            input_hashes=input_hashes,
+            data_health_artifact=data_health_artifact,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "engine_config": engine_config_resolved,
             "replay": replay_provenance,
+            "data_health_gate": health_gate,
             "adapter": {
                 "name": dataset.metadata.adapter_name,
                 "adapter_version": dataset.metadata.adapter_version,
                 "source_type": dataset.metadata.source_type,
                 "source_files_resolved": list(dataset.metadata.source_files),
+                "input_hashes": input_hashes,
                 "assumptions": list(dataset.metadata.assumptions),
                 "warnings": list(dataset.metadata.warnings),
                 "source_quality": dict(dataset.metadata.source_quality),
@@ -424,7 +609,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
             "settlement": settlement_dict,
             "fees": fee_report,
-            "data_health": data_health_report.to_dict(),
+            "data_health": compact_health,
             "runtime": {
                 "run_id": run_id,
                 "created_at_utc": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
@@ -475,7 +660,15 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "instrument_close_count": result.instrument_close_count,
             "settlement_mode": result.settlement.get("mode", "open"),
             "settlement_enabled": bool(result.settlement.get("enabled", False)),
+            # raw_health_ok is the mode-agnostic health verdict; in pmxt_research
+            # it may be false (receive-time inversions) while the mode gate passed.
             "data_health_ok": data_health_report.ok,
+            "raw_health_ok": health_gate["raw_health_ok"],
+            "mode_health_gate_passed": health_gate["mode_health_gate_passed"],
+            "blocking_codes": health_gate["blocking_codes"],
+            "replay_clock_verified": health_gate["replay_clock_verified"],
+            "claim_scope": replay_provenance.get("claim_scope", "unknown"),
+            "input_hashes": input_hashes,
             "fees": report_metadata.fees,
         }
         print(json.dumps(summary, indent=2))
@@ -487,12 +680,18 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument(
+        "--event-dir",
+        type=Path,
+        default=None,
+        help="Override adapter.input.event_dir (external data dependency, e.g. PolyReaper)",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    run_from_config(args.config)
+    run_from_config(args.config, event_dir_override=args.event_dir)
 
 
 if __name__ == "__main__":

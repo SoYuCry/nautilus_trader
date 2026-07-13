@@ -32,6 +32,9 @@ if str(REPO_ROOT) not in sys.path:
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter  # noqa: E402
 from polymarket.data_health import analyze_dataset_health  # noqa: E402
 from polymarket.replay_contract import PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_MODE  # noqa: E402
+from polymarket.replay_contract import blocking_health_issues  # noqa: E402
+from polymarket.replay_contract import replay_time_column as contract_replay_time_column  # noqa: E402
 
 BASELINE_MODULE_PATH = REPO_ROOT / "polymarket/research/2026-07-08-pmxt-l2-factor-baseline/factor_research.py"
 VALID_BOOK = "valid"
@@ -292,8 +295,8 @@ def add_time_to_close(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def replay_time_column(panel: pd.DataFrame) -> str:
-    """Return the PMXT replay clock column for timestamp-ordered diagnostics."""
-    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+    """Return the PMXT replay clock column; in-process panels must carry it."""
+    return contract_replay_time_column(panel)
 
 
 def time_to_close_bucket(seconds: float) -> str:
@@ -468,7 +471,9 @@ def simulate_fills(
     results: list[FillResult] = []
     window_ns = int(fill_window_seconds * 1_000_000_000)
     for probe in probes.itertuples(index=False):
-        probe_time = getattr(probe, "replay_timestamp", probe.timestamp_received)
+        # Contract clock only: probes without replay_timestamp are a hard error,
+        # never a silent receive-time fallback.
+        probe_time = probe.replay_timestamp
         start_ns = int(probe_time.value)
         end_ns = start_ns + window_ns
         threshold = max(0.0, float(probe.displayed_top_size) * queue_fraction) + order_size
@@ -545,7 +550,7 @@ def compute_markout_metrics(
     for probe, fill in zip(probes.itertuples(index=False), fills, strict=True):
         record = {
             "timestamp_received": probe.timestamp_received,
-            "replay_timestamp": getattr(probe, "replay_timestamp", probe.timestamp_received),
+            "replay_timestamp": probe.replay_timestamp,
             "time_to_close_bucket": probe.time_to_close_bucket,
             "factor_quantile": int(probe.factor_quantile),
             "factor_value": float(probe.depth_imbalance_1),
@@ -774,11 +779,7 @@ def build_event_summary(diagnostics: pd.DataFrame) -> pd.DataFrame:
 
 def pmxt_maker_blocking_health_issues(health: Any) -> list[Any]:
     """Return hard data-health issues that still block PMXT maker diagnostics."""
-    return [
-        issue
-        for issue in health.issues
-        if issue.severity == "error" and issue.code not in PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS
-    ]
+    return blocking_health_issues(health, mode=PMXT_RESEARCH_MODE)
 
 
 def source_quality_fields(source_quality: dict[str, Any]) -> dict[str, Any]:
@@ -794,6 +795,9 @@ def source_quality_fields(source_quality: dict[str, Any]) -> dict[str, Any]:
         "source_quality_missing_source_timestamp_rows": int(source_quality.get("missingSourceTimestampRows", 0) or 0),
         "source_quality_stable_sort_key": source_quality.get("stableSortKey", ""),
         "ordering_ambiguous": str(source_quality.get("orderingStatus", "unknown")) == "ambiguous" or ordering_ambiguous_rows > 0,
+        "replay_clock_column": "replay_timestamp",
+        "legacy_receive_time_allowed": False,
+        "legacy_receive_time_used": False,
     }
 
 

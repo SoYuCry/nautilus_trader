@@ -53,6 +53,11 @@ STRICT_CAPTURE_ORDERING_KEY = "capture_order(timestamp_received non-decreasing e
 
 RECEIVE_TIME_REPLAY_CLOCK = "timestamp_received"
 PMXT_REPLAY_CLOCK = "pmxt_replay_timestamp"
+PMXT_SOURCE_TIME_POLICY = "timestamp_fallback_timestamp_received"
+
+# Panel/frame column names for the two clocks.
+PMXT_REPLAY_TIMESTAMP_COLUMN = "replay_timestamp"
+LEGACY_RECEIVE_TIME_COLUMN = "timestamp_received"
 
 # Health error codes that are diagnostics rather than blockers under PMXT
 # research replay: the adapter sorts on source time, so receive time is not
@@ -83,6 +88,28 @@ def replay_timestamp(step: L2ReplayStepV1) -> datetime:
     adapter output, so it is non-decreasing in step order by construction.
     """
     return step.timestamp or step.timestamp_received
+
+
+def replay_time_column(panel: Any, *, allow_legacy_receive_time: bool = False) -> str:
+    """
+    Return the panel column holding the PMXT research replay clock.
+
+    Panels produced by the current factor pipeline always carry
+    ``replay_timestamp``.  Old panels written before the shared contract only
+    have ``timestamp_received``; consuming them silently would mix two ordering
+    semantics, so the legacy fallback must be requested explicitly (e.g. via a
+    config flag) and callers should surface that choice in their outputs.
+    """
+    columns = set(getattr(panel, "columns", panel))
+    if PMXT_REPLAY_TIMESTAMP_COLUMN in columns:
+        return PMXT_REPLAY_TIMESTAMP_COLUMN
+    if allow_legacy_receive_time and LEGACY_RECEIVE_TIME_COLUMN in columns:
+        return LEGACY_RECEIVE_TIME_COLUMN
+    raise ValueError(
+        f"panel has no {PMXT_REPLAY_TIMESTAMP_COLUMN!r} column; it predates the shared "
+        "PMXT replay contract. Re-generate it, or explicitly opt in to legacy "
+        "receive-time ordering (allow_legacy_receive_time=true) and mark the outputs.",
+    )
 
 
 def resolve_replay_mode(config: Mapping[str, Any]) -> str:
@@ -137,34 +164,94 @@ def blocking_health_issues(report: DataHealthReportV1, *, mode: str) -> list[Dat
 
 def verify_pmxt_replay_clock_order(dataset: PolymarketL2DatasetV1) -> dict[str, Any]:
     """
-    Prove the PMXT replay clock is non-decreasing and sequence strictly increases.
+    Prove the step stream satisfies the full PMXT contract ordering key.
 
-    The adapter's stable sort guarantees this by construction; this check makes
-    the guarantee explicit at the backtest boundary instead of trusting the
-    adapter silently.
+    Verifies, at the backtest boundary rather than trusting the adapter:
+
+    - the replay clock (``timestamp`` with receive fallback) is non-decreasing;
+    - ``sequence`` is strictly increasing;
+    - inside tied-clock groups, the declared tie-breakers hold:
+      ``timestamp_received`` non-decreasing, and where receive times also tie,
+      ``source_row_index`` strictly increasing (when the adapter supplies it).
     """
+    previous: Any = None
     previous_clock: datetime | None = None
-    previous_sequence: int | None = None
+    tie_break_checked_pairs = 0
+    row_index_available = all(step.source_row_index is not None for step in dataset.steps)
     for step in dataset.steps:
         clock = replay_timestamp(step)
-        if previous_clock is not None and clock < previous_clock:
-            raise ValueError(
-                "PMXT replay clock moved backwards; the dataset does not satisfy "
-                f"the pmxt_research replay contract at sequence={step.sequence}",
-            )
-        if previous_sequence is not None and step.sequence <= previous_sequence:
-            raise ValueError(
-                "PMXT replay sequence must be strictly increasing; violated at "
-                f"sequence={step.sequence}",
-            )
+        if previous is not None:
+            if clock < previous_clock:
+                raise ValueError(
+                    "PMXT replay clock moved backwards; the dataset does not satisfy "
+                    f"the pmxt_research replay contract at sequence={step.sequence}",
+                )
+            if step.sequence <= previous.sequence:
+                raise ValueError(
+                    "PMXT replay sequence must be strictly increasing; violated at "
+                    f"sequence={step.sequence}",
+                )
+            if clock == previous_clock:
+                tie_break_checked_pairs += 1
+                if step.timestamp_received < previous.timestamp_received:
+                    raise ValueError(
+                        "PMXT tie-breaker violated: timestamp_received moved backwards "
+                        f"inside a tied replay-clock group at sequence={step.sequence}",
+                    )
+                if step.timestamp_received == previous.timestamp_received:
+                    # Fully tied pair: only the original row index can prove the
+                    # declared triple ordering.  Missing it is fail-closed, not a
+                    # skipped check, so tie_breaker_verified can never be a false
+                    # positive.
+                    if step.source_row_index is None or previous.source_row_index is None:
+                        raise ValueError(
+                            "PMXT tie-breaker unverifiable: a fully tied timestamp group "
+                            f"at sequence={step.sequence} has no source_row_index, so the "
+                            "declared ordering key cannot be proven. The adapter must "
+                            "supply source_row_index for pmxt_research replay.",
+                        )
+                    if step.source_row_index <= previous.source_row_index:
+                        raise ValueError(
+                            "PMXT tie-breaker violated: source_row_index must be strictly "
+                            f"increasing inside a fully tied group at sequence={step.sequence}",
+                        )
+        previous = step
         previous_clock = clock
-        previous_sequence = step.sequence
     return {
         "replay_clock": PMXT_REPLAY_CLOCK,
         "replay_clock_monotonic": True,
         "sequence_strictly_increasing": True,
+        "tie_breaker_verified": True,
+        "tie_break_checked_pairs": tie_break_checked_pairs,
+        "source_row_index_available": row_index_available,
         "step_count": len(dataset.steps),
     }
+
+
+def enforce_ambiguous_ties_gate(
+    *,
+    mode: str,
+    strategy_enabled: bool,
+    ordering_ambiguous: bool,
+    allow_ambiguous_ties: bool,
+) -> None:
+    """
+    Fail closed when a strategy would trade through ambiguous PMXT tie order.
+
+    Ambiguous ties are timestamp groups whose internal order is unknowable from
+    PMXT data; fills can depend on the arbitrary (deterministic) arrangement.
+    Data-only replays may proceed, but strategy runs must explicitly accept the
+    risk via ``replay.allow_ambiguous_ties: true``.
+    """
+    if mode != PMXT_RESEARCH_MODE or not strategy_enabled or not ordering_ambiguous:
+        return
+    if not allow_ambiguous_ties:
+        raise ValueError(
+            "PMXT dataset contains ordering-ambiguous tied timestamp groups and a "
+            "strategy is enabled; fills could depend on an arbitrary tie arrangement. "
+            "Set replay.allow_ambiguous_ties: true to explicitly accept this risk "
+            "(the run report will record the acceptance), or run data-only replay.",
+        )
 
 
 def build_replay_provenance(*, mode: str, dataset_metadata: Any) -> dict[str, Any]:
@@ -178,7 +265,15 @@ def build_replay_provenance(*, mode: str, dataset_metadata: Any) -> dict[str, An
         credibility = "pmxt_research_reconstructed_order"
         if ordering_ambiguous:
             credibility = "pmxt_research_reconstructed_order_ambiguous_ties"
+        # Tie-order sensitivity replay is not implemented yet.  Until it runs,
+        # results on ambiguous datasets are engine-plumbing evidence only, not
+        # performance claims: fills/PnL could depend on the arbitrary tie
+        # arrangement inside ambiguous groups.
+        claim_scope = "plumbing_only" if ordering_ambiguous else "research_replay"
         return {
+            "claim_scope": claim_scope,
+            "ambiguous_ties_sensitivity_status": "not_run" if ordering_ambiguous else "not_required",
+            "performance_claims_allowed": False,
             "mode": PMXT_RESEARCH_MODE,
             "replay_clock": PMXT_REPLAY_CLOCK,
             "ordering_key": PMXT_RESEARCH_ORDERING_KEY,
@@ -193,6 +288,9 @@ def build_replay_provenance(*, mode: str, dataset_metadata: Any) -> dict[str, An
             "disclaimer": PMXT_RESEARCH_DISCLAIMER,
         }
     return {
+        "claim_scope": "capture_replay",
+        "ambiguous_ties_sensitivity_status": "not_applicable",
+        "performance_claims_allowed": True,
         "mode": STRICT_CAPTURE_MODE,
         "replay_clock": RECEIVE_TIME_REPLAY_CLOCK,
         "ordering_key": STRICT_CAPTURE_ORDERING_KEY,

@@ -129,10 +129,12 @@ def test_simulate_fills_handles_microsecond_timestamp_arrays_end_to_end():
         },
     )
     panel["timestamp_received"] = panel["timestamp_received"].astype("datetime64[us, UTC]")
+    panel["replay_timestamp"] = panel["timestamp_received"]
     trades = module.build_trade_arrays(panel)
     probes = pd.DataFrame(
         {
             "timestamp_received": pd.Series([pd.Timestamp("2026-06-01T00:00:00Z")]).astype("datetime64[us, UTC]"),
+            "replay_timestamp": pd.Series([pd.Timestamp("2026-06-01T00:00:00Z")]).astype("datetime64[us, UTC]"),
             "quote_price": [0.50],
             "displayed_top_size": [0.0],
         },
@@ -250,6 +252,7 @@ def test_compute_markout_uses_buy_and_sell_sign_conventions():
     probes = pd.DataFrame(
         {
             "timestamp_received": [pd.Timestamp("2026-06-01T00:00:00Z")],
+            "replay_timestamp": [pd.Timestamp("2026-06-01T00:00:00Z")],
             "time_to_close_bucket": ["last_6h"],
             "factor_quantile": [5],
             "depth_imbalance_1": [0.8],

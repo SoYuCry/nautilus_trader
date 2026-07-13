@@ -47,6 +47,13 @@ def write_backtest_reports(
     fills_view = build_fills_view(fills, instrument_context=instrument_context)
     positions_view = build_positions_view(positions, instrument_context=instrument_context)
 
+    # Curated CSVs are self-describing once they leave the run directory: every
+    # row carries the replay mode and data-credibility grade of the run.
+    replay = getattr(result, "replay", {}) or {}
+    for view in (account_view, fills_view, positions_view):
+        view["replay_mode"] = str(replay.get("mode", "unknown"))
+        view["data_credibility"] = str(replay.get("data_credibility", "unknown"))
+
     account.to_csv(raw_dir / "account.csv")
     fills.to_csv(raw_dir / "fills.csv")
     positions.to_csv(raw_dir / "positions.csv")
@@ -57,15 +64,21 @@ def write_backtest_reports(
 
     fee_totals = summarize_fill_fee_totals(fills)
     fee_report = {**result.fees, "totals_from_fills_report": fee_totals}
-    reports = {
-        "account": "account.csv",
-        "fills": "fills.csv",
-        "positions": "positions.csv",
-        "raw_nautilus_account": "raw_nautilus/account.csv",
-        "raw_nautilus_fills": "raw_nautilus/fills.csv",
-        "raw_nautilus_positions": "raw_nautilus/positions.csv",
-        "markdown": "run_report.md",
+    data_health_artifact = dict(getattr(result, "data_health_artifact", {}) or {})
+    if not data_health_artifact:
+        data_health_artifact = {"path": "data_health.json", "status": "present"}
+    reports: dict[str, Any] = {
+        "account": {"path": "account.csv", "status": "present"},
+        "fills": {"path": "fills.csv", "status": "present"},
+        "positions": {"path": "positions.csv", "status": "present"},
+        "raw_nautilus_account": {"path": "raw_nautilus/account.csv", "status": "present"},
+        "raw_nautilus_fills": {"path": "raw_nautilus/fills.csv", "status": "present"},
+        "raw_nautilus_positions": {"path": "raw_nautilus/positions.csv", "status": "present"},
+        "markdown": {"path": "run_report.md", "status": "present"},
+        "data_health": data_health_artifact,
     }
+    if data_health_artifact.get("status") == "omitted_from_git":
+        reports["omitted_artifacts"] = {"path": "OMITTED_ARTIFACTS.json", "status": "present"}
 
     _write_run_report_markdown(
         run_dir=run_dir,
@@ -81,6 +94,9 @@ def write_backtest_reports(
             {
                 "engine": "nautilus_trader.backtest.engine.BacktestEngine",
                 "replay": getattr(result, "replay", {}),
+                "data_health_gate": getattr(result, "health_gate", {}),
+                "engine_config": getattr(result, "engine_config", {}),
+                "input_hashes": getattr(result, "input_hashes", []),
                 "data_count": result.data_count,
                 "order_book_deltas_count": result.order_book_deltas_count,
                 "trade_ticks_count": result.trade_ticks_count,
@@ -140,6 +156,12 @@ def build_fills_view(fills: pd.DataFrame, *, instrument_context: Mapping[str, An
     ]
     if fills.empty:
         return pd.DataFrame(columns=columns)
+
+    # Research view is time-ordered; raw_nautilus/fills.csv keeps the engine's
+    # original row order as the audit baseline.
+    sort_key = "ts_init" if "ts_init" in fills.columns else None
+    if sort_key is not None:
+        fills = fills.sort_values(sort_key, kind="mergesort")
 
     rows: list[dict[str, Any]] = []
     fee_column = _first_existing_column(fills, _FEE_COLUMNS)
@@ -246,21 +268,57 @@ def _write_run_report_markdown(
 ) -> None:
     health_summary = result.data_health.get("summary", {})
     replay = getattr(result, "replay", {}) or {}
+    health_gate = getattr(result, "health_gate", {}) or {}
+    engine_config = getattr(result, "engine_config", {}) or {}
+    ts_init_audit = replay.get("ts_init_audit", {}) or {}
+    data_health_artifact = dict(getattr(result, "data_health_artifact", {}) or {})
     lines = [
         "# Polymarket backtest run report",
         "",
         "## Replay trust boundary",
         "",
         f"- Replay mode: `{replay.get('mode', 'unknown')}`",
+        f"- Claim scope: `{replay.get('claim_scope', 'unknown')}`",
+        f"- Performance claims allowed: `{str(replay.get('performance_claims_allowed', False)).lower()}`",
         f"- Replay clock: `{replay.get('replay_clock', 'unknown')}`",
         f"- Ordering key: `{replay.get('ordering_key', 'unknown')}`",
         f"- Tie-breaker: `{replay.get('tie_breaker', 'unknown')}`",
         f"- Data credibility: `{replay.get('data_credibility', 'unknown')}`",
         f"- Adapter: `{replay.get('adapter', 'unknown')}`",
-        f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`",
+        f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`"
+        + (
+            f" (explicitly accepted: `{str(replay.get('ambiguous_ties_accepted', False)).lower()}`, "
+            f"sensitivity: `{replay.get('ambiguous_ties_sensitivity_status', 'unknown')}`)"
+            if "ambiguous_ties_accepted" in replay
+            else ""
+        ),
         f"- Execution claims allowed: `{str(replay.get('execution_claims_allowed', False)).lower()}`",
         f"- Matching-level truth: `{str(replay.get('matching_level_truth', False)).lower()}`",
         f"- Boundary: {replay.get('disclaimer', 'unknown')}",
+        "",
+        "## Data-health gate (mode-aware)",
+        "",
+        f"- Raw health ok (mode-agnostic receive-time check): `{str(health_gate.get('raw_health_ok', 'unknown')).lower()}`",
+        f"- Mode health gate passed: `{str(health_gate.get('mode_health_gate_passed', 'unknown')).lower()}`",
+        f"- Blocking codes: `{health_gate.get('blocking_codes', [])}`",
+        f"- Replay clock verified: `{str(health_gate.get('replay_clock_verified', 'unknown')).lower()}`",
+        "- In pmxt_research mode, raw health can be `false` (receive-time inversions are diagnostics) while the mode gate passed; the mode gate is the authoritative go/no-go.",
+        "",
+        "## Synthetic ts_init audit",
+        "",
+        f"- Policy: `{ts_init_audit.get('ts_init_policy', 'unknown')}`",
+        f"- Events serialized by +1ns adjustment: `{ts_init_audit.get('adjusted_event_count', 'unknown')}`",
+        f"- Max synthetic offset from replay clock (ns): `{ts_init_audit.get('max_synthetic_offset_ns', 'unknown')}`",
+        "- Factor research and this backtest share the adapter step order and source replay clock, but factor labels aggregate tied timestamps while the strategy observes those events one-by-one on synthetic ts_init; the two views are order-consistent, not identical.",
+        "",
+        "## Engine fill configuration",
+        "",
+        f"- trade_execution: `{str(engine_config.get('trade_execution', 'unknown')).lower()}`",
+        f"- liquidity_consumption: `{str(engine_config.get('liquidity_consumption', 'unknown')).lower()}`",
+        f"- queue_position: `{str(engine_config.get('queue_position', 'unknown')).lower()}`",
+        f"- book_type: `{engine_config.get('book_type', 'unknown')}` / oms: `{engine_config.get('oms_type', 'unknown')}` / account: `{engine_config.get('account_type', 'unknown')}`",
+        f"- starting_balance: `{engine_config.get('starting_balance', 'unknown')}`",
+        f"- fee_model_enabled: `{str(engine_config.get('fee_model_enabled', 'unknown')).lower()}` (maker rebates: `{str(engine_config.get('maker_rebates_enabled', 'unknown')).lower()}`)",
         "",
         "## Result summary",
         "",
@@ -320,7 +378,12 @@ def _write_run_report_markdown(
         "## Report files",
         "",
         "- `summary.json`",
-        "- `data_health.json`",
+        (
+            "- `data_health.json` — omitted from Git (large regenerable diagnostics); "
+            "integrity metadata in `OMITTED_ARTIFACTS.json`"
+            if data_health_artifact.get("status") == "omitted_from_git"
+            else "- `data_health.json`"
+        ),
         "- `fills.csv`",
         "- `positions.csv`",
         "- `account.csv`",

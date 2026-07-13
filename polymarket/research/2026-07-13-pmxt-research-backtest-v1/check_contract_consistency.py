@@ -1,4 +1,3 @@
-# ruff: noqa: RUF001
 """
 Reproducible PMXT research replay-contract consistency check.
 
@@ -21,6 +20,7 @@ Usage (repository root):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import sys
@@ -60,13 +60,37 @@ def load_baseline_module():
     return module
 
 
+def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(chunk_size), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument(
+        "--event-dir",
+        type=Path,
+        default=None,
+        help="Override adapter.input.event_dir (the PMXT data lives outside this repository)",
+    )
     args = parser.parse_args()
     config = load_yaml(args.config.resolve())
+    if args.event_dir is not None:
+        config["adapter"]["input"]["event_dir"] = str(args.event_dir)
 
-    results: dict[str, object] = {"generated_at": datetime.now(UTC).isoformat()}
+    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    results: dict[str, object] = {"generated_at": datetime.now(UTC).isoformat(), "run_id": run_id}
+    event_dir = Path(str(config["adapter"]["input"]["event_dir"]))
+    results["event_dir"] = str(event_dir)
+    results["input_hashes"] = {
+        name: {"size_bytes": (event_dir / name).stat().st_size, "sha256": sha256_file(event_dir / name)}
+        for name in ("orderbook.parquet", "event_index.json", "gamma_event.raw.json", "manifest.json")
+        if (event_dir / name).exists()
+    }
 
     # 1. Mode gate: strict default rejects, explicit research mode passes.
     stripped = {key: value for key, value in config.items() if key != "replay"}
@@ -107,9 +131,13 @@ def main() -> int:
     results["factor_panel_order_matches_steps"] = True
     results["factor_panel_clock_matches_contract"] = True
 
-    output_path = args.config.resolve().parent / "contract_consistency_result.json"
-    output_path.write_text(json.dumps(results, indent=2, default=str) + "\n", encoding="utf-8")
-    print(json.dumps(results, indent=2, default=str))
+    text = json.dumps(results, indent=2, default=str) + "\n"
+    runs_dir = args.config.resolve().parent / "consistency_runs"
+    runs_dir.mkdir(exist_ok=True)
+    (runs_dir / f"{run_id}.json").write_text(text, encoding="utf-8")
+    # Latest-result convenience copy; per-run history lives in consistency_runs/.
+    (args.config.resolve().parent / "contract_consistency_result.json").write_text(text, encoding="utf-8")
+    print(text)
     return 0
 
 

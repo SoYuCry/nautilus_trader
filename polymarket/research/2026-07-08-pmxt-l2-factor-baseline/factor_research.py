@@ -42,8 +42,12 @@ if str(REPO_ROOT) not in sys.path:
 
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter  # noqa: E402
 from polymarket.data_health import analyze_dataset_health  # noqa: E402
-from polymarket.replay_contract import PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES  # noqa: E402
+from polymarket.replay_contract import PMXT_REPLAY_CLOCK  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_MODE  # noqa: E402
 from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY  # noqa: E402
+from polymarket.replay_contract import PMXT_SOURCE_TIME_POLICY  # noqa: E402
+from polymarket.replay_contract import blocking_health_issues  # noqa: E402
+from polymarket.replay_contract import replay_time_column  # noqa: E402
 from polymarket.replay_contract import replay_timestamp as contract_replay_timestamp  # noqa: E402
 
 
@@ -55,11 +59,11 @@ MISSING_BOOK = "missing"
 BOOK_VALIDITY_ORDER = (VALID_BOOK, LOCKED_BOOK, CROSSED_BOOK, MISSING_BOOK)
 TRUST_METADATA_BASE = {
     "data_tier": "TIER1_EXPLORATORY",
-    "replay_clock": "timestamp",
+    "replay_clock": PMXT_REPLAY_CLOCK,
     "ordering_key": PMXT_RESEARCH_ORDERING_KEY,
     "causality": "pmxt_source_time_ordered_not_exchange_sequence",
     "execution_claims_allowed": False,
-    "source_time_policy": "primary_sort_key",
+    "source_time_policy": PMXT_SOURCE_TIME_POLICY,
     "not_for_pnl": True,
     "diagnostic_non_causal": True,
 }
@@ -372,15 +376,10 @@ def pmxt_research_blocking_health_issues(health: Any) -> list[Any]:
     The generic data-health checker is receive-time oriented for live/Nautilus
     inputs. PMXT v2 research is intentionally timestamp ordered, so receive-time
     inversions are retained as diagnostics rather than used as a hard blocker.
-    The allowed-error set is the shared PMXT research contract definition, so
-    factor research and the pmxt_research backtest mode block on the same codes.
+    Delegates to the shared contract filter so factor research and the
+    pmxt_research backtest mode block on exactly the same codes.
     """
-    return [
-        issue
-        for issue in getattr(health, "issues", ())
-        if getattr(issue, "severity", None) == "error"
-        and getattr(issue, "code", None) not in PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES
-    ]
+    return blocking_health_issues(health, mode=PMXT_RESEARCH_MODE)
 
 
 def build_trust_metadata(
@@ -569,7 +568,7 @@ def build_factor_panel(dataset: Any, config: dict[str, Any]) -> pd.DataFrame:  #
 def add_labels(panel: pd.DataFrame, config: dict[str, Any]) -> pd.DataFrame:
     if panel.empty:
         return panel
-    clock_col = "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+    clock_col = replay_time_column(panel)
     panel = panel.sort_values([clock_col, "sequence"], kind="mergesort").reset_index(drop=True)
     if "book_validity" not in panel:
         panel["book_validity"] = [

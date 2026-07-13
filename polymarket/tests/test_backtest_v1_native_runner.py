@@ -1086,7 +1086,27 @@ def test_runner_runs_pmxt_research_mode_with_marked_outputs(tmp_path: Path) -> N
     assert resolved["replay"]["execution_claims_allowed"] is False
     assert resolved["replay"]["replay_clock_check"]["replay_clock_monotonic"] is True
     assert run_summary["replay"]["mode"] == "pmxt_research"
+    # Persisted summary must be mode-aware and self-consistent on its own.
+    assert run_summary["data_health_gate"]["raw_health_ok"] is False
+    assert run_summary["data_health_gate"]["mode_health_gate_passed"] is True
+    assert run_summary["data_health_gate"]["blocking_codes"] == []
+    assert run_summary["data_health_gate"]["replay_clock_verified"] is True
+    assert run_summary["engine_config"]["trade_execution"] is True
+    assert run_summary["input_hashes"], "persisted summary must pin adapter input hashes"
+    assert all("sha256" in row for row in run_summary["input_hashes"])
+    # No self-contradictory chronology text: the generic receive-time framing
+    # must be rewritten, not merely prefixed, in pmxt_research artifacts.
+    embedded_assumptions = " ".join(run_summary["data_health"]["assumptions"])
+    assert "Hard failures are receive-time" not in embedded_assumptions
+    assert "chronology is timestamp_received order" not in embedded_assumptions
+    assert "PMXT contract clock" in embedded_assumptions
+    assert "pmxt_research mode" in " ".join(run_summary["data_health"]["mode_gate_assumptions"])
+    resolved_assumptions = " ".join(resolved["data_health"]["assumptions"])
+    assert "Hard failures are receive-time" not in resolved_assumptions
+    assert run_summary["replay"]["ts_init_audit"]["ts_init_policy"] == "synthetic_monotonic_source_time"
     assert "## Replay trust boundary" in run_report
+    assert "## Data-health gate (mode-aware)" in run_report
+    assert "## Synthetic ts_init audit" in run_report
     assert "Replay mode: `pmxt_research`" in run_report
     assert "not" in run_summary["replay"]["disclaimer"]
     # The engine still replayed the data and settled the resolved token.
@@ -1132,3 +1152,26 @@ def test_runner_strict_mode_keeps_marking_and_receive_time_gate(tmp_path: Path) 
     assert summary["data_credibility"] == "strict_capture_receive_time"
     assert resolved["replay"]["mode"] == "strict_capture"
     assert "Replay mode: `strict_capture`" in run_report
+
+
+def test_data_health_artifact_omission_manifest_generated_for_large_files(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import polymarket.backtest_v1 as runner_module
+
+    (tmp_path / "data_health.json").write_text('{"ok": true}' + " " * 64, encoding="utf-8")
+
+    present = runner_module.describe_data_health_artifact(tmp_path)
+    assert present["status"] == "present"
+    assert not (tmp_path / "OMITTED_ARTIFACTS.json").exists()
+
+    monkeypatch.setattr(runner_module, "GIT_OMIT_SIZE_BYTES", 8)
+    omitted = runner_module.describe_data_health_artifact(tmp_path)
+    manifest = json.loads((tmp_path / "OMITTED_ARTIFACTS.json").read_text(encoding="utf-8"))
+
+    assert omitted["status"] == "omitted_from_git"
+    assert omitted["manifest"] == "OMITTED_ARTIFACTS.json"
+    assert omitted["sha256"] == manifest["omitted"][0]["sha256"]
+    assert manifest["omitted"][0]["committed"] is False
+    assert manifest["omitted"][0]["path"] == "data_health.json"

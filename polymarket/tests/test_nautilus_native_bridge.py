@@ -838,3 +838,60 @@ def test_bridge_rejects_matching_token_under_wrong_condition() -> None:
     ):
         convert_dataset_to_nautilus(data, instrument=instrument)
 
+
+
+def test_ts_init_audit_counts_tick_size_change_and_instrument_close_serialization() -> None:
+    # book, tick_size_change, and price_change all share one timestamp, and the
+    # official resolution time equals that same timestamp: every synthetic +1ns
+    # serialization, including the tick timeline and InstrumentClose, must be
+    # counted by the audit.
+    same_ts = ts(5)
+    shared_step_kwargs = {"timestamp_received": same_ts, "timestamp": same_ts}
+    steps = [
+        L2ReplayStepV1(sequence=1, updates=(book(),), **shared_step_kwargs),
+        L2ReplayStepV1(
+            sequence=2,
+            updates=(
+                L2UpdateV1(
+                    event_type="tick_size_change",
+                    market="condition",
+                    asset_id="yes",
+                    old_tick_size=Decimal("0.01"),
+                    new_tick_size=Decimal("0.001"),
+                ),
+            ),
+            **shared_step_kwargs,
+        ),
+        L2ReplayStepV1(
+            sequence=3,
+            updates=(
+                L2UpdateV1(
+                    event_type="price_change",
+                    market="condition",
+                    asset_id="yes",
+                    side="BUY",
+                    price=Decimal("0.411"),
+                    size=Decimal(50),
+                ),
+            ),
+            **shared_step_kwargs,
+        ),
+    ]
+    data = dataset_with_resolution_metadata(steps, resolution_time=same_ts)
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    audit = converted.ts_init_audit
+    closes = [item for item in converted.data if isinstance(item, InstrumentClose)]
+    assert len(closes) == 1
+    # Serialized: tick timeline effective-from, the second book event, and the
+    # equal-timestamp InstrumentClose (first event needs no adjustment).
+    assert audit["adjusted_event_count"] >= 3
+    assert audit["max_synthetic_offset_ns"] >= 1
+    assert audit["ts_init_policy"] == "synthetic_monotonic_receive_time"
+    # The close itself was serialized after the last replay event.
+    last_replay_ts_init = max(
+        item.ts_init for item in converted.data if not isinstance(item, InstrumentClose)
+    )
+    assert closes[0].ts_init > last_replay_ts_init

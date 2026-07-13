@@ -215,11 +215,11 @@ def test_factor_boundary_metadata_degrades_on_clock_and_book_warnings(factor_res
 
     assert metadata["data_tier"] == "TIER1_EXPLORATORY"
     assert metadata["run_grade"] == "TIER1_CAUTION_PMXT_QUALITY"
-    assert metadata["replay_clock"] == "timestamp"
+    assert metadata["replay_clock"] == "pmxt_replay_timestamp"
     assert metadata["ordering_key"] == "timestamp,timestamp_received,_original_row_index"
     assert metadata["causality"] == "pmxt_source_time_ordered_not_exchange_sequence"
     assert metadata["execution_claims_allowed"] is False
-    assert metadata["source_time_policy"] == "primary_sort_key"
+    assert metadata["source_time_policy"] == "timestamp_fallback_timestamp_received"
     assert metadata["source_time_diagnostics"]["source_time_inversion_count"] == 1
     assert metadata["book_validity_counts"]["crossed"] == 1
     assert metadata["not_for_pnl"] is True
@@ -339,16 +339,18 @@ def test_factor_metadata_json_and_report_include_claim_boundary(
 def test_label_asof_uses_last_state_for_duplicate_receive_timestamp(
     factor_research: Any,
 ) -> None:
+    duplicate_clock = factor_research.pd.to_datetime(
+        [
+            "2026-07-08T00:00:00Z",
+            "2026-07-08T00:00:01Z",
+            "2026-07-08T00:00:01Z",
+            "2026-07-08T00:00:02Z",
+        ],
+    )
     panel = factor_research.pd.DataFrame(
         {
-            "timestamp_received": factor_research.pd.to_datetime(
-                [
-                    "2026-07-08T00:00:00Z",
-                    "2026-07-08T00:00:01Z",
-                    "2026-07-08T00:00:01Z",
-                    "2026-07-08T00:00:02Z",
-                ],
-            ),
+            "timestamp_received": duplicate_clock,
+            "replay_timestamp": duplicate_clock,
             "sequence": [1, 2, 3, 4],
             "mid": [0.50, 0.51, 0.55, 0.56],
             "bid1": [0.49, 0.50, 0.54, 0.55],

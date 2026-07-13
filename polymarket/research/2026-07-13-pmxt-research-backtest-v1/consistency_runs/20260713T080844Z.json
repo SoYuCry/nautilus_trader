@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-13T09:06:42.930963+00:00",
-  "run_id": "20260713T090642Z",
+  "generated_at": "2026-07-13T08:08:44.489456+00:00",
+  "run_id": "20260713T080844Z",
   "event_dir": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026",
   "input_hashes": {
     "orderbook.parquet": {

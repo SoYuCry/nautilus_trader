@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from dataclasses import dataclass
 from datetime import UTC
 from datetime import datetime
@@ -13,6 +14,13 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from polymarket.replay_contract import replay_time_column  # noqa: E402
 
 
 VALID_BOOK = "valid"
@@ -65,9 +73,13 @@ def main() -> int:
     bootstrap_repeats = int(config.get("analysis", {}).get("bootstrap_repeats", DEFAULT_BOOTSTRAP_REPEATS))
 
     current_valid = panel[panel.get("book_validity") == VALID_BOOK].copy()
-    clock_col = replay_time_column(current_valid)
+    # Disk panels may predate the shared contract; legacy receive-time ordering
+    # must be requested explicitly so two orderings are never mixed silently.
+    allow_legacy = bool(config.get("input", {}).get("allow_legacy_receive_time", False))
+    clock_col = replay_time_column(current_valid, allow_legacy_receive_time=allow_legacy)
     current_valid = current_valid.sort_values([clock_col, "sequence"], kind="mergesort")
     current_valid["time_bucket"] = assign_time_buckets(current_valid[clock_col], time_buckets)
+    current_valid["replay_time"] = current_valid[clock_col]
 
     temporal_ic = compute_temporal_ic(current_valid, factors, horizons)
     summary = compute_robustness_summary(current_valid, factors, horizons, temporal_ic, null_repeats, bootstrap_repeats)
@@ -117,11 +129,6 @@ def resolve_output_dir(config: dict[str, Any], config_path: Path) -> Path:
 def resolve_input_path(config_path: Path, raw: str) -> Path:
     path = Path(str(raw))
     return path.resolve() if path.is_absolute() else (config_path.parent / path).resolve()
-
-
-def replay_time_column(panel: pd.DataFrame) -> str:
-    """Prefer the shared PMXT research replay clock; fall back for old panels."""
-    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
 
 
 def assign_time_buckets(timestamp: pd.Series, bucket_count: int) -> pd.Series:
@@ -185,7 +192,7 @@ def compute_robustness_summary(
                 continue
             frame = pd.DataFrame(
                 {
-                    "replay_time": panel[replay_time_column(panel)],
+                    "replay_time": panel["replay_time"],
                     "asset_id": panel.get("asset_id", "asset"),
                     "time_bucket": panel["time_bucket"],
                     "factor": factor_values,

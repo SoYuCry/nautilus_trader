@@ -1,4 +1,5 @@
-"""Minimal Nautilus-native demonstration strategy for the PMXT research backtest.
+"""
+Minimal Nautilus-native demonstration strategy for the PMXT research backtest.
 
 Buys the best ask once, then holds; settlement closes the position.  This is a
 plumbing demonstration for the pmxt_research replay mode, not a trading idea.
@@ -45,7 +46,15 @@ class TakeBestAskOnce(Strategy):
         if self.submitted or self.instrument is None:
             return
         book: OrderBook | None = self.cache.order_book(self.config.instrument_id)
-        if book is None or book.best_ask_price() is None:
+        if book is None:
+            return
+        # Wait for a two-sided book with displayed ask size; early PMXT replay
+        # can be one-sided (single price_change before the first snapshot) and
+        # a market order into that state is rejected by the matching engine.
+        best_ask = book.best_ask_price()
+        best_bid = book.best_bid_price()
+        best_ask_size = book.best_ask_size()
+        if best_ask is None or best_bid is None or best_ask_size is None or best_ask_size.as_double() <= 0:
             return
         order = self.order_factory.market(
             instrument_id=self.instrument.id,

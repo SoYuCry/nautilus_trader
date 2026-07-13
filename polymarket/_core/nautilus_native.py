@@ -101,6 +101,7 @@ class NautilusConversionResultV1:
     settlement_mode: SettlementModeV1
     settlement_reason: str
     settlement_evidence: tuple[tuple[str, str], ...]
+    ts_init_audit: dict[str, Any] = None  # type: ignore[assignment]
 
 
 def datetime_to_nanos(value: datetime) -> int:
@@ -304,16 +305,29 @@ def convert_dataset_to_nautilus(
         token_id=selected_asset_id,
     )
     last_ts_init: int | None = None
+    last_replay_clock_ns: int | None = None
     terminal_bid_levels: dict[Decimal, Decimal] = {}
     terminal_ask_levels: dict[Decimal, Decimal] = {}
     terminal_last_trade: Decimal | None = None
 
+    ts_init_adjusted_count = 0
+    max_ts_init_offset_ns = 0
+
+    def audited_monotonic_ts(candidate: int) -> int:
+        """Audited allocator: every synthetic +1ns serialization is counted."""
+        nonlocal ts_init_adjusted_count, max_ts_init_offset_ns
+        adjusted = _next_monotonic_ts_init(candidate, last_ts_init)
+        if adjusted != candidate:
+            ts_init_adjusted_count += 1
+            max_ts_init_offset_ns = max(max_ts_init_offset_ns, adjusted - candidate)
+        return adjusted
+
     def next_ts_init(step: L2ReplayStepV1) -> int:
-        nonlocal last_ts_init
-        ts_init = step_event_ns(step)
-        if last_ts_init is not None and ts_init <= last_ts_init:
-            ts_init = last_ts_init + 1
+        nonlocal last_ts_init, last_replay_clock_ns
+        clock_ns = step_event_ns(step)
+        ts_init = audited_monotonic_ts(clock_ns)
         last_ts_init = ts_init
+        last_replay_clock_ns = clock_ns
         return ts_init
 
     def append_book_updates(
@@ -399,10 +413,7 @@ def convert_dataset_to_nautilus(
                 effective_tick_size_changes.append(
                     EffectiveTickSizeChangeV1(
                         sequence=step.sequence,
-                        effective_from_ts_init=_next_monotonic_ts_init(
-                            step_event_ns(step),
-                            last_ts_init,
-                        ),
+                        effective_from_ts_init=audited_monotonic_ts(step_event_ns(step)),
                         old_tick_size=update.old_tick_size,
                         new_tick_size=update.new_tick_size,
                     ),
@@ -424,11 +435,15 @@ def convert_dataset_to_nautilus(
         last_ts_init=last_ts_init,
     )
     if settlement is not None:
-        if last_ts_init is not None and settlement.resolution_time_ns < last_ts_init:
+        # Compare against the real replay clock, not the synthetic ts_init: the
+        # +1ns serialization of tied events must not make a settlement at the
+        # final replay timestamp look like it happened "before" the data.
+        if last_replay_clock_ns is not None and settlement.resolution_time_ns < last_replay_clock_ns:
             raise ValueError(
                 "resolved Polymarket token settlement time is before the last replay "
                 "clock timestamp for the selected token: "
-                f"resolution_time_ns={settlement.resolution_time_ns}, last_replay_ts_init={last_ts_init}",
+                f"resolution_time_ns={settlement.resolution_time_ns}, "
+                f"last_replay_clock_ns={last_replay_clock_ns}",
             )
         data.append(
             InstrumentClose(
@@ -436,7 +451,7 @@ def convert_dataset_to_nautilus(
                 close_price=instrument.make_price(float(settlement.payout)),
                 close_type=InstrumentCloseType.CONTRACT_EXPIRED,
                 ts_event=settlement.resolution_time_ns,
-                ts_init=_next_monotonic_ts_init(settlement.resolution_time_ns, last_ts_init),
+                ts_init=audited_monotonic_ts(settlement.resolution_time_ns),
             ),
         )
 
@@ -455,6 +470,22 @@ def convert_dataset_to_nautilus(
         settlement_mode=settlement_mode,
         settlement_reason=settlement_reason,
         settlement_evidence=settlement_evidence,
+        ts_init_audit={
+            "ts_init_policy": (
+                "synthetic_monotonic_source_time"
+                if replay_clock == PMXT_REPLAY_CLOCK
+                else "synthetic_monotonic_receive_time"
+            ),
+            "replay_clock": replay_clock,
+            "adjusted_event_count": ts_init_adjusted_count,
+            "max_synthetic_offset_ns": max_ts_init_offset_ns,
+            "note": (
+                "Events sharing a replay-clock timestamp are serialized by +1ns "
+                "increments so Nautilus ts_init stays strictly increasing; the "
+                "strategy observes these events sequentially even though the "
+                "source clock cannot distinguish their order."
+            ),
+        },
     )
 
 

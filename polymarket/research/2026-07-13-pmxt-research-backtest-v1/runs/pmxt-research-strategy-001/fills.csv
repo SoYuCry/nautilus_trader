@@ -1,0 +1,3 @@
+ts_event,strategy,instrument,side,order_type,quantity,avg_px,fee,fee_pusd,gross_cashflow_pusd,net_cashflow_pusd,liquidity_side,status,replay_mode,data_credibility
+2026-06-07 04:35:40.259000+00:00,TakeBestAskOnce,Yes,BUY,MARKET,1,0.81,0.00769 pUSD,0.00769,-0.81,-0.81769,TAKER,FILLED,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties
+2026-06-09 16:42:19+00:00,TakeBestAskOnce,Yes,SELL,MARKET,1,1,0 pUSD,0,1,1,TAKER,FILLED,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties

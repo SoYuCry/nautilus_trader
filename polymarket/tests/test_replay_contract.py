@@ -24,7 +24,9 @@ from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
 from polymarket.replay_contract import STRICT_CAPTURE_MODE
 from polymarket.replay_contract import blocking_health_issues
 from polymarket.replay_contract import build_replay_provenance
+from polymarket.replay_contract import enforce_ambiguous_ties_gate
 from polymarket.replay_contract import enforce_replay_mode_gate
+from polymarket.replay_contract import replay_time_column
 from polymarket.replay_contract import replay_timestamp
 from polymarket.replay_contract import resolve_replay_mode
 from polymarket.replay_contract import verify_pmxt_replay_clock_order
@@ -49,7 +51,7 @@ def _iso(seconds: int) -> str:
     return _dt(seconds).isoformat().replace("+00:00", "Z")
 
 
-def _step(sequence: int, *, received: int, source: int | None) -> L2ReplayStepV1:
+def _step(sequence: int, *, received: int, source: int | None, row_index: int | None = None) -> L2ReplayStepV1:
     return L2ReplayStepV1(
         sequence=sequence,
         timestamp_received=_dt(received),
@@ -57,6 +59,7 @@ def _step(sequence: int, *, received: int, source: int | None) -> L2ReplayStepV1
         updates=(
             L2UpdateV1(event_type="price_change", market=CONDITION_ID, asset_id=YES_TOKEN, side="BUY"),
         ),
+        source_row_index=row_index,
     )
 
 
@@ -200,7 +203,7 @@ def test_verify_pmxt_replay_clock_order_accepts_contract_sorted_steps() -> None:
         steps=(
             _step(1, received=9, source=1),
             _step(2, received=3, source=2),  # receive-time inversion is fine
-            _step(3, received=2, source=None),  # falls back to receive time 2... still >= 2
+            _step(3, received=4, source=None),  # falls back to receive time 4 >= clock 2
         ),
     )
 
@@ -211,6 +214,64 @@ def test_verify_pmxt_replay_clock_order_accepts_contract_sorted_steps() -> None:
     assert check["step_count"] == 3
 
 
+def test_verify_pmxt_replay_clock_order_verifies_full_triple_tie_breaker() -> None:
+    # Tied replay clock: receive time must not move backwards.
+    receive_backwards = SimpleNamespace(
+        steps=(_step(1, received=5, source=4, row_index=0), _step(2, received=3, source=4, row_index=1)),
+    )
+    with pytest.raises(ValueError, match="timestamp_received moved backwards"):
+        verify_pmxt_replay_clock_order(receive_backwards)
+
+    # Fully tied group: original row index must strictly increase.
+    row_index_backwards = SimpleNamespace(
+        steps=(_step(1, received=3, source=4, row_index=7), _step(2, received=3, source=4, row_index=2)),
+    )
+    with pytest.raises(ValueError, match="source_row_index must be strictly increasing"):
+        verify_pmxt_replay_clock_order(row_index_backwards)
+
+    # Fully tied pair without source_row_index: fail closed, never a silent
+    # "verified" result the third key could not actually prove.
+    missing_row_index = SimpleNamespace(
+        steps=(_step(1, received=3, source=4), _step(2, received=3, source=4)),
+    )
+    with pytest.raises(ValueError, match="tie-breaker unverifiable"):
+        verify_pmxt_replay_clock_order(missing_row_index)
+
+    valid = SimpleNamespace(
+        steps=(
+            _step(1, received=3, source=4, row_index=2),
+            _step(2, received=3, source=4, row_index=7),
+            _step(3, received=9, source=4, row_index=1),
+        ),
+    )
+    check = verify_pmxt_replay_clock_order(valid)
+    assert check["tie_breaker_verified"] is True
+    assert check["tie_break_checked_pairs"] == 2
+    assert check["source_row_index_available"] is True
+
+
+def test_replay_provenance_claim_scope_downgrades_to_plumbing_only_on_ambiguity() -> None:
+    ambiguous = SimpleNamespace(
+        adapter_name="pmxt_event_v1",
+        source_files=(),
+        source_quality={"orderingStatus": "ambiguous", "orderingAmbiguousRows": 4},
+    )
+    clean = SimpleNamespace(
+        adapter_name="pmxt_event_v1",
+        source_files=(),
+        source_quality={"orderingStatus": "timestamp_ordered", "orderingAmbiguousRows": 0},
+    )
+
+    ambiguous_provenance = build_replay_provenance(mode=PMXT_RESEARCH_MODE, dataset_metadata=ambiguous)
+    clean_provenance = build_replay_provenance(mode=PMXT_RESEARCH_MODE, dataset_metadata=clean)
+
+    assert ambiguous_provenance["claim_scope"] == "plumbing_only"
+    assert ambiguous_provenance["ambiguous_ties_sensitivity_status"] == "not_run"
+    assert ambiguous_provenance["performance_claims_allowed"] is False
+    assert clean_provenance["claim_scope"] == "research_replay"
+    assert clean_provenance["performance_claims_allowed"] is False
+
+
 def test_verify_pmxt_replay_clock_order_rejects_backwards_clock_and_bad_sequence() -> None:
     backwards = SimpleNamespace(steps=(_step(1, received=1, source=5), _step(2, received=9, source=4)))
     with pytest.raises(ValueError, match="replay clock moved backwards"):
@@ -219,6 +280,40 @@ def test_verify_pmxt_replay_clock_order_rejects_backwards_clock_and_bad_sequence
     bad_sequence = SimpleNamespace(steps=(_step(2, received=1, source=1), _step(2, received=2, source=2)))
     with pytest.raises(ValueError, match="strictly increasing"):
         verify_pmxt_replay_clock_order(bad_sequence)
+
+
+def test_replay_time_column_fails_closed_on_legacy_panels() -> None:
+    new_panel = pd.DataFrame({"replay_timestamp": [], "timestamp_received": []})
+    legacy_panel = pd.DataFrame({"timestamp_received": []})
+
+    assert replay_time_column(new_panel) == "replay_timestamp"
+    with pytest.raises(ValueError, match="predates the shared PMXT replay contract"):
+        replay_time_column(legacy_panel)
+    assert replay_time_column(legacy_panel, allow_legacy_receive_time=True) == "timestamp_received"
+
+
+def test_ambiguous_ties_gate_fails_closed_for_strategy_runs() -> None:
+    # Strategy + ambiguous ties without explicit acceptance: refuse.
+    with pytest.raises(ValueError, match="allow_ambiguous_ties"):
+        enforce_ambiguous_ties_gate(
+            mode=PMXT_RESEARCH_MODE,
+            strategy_enabled=True,
+            ordering_ambiguous=True,
+            allow_ambiguous_ties=False,
+        )
+    # Explicit acceptance, data-only replay, unambiguous data, or strict mode: allowed.
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=True, ordering_ambiguous=True, allow_ambiguous_ties=True,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=False, ordering_ambiguous=True, allow_ambiguous_ties=False,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=True, ordering_ambiguous=False, allow_ambiguous_ties=False,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=STRICT_CAPTURE_MODE, strategy_enabled=True, ordering_ambiguous=False, allow_ambiguous_ties=False,
+    )
 
 
 def test_replay_provenance_marks_pmxt_research_limits() -> None:

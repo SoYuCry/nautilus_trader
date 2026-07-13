@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-13T09:06:42.930963+00:00",
-  "run_id": "20260713T090642Z",
+  "generated_at": "2026-07-13T03:57:03.810122+00:00",
+  "run_id": "20260713T035703Z",
   "event_dir": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026",
   "input_hashes": {
     "orderbook.parquet": {
@@ -47,9 +47,6 @@
     "replay_clock": "pmxt_replay_timestamp",
     "replay_clock_monotonic": true,
     "sequence_strictly_increasing": true,
-    "tie_breaker_verified": true,
-    "tie_break_checked_pairs": 6237,
-    "source_row_index_available": true,
     "step_count": 334501
   },
   "health_receive_time_inversions_diagnostic": 1389,

@@ -1,0 +1,512 @@
+{
+  "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+  "replay": {
+    "claim_scope": "plumbing_only",
+    "ambiguous_ties_sensitivity_status": "not_run",
+    "performance_claims_allowed": false,
+    "mode": "pmxt_research",
+    "replay_clock": "pmxt_replay_timestamp",
+    "ordering_key": "timestamp,timestamp_received,_original_row_index",
+    "tie_breaker": "timestamp_received,_original_row_index (stable mergesort)",
+    "data_credibility": "pmxt_research_reconstructed_order_ambiguous_ties",
+    "ordering_ambiguous": true,
+    "adapter": "pmxt_event_v1",
+    "source_files": [
+      "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/orderbook.parquet",
+      "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/event_index.json",
+      "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/gamma_event.raw.json",
+      "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/manifest.json"
+    ],
+    "source_quality": {
+      "coverageStatus": "not_run",
+      "orderingStatus": "ambiguous",
+      "snapshotReplayStatus": "not_run",
+      "metadataJoinStatus": "pass",
+      "knownArchiveGaps": [],
+      "orderingAmbiguousGroups": 4694,
+      "orderingAmbiguousRows": 9433,
+      "missingSourceTimestampRows": 0,
+      "tiedTimestampGroups": 4694,
+      "tiedTimestampRows": 9433,
+      "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+      "notes": [
+        "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+        "Stable fallback is deterministic but not proof of true exchange/message order.",
+        "Tied timestamp groups with differing row content require sensitivity testing."
+      ]
+    },
+    "execution_claims_allowed": false,
+    "matching_level_truth": false,
+    "disclaimer": "PMXT research backtest: replay order is the deterministic reconstructed PMXT ordering (timestamp, timestamp_received, original row index), not true exchange/message order and not L3 queue truth. Fills, positions, and PnL are research results computed by Nautilus BacktestEngine on a reconstructed L2 replay; they are not matching-level evidence and must not be read as production execution predictions.",
+    "replay_clock_check": {
+      "replay_clock": "pmxt_replay_timestamp",
+      "replay_clock_monotonic": true,
+      "sequence_strictly_increasing": true,
+      "tie_breaker_verified": true,
+      "tie_break_checked_pairs": 6237,
+      "source_row_index_available": true,
+      "step_count": 334501
+    },
+    "ambiguous_ties_accepted": true,
+    "ts_init_audit": {
+      "ts_init_policy": "synthetic_monotonic_source_time",
+      "replay_clock": "pmxt_replay_timestamp",
+      "adjusted_event_count": 6237,
+      "max_synthetic_offset_ns": 4,
+      "note": "Events sharing a replay-clock timestamp are serialized by +1ns increments so Nautilus ts_init stays strictly increasing; the strategy observes these events sequentially even though the source clock cannot distinguish their order."
+    }
+  },
+  "data_health_gate": {
+    "raw_health_ok": false,
+    "mode_health_gate_passed": true,
+    "blocking_codes": [],
+    "replay_clock_verified": true
+  },
+  "engine_config": {
+    "trader_id": "POLY-BACKTEST-001",
+    "book_type": "L2_MBP",
+    "oms_type": "NETTING",
+    "account_type": "CASH",
+    "starting_balance": "10000 pUSD",
+    "trade_execution": true,
+    "liquidity_consumption": false,
+    "queue_position": false,
+    "fee_model_enabled": true,
+    "maker_rebates_enabled": false
+  },
+  "input_hashes": [
+    {
+      "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/orderbook.parquet",
+      "exists": true,
+      "size_bytes": 29163845,
+      "sha256": "a07ff5185b0cb2ac9e08ed3814cfbd04bbfb31d7ac6bfcd5c801696cddefffa7"
+    },
+    {
+      "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/event_index.json",
+      "exists": true,
+      "size_bytes": 10079,
+      "sha256": "ee69ee8122ea9a8df8dab40a2e687d38bbe690280b2b691e5c4f61cd2d9288f4"
+    },
+    {
+      "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/gamma_event.raw.json",
+      "exists": true,
+      "size_bytes": 57210,
+      "sha256": "39a7c7e32ffd9f8e5050e252aa37723b96919c1916e612a6da1cb0bb9c5bf954"
+    },
+    {
+      "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/manifest.json",
+      "exists": true,
+      "size_bytes": 23248,
+      "sha256": "e32cecf90ac919b5793658f33d87aba0e90f5f2413071be44dbd8dd24b6dc670"
+    }
+  ],
+  "data_count": 334501,
+  "order_book_deltas_count": 333883,
+  "trade_ticks_count": 617,
+  "instrument_close_count": 1,
+  "skipped_updates": [
+    "tick_size_change 0.0100->0.0010 (timeline_applied)"
+  ],
+  "tick_size_changes": [
+    [
+      "0.0100",
+      "0.0010"
+    ]
+  ],
+  "settlement": {
+    "mode": "official",
+    "enabled": true,
+    "condition_id": "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41",
+    "token_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+    "resolution_time_ns": 1781023339000000000,
+    "payout": "1",
+    "source": "gamma_event.raw.market.outcomePrices",
+    "status": "resolved",
+    "reason": "official resolution metadata supplied payout",
+    "evidence": {
+      "resolution_status": "resolved",
+      "resolution_source": "gamma_event.raw.market.outcomePrices",
+      "winner": "True",
+      "payout": "1"
+    },
+    "mechanism": "Nautilus InstrumentClose + venue settlement_prices"
+  },
+  "data_health": {
+    "ok": false,
+    "replay_mode": "pmxt_research",
+    "summary": {
+      "step_count": 334501,
+      "update_count": 334501,
+      "first_timestamp_received": "2026-06-07T04:34:30.268000Z",
+      "last_timestamp_received": "2026-06-09T11:59:15.163000Z",
+      "receive_time_inversion_count": 1389,
+      "sequence_inversion_count": 0,
+      "source_timestamp_present_step_count": 334501,
+      "source_timestamp_missing_step_count": 0,
+      "source_timestamp_missing_update_count": 0,
+      "source_time_inversion_count": 0,
+      "future_source_time_count": 0,
+      "max_future_source_time_ms": 19.0,
+      "source_delay_over_threshold_count": 177530,
+      "max_source_delay_ms": 330692.0
+    },
+    "assumptions": [
+      "Replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received), not receive-time order.",
+      "Hard failures are local-sequence inversions and other non-PMXT error codes; receive-time inversions are diagnostics in pmxt_research mode.",
+      "Future/source-time issues are surfaced as diagnostics for severity review.",
+      "Missing source timestamps are counted so source-time diagnostics are not overread.",
+      "This check never sorts, drops, or repairs data."
+    ],
+    "mode_gate_assumptions": [
+      "pmxt_research mode: replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received); receive-time inversions are diagnostics here, not blockers, and 'ok: false' from the generic receive-time check does not mean the mode gate failed."
+    ],
+    "raw_checker_artifact": "data_health.json",
+    "issue_count": 178919,
+    "issue_counts_by_code": {
+      "source_delay_over_threshold": 177530,
+      "receive_time_inversion": 1389
+    },
+    "issue_sample_limit": 20,
+    "issue_sample": [
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 42,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:41:05.164000Z",
+          "timestamp_received": "2026-06-07T04:41:06.308000Z",
+          "delay_ms": 1144.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 43,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:41:05.879000Z",
+          "timestamp_received": "2026-06-07T04:41:07.002000Z",
+          "delay_ms": 1123.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 44,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:41:06.174000Z",
+          "timestamp_received": "2026-06-07T04:41:07.508000Z",
+          "delay_ms": 1334.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 45,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:41:06.903000Z",
+          "timestamp_received": "2026-06-07T04:41:07.960000Z",
+          "delay_ms": 1057.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 73,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:43:02.212000Z",
+          "timestamp_received": "2026-06-07T04:43:04.312000Z",
+          "delay_ms": 2100.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 94,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.132000Z",
+          "timestamp_received": "2026-06-07T04:47:09.067000Z",
+          "delay_ms": 1935.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 95,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.215000Z",
+          "timestamp_received": "2026-06-07T04:47:09.284000Z",
+          "delay_ms": 2069.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 96,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.261000Z",
+          "timestamp_received": "2026-06-07T04:47:09.284000Z",
+          "delay_ms": 2023.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 97,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.358000Z",
+          "timestamp_received": "2026-06-07T04:47:09.284000Z",
+          "delay_ms": 1926.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 98,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.359000Z",
+          "timestamp_received": "2026-06-07T04:47:09.284000Z",
+          "delay_ms": 1925.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 99,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.587000Z",
+          "timestamp_received": "2026-06-07T04:47:09.413000Z",
+          "delay_ms": 1826.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 100,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:47:07.600000Z",
+          "timestamp_received": "2026-06-07T04:47:09.413000Z",
+          "delay_ms": 1813.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 183,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:46.673000Z",
+          "timestamp_received": "2026-06-07T04:49:47.721000Z",
+          "delay_ms": 1048.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 185,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:46.904000Z",
+          "timestamp_received": "2026-06-07T04:49:48.024000Z",
+          "delay_ms": 1120.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 186,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:46.994000Z",
+          "timestamp_received": "2026-06-07T04:49:48.339000Z",
+          "delay_ms": 1345.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 187,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:47.100000Z",
+          "timestamp_received": "2026-06-07T04:49:48.339000Z",
+          "delay_ms": 1239.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 188,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:47.190000Z",
+          "timestamp_received": "2026-06-07T04:49:48.518000Z",
+          "delay_ms": 1328.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 189,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:47.322000Z",
+          "timestamp_received": "2026-06-07T04:49:48.713000Z",
+          "delay_ms": 1391.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 190,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:47.403000Z",
+          "timestamp_received": "2026-06-07T04:49:48.713000Z",
+          "delay_ms": 1310.0,
+          "delay_warning_ms": 1000.0
+        }
+      },
+      {
+        "severity": "warning",
+        "code": "source_delay_over_threshold",
+        "message": "source timestamp is much earlier than receive time; reported for late-delivery severity",
+        "sequence": 191,
+        "previous_sequence": null,
+        "details": {
+          "timestamp": "2026-06-07T04:49:47.520000Z",
+          "timestamp_received": "2026-06-07T04:49:48.778000Z",
+          "delay_ms": 1258.0,
+          "delay_warning_ms": 1000.0
+        }
+      }
+    ],
+    "full_detail": "data_health.json",
+    "artifact": {
+      "path": "data_health.json",
+      "size_bytes": 84103802,
+      "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b",
+      "status": "omitted_from_git",
+      "manifest": "OMITTED_ARTIFACTS.json"
+    }
+  },
+  "instrument": {
+    "alias": "Yes",
+    "instrument_id": "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41-93683348120137447419301462197228170067558545967622008841151707439369216600718.POLYMARKET",
+    "condition_id": "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41",
+    "token_id": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+    "outcome": "Yes",
+    "raw_symbol": "93683348120137447419301462197228170067558545967622008841151707439369216600718",
+    "fee_source": "gamma_event.raw.market.feeSchedule.rate"
+  },
+  "fees": {
+    "enabled": true,
+    "model": "PolymarketFeeModel",
+    "maker_rebates_enabled": false,
+    "require_explicit": false,
+    "instrument_maker_fee": "0",
+    "instrument_taker_fee": "0.05",
+    "instrument_fee_source": "gamma_event.raw.market.feeSchedule.rate",
+    "uses_default_zero": false,
+    "warning": null,
+    "totals_from_fills_report": {
+      "available": true,
+      "source_column": "commissions",
+      "fill_rows": 2,
+      "by_currency": {
+        "pUSD": "0.00769"
+      },
+      "total_display": "0.00769 pUSD",
+      "warning": null
+    }
+  },
+  "reports": {
+    "account": {
+      "path": "account.csv",
+      "status": "present"
+    },
+    "fills": {
+      "path": "fills.csv",
+      "status": "present"
+    },
+    "positions": {
+      "path": "positions.csv",
+      "status": "present"
+    },
+    "raw_nautilus_account": {
+      "path": "raw_nautilus/account.csv",
+      "status": "present"
+    },
+    "raw_nautilus_fills": {
+      "path": "raw_nautilus/fills.csv",
+      "status": "present"
+    },
+    "raw_nautilus_positions": {
+      "path": "raw_nautilus/positions.csv",
+      "status": "present"
+    },
+    "markdown": {
+      "path": "run_report.md",
+      "status": "present"
+    },
+    "data_health": {
+      "path": "data_health.json",
+      "size_bytes": 84103802,
+      "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b",
+      "status": "omitted_from_git",
+      "manifest": "OMITTED_ARTIFACTS.json"
+    },
+    "omitted_artifacts": {
+      "path": "OMITTED_ARTIFACTS.json",
+      "status": "present"
+    }
+  }
+}

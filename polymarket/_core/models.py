@@ -59,6 +59,10 @@ class L2ReplayStepV1:
     timestamp_received: datetime
     timestamp: datetime | None
     updates: tuple[L2UpdateV1, ...]
+    # Pre-sort physical row/message ordinal from the source file.  PMXT sets it
+    # so the full contract sort key (timestamp, timestamp_received, original
+    # row index) can be re-verified downstream; capture adapters may omit it.
+    source_row_index: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

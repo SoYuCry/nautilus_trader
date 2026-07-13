@@ -1,0 +1,5 @@
+ts_event,total,locked,free,currency,reported,replay_mode,data_credibility
+2026-06-07 04:34:30.072000+00:00,10000.000000,0.000000,10000.000000,pUSD,True,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties
+2026-06-07 04:35:40.259000+00:00,9999.182310,0.000000,9999.182310,pUSD,False,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties
+2026-06-09 16:42:19+00:00,9999.182310,0.000000,9999.182310,pUSD,False,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties
+2026-06-09 16:42:19+00:00,10000.182310,0.000000,10000.182310,pUSD,False,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties
