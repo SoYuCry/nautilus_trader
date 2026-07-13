@@ -376,4 +376,3 @@ def test_pmxt_research_invalid_price_fails_fast_before_engine_run(tmp_path: Path
     with pytest.raises(ValueError, match=r"Polymarket price must be in \[0, 1\].*price=1\.010"):
         run_from_config(config_path)
     assert not callback_path.exists(), "invalid native conversion must fail before strategy callbacks are written"
-
