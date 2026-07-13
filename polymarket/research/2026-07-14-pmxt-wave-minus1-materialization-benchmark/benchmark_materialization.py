@@ -602,7 +602,8 @@ def _measure_call(func: Callable[[], Any]) -> CallMeasurement:
     return CallMeasurement(result, elapsed, peak, read_delta, write_delta)
 
 
-def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str, Any] | None = None) -> ModeResult:  # noqa: C901 - warm/cold measured boundary stays joined for accounting truth
+# Warm/cold measured boundary stays joined for accounting truth.
+def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str, Any] | None = None) -> ModeResult:
     config = dict(config or {})
     cache_dir = Path(output_dir) / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -667,11 +668,7 @@ def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str
             "manifest_bytes": manifest_bytes,
         }
 
-    try:
-        measured = _measure_call(measured_work)
-    except IntentionalInterruption:
-        raise
-
+    measured = _measure_call(measured_work)
     work = measured.result
     cache_key = work["cache_key"]
     artifact_path = work["artifact_path"]
