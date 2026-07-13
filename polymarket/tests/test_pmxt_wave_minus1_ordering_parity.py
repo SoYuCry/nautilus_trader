@@ -10,8 +10,6 @@ from typing import Any
 import pandas as pd
 import pytest
 
-from nautilus_trader.model.enums import RecordFlag
-from polymarket.backtest_v1 import run_from_config
 from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
 
 
@@ -284,6 +282,9 @@ def _event_ns(second: int) -> int:
 
 def test_pmxt_research_run_from_config_emits_engine_callbacks_in_oracle_order(tmp_path: Path) -> None:
     pytest.importorskip("nautilus_trader.core.data", reason="Nautilus compiled runtime is not built")
+    from nautilus_trader.model.enums import RecordFlag
+    from polymarket.backtest_v1 import run_from_config
+
     rows = _callback_rows()
     event_dir = _write_event_dir(tmp_path, rows)
     strategy_path = tmp_path / "callback_strategy.py"
@@ -354,6 +355,8 @@ def test_pmxt_research_run_from_config_emits_engine_callbacks_in_oracle_order(tm
 
 def test_pmxt_research_invalid_price_fails_fast_before_engine_run(tmp_path: Path) -> None:
     pytest.importorskip("nautilus_trader.core.data", reason="Nautilus compiled runtime is not built")
+    from polymarket.backtest_v1 import run_from_config
+
     rows = [
         _base_row(
             event_type="book",
