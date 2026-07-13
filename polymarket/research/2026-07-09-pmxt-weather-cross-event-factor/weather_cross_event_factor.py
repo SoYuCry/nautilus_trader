@@ -257,8 +257,10 @@ def event_market_fields(event_index: dict[str, Any], market: dict[str, Any], tok
 
 
 def replay_time_column(panel: pd.DataFrame) -> str:
-    """Prefer the shared PMXT research replay clock; fall back for old panels."""
-    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+    """Return the shared PMXT replay clock column; in-process panels must carry it."""
+    from polymarket.replay_contract import replay_time_column as contract_replay_time_column
+
+    return contract_replay_time_column(panel)
 
 
 def add_time_to_close(panel: pd.DataFrame) -> pd.DataFrame:

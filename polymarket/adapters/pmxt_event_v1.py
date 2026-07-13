@@ -25,13 +25,14 @@ from polymarket.adapters.utils import optional_utc_datetime
 from polymarket.adapters.utils import parse_jsonish
 from polymarket.adapters.utils import parse_levels
 from polymarket.adapters.utils import repo_relative_or_absolute
+from polymarket.replay_contract import PMXT_ADAPTER_NAME
 from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
 
 
 class PMXTEventV1Adapter:
     """Load a PMXT event folder into the canonical v1 L2 replay contract."""
 
-    adapter_name = "pmxt_event_v1"
+    adapter_name = PMXT_ADAPTER_NAME
     adapter_version = "v1"
     _ORDERBOOK_COLUMNS = (
         "event_type",

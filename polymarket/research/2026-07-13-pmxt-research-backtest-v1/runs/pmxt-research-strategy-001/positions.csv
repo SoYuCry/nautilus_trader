@@ -1,0 +1,2 @@
+strategy,instrument,entry,side,quantity,peak_qty,avg_px_open,avg_px_close,commissions,realized_pnl,realized_return,ts_opened,ts_closed,is_snapshot,replay_mode,data_credibility
+TakeBestAskOnce,Yes,BUY,FLAT,0.000000,1.000000,0.81,1.0,['0.007690 pUSD'],0.182310 pUSD,0.23457,2026-06-07 04:35:40.259000+00:00,2026-06-09 16:42:19+00:00,False,pmxt_research,pmxt_research_reconstructed_order_ambiguous_ties

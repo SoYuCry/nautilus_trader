@@ -227,7 +227,9 @@ only to the PMXT adapter, and non-PMXT adapters are refused in this mode.
   Nautilus research backtests replay the identical step stream.
 - No dedup; tied timestamp groups with differing content are flagged as
   ordering-ambiguous in `source_quality` and downgrade the run's
-  `data_credibility`.
+  `data_credibility`.  Strategy runs on ambiguous data fail closed unless the
+  config explicitly sets `replay: {allow_ambiguous_ties: true}`; the acceptance
+  is recorded in the run outputs.  Data-only replays are exempt.
 - `receive_time_inversion` is a diagnostic, not a blocker; all other health
   errors still block.  The runner additionally verifies the contract clock is
   non-decreasing before conversion.

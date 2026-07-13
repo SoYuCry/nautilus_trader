@@ -178,6 +178,14 @@ Required built-runtime check:
 python -m pytest polymarket\tests\test_nautilus_native_bridge.py polymarket\tests\test_backtest_v1_native_runner.py -q
 ```
 
+Workaround when this checkout has no compiled build: copy `polymarket/` into a
+directory outside the repository (so the source tree does not shadow
+site-packages) and run the same tests against the pip-installed official
+`nautilus_trader` wheel.  Engine behaviour can differ slightly across wheel
+versions (e.g. settlement EXPIRATION fills changed after 1.229), so version-skew
+failures must be triaged against the pre-change code before being attributed to
+a regression.
+
 ## Experiment convention
 
 Each future `research/<date-topic>/` directory may own its `experiment.yml`,

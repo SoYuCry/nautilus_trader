@@ -129,6 +129,7 @@ def test_simulate_fills_handles_microsecond_timestamp_arrays_end_to_end():
         },
     )
     panel["timestamp_received"] = panel["timestamp_received"].astype("datetime64[us, UTC]")
+    panel["replay_timestamp"] = panel["timestamp_received"]
     trades = module.build_trade_arrays(panel)
     probes = pd.DataFrame(
         {

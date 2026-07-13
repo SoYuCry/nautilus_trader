@@ -47,6 +47,13 @@ def write_backtest_reports(
     fills_view = build_fills_view(fills, instrument_context=instrument_context)
     positions_view = build_positions_view(positions, instrument_context=instrument_context)
 
+    # Curated CSVs are self-describing once they leave the run directory: every
+    # row carries the replay mode and data-credibility grade of the run.
+    replay = getattr(result, "replay", {}) or {}
+    for view in (account_view, fills_view, positions_view):
+        view["replay_mode"] = str(replay.get("mode", "unknown"))
+        view["data_credibility"] = str(replay.get("data_credibility", "unknown"))
+
     account.to_csv(raw_dir / "account.csv")
     fills.to_csv(raw_dir / "fills.csv")
     positions.to_csv(raw_dir / "positions.csv")
@@ -257,7 +264,12 @@ def _write_run_report_markdown(
         f"- Tie-breaker: `{replay.get('tie_breaker', 'unknown')}`",
         f"- Data credibility: `{replay.get('data_credibility', 'unknown')}`",
         f"- Adapter: `{replay.get('adapter', 'unknown')}`",
-        f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`",
+        f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`"
+        + (
+            f" (explicitly accepted: `{str(replay.get('ambiguous_ties_accepted', False)).lower()}`)"
+            if "ambiguous_ties_accepted" in replay
+            else ""
+        ),
         f"- Execution claims allowed: `{str(replay.get('execution_claims_allowed', False)).lower()}`",
         f"- Matching-level truth: `{str(replay.get('matching_level_truth', False)).lower()}`",
         f"- Boundary: {replay.get('disclaimer', 'unknown')}",

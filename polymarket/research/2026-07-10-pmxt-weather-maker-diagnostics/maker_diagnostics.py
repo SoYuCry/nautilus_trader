@@ -32,6 +32,9 @@ if str(REPO_ROOT) not in sys.path:
 from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter  # noqa: E402
 from polymarket.data_health import analyze_dataset_health  # noqa: E402
 from polymarket.replay_contract import PMXT_RESEARCH_ALLOWED_HEALTH_ERROR_CODES  # noqa: E402
+from polymarket.replay_contract import PMXT_RESEARCH_MODE  # noqa: E402
+from polymarket.replay_contract import blocking_health_issues  # noqa: E402
+from polymarket.replay_contract import replay_time_column as contract_replay_time_column  # noqa: E402
 
 BASELINE_MODULE_PATH = REPO_ROOT / "polymarket/research/2026-07-08-pmxt-l2-factor-baseline/factor_research.py"
 VALID_BOOK = "valid"
@@ -292,8 +295,8 @@ def add_time_to_close(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def replay_time_column(panel: pd.DataFrame) -> str:
-    """Return the PMXT replay clock column for timestamp-ordered diagnostics."""
-    return "replay_timestamp" if "replay_timestamp" in panel.columns else "timestamp_received"
+    """Return the PMXT replay clock column; in-process panels must carry it."""
+    return contract_replay_time_column(panel)
 
 
 def time_to_close_bucket(seconds: float) -> str:
@@ -774,11 +777,7 @@ def build_event_summary(diagnostics: pd.DataFrame) -> pd.DataFrame:
 
 def pmxt_maker_blocking_health_issues(health: Any) -> list[Any]:
     """Return hard data-health issues that still block PMXT maker diagnostics."""
-    return [
-        issue
-        for issue in health.issues
-        if issue.severity == "error" and issue.code not in PMXT_RESEARCH_ALLOWED_HEALTH_ERRORS
-    ]
+    return blocking_health_issues(health, mode=PMXT_RESEARCH_MODE)
 
 
 def source_quality_fields(source_quality: dict[str, Any]) -> dict[str, Any]:

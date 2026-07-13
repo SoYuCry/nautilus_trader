@@ -24,7 +24,9 @@ from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
 from polymarket.replay_contract import STRICT_CAPTURE_MODE
 from polymarket.replay_contract import blocking_health_issues
 from polymarket.replay_contract import build_replay_provenance
+from polymarket.replay_contract import enforce_ambiguous_ties_gate
 from polymarket.replay_contract import enforce_replay_mode_gate
+from polymarket.replay_contract import replay_time_column
 from polymarket.replay_contract import replay_timestamp
 from polymarket.replay_contract import resolve_replay_mode
 from polymarket.replay_contract import verify_pmxt_replay_clock_order
@@ -219,6 +221,40 @@ def test_verify_pmxt_replay_clock_order_rejects_backwards_clock_and_bad_sequence
     bad_sequence = SimpleNamespace(steps=(_step(2, received=1, source=1), _step(2, received=2, source=2)))
     with pytest.raises(ValueError, match="strictly increasing"):
         verify_pmxt_replay_clock_order(bad_sequence)
+
+
+def test_replay_time_column_fails_closed_on_legacy_panels() -> None:
+    new_panel = pd.DataFrame({"replay_timestamp": [], "timestamp_received": []})
+    legacy_panel = pd.DataFrame({"timestamp_received": []})
+
+    assert replay_time_column(new_panel) == "replay_timestamp"
+    with pytest.raises(ValueError, match="predates the shared PMXT replay contract"):
+        replay_time_column(legacy_panel)
+    assert replay_time_column(legacy_panel, allow_legacy_receive_time=True) == "timestamp_received"
+
+
+def test_ambiguous_ties_gate_fails_closed_for_strategy_runs() -> None:
+    # Strategy + ambiguous ties without explicit acceptance: refuse.
+    with pytest.raises(ValueError, match="allow_ambiguous_ties"):
+        enforce_ambiguous_ties_gate(
+            mode=PMXT_RESEARCH_MODE,
+            strategy_enabled=True,
+            ordering_ambiguous=True,
+            allow_ambiguous_ties=False,
+        )
+    # Explicit acceptance, data-only replay, unambiguous data, or strict mode: allowed.
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=True, ordering_ambiguous=True, allow_ambiguous_ties=True,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=False, ordering_ambiguous=True, allow_ambiguous_ties=False,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=PMXT_RESEARCH_MODE, strategy_enabled=True, ordering_ambiguous=False, allow_ambiguous_ties=False,
+    )
+    enforce_ambiguous_ties_gate(
+        mode=STRICT_CAPTURE_MODE, strategy_enabled=True, ordering_ambiguous=False, allow_ambiguous_ties=False,
+    )
 
 
 def test_replay_provenance_marks_pmxt_research_limits() -> None:

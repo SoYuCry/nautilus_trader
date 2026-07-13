@@ -56,6 +56,7 @@ from polymarket.replay_contract import PMXT_RESEARCH_MODE
 from polymarket.replay_contract import RECEIVE_TIME_REPLAY_CLOCK
 from polymarket.replay_contract import blocking_health_issues
 from polymarket.replay_contract import build_replay_provenance
+from polymarket.replay_contract import enforce_ambiguous_ties_gate
 from polymarket.replay_contract import enforce_replay_mode_gate
 from polymarket.replay_contract import verify_pmxt_replay_clock_order
 from polymarket.strategy import PolymarketStrategyBase
@@ -340,6 +341,41 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     replay_provenance = build_replay_provenance(mode=replay_mode, dataset_metadata=dataset.metadata)
     replay_provenance["replay_clock_check"] = replay_clock_check
 
+    strategy_config = config.get("strategy") or {}
+    strategy_enabled = bool(strategy_config) and strategy_config.get("enabled") is not False
+    allow_ambiguous_ties = bool((config.get("replay") or {}).get("allow_ambiguous_ties", False))
+    enforce_ambiguous_ties_gate(
+        mode=replay_mode,
+        strategy_enabled=strategy_enabled,
+        ordering_ambiguous=bool(replay_provenance.get("ordering_ambiguous", False)),
+        allow_ambiguous_ties=allow_ambiguous_ties,
+    )
+    if replay_mode == PMXT_RESEARCH_MODE:
+        replay_provenance["ambiguous_ties_accepted"] = allow_ambiguous_ties
+    health_gate = {
+        "raw_health_ok": data_health_report.ok,
+        "mode_health_gate_passed": True,
+        "blocking_codes": [],
+        "replay_clock_verified": bool(replay_clock_check.get("replay_clock_monotonic", replay_mode != PMXT_RESEARCH_MODE)),
+    }
+    # Full issue detail lives in data_health.json only; the copies embedded in
+    # resolved_config.json / summary.json stay compact (PMXT-scale runs can
+    # produce tens of thousands of diagnostic issues).
+    issue_counts_by_code: dict[str, int] = {}
+    for issue in data_health_report.issues:
+        issue_counts_by_code[issue.code] = issue_counts_by_code.get(issue.code, 0) + 1
+    full_health = data_health_report.to_dict()
+    compact_health = {
+        "ok": full_health["ok"],
+        "summary": full_health["summary"],
+        "assumptions": full_health["assumptions"],
+        "issue_count": len(full_health["issues"]),
+        "issue_counts_by_code": issue_counts_by_code,
+        "issue_sample_limit": 20,
+        "issue_sample": full_health["issues"][:20],
+        "full_detail": "data_health.json",
+    }
+
     selected_asset_id = (config.get("selection") or {}).get("asset_id")
     instrument = load_binary_option_from_config(
         config.get("instrument") or {},
@@ -391,13 +427,26 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             skipped_updates=conversion.skipped_updates,
             tick_size_changes=conversion.tick_size_changes,
             settlement=settlement_dict,
-            data_health=data_health_report.to_dict(),
+            data_health=compact_health,
             fees=fee_report,
             replay=replay_provenance,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
+            "engine_config": {
+                "trader_id": str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001")),
+                "book_type": "L2_MBP",
+                "oms_type": "NETTING",
+                "account_type": "CASH",
+                "starting_balance": str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")),
+                "trade_execution": bool((config.get("engine") or {}).get("trade_execution", True)),
+                "liquidity_consumption": bool((config.get("engine") or {}).get("liquidity_consumption", False)),
+                "queue_position": bool((config.get("engine") or {}).get("queue_position", False)),
+                "fee_model_enabled": bool((config.get("fees") or {}).get("enabled", True)),
+                "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
+            },
             "replay": replay_provenance,
+            "data_health_gate": health_gate,
             "adapter": {
                 "name": dataset.metadata.adapter_name,
                 "adapter_version": dataset.metadata.adapter_version,
@@ -424,7 +473,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             },
             "settlement": settlement_dict,
             "fees": fee_report,
-            "data_health": data_health_report.to_dict(),
+            "data_health": compact_health,
             "runtime": {
                 "run_id": run_id,
                 "created_at_utc": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
@@ -475,7 +524,13 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "instrument_close_count": result.instrument_close_count,
             "settlement_mode": result.settlement.get("mode", "open"),
             "settlement_enabled": bool(result.settlement.get("enabled", False)),
+            # raw_health_ok is the mode-agnostic health verdict; in pmxt_research
+            # it may be false (receive-time inversions) while the mode gate passed.
             "data_health_ok": data_health_report.ok,
+            "raw_health_ok": health_gate["raw_health_ok"],
+            "mode_health_gate_passed": health_gate["mode_health_gate_passed"],
+            "blocking_codes": health_gate["blocking_codes"],
+            "replay_clock_verified": health_gate["replay_clock_verified"],
             "fees": report_metadata.fees,
         }
         print(json.dumps(summary, indent=2))

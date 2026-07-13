@@ -53,6 +53,11 @@ STRICT_CAPTURE_ORDERING_KEY = "capture_order(timestamp_received non-decreasing e
 
 RECEIVE_TIME_REPLAY_CLOCK = "timestamp_received"
 PMXT_REPLAY_CLOCK = "pmxt_replay_timestamp"
+PMXT_SOURCE_TIME_POLICY = "timestamp_fallback_timestamp_received"
+
+# Panel/frame column names for the two clocks.
+PMXT_REPLAY_TIMESTAMP_COLUMN = "replay_timestamp"
+LEGACY_RECEIVE_TIME_COLUMN = "timestamp_received"
 
 # Health error codes that are diagnostics rather than blockers under PMXT
 # research replay: the adapter sorts on source time, so receive time is not
@@ -83,6 +88,28 @@ def replay_timestamp(step: L2ReplayStepV1) -> datetime:
     adapter output, so it is non-decreasing in step order by construction.
     """
     return step.timestamp or step.timestamp_received
+
+
+def replay_time_column(panel: Any, *, allow_legacy_receive_time: bool = False) -> str:
+    """
+    Return the panel column holding the PMXT research replay clock.
+
+    Panels produced by the current factor pipeline always carry
+    ``replay_timestamp``.  Old panels written before the shared contract only
+    have ``timestamp_received``; consuming them silently would mix two ordering
+    semantics, so the legacy fallback must be requested explicitly (e.g. via a
+    config flag) and callers should surface that choice in their outputs.
+    """
+    columns = set(getattr(panel, "columns", panel))
+    if PMXT_REPLAY_TIMESTAMP_COLUMN in columns:
+        return PMXT_REPLAY_TIMESTAMP_COLUMN
+    if allow_legacy_receive_time and LEGACY_RECEIVE_TIME_COLUMN in columns:
+        return LEGACY_RECEIVE_TIME_COLUMN
+    raise ValueError(
+        f"panel has no {PMXT_REPLAY_TIMESTAMP_COLUMN!r} column; it predates the shared "
+        "PMXT replay contract. Re-generate it, or explicitly opt in to legacy "
+        "receive-time ordering (allow_legacy_receive_time=true) and mark the outputs.",
+    )
 
 
 def resolve_replay_mode(config: Mapping[str, Any]) -> str:
@@ -165,6 +192,32 @@ def verify_pmxt_replay_clock_order(dataset: PolymarketL2DatasetV1) -> dict[str, 
         "sequence_strictly_increasing": True,
         "step_count": len(dataset.steps),
     }
+
+
+def enforce_ambiguous_ties_gate(
+    *,
+    mode: str,
+    strategy_enabled: bool,
+    ordering_ambiguous: bool,
+    allow_ambiguous_ties: bool,
+) -> None:
+    """
+    Fail closed when a strategy would trade through ambiguous PMXT tie order.
+
+    Ambiguous ties are timestamp groups whose internal order is unknowable from
+    PMXT data; fills can depend on the arbitrary (deterministic) arrangement.
+    Data-only replays may proceed, but strategy runs must explicitly accept the
+    risk via ``replay.allow_ambiguous_ties: true``.
+    """
+    if mode != PMXT_RESEARCH_MODE or not strategy_enabled or not ordering_ambiguous:
+        return
+    if not allow_ambiguous_ties:
+        raise ValueError(
+            "PMXT dataset contains ordering-ambiguous tied timestamp groups and a "
+            "strategy is enabled; fills could depend on an arbitrary tie arrangement. "
+            "Set replay.allow_ambiguous_ties: true to explicitly accept this risk "
+            "(the run report will record the acceptance), or run data-only replay.",
+        )
 
 
 def build_replay_provenance(*, mode: str, dataset_metadata: Any) -> dict[str, Any]:
