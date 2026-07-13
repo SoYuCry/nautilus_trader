@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="white"/>
+<text x="490.0" y="28" text-anchor="middle" font-size="20" font-family="Arial">Same-sign bucket share by factor and horizon</text>
+<line x1="150" y1="399.00" x2="950" y2="399.00" stroke="#111827" stroke-width="1"/>
+<line x1="150" y1="58" x2="150" y2="430" stroke="#111827" stroke-width="1"/>
+<text x="216.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 216.67,464)">depth_imbalance_1</text>
+<rect x="166.67" y="114.83" width="27.33" height="284.17" fill="#2563eb" opacity="0.88"><title>depth_imbalance_1 h60: 0.916667</title></rect>
+<rect x="200.00" y="114.83" width="27.33" height="284.17" fill="#dc2626" opacity="0.88"><title>depth_imbalance_1 h300: 0.916667</title></rect>
+<rect x="233.33" y="89.00" width="27.33" height="310.00" fill="#16a34a" opacity="0.88"><title>depth_imbalance_1 h900: 1</title></rect>
+<text x="350.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 350.00,464)">depth_imbalance_3</text>
+<rect x="300.00" y="114.83" width="27.33" height="284.17" fill="#2563eb" opacity="0.88"><title>depth_imbalance_3 h60: 0.916667</title></rect>
+<rect x="333.33" y="114.83" width="27.33" height="284.17" fill="#dc2626" opacity="0.88"><title>depth_imbalance_3 h300: 0.916667</title></rect>
+<rect x="366.67" y="89.00" width="27.33" height="310.00" fill="#16a34a" opacity="0.88"><title>depth_imbalance_3 h900: 1</title></rect>
+<text x="483.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 483.33,464)">depth_imbalance_5</text>
+<rect x="433.33" y="114.83" width="27.33" height="284.17" fill="#2563eb" opacity="0.88"><title>depth_imbalance_5 h60: 0.916667</title></rect>
+<rect x="466.67" y="114.83" width="27.33" height="284.17" fill="#dc2626" opacity="0.88"><title>depth_imbalance_5 h300: 0.916667</title></rect>
+<rect x="500.00" y="114.83" width="27.33" height="284.17" fill="#16a34a" opacity="0.88"><title>depth_imbalance_5 h900: 0.916667</title></rect>
+<text x="616.67" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 616.67,464)">microprice_minus_mid</text>
+<rect x="566.67" y="114.83" width="27.33" height="284.17" fill="#2563eb" opacity="0.88"><title>microprice_minus_mid h60: 0.916667</title></rect>
+<rect x="600.00" y="114.83" width="27.33" height="284.17" fill="#dc2626" opacity="0.88"><title>microprice_minus_mid h300: 0.916667</title></rect>
+<rect x="633.33" y="114.83" width="27.33" height="284.17" fill="#16a34a" opacity="0.88"><title>microprice_minus_mid h900: 0.916667</title></rect>
+<text x="750.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 750.00,464)">ofi_30s</text>
+<rect x="700.00" y="140.67" width="27.33" height="258.33" fill="#2563eb" opacity="0.88"><title>ofi_30s h60: 0.833333</title></rect>
+<rect x="733.33" y="166.50" width="27.33" height="232.50" fill="#dc2626" opacity="0.88"><title>ofi_30s h300: 0.75</title></rect>
+<rect x="766.67" y="192.33" width="27.33" height="206.67" fill="#16a34a" opacity="0.88"><title>ofi_30s h900: 0.666667</title></rect>
+<text x="883.33" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 883.33,464)">trade_pressure_30s</text>
+<rect x="833.33" y="192.33" width="27.33" height="206.67" fill="#2563eb" opacity="0.88"><title>trade_pressure_30s h60: 0.666667</title></rect>
+<rect x="866.67" y="192.33" width="27.33" height="206.67" fill="#dc2626" opacity="0.88"><title>trade_pressure_30s h300: 0.666667</title></rect>
+<rect x="900.00" y="244.00" width="27.33" height="155.00" fill="#16a34a" opacity="0.88"><title>trade_pressure_30s h900: 0.5</title></rect>
+<rect x="150" y="483" width="12" height="12" fill="#2563eb"/>
+<text x="168" y="495" font-size="12" font-family="Arial">h=60s</text>
+<rect x="270" y="483" width="12" height="12" fill="#dc2626"/>
+<text x="288" y="495" font-size="12" font-family="Arial">h=300s</text>
+<rect x="390" y="483" width="12" height="12" fill="#16a34a"/>
+<text x="408" y="495" font-size="12" font-family="Arial">h=900s</text>
+<text x="20" y="70" font-size="12" font-family="Arial">max 1.1</text>
+<text x="20" y="430" font-size="12" font-family="Arial">min -0.1</text>
+</svg>

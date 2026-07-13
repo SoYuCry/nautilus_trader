@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="540" viewBox="0 0 1040 540">
+<rect width="100%" height="100%" fill="white"/>
+<text x="520.0" y="28" text-anchor="middle" font-size="20" font-family="Arial">valid_obs_50 median elapsed seconds by event phase</text>
+<line x1="180" y1="403.58" x2="1010" y2="403.58" stroke="#111827" stroke-width="1"/>
+<line x1="180" y1="58" x2="180" y2="435" stroke="#111827" stroke-width="1"/>
+<text x="318.33" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 318.33,473)">early_gt_24h</text>
+<rect x="226.11" y="161.20" width="75.62" height="242.38" fill="#2563eb" opacity="0.88"><title>early_gt_24h highest-temperature-in-shanghai-on-june-10-2026: 81.109</title></rect>
+<rect x="318.33" y="89.42" width="75.62" height="314.17" fill="#dc2626" opacity="0.88"><title>early_gt_24h highest-temperature-in-shanghai-on-june-9-2026: 105.13</title></rect>
+<text x="595.00" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 595.00,473)">last_24h</text>
+<rect x="502.78" y="307.46" width="75.62" height="96.12" fill="#2563eb" opacity="0.88"><title>last_24h highest-temperature-in-shanghai-on-june-10-2026: 32.1655</title></rect>
+<rect x="595.00" y="280.68" width="75.62" height="122.90" fill="#dc2626" opacity="0.88"><title>last_24h highest-temperature-in-shanghai-on-june-9-2026: 41.1265</title></rect>
+<text x="871.67" y="473" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 871.67,473)">last_6h</text>
+<rect x="779.44" y="298.29" width="75.62" height="105.30" fill="#2563eb" opacity="0.88"><title>last_6h highest-temperature-in-shanghai-on-june-10-2026: 35.235</title></rect>
+<rect x="871.67" y="298.52" width="75.62" height="105.06" fill="#dc2626" opacity="0.88"><title>last_6h highest-temperature-in-shanghai-on-june-9-2026: 35.1565</title></rect>
+<rect x="180" y="503" width="12" height="12" fill="#2563eb"/>
+<text x="198" y="515" font-size="12" font-family="Arial">highest-temperature-in-shanghai-on-june-10-2026</text>
+<rect x="350" y="503" width="12" height="12" fill="#dc2626"/>
+<text x="368" y="515" font-size="12" font-family="Arial">highest-temperature-in-shanghai-on-june-9-2026</text>
+</svg>

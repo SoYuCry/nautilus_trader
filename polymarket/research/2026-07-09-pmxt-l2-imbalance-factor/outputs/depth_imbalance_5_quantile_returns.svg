@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="white"/>
+<text x="490.0" y="28" text-anchor="middle" font-size="20" font-family="Arial">depth_imbalance_5: quantile mean future mid-return</text>
+<line x1="170" y1="399.00" x2="950" y2="399.00" stroke="#111827" stroke-width="1"/>
+<line x1="170" y1="58" x2="170" y2="430" stroke="#111827" stroke-width="1"/>
+<text x="248.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 248.00,464)">1</text>
+<rect x="189.50" y="384.69" width="31.98" height="14.31" fill="#2563eb" opacity="0.88"><title>1 h60: 0.00235793</title></rect>
+<rect x="228.50" y="364.90" width="31.98" height="34.10" fill="#dc2626" opacity="0.88"><title>1 h300: 0.00562053</title></rect>
+<rect x="267.50" y="363.24" width="31.98" height="35.76" fill="#16a34a" opacity="0.88"><title>1 h900: 0.00589402</title></rect>
+<text x="404.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 404.00,464)">2</text>
+<rect x="345.50" y="366.84" width="31.98" height="32.16" fill="#2563eb" opacity="0.88"><title>2 h60: 0.00529978</title></rect>
+<rect x="384.50" y="342.61" width="31.98" height="56.39" fill="#dc2626" opacity="0.88"><title>2 h300: 0.00929284</title></rect>
+<rect x="423.50" y="234.85" width="31.98" height="164.15" fill="#16a34a" opacity="0.88"><title>2 h900: 0.0270519</title></rect>
+<text x="560.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 560.00,464)">3</text>
+<rect x="501.50" y="362.73" width="31.98" height="36.27" fill="#2563eb" opacity="0.88"><title>3 h60: 0.00597693</title></rect>
+<rect x="540.50" y="258.98" width="31.98" height="140.02" fill="#dc2626" opacity="0.88"><title>3 h300: 0.0230753</title></rect>
+<rect x="579.50" y="89.00" width="31.98" height="310.00" fill="#16a34a" opacity="0.88"><title>3 h900: 0.0510889</title></rect>
+<text x="716.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 716.00,464)">4</text>
+<rect x="657.50" y="367.58" width="31.98" height="31.42" fill="#2563eb" opacity="0.88"><title>4 h60: 0.00517738</title></rect>
+<rect x="696.50" y="285.95" width="31.98" height="113.05" fill="#dc2626" opacity="0.88"><title>4 h300: 0.0186303</title></rect>
+<rect x="735.50" y="89.40" width="31.98" height="309.60" fill="#16a34a" opacity="0.88"><title>4 h900: 0.0510233</title></rect>
+<text x="872.00" y="464" text-anchor="middle" font-size="12" font-family="Arial" transform="rotate(-25 872.00,464)">5</text>
+<rect x="813.50" y="384.37" width="31.98" height="14.63" fill="#2563eb" opacity="0.88"><title>5 h60: 0.00241036</title></rect>
+<rect x="852.50" y="317.36" width="31.98" height="81.64" fill="#dc2626" opacity="0.88"><title>5 h300: 0.0134552</title></rect>
+<rect x="891.50" y="158.16" width="31.98" height="240.84" fill="#16a34a" opacity="0.88"><title>5 h900: 0.0396903</title></rect>
+<rect x="170" y="483" width="12" height="12" fill="#2563eb"/>
+<text x="188" y="495" font-size="12" font-family="Arial">h=60s</text>
+<rect x="290" y="483" width="12" height="12" fill="#dc2626"/>
+<text x="308" y="495" font-size="12" font-family="Arial">h=300s</text>
+<rect x="410" y="483" width="12" height="12" fill="#16a34a"/>
+<text x="428" y="495" font-size="12" font-family="Arial">h=900s</text>
+<text x="20" y="70" font-size="12" font-family="Arial">max 0.0562</text>
+<text x="20" y="430" font-size="12" font-family="Arial">min -0.005109</text>
+</svg>

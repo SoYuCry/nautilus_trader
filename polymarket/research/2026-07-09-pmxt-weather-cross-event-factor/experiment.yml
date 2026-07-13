@@ -1,0 +1,27 @@
+﻿input:
+  event_dirs:
+    - C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026
+    - C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-10-2026
+  token_side: yes
+  token_selection: all_yes
+labels:
+  wall_clock_seconds: [60, 300, 900]
+  valid_observation_steps: [10, 50, 200]
+factors:
+  rolling_window: 30s
+  max_depth_levels: 5
+  names:
+    - depth_imbalance_1
+    - depth_imbalance_3
+    - depth_imbalance_5
+    - microprice_minus_mid
+    - ofi_30s
+    - trade_pressure_30s
+analysis:
+  quantiles: 5
+  min_rows_per_metric: 200
+  candidate_positive_token_share: 0.6
+  candidate_min_event_count: 2
+  candidate_min_nonzero_hit: 0.52
+output:
+  dir: polymarket/research/2026-07-09-pmxt-weather-cross-event-factor/outputs

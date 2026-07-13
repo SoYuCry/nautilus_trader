@@ -1,0 +1,30 @@
+[
+  {
+    "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/orderbook.parquet",
+    "resolved_path": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026\\orderbook.parquet",
+    "exists": true,
+    "size_bytes": 29163845,
+    "sha256": "a07ff5185b0cb2ac9e08ed3814cfbd04bbfb31d7ac6bfcd5c801696cddefffa7"
+  },
+  {
+    "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/event_index.json",
+    "resolved_path": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026\\event_index.json",
+    "exists": true,
+    "size_bytes": 6265,
+    "sha256": "2fb0e3ce6dbb24cdae7d90f24557b8e3511100b018a0a29a5484d0b585320725"
+  },
+  {
+    "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/gamma_event.raw.json",
+    "resolved_path": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026\\gamma_event.raw.json",
+    "exists": true,
+    "size_bytes": 57210,
+    "sha256": "39a7c7e32ffd9f8e5050e252aa37723b96919c1916e612a6da1cb0bb9c5bf954"
+  },
+  {
+    "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/manifest.json",
+    "resolved_path": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events\\highest-temperature-in-shanghai-on-june-9-2026\\manifest.json",
+    "exists": true,
+    "size_bytes": 13038,
+    "sha256": "d6befe6f0ffe24f3607607b7385df0992ab287f411a0715709c81561fbeea620"
+  }
+]

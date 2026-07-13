@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-07-13T02:56:31.729387+00:00",
+  "strict_default_rejects_pmxt": true,
+  "explicit_research_mode_accepted": true,
+  "deterministic_across_loads": true,
+  "steps": 334501,
+  "ordering_key": "timestamp,timestamp_received,_original_row_index",
+  "source_quality": {
+    "coverageStatus": "not_run",
+    "orderingStatus": "ambiguous",
+    "snapshotReplayStatus": "not_run",
+    "metadataJoinStatus": "pass",
+    "knownArchiveGaps": [],
+    "orderingAmbiguousGroups": 4694,
+    "orderingAmbiguousRows": 9433,
+    "missingSourceTimestampRows": 0,
+    "tiedTimestampGroups": 4694,
+    "tiedTimestampRows": 9433,
+    "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+    "notes": [
+      "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+      "Stable fallback is deterministic but not proof of true exchange/message order.",
+      "Tied timestamp groups with differing row content require sensitivity testing."
+    ]
+  },
+  "replay_clock_check": {
+    "replay_clock": "pmxt_replay_timestamp",
+    "replay_clock_monotonic": true,
+    "sequence_strictly_increasing": true,
+    "step_count": 334501
+  },
+  "health_receive_time_inversions_diagnostic": 1389,
+  "health_blocking_issue_count_pmxt_mode": 0,
+  "factor_panel_order_matches_steps": true,
+  "factor_panel_clock_matches_contract": true
+}

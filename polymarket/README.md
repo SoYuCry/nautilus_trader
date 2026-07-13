@@ -49,18 +49,51 @@ These are current ingress paths, not equal long-term targets:
 - `live_ws_v1`: preferred current path for local raw WebSocket captures.
 - `live_event_bundle_v1`: provisional data-team event bundle boundary.  The
   final IT feed should be coordinated against `DATA_CONTRACT_V1.md`.
+- `pmxt_event_v1`: temporary research/history ingress for curated PMXT event
+  directories.  YAML input requires `event_dir`, `condition_id`, and `asset_id`.
+  It filters one selected token and sorts on the shared PMXT research ordering
+  key (`timestamp, timestamp_received, _original_row_index`), so the replay
+  clock is the source `timestamp` with receive-time fallback — the same
+  `replay_timestamp` PMXT factor research uses.  PMXT `best_bid` / `best_ask`
+  fields are kept only as diagnostic/reference fields, not as authoritative
+  filtering or execution truth.  PMXT raw event/message boundaries are not
+  recoverable from this row format.  Adapter assumptions and warnings,
+  including these PMXT caveats, are surfaced in `resolved_config.json` under
+  `adapter.assumptions` and `adapter.warnings`.
 
-Historical PMXT shims were removed from the runnable entry point for this
-live-data-first pass.  PMXT parquet remains a research reference only because
-it lacks raw WebSocket message boundaries and source timestamps may invert.
+## Replay trust modes (shared replay contract)
+
+`polymarket/replay_contract.py` defines the shared replay-order contract used
+by both PMXT factor research and `backtest_v1`:
+
+- `strict_capture` (default): receive-time ordered raw captures; receive-time
+  inversions are hard failures; PMXT data is refused.
+- `pmxt_research` (explicit `replay: {mode: pmxt_research}` in the experiment
+  config, PMXT adapter only): replays the deterministic reconstructed PMXT
+  order (source `timestamp`, then `timestamp_received`, then original row
+  index) through the native Nautilus `BacktestEngine`.  Factor research and
+  research backtests consume the identical step stream and clock.  Receive-time
+  inversions become diagnostics; every other health error still blocks, and the
+  runner re-verifies the contract clock is non-decreasing.  All outputs
+  (`resolved_config.json`, `summary.json`, `run_report.md`) carry a `replay`
+  provenance block with the mode, clock, ordering key, data-credibility grade,
+  and a disclaimer that the order is not exchange message order and fills/PnL
+  are research results only.
+
+Minimal reproducible experiment:
+`research/2026-07-13-pmxt-research-backtest-v1/` (contract consistency check
+runs without the compiled runtime; the backtest configs require it).
 
 ## Data-health gate before backtest
 
 `python -m polymarket.backtest_v1` now runs a mandatory data-health check after
 adapter loading and before Nautilus conversion/engine execution:
 
-- `timestamp_received` must be non-decreasing in adapter output order.
-- local replay `sequence` must be strictly increasing.
+- `timestamp_received` must be non-decreasing in adapter output order
+  (strict_capture mode; in the explicit pmxt_research mode receive-time
+  inversions are diagnostics and the shared PMXT contract clock is verified
+  instead).
+- local replay `sequence` must be strictly increasing (both modes).
 - failures stop the run and write `data_health.json`; they are not repaired by
   sorting.
 - source timestamp inversions and future source timestamps are reported as
@@ -69,9 +102,10 @@ adapter loading and before Nautilus conversion/engine execution:
 - missing source timestamps are counted explicitly, so a low
   `source_time_inversion_count` is not mistaken for good source-time coverage.
 
-The Nautilus bridge also uses `timestamp_received` as the replay clock.  Source
-`timestamp` is kept for diagnostics/provenance and must not create look-ahead
-ordering.
+The Nautilus bridge uses `timestamp_received` as the replay clock by default.
+Source `timestamp` is kept for diagnostics/provenance and must not create
+look-ahead ordering; only the explicit pmxt_research mode switches the bridge
+to the shared PMXT contract clock (`timestamp` with receive-time fallback).
 
 Standalone health check:
 

@@ -1,0 +1,664 @@
+"""PMXT event-directory adapter for Polymarket v1 replay datasets."""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Mapping
+from collections.abc import Sequence
+from datetime import datetime
+from decimal import Decimal
+from itertools import pairwise
+from pathlib import Path
+from typing import Any
+
+import pandas as pd
+
+from polymarket._core.models import DatasetMetadataV1
+from polymarket._core.models import L2ReplayStepV1
+from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import MarketMetadataV1
+from polymarket._core.models import PolymarketL2DatasetV1
+from polymarket.adapters.utils import as_decimal
+from polymarket.adapters.utils import as_utc_datetime
+from polymarket.adapters.utils import normalize_side
+from polymarket.adapters.utils import optional_utc_datetime
+from polymarket.adapters.utils import parse_jsonish
+from polymarket.adapters.utils import parse_levels
+from polymarket.adapters.utils import repo_relative_or_absolute
+from polymarket.replay_contract import PMXT_RESEARCH_ORDERING_KEY
+
+
+class PMXTEventV1Adapter:
+    """Load a PMXT event folder into the canonical v1 L2 replay contract."""
+
+    adapter_name = "pmxt_event_v1"
+    adapter_version = "v1"
+    _ORDERBOOK_COLUMNS = (
+        "event_type",
+        "market",
+        "asset_id",
+        "timestamp_received",
+        "timestamp",
+        "bids",
+        "asks",
+        "side",
+        "price",
+        "size",
+        "best_bid",
+        "best_ask",
+        "old_tick_size",
+        "new_tick_size",
+    )
+    _DIAGNOSTIC_COLUMNS = ("market", "asset_id")
+
+    def __init__(self, *, repo_root: Path | None = None) -> None:
+        self.repo_root = repo_root or Path.cwd()
+
+    def load(self, config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
+        input_config = config.get("input", config)
+        event_dir = self._required_path(input_config, "event_dir")
+        condition_id = self._required_text(input_config, "condition_id")
+        asset_id = self._required_text(input_config, "asset_id")
+
+        files = self._resolve_files(event_dir)
+        event_index = self._read_json(files["event_index"])
+        gamma_event = self._read_json(files["gamma_event"])
+
+        orderbook = self._read_selected_orderbook(
+            files["orderbook"],
+            condition_id=condition_id,
+            asset_id=asset_id,
+            event_index=event_index,
+        )
+        if orderbook.empty:
+            raise ValueError(f"pmxt_event_v1 orderbook.parquet has no rows: {files['orderbook']}")
+        orderbook = orderbook.copy()
+        orderbook["_original_row_index"] = range(len(orderbook))
+        orderbook["_canonical_market"] = orderbook["market"].map(self._canonical_market)
+        orderbook["_canonical_asset_id"] = orderbook["asset_id"].map(self._canonical_asset_id)
+
+        selected = orderbook[
+            (orderbook["_canonical_market"] == condition_id)
+            & (orderbook["_canonical_asset_id"] == asset_id)
+        ].copy()
+        if selected.empty:
+            self._raise_empty_selection(
+                condition_id=condition_id,
+                asset_id=asset_id,
+                orderbook=orderbook,
+                event_index=event_index,
+            )
+
+        selected["_timestamp_received_dt"] = [
+            self._parse_required_timestamp_received(value, row_index=int(row_index))
+            for row_index, value in zip(selected["_original_row_index"], selected["timestamp_received"], strict=True)
+        ]
+        selected["_source_timestamp_dt"] = selected["timestamp"].map(optional_utc_datetime)
+        selected["_source_timestamp_sort_dt"] = [
+            source_timestamp if not self._is_missing(source_timestamp) else timestamp_received
+            for source_timestamp, timestamp_received in zip(
+                selected["_source_timestamp_dt"],
+                selected["_timestamp_received_dt"],
+                strict=True,
+            )
+        ]
+        selected_ordering_diagnostic = self._selected_ordering_diagnostic(selected)
+        selected = selected.sort_values(
+            by=["_source_timestamp_sort_dt", "_timestamp_received_dt", "_original_row_index"],
+            kind="mergesort",
+        )
+        selected_ordering_diagnostic.update(self._selected_ordering_diagnostic_after_sort(selected))
+
+        steps: list[L2ReplayStepV1] = []
+        for sequence, (_, row) in enumerate(selected.iterrows(), start=1):
+            update = self._row_to_update(row)
+            steps.append(
+                L2ReplayStepV1(
+                    sequence=sequence,
+                    timestamp_received=row["_timestamp_received_dt"],
+                    timestamp=optional_utc_datetime(row.get("timestamp")),
+                    updates=(update,),
+                ),
+            )
+
+        market_metadata = self._gamma_market_metadata(gamma_event, condition_id=condition_id)
+        source_quality = self._source_quality(
+            selected_ordering_diagnostic,
+            market_metadata=market_metadata,
+        )
+        metadata = DatasetMetadataV1(
+            dataset_id=str(input_config.get("dataset_id") or event_dir.name),
+            adapter_name=self.adapter_name,
+            adapter_version=self.adapter_version,
+            source_type="pmxt_event",
+            source_files=tuple(
+                repo_relative_or_absolute(files[key], repo_root=self.repo_root)
+                for key in ("orderbook", "event_index", "gamma_event", "manifest")
+            ),
+            assumptions=(
+                "PMXT orderbook.parquet rows are pre-contract WebSocket-derived observations normalized by adapter only.",
+                "PMXT replay chronology uses source-time baseline ordering: stable sort by timestamp, timestamp_received, then original row index.",
+                "One selected PMXT orderbook row is emitted as one canonical replay step with post-sort local replay sequence.",
+            ),
+            warnings=(
+                "PMXT caveat: stable fallback gives deterministic replay only, not true exchange/message order.",
+                self._format_ordering_diagnostic(selected_ordering_diagnostic),
+                self._format_source_quality(source_quality),
+                "PMXT ordering diagnostic: sequence is a post-sort local replay sequence, not vendor/raw sequence; values are reassigned after stable timestamp/timestamp_received/original-row sort and do not preserve original PMXT row numbering.",
+                "PMXT best_bid/best_ask values are preserved as audit/proxy fields only and are not trusted for filtering or execution truth.",
+            ),
+            source_quality=source_quality,
+            market_metadata=market_metadata,
+        )
+        return PolymarketL2DatasetV1(metadata=metadata, steps=tuple(steps))
+
+    def _read_selected_orderbook(
+        self,
+        path: Path,
+        *,
+        condition_id: str,
+        asset_id: str,
+        event_index: Mapping[str, Any],
+    ) -> pd.DataFrame:
+        """Read only selected PMXT orderbook rows/columns when parquet filtering permits it."""
+        columns = list(self._ORDERBOOK_COLUMNS)
+        filtered_frames: list[pd.DataFrame] = []
+        for market_filter_value in (condition_id.encode(), condition_id):
+            frame = self._read_parquet_columns(
+                path,
+                columns=columns,
+                filters=[("market", "==", market_filter_value), ("asset_id", "==", asset_id)],
+            )
+            if not frame.empty:
+                return frame
+            filtered_frames.append(frame)
+
+        diagnostics = self._read_parquet_columns(path, columns=list(self._DIAGNOSTIC_COLUMNS))
+        if diagnostics.empty:
+            return filtered_frames[0]
+        diagnostics = diagnostics.copy()
+        diagnostics["_canonical_market"] = diagnostics["market"].map(self._canonical_market)
+        diagnostics["_canonical_asset_id"] = diagnostics["asset_id"].map(self._canonical_asset_id)
+        diagnostic_selection = diagnostics[
+            (diagnostics["_canonical_market"] == condition_id)
+            & (diagnostics["_canonical_asset_id"] == asset_id)
+        ]
+        if diagnostic_selection.empty:
+            self._raise_empty_selection(
+                condition_id=condition_id,
+                asset_id=asset_id,
+                orderbook=diagnostics,
+                event_index=event_index,
+            )
+
+        # Fallback for parquet engines/files that cannot push down the encoded
+        # market predicate even though diagnostics prove the selection exists.
+        unfiltered = self._read_parquet_columns(path, columns=columns)
+        unfiltered = unfiltered.copy()
+        unfiltered["_canonical_market"] = unfiltered["market"].map(self._canonical_market)
+        unfiltered["_canonical_asset_id"] = unfiltered["asset_id"].map(self._canonical_asset_id)
+        return unfiltered[
+            (unfiltered["_canonical_market"] == condition_id)
+            & (unfiltered["_canonical_asset_id"] == asset_id)
+        ].drop(columns=["_canonical_market", "_canonical_asset_id"])
+
+    @staticmethod
+    def _read_parquet_columns(
+        path: Path,
+        *,
+        columns: list[str],
+        filters: list[tuple[str, str, Any]] | None = None,
+    ) -> pd.DataFrame:
+        kwargs: dict[str, Any] = {"columns": columns}
+        if filters is not None:
+            kwargs["filters"] = filters
+        try:
+            return pd.read_parquet(path, **kwargs)
+        except (TypeError, ValueError, NotImplementedError):
+            if filters is None:
+                raise
+            return pd.read_parquet(path, columns=columns)
+
+    @classmethod
+    def _selected_ordering_diagnostic(cls, selected: pd.DataFrame) -> dict[str, Any]:
+        receive_times = list(selected["_timestamp_received_dt"])
+        source_times = [value for value in selected["_source_timestamp_dt"] if value is not None]
+        duplicate_counts = selected["_timestamp_received_dt"].value_counts(dropna=False)
+        duplicate_groups = duplicate_counts[duplicate_counts > 1]
+        tied_diagnostic = cls._tied_group_diagnostic(selected)
+        missing_source_timestamp_count = int(selected["_source_timestamp_dt"].isna().sum())
+        return {
+            "selected_rows": len(selected),
+            "global_physical_receive_time_inversions": "not_computed_filtered_adapter",
+            "selected_receive_time_inversions_before_sort": cls._adjacent_inversion_count(receive_times),
+            "selected_source_time_inversions_before_sort": cls._adjacent_inversion_count(source_times),
+            "missing_source_timestamp_count": missing_source_timestamp_count,
+            "duplicate_timestamp_received_group_count": len(duplicate_groups),
+            "max_rows_per_timestamp_received": int(duplicate_counts.max()) if not duplicate_counts.empty else 0,
+            "tied_timestamp_group_count": tied_diagnostic["tied_timestamp_group_count"],
+            "tied_timestamp_row_count": tied_diagnostic["tied_timestamp_row_count"],
+            "ordering_ambiguous_groups": tied_diagnostic["ordering_ambiguous_groups"],
+            "ordering_ambiguous_rows": tied_diagnostic["ordering_ambiguous_rows"],
+            "stable_sort_key": PMXT_RESEARCH_ORDERING_KEY,
+        }
+
+    @classmethod
+    def _selected_ordering_diagnostic_after_sort(cls, selected: pd.DataFrame) -> dict[str, Any]:
+        receive_times = list(selected["_timestamp_received_dt"])
+        source_times = [value for value in selected["_source_timestamp_dt"] if value is not None]
+        receive_inversions = cls._adjacent_inversion_count(receive_times)
+        source_inversions = cls._adjacent_inversion_count(source_times)
+        return {
+            "selected_receive_time_inversions_after_sort": receive_inversions,
+            "selected_source_time_inversions_after_sort": source_inversions,
+            "selected_receive_time_monotonic_after_sort": receive_inversions == 0,
+            "selected_source_time_monotonic_after_sort": source_inversions == 0,
+        }
+
+    @staticmethod
+    def _adjacent_inversion_count(values: Sequence[Any]) -> int:
+        return sum(1 for previous, current in pairwise(values) if current < previous)
+
+    @classmethod
+    def _tied_group_diagnostic(cls, selected: pd.DataFrame) -> dict[str, int]:
+        """Count PMXT tied timestamp groups whose internal order is not knowable."""
+        group_columns = [
+            "_canonical_market",
+            "_canonical_asset_id",
+            "_source_timestamp_dt",
+            "_timestamp_received_dt",
+        ]
+        value_columns = [
+            "event_type",
+            "price",
+            "size",
+            "side",
+            "best_bid",
+            "best_ask",
+            "bids",
+            "asks",
+        ]
+        group_sizes = selected.groupby(group_columns, dropna=False, sort=False).size()
+        tied_sizes = group_sizes[group_sizes > 1]
+        if tied_sizes.empty:
+            return {
+                "tied_timestamp_group_count": 0,
+                "tied_timestamp_row_count": 0,
+                "ordering_ambiguous_groups": 0,
+                "ordering_ambiguous_rows": 0,
+            }
+
+        signature_frame = pd.DataFrame(index=selected.index)
+        for column in value_columns:
+            signature_frame[column] = selected[column].map(cls._value_signature)
+        row_signature = pd.util.hash_pandas_object(signature_frame, index=False)
+        signature_groups = (
+            selected.assign(_row_signature=row_signature)
+            .groupby(group_columns, dropna=False, sort=False)["_row_signature"]
+            .agg(size="size", unique="nunique")
+        )
+        ambiguous_sizes = signature_groups[(signature_groups["size"] > 1) & (signature_groups["unique"] > 1)]["size"]
+        return {
+            "tied_timestamp_group_count": len(tied_sizes),
+            "tied_timestamp_row_count": int(tied_sizes.sum()),
+            "ordering_ambiguous_groups": len(ambiguous_sizes),
+            "ordering_ambiguous_rows": int(ambiguous_sizes.sum()),
+        }
+
+    @staticmethod
+    def _value_signature(value: Any) -> str:
+        if PMXTEventV1Adapter._is_missing(value):
+            return "<missing>"
+        if isinstance(value, bytes):
+            return "0x" + value.hex()
+        if isinstance(value, (datetime, pd.Timestamp)):
+            return as_utc_datetime(value).isoformat()
+        return str(value)
+
+    @staticmethod
+    def _source_quality(
+        diagnostic: Mapping[str, Any],
+        *,
+        market_metadata: tuple[MarketMetadataV1, ...] | None,
+    ) -> dict[str, Any]:
+        ambiguous_groups = int(diagnostic.get("ordering_ambiguous_groups", 0) or 0)
+        ambiguous_rows = int(diagnostic.get("ordering_ambiguous_rows", 0) or 0)
+        missing_source_timestamp_count = int(diagnostic.get("missing_source_timestamp_count", 0) or 0)
+        ordering_status = (
+            "ambiguous"
+            if ambiguous_groups or ambiguous_rows or missing_source_timestamp_count
+            else "timestamp_ordered"
+        )
+        metadata_join_status = "not_run"
+        if market_metadata is not None:
+            metadata_join_status = "pass" if market_metadata else "partial"
+        notes = [
+            "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+            "Stable fallback is deterministic but not proof of true exchange/message order.",
+        ]
+        if ambiguous_groups:
+            notes.append("Tied timestamp groups with differing row content require sensitivity testing.")
+        if missing_source_timestamp_count:
+            notes.append("Some rows are missing PMXT source timestamp and fall back to timestamp_received for sorting.")
+        return {
+            "coverageStatus": "not_run",
+            "orderingStatus": ordering_status,
+            "snapshotReplayStatus": "not_run",
+            "metadataJoinStatus": metadata_join_status,
+            "knownArchiveGaps": [],
+            "orderingAmbiguousGroups": ambiguous_groups,
+            "orderingAmbiguousRows": ambiguous_rows,
+            "missingSourceTimestampRows": missing_source_timestamp_count,
+            "tiedTimestampGroups": int(diagnostic.get("tied_timestamp_group_count", 0) or 0),
+            "tiedTimestampRows": int(diagnostic.get("tied_timestamp_row_count", 0) or 0),
+            "stableSortKey": str(diagnostic.get("stable_sort_key", "")),
+            "notes": notes,
+        }
+
+    @staticmethod
+    def _format_ordering_diagnostic(diagnostic: Mapping[str, Any]) -> str:
+        ordered_keys = (
+            "selected_rows",
+            "global_physical_receive_time_inversions",
+            "selected_receive_time_inversions_before_sort",
+            "selected_receive_time_inversions_after_sort",
+            "selected_source_time_inversions_before_sort",
+            "selected_source_time_inversions_after_sort",
+            "missing_source_timestamp_count",
+            "duplicate_timestamp_received_group_count",
+            "max_rows_per_timestamp_received",
+            "tied_timestamp_group_count",
+            "tied_timestamp_row_count",
+            "ordering_ambiguous_groups",
+            "ordering_ambiguous_rows",
+            "stable_sort_key",
+            "selected_receive_time_monotonic_after_sort",
+            "selected_source_time_monotonic_after_sort",
+        )
+        formatted_values = []
+        for key in ordered_keys:
+            value = diagnostic[key]
+            if isinstance(value, bool):
+                value = str(value).lower()
+            formatted_values.append(f"{key}={value}")
+        return "PMXT ordering diagnostic: " + ", ".join(formatted_values) + "."
+
+    @staticmethod
+    def _format_source_quality(source_quality: Mapping[str, Any]) -> str:
+        return (
+            "PMXT source quality: "
+            f"coverageStatus={source_quality['coverageStatus']}, "
+            f"orderingStatus={source_quality['orderingStatus']}, "
+            f"snapshotReplayStatus={source_quality['snapshotReplayStatus']}, "
+            f"metadataJoinStatus={source_quality['metadataJoinStatus']}, "
+            f"orderingAmbiguousGroups={source_quality['orderingAmbiguousGroups']}, "
+            f"orderingAmbiguousRows={source_quality['orderingAmbiguousRows']}."
+        )
+
+    @staticmethod
+    def _parse_required_timestamp_received(value: Any, *, row_index: int) -> Any:
+        if PMXTEventV1Adapter._is_missing(value):
+            raise ValueError(
+                "pmxt_event_v1 timestamp_received is missing for selected orderbook row "
+                f"_original_row_index={row_index}; receive-time replay cannot be sorted safely",
+            )
+        try:
+            return as_utc_datetime(value)
+        except Exception as exc:
+            raise ValueError(
+                "pmxt_event_v1 timestamp_received is unparseable for selected orderbook row "
+                f"_original_row_index={row_index}: {value!r}",
+            ) from exc
+
+    @staticmethod
+    def _is_missing(value: Any) -> bool:
+        if value is None:
+            return True
+        try:
+            missing = pd.isna(value)
+        except (TypeError, ValueError):
+            return False
+        return bool(missing) if not hasattr(missing, "__len__") else False
+
+    def _required_path(self, input_config: Mapping[str, Any], key: str) -> Path:
+        if input_config.get(key) is None:
+            raise ValueError(f"pmxt_event_v1 adapter input requires {key}")
+        path = Path(str(input_config[key]))
+        if not path.is_absolute():
+            path = self.repo_root / path
+        if not path.exists():
+            raise FileNotFoundError(path)
+        return path
+
+    @staticmethod
+    def _required_text(input_config: Mapping[str, Any], key: str) -> str:
+        value = input_config.get(key)
+        if value is None or str(value).strip() == "":
+            raise ValueError(f"pmxt_event_v1 adapter input requires {key}")
+        return str(value)
+
+    @staticmethod
+    def _resolve_files(event_dir: Path) -> dict[str, Path]:
+        required = {
+            "orderbook": event_dir / "orderbook.parquet",
+            "event_index": event_dir / "event_index.json",
+            "gamma_event": event_dir / "gamma_event.raw.json",
+            "manifest": event_dir / "manifest.json",
+        }
+        missing = [path.name for path in required.values() if not path.exists()]
+        if missing:
+            raise FileNotFoundError(f"pmxt_event_v1 missing required file(s) in {event_dir}: {', '.join(missing)}")
+        return required
+
+    @staticmethod
+    def _read_json(path: Path) -> Mapping[str, Any]:
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
+        if not isinstance(data, Mapping):
+            raise ValueError(f"pmxt_event_v1 expected JSON object in {path}")
+        return data
+
+    @staticmethod
+    def _canonical_market(value: Any) -> str:
+        if isinstance(value, bytes):
+            try:
+                return value.decode("utf-8")
+            except UnicodeDecodeError:
+                return "0x" + value.hex()
+        text = str(value)
+        if text.startswith("b'") and text.endswith("'"):
+            try:
+                decoded = text[2:-1].encode("latin1").decode("unicode_escape")
+                return decoded
+            except UnicodeDecodeError:
+                return text
+        if text.startswith('b"') and text.endswith('"'):
+            try:
+                decoded = text[2:-1].encode("latin1").decode("unicode_escape")
+                return decoded
+            except UnicodeDecodeError:
+                return text
+        return text
+
+    @staticmethod
+    def _canonical_asset_id(value: Any) -> str:
+        if pd.isna(value):
+            return ""
+        return str(value)
+
+    @staticmethod
+    def _raise_empty_selection(
+        *,
+        condition_id: str,
+        asset_id: str,
+        orderbook: pd.DataFrame,
+        event_index: Mapping[str, Any],
+    ) -> None:
+        available_markets = sorted(str(value) for value in orderbook["_canonical_market"].dropna().unique())
+        same_condition = orderbook[orderbook["_canonical_market"] == condition_id]
+        if same_condition.empty:
+            index_hints = PMXTEventV1Adapter._condition_hints(event_index)
+            raise ValueError(
+                "pmxt_event_v1 selected condition_id/market has no rows: "
+                f"{condition_id!r}; available markets: {available_markets}; "
+                f"event_index available condition/token hints: {index_hints}",
+            )
+        available_tokens = sorted(str(value) for value in same_condition["_canonical_asset_id"].dropna().unique())
+        raise ValueError(
+            "pmxt_event_v1 selected asset_id/token has no rows for condition_id "
+            f"{condition_id!r}: {asset_id!r}; available tokens: {available_tokens}; "
+            f"event_index available condition/token hints: {PMXTEventV1Adapter._condition_hints(event_index)}",
+        )
+
+    @staticmethod
+    def _condition_hints(event_index: Mapping[str, Any]) -> list[dict[str, Any]]:
+        raw_markets = event_index.get("markets", [])
+        if not isinstance(raw_markets, list):
+            return []
+        hints: list[dict[str, Any]] = []
+        for item in raw_markets:
+            if isinstance(item, Mapping):
+                hints.append(
+                    {
+                        key: item.get(key)
+                        for key in ("conditionId", "condition_id", "yesToken", "noToken", "clobTokenIds")
+                        if item.get(key) is not None
+                    },
+                )
+        return hints
+
+    @staticmethod
+    def _row_to_update(row: pd.Series) -> L2UpdateV1:
+        event_type = str(row.get("event_type"))
+        canonical_event_type = "trade" if event_type == "last_trade_price" else event_type
+        market = PMXTEventV1Adapter._canonical_market(row.get("market"))
+        asset_id = str(row.get("asset_id"))
+        if canonical_event_type == "book":
+            return L2UpdateV1(
+                event_type="book",
+                market=market,
+                asset_id=asset_id,
+                bids=parse_levels(row.get("bids")),
+                asks=parse_levels(row.get("asks")),
+                best_bid=as_decimal(row.get("best_bid")),
+                best_ask=as_decimal(row.get("best_ask")),
+            )
+        if canonical_event_type == "price_change":
+            return L2UpdateV1(
+                event_type="price_change",
+                market=market,
+                asset_id=asset_id,
+                side=normalize_side(row.get("side")),
+                price=as_decimal(row.get("price")),
+                size=as_decimal(row.get("size")),
+                best_bid=as_decimal(row.get("best_bid")),
+                best_ask=as_decimal(row.get("best_ask")),
+            )
+        if canonical_event_type == "trade":
+            return L2UpdateV1(
+                event_type="trade",
+                market=market,
+                asset_id=asset_id,
+                side=normalize_side(row.get("side")),
+                price=as_decimal(row.get("price")),
+                size=as_decimal(row.get("size")),
+                best_bid=as_decimal(row.get("best_bid")),
+                best_ask=as_decimal(row.get("best_ask")),
+            )
+        if canonical_event_type == "tick_size_change":
+            return L2UpdateV1(
+                event_type="tick_size_change",
+                market=market,
+                asset_id=asset_id,
+                old_tick_size=as_decimal(row.get("old_tick_size")),
+                new_tick_size=as_decimal(row.get("new_tick_size")),
+                best_bid=as_decimal(row.get("best_bid")),
+                best_ask=as_decimal(row.get("best_ask")),
+            )
+        raise ValueError(f"pmxt_event_v1 unsupported PMXT event_type: {event_type!r}")
+
+    @staticmethod
+    def _gamma_market_metadata(
+        gamma_event: Mapping[str, Any],
+        *,
+        condition_id: str,
+    ) -> tuple[MarketMetadataV1, ...]:
+        markets = gamma_event.get("markets", [])
+        if isinstance(markets, Mapping):
+            markets = [markets]
+        if not isinstance(markets, list):
+            raise ValueError("pmxt_event_v1 gamma_event.raw.json requires markets list")
+        market = next(
+            (
+                item
+                for item in markets
+                if isinstance(item, Mapping)
+                and str(item.get("conditionId") or item.get("condition_id")) == condition_id
+            ),
+            None,
+        )
+        if market is None:
+            available = [
+                str(item.get("conditionId") or item.get("condition_id"))
+                for item in markets
+                if isinstance(item, Mapping)
+            ]
+            raise ValueError(
+                f"pmxt_event_v1 gamma metadata has no market for condition_id {condition_id!r}; "
+                f"available condition_id values: {available}",
+            )
+
+        outcomes = PMXTEventV1Adapter._json_array(market.get("outcomes"), "outcomes")
+        outcome_prices = PMXTEventV1Adapter._json_array(market.get("outcomePrices"), "outcomePrices")
+        clob_token_ids = PMXTEventV1Adapter._json_array(market.get("clobTokenIds"), "clobTokenIds")
+        if not (len(outcomes) == len(outcome_prices) == len(clob_token_ids)):
+            raise ValueError(
+                "pmxt_event_v1 gamma metadata length mismatch: outcomes, outcomePrices, "
+                f"and clobTokenIds lengths are {len(outcomes)}, {len(outcome_prices)}, {len(clob_token_ids)}",
+            )
+        if len(outcomes) != 2:
+            raise ValueError(f"pmxt_event_v1 requires binary outcomes; got {len(outcomes)} outcomes")
+
+        fee_schedule = parse_jsonish(market.get("feeSchedule")) or {}
+        if not isinstance(fee_schedule, Mapping):
+            raise ValueError("pmxt_event_v1 gamma feeSchedule must be a JSON object or object")
+        taker_fee = as_decimal(fee_schedule.get("rate"))
+        resolution_time = optional_utc_datetime(market.get("closedTime"))
+        minimum_tick_size = as_decimal(
+            market.get("orderPriceMinTickSize")
+            or market.get("minimum_tick_size")
+            or market.get("min_tick_size")
+            or market.get("tick_size"),
+        )
+
+        items: list[MarketMetadataV1] = []
+        for outcome, token_id, payout_value in zip(outcomes, clob_token_ids, outcome_prices, strict=True):
+            payout = as_decimal(payout_value)
+            items.append(
+                MarketMetadataV1(
+                    condition_id=condition_id,
+                    token_id=str(token_id),
+                    outcome=str(outcome),
+                    maker_fee=Decimal(0),
+                    taker_fee=taker_fee,
+                    fee_source="gamma_event.raw.market.feeSchedule.rate" if taker_fee is not None else "unknown",
+                    minimum_tick_size=minimum_tick_size,
+                    tick_size_source="gamma_event.raw.market.orderPriceMinTickSize"
+                    if minimum_tick_size is not None
+                    else "unknown",
+                    resolution_status=str(market.get("umaResolutionStatus"))
+                    if market.get("umaResolutionStatus") is not None
+                    else None,
+                    resolution_time=resolution_time,
+                    token_payout=payout,
+                    winner=(payout == Decimal(1)) if payout is not None else None,
+                    resolution_source="gamma_event.raw.market.outcomePrices",
+                ),
+            )
+        return tuple(items)
+
+    @staticmethod
+    def _json_array(value: Any, field_name: str) -> Sequence[Any]:
+        parsed = parse_jsonish(value)
+        if not isinstance(parsed, list):
+            raise ValueError(f"pmxt_event_v1 gamma metadata field {field_name} must be a JSON array or array")
+        return parsed

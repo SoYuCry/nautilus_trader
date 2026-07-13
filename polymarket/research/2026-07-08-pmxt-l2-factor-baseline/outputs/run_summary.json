@@ -1,0 +1,72 @@
+{
+  "config_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\experiment.yml",
+  "output_dir": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs",
+  "rows_loaded": 334501,
+  "factor_rows": 334501,
+  "analysis_rows": 333419,
+  "first_timestamp_received": "2026-06-07T04:34:30.268000+00:00",
+  "last_timestamp_received": "2026-06-09T11:59:15.163000+00:00",
+  "first_replay_timestamp": "2026-06-07T04:34:30.072000+00:00",
+  "last_replay_timestamp": "2026-06-09T11:59:14.959000+00:00",
+  "replay_order_ok": false,
+  "health_warning_count": 177530,
+  "health_error_count": 1389,
+  "valid_book_rows": 333419,
+  "locked_book_rows": 697,
+  "crossed_book_rows": 65,
+  "missing_book_rows": 320,
+  "panel_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_panel.parquet",
+  "panel_format": "parquet",
+  "factor_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\factor_summary.csv",
+  "quantile_returns_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\quantile_returns.csv",
+  "book_validity_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\book_validity_summary.csv",
+  "spread_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\spread_summary.csv",
+  "label_slippage_summary_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\label_slippage_summary.csv",
+  "input_hashes_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\input_hashes.json",
+  "run_metadata_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\run_metadata.json",
+  "trust_metadata": {
+    "data_tier": "TIER1_EXPLORATORY",
+    "replay_clock": "timestamp",
+    "ordering_key": "timestamp,timestamp_received,_original_row_index",
+    "causality": "pmxt_source_time_ordered_not_exchange_sequence",
+    "execution_claims_allowed": false,
+    "source_time_policy": "primary_sort_key",
+    "not_for_pnl": true,
+    "diagnostic_non_causal": true,
+    "run_grade": "TIER1_CAUTION_ORDERING_AMBIGUOUS",
+    "source_quality": {
+      "coverageStatus": "not_run",
+      "orderingStatus": "ambiguous",
+      "snapshotReplayStatus": "not_run",
+      "metadataJoinStatus": "pass",
+      "knownArchiveGaps": [],
+      "orderingAmbiguousGroups": 4694,
+      "orderingAmbiguousRows": 9433,
+      "missingSourceTimestampRows": 0,
+      "tiedTimestampGroups": 4694,
+      "tiedTimestampRows": 9433,
+      "stableSortKey": "timestamp,timestamp_received,_original_row_index",
+      "notes": [
+        "PMXT adapter sorted by timestamp, timestamp_received, then original row index.",
+        "Stable fallback is deterministic but not proof of true exchange/message order.",
+        "Tied timestamp groups with differing row content require sensitivity testing."
+      ]
+    },
+    "ordering_ambiguous": true,
+    "source_time_diagnostics": {
+      "source_time_inversion_count": 0,
+      "source_delay_over_threshold_count": 177530,
+      "future_source_time_count": 0,
+      "source_timestamp_missing_step_count": 0
+    },
+    "book_validity_counts": {
+      "valid": 333419,
+      "locked": 697,
+      "crossed": 65,
+      "missing": 320
+    },
+    "book_validity_warning": true,
+    "claim_boundary": "Exploratory PMXT timestamp-ordered L2 factors and future mid-return labels only; stable fallback is reproducible but not proof of true exchange/message order; no fees, fills, queue position, cash, positions, PnL, executable edge, or tradeable claims."
+  },
+  "report_path": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-08-pmxt-l2-factor-baseline\\outputs\\report.md"
+}
