@@ -248,12 +248,10 @@ class PMXTEventV1Adapter:
         diagnostics = diagnostics.copy()
         diagnostics["_canonical_market"] = diagnostics["market"].map(cls._canonical_market)
         diagnostics["_canonical_asset_id"] = diagnostics["asset_id"].map(cls._canonical_asset_id)
-        matching_indices = list(
-            diagnostics.index[
-                (diagnostics["_canonical_market"] == condition_id)
-                & (diagnostics["_canonical_asset_id"] == asset_id)
-            ],
+        matching_mask = (diagnostics["_canonical_market"] == condition_id) & (
+            diagnostics["_canonical_asset_id"] == asset_id
         )
+        matching_indices = [position for position, matches in enumerate(matching_mask) if bool(matches)]
         annotated = frame.copy()
         if len(matching_indices) != len(annotated):
             raise ValueError(

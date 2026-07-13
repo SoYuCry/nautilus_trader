@@ -533,6 +533,31 @@ def test_empty_filter_result_falls_back_when_canonical_diagnostics_match(
     assert any(call.get("columns") == list(PMXTEventV1Adapter._DIAGNOSTIC_COLUMNS) for call in calls)
 
 
+def test_filter_pushdown_recovers_physical_ordinals_with_persisted_non_range_index(tmp_path: Path) -> None:
+    rows = [
+        {**_base_rows()[4], "timestamp": _iso(0), "timestamp_received": _iso(0)},
+        {**_base_rows()[0], "timestamp": _iso(1), "timestamp_received": _iso(1)},
+        {**_base_rows()[4], "timestamp": _iso(2), "timestamp_received": _iso(2)},
+        {**_base_rows()[1], "timestamp": _iso(1), "timestamp_received": _iso(1)},
+        {**_base_rows()[4], "timestamp": _iso(4), "timestamp_received": _iso(4)},
+    ]
+    event_dir = tmp_path / "pmxt-event"
+    event_dir.mkdir()
+    frame = pd.DataFrame(rows)
+    frame.index = pd.Index([900, 100, 800, 50, 700], name="persisted_non_range_index")
+    frame.to_parquet(event_dir / "orderbook.parquet")
+    (event_dir / "gamma_event.raw.json").write_text(json.dumps({"markets": [_gamma_market()]}), encoding="utf-8")
+    (event_dir / "event_index.json").write_text(
+        json.dumps({"markets": [{"conditionId": CONDITION_ID, "yesToken": YES_TOKEN, "noToken": NO_TOKEN}]}),
+        encoding="utf-8",
+    )
+    (event_dir / "manifest.json").write_text(json.dumps({"source": "synthetic-pmxt-test"}), encoding="utf-8")
+
+    dataset = _load(event_dir)
+
+    assert [step.source_row_index for step in dataset.steps] == [1, 3]
+    assert [step.updates[0].event_type for step in dataset.steps] == ["book", "price_change"]
+
 
 def test_filter_pushdown_preserves_physical_original_row_indices_across_row_groups(tmp_path: Path) -> None:
     rows = [
