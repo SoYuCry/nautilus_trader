@@ -30,3 +30,37 @@ cohorts:
 confirmation:
   current_panel: not_confirmatory
   requirement: future_unseen_cohort_required
+g003_quality_calibration:
+  program: pmxt-wave-minus1-quality-calibration
+  program_version: 2026-07-13.g003.v1
+  protocol_version: wave-minus1-g003-outcome-blind-systems-calibration-v1
+  script: polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/calibrate_quality.py
+  artifacts:
+    - quality_calibration.json
+    - representative_sample.json
+    - outcome_blind_invariance.json
+    - protocol-candidate-g003.json
+  inputs_allowed:
+    - source integrity
+    - file/schema/contract availability
+    - timestamps/update types
+    - missing/corrupt intersections
+    - bounded O1 ordering-ambiguity counts
+    - label-match feasibility categories only
+    - resource measurements
+  inputs_prohibited:
+    - factor values/effects
+    - future return direction/magnitude
+    - outcome/settlement/resolution
+    - strategy decisions
+    - fills/fees/positions/cash/PnL
+  full_747m_scan_claimed_complete: false
+  full_label_match_distribution: deferred
+  real_o1_ambiguity_scan:
+    candidate_budget_tokens: 16
+    status: deferred_runtime_cap
+    scanned_events: 0
+    scanned_tokens: 0
+    g002_reference: ../2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/real_curated_smoke_parity.json
+    winner_claimed: false
+  materialization_decision: deferred_to_G004
