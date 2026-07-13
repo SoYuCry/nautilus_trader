@@ -1152,3 +1152,26 @@ def test_runner_strict_mode_keeps_marking_and_receive_time_gate(tmp_path: Path) 
     assert summary["data_credibility"] == "strict_capture_receive_time"
     assert resolved["replay"]["mode"] == "strict_capture"
     assert "Replay mode: `strict_capture`" in run_report
+
+
+def test_data_health_artifact_omission_manifest_generated_for_large_files(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import polymarket.backtest_v1 as runner_module
+
+    (tmp_path / "data_health.json").write_text('{"ok": true}' + " " * 64, encoding="utf-8")
+
+    present = runner_module.describe_data_health_artifact(tmp_path)
+    assert present["status"] == "present"
+    assert not (tmp_path / "OMITTED_ARTIFACTS.json").exists()
+
+    monkeypatch.setattr(runner_module, "GIT_OMIT_SIZE_BYTES", 8)
+    omitted = runner_module.describe_data_health_artifact(tmp_path)
+    manifest = json.loads((tmp_path / "OMITTED_ARTIFACTS.json").read_text(encoding="utf-8"))
+
+    assert omitted["status"] == "omitted_from_git"
+    assert omitted["manifest"] == "OMITTED_ARTIFACTS.json"
+    assert omitted["sha256"] == manifest["omitted"][0]["sha256"]
+    assert manifest["omitted"][0]["committed"] is False
+    assert manifest["omitted"][0]["path"] == "data_health.json"

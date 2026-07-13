@@ -64,15 +64,21 @@ def write_backtest_reports(
 
     fee_totals = summarize_fill_fee_totals(fills)
     fee_report = {**result.fees, "totals_from_fills_report": fee_totals}
-    reports = {
-        "account": "account.csv",
-        "fills": "fills.csv",
-        "positions": "positions.csv",
-        "raw_nautilus_account": "raw_nautilus/account.csv",
-        "raw_nautilus_fills": "raw_nautilus/fills.csv",
-        "raw_nautilus_positions": "raw_nautilus/positions.csv",
-        "markdown": "run_report.md",
+    data_health_artifact = dict(getattr(result, "data_health_artifact", {}) or {})
+    if not data_health_artifact:
+        data_health_artifact = {"path": "data_health.json", "status": "present"}
+    reports: dict[str, Any] = {
+        "account": {"path": "account.csv", "status": "present"},
+        "fills": {"path": "fills.csv", "status": "present"},
+        "positions": {"path": "positions.csv", "status": "present"},
+        "raw_nautilus_account": {"path": "raw_nautilus/account.csv", "status": "present"},
+        "raw_nautilus_fills": {"path": "raw_nautilus/fills.csv", "status": "present"},
+        "raw_nautilus_positions": {"path": "raw_nautilus/positions.csv", "status": "present"},
+        "markdown": {"path": "run_report.md", "status": "present"},
+        "data_health": data_health_artifact,
     }
+    if data_health_artifact.get("status") == "omitted_from_git":
+        reports["omitted_artifacts"] = {"path": "OMITTED_ARTIFACTS.json", "status": "present"}
 
     _write_run_report_markdown(
         run_dir=run_dir,
@@ -265,6 +271,7 @@ def _write_run_report_markdown(
     health_gate = getattr(result, "health_gate", {}) or {}
     engine_config = getattr(result, "engine_config", {}) or {}
     ts_init_audit = replay.get("ts_init_audit", {}) or {}
+    data_health_artifact = dict(getattr(result, "data_health_artifact", {}) or {})
     lines = [
         "# Polymarket backtest run report",
         "",
@@ -371,7 +378,12 @@ def _write_run_report_markdown(
         "## Report files",
         "",
         "- `summary.json`",
-        "- `data_health.json`",
+        (
+            "- `data_health.json` — omitted from Git (large regenerable diagnostics); "
+            "integrity metadata in `OMITTED_ARTIFACTS.json`"
+            if data_health_artifact.get("status") == "omitted_from_git"
+            else "- `data_health.json`"
+        ),
         "- `fills.csv`",
         "- `positions.csv`",
         "- `account.csv`",

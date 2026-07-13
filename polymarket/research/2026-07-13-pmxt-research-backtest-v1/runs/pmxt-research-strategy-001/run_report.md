@@ -114,7 +114,7 @@
 ## Report files
 
 - `summary.json`
-- `data_health.json`
+- `data_health.json` — omitted from Git (large regenerable diagnostics); integrity metadata in `OMITTED_ARTIFACTS.json`
 - `fills.csv`
 - `positions.csv`
 - `account.csv`

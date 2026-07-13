@@ -871,7 +871,7 @@ def test_ts_init_audit_counts_tick_size_change_and_instrument_close_serializatio
                     asset_id="yes",
                     side="BUY",
                     price=Decimal("0.411"),
-                    size=Decimal("50"),
+                    size=Decimal(50),
                 ),
             ),
             **shared_step_kwargs,

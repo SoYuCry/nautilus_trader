@@ -3,7 +3,7 @@
     {
       "path": "data_health.json",
       "committed": false,
-      "reason": "full per-issue diagnostics for 334,501 steps (~84MB); regenerate by re-running experiment_with_strategy.yml",
+      "reason": "full per-issue diagnostics exceed the git-commit size threshold (5000000 bytes); regenerate by re-running the experiment config",
       "size_bytes": 84103802,
       "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b"
     }

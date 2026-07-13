@@ -194,6 +194,9 @@ def test_write_backtest_reports_writes_curated_csv_and_raw_nautilus_audit(tmp_pa
     assert "raw_nautilus/fills.csv" in report
 
     summary = json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
-    assert summary["reports"]["fills"] == "fills.csv"
-    assert summary["reports"]["raw_nautilus_fills"] == "raw_nautilus/fills.csv"
+    assert summary["reports"]["fills"] == {"path": "fills.csv", "status": "present"}
+    assert summary["reports"]["raw_nautilus_fills"] == {"path": "raw_nautilus/fills.csv", "status": "present"}
+    # Without an omission manifest the health artifact reads as present.
+    assert summary["reports"]["data_health"]["status"] == "present"
+    assert "omitted_artifacts" not in summary["reports"]
     assert summary["instrument"]["alias"] == "Yes"

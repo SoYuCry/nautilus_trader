@@ -429,7 +429,14 @@
         }
       }
     ],
-    "full_detail": "data_health.json"
+    "full_detail": "data_health.json",
+    "artifact": {
+      "path": "data_health.json",
+      "size_bytes": 84103802,
+      "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b",
+      "status": "omitted_from_git",
+      "manifest": "OMITTED_ARTIFACTS.json"
+    }
   },
   "instrument": {
     "alias": "Yes",
@@ -462,12 +469,44 @@
     }
   },
   "reports": {
-    "account": "account.csv",
-    "fills": "fills.csv",
-    "positions": "positions.csv",
-    "raw_nautilus_account": "raw_nautilus/account.csv",
-    "raw_nautilus_fills": "raw_nautilus/fills.csv",
-    "raw_nautilus_positions": "raw_nautilus/positions.csv",
-    "markdown": "run_report.md"
+    "account": {
+      "path": "account.csv",
+      "status": "present"
+    },
+    "fills": {
+      "path": "fills.csv",
+      "status": "present"
+    },
+    "positions": {
+      "path": "positions.csv",
+      "status": "present"
+    },
+    "raw_nautilus_account": {
+      "path": "raw_nautilus/account.csv",
+      "status": "present"
+    },
+    "raw_nautilus_fills": {
+      "path": "raw_nautilus/fills.csv",
+      "status": "present"
+    },
+    "raw_nautilus_positions": {
+      "path": "raw_nautilus/positions.csv",
+      "status": "present"
+    },
+    "markdown": {
+      "path": "run_report.md",
+      "status": "present"
+    },
+    "data_health": {
+      "path": "data_health.json",
+      "size_bytes": 84103802,
+      "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b",
+      "status": "omitted_from_git",
+      "manifest": "OMITTED_ARTIFACTS.json"
+    },
+    "omitted_artifacts": {
+      "path": "OMITTED_ARTIFACTS.json",
+      "status": "present"
+    }
   }
 }

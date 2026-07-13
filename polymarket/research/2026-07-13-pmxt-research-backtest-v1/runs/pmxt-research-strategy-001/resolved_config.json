@@ -517,11 +517,18 @@
         }
       }
     ],
-    "full_detail": "data_health.json"
+    "full_detail": "data_health.json",
+    "artifact": {
+      "path": "data_health.json",
+      "size_bytes": 84103802,
+      "sha256": "953001a5db29623feb4bdda4b1798531701c4d234043d1ccc54f56507ca3b05b",
+      "status": "omitted_from_git",
+      "manifest": "OMITTED_ARTIFACTS.json"
+    }
   },
   "runtime": {
     "run_id": "pmxt-research-strategy-001",
-    "created_at_utc": "2026-07-13T08:08:26.503588Z",
+    "created_at_utc": "2026-07-13T09:06:21.672777Z",
     "config_path": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/experiment_with_strategy.yml",
     "run_dir": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/runs/pmxt-research-strategy-001"
   }

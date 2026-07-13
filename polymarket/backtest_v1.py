@@ -87,6 +87,7 @@ class NativeBacktestResultV1:
     health_gate: dict[str, Any]
     engine_config: dict[str, Any]
     input_hashes: list[dict[str, Any]]
+    data_health_artifact: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -128,6 +129,14 @@ def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
 
 
+def sha256_path(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def build_input_hashes(dataset: PolymarketL2DatasetV1) -> list[dict[str, Any]]:
     """Return size/sha256 for each adapter source file so runs pin their inputs."""
     rows: list[dict[str, Any]] = []
@@ -136,14 +145,60 @@ def build_input_hashes(dataset: PolymarketL2DatasetV1) -> list[dict[str, Any]]:
         resolved = path if path.is_absolute() else (REPO_ROOT / path).resolve()
         row: dict[str, Any] = {"source_file": str(source_file), "exists": resolved.is_file()}
         if resolved.is_file():
-            digest = hashlib.sha256()
-            with resolved.open("rb") as file:
-                for chunk in iter(lambda: file.read(1024 * 1024), b""):
-                    digest.update(chunk)
             row["size_bytes"] = resolved.stat().st_size
-            row["sha256"] = digest.hexdigest()
+            row["sha256"] = sha256_path(resolved)
         rows.append(row)
     return rows
+
+
+# Artifacts above this size are declared omitted-from-git in the canonical
+# report index; OMITTED_ARTIFACTS.json pins their integrity metadata instead.
+GIT_OMIT_SIZE_BYTES = 5_000_000
+
+
+def describe_data_health_artifact(run_dir: Path) -> dict[str, Any]:
+    """Describe data_health.json for the canonical report index.
+
+    Large runs produce per-issue diagnostics too big to commit; the runner
+    writes OMITTED_ARTIFACTS.json alongside so a reader of summary.json can
+    tell deliberate omission apart from a corrupt or forgotten file.
+    """
+    path = run_dir / "data_health.json"
+    size_bytes = path.stat().st_size
+    sha256 = sha256_path(path)
+    artifact: dict[str, Any] = {
+        "path": "data_health.json",
+        "size_bytes": size_bytes,
+        "sha256": sha256,
+    }
+    if size_bytes <= GIT_OMIT_SIZE_BYTES:
+        artifact["status"] = "present"
+        return artifact
+    artifact["status"] = "omitted_from_git"
+    artifact["manifest"] = "OMITTED_ARTIFACTS.json"
+    (run_dir / "OMITTED_ARTIFACTS.json").write_text(
+        json.dumps(
+            {
+                "omitted": [
+                    {
+                        "path": "data_health.json",
+                        "committed": False,
+                        "reason": (
+                            "full per-issue diagnostics exceed the git-commit size "
+                            f"threshold ({GIT_OMIT_SIZE_BYTES} bytes); regenerate by "
+                            "re-running the experiment config"
+                        ),
+                        "size_bytes": size_bytes,
+                        "sha256": sha256,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return artifact
 
 
 def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> str:
@@ -361,6 +416,7 @@ def run_from_config(config_path: Path, *, event_dir_override: Path | None = None
         delay_warning_ms=float(health_config.get("delay_warning_ms", 1_000.0)),
     )
     (run_dir / "data_health.json").write_text(data_health_report.to_json() + "\n", encoding="utf-8")
+    data_health_artifact = describe_data_health_artifact(run_dir)
     blocking_issues = blocking_health_issues(data_health_report, mode=replay_mode)
     if blocking_issues:
         blocking_codes = sorted({issue.code for issue in blocking_issues})
@@ -446,6 +502,7 @@ def run_from_config(config_path: Path, *, event_dir_override: Path | None = None
         "issue_sample_limit": 20,
         "issue_sample": full_health["issues"][:20],
         "full_detail": "data_health.json",
+        "artifact": data_health_artifact,
     }
 
     selected_asset_id = (config.get("selection") or {}).get("asset_id")
@@ -518,6 +575,7 @@ def run_from_config(config_path: Path, *, event_dir_override: Path | None = None
             health_gate=health_gate,
             engine_config=engine_config_resolved,
             input_hashes=input_hashes,
+            data_health_artifact=data_health_artifact,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
