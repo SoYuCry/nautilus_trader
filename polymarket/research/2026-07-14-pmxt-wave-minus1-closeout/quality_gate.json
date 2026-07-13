@@ -66,7 +66,7 @@
     "invariants": [
       {
         "invariant": "I1 精确 inventory：441 events、49 cities、9 dates、4,851 markets、9,702 tokens、747,185,591 rows_written_total、278 event-local missing-hour intersections。",
-        "source": "G001 inventory_summary.json 与 closeout.inventory。",
+        "source": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/inventory_summary.json",
         "status": "proved",
         "implementationEvidence": "closeout.inventory 记录 event_count=441、city_count=49、date_count=9、market_count=4851、token_count=9702、rows_written_total=747185591、event_local_missing_hour_intersections=278。",
         "testEvidence": "artifact audit 复核 inventory 字段与 source static hashes；full pytest 125 passed, 6 skipped in 28.15s。",
@@ -74,7 +74,7 @@
       },
       {
         "invariant": "I2 half-open hard break 与 staleness distinct：manifest missing/corrupt 只有与 [event_start,event_end) 相交时才是 hard break；自然 staleness 不自动升级为 hard break。",
-        "source": "G001/G003 quality boundaries 与 closeout.quality_boundaries。",
+        "source": ".omx/plans/pmxt-weather-441-factor-strategy-test-spec.md",
         "status": "proved",
         "implementationEvidence": "hard_break_rule 明确半开区间 [event_start,event_end)；natural_staleness_policy 明确缺少 missing/corrupt 外部证据时，update gaps 只按自然陈旧处理，不自动变成 hard break。",
         "testEvidence": "representative materialization events 记录 natural_staleness_status distinct_from_hard_break；cache/manifest corrupt/missing 场景只证明损坏检测和恢复边界，不把普通 staleness 升级成 hard break。",
@@ -82,7 +82,7 @@
       },
       {
         "invariant": "I3 current panel non-confirmatory 且 future sealed cohort 边界清楚：当前面板不具备确认性，未来 sealed cohort 未纳入本 closeout。",
-        "source": "closeout current_panel_confirmation_status、gates.confirmation_gate 与 deferred_items。",
+        "source": ".omx/plans/pmxt-weather-441-factor-strategy-ralplan-draft.md",
         "status": "proved",
         "implementationEvidence": "current_panel_confirmation_status=not_confirmatory；confirmation_gate.status=closed；current_confirmatory_dates=[]；deferred_items 保留未来确认性 cohort。",
         "testEvidence": "gate audit 验证 confirmation_gate closed、performance_claims_allowed=false、not_for_pnl=true。",
@@ -90,7 +90,7 @@
       },
       {
         "invariant": "I4 O1/O2/O3 加 real compiled callbacks：O1 为 selected-token deterministic replay order，O2 为诊断/材料化边界，O3 有 compiled engine callback 证据。",
-        "source": "G002 summary/real_curated_smoke_parity 与 closeout.ordering。",
+        "source": "polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/summary.json",
         "status": "proved",
         "implementationEvidence": "O1 key 为 timestamp/timestamp_received/physical_original_row_ordinal；O2 boundary 明确仅用于诊断/定位；O3 g002_compiled_engine_callback_evidence=true。",
         "testEvidence": "clean temp + installed compiled Nautilus 使用 site-packages runtime；test_pmxt_wave_minus1_ordering_parity.py 与 test_pmxt_event_adapter.py 两个 test files 共 22 passed in 2.56s。",
@@ -98,7 +98,7 @@
       },
       {
         "invariant": "I5 no generic Nautilus core pollution：Wave -1 改动未污染 generic Nautilus core。",
-        "source": "git diff scope、g007_closeout.static_checks 与 code-reviewer review。",
+        "source": ".omx/ultragoal/brief.md",
         "status": "proved",
         "implementationEvidence": "g007_closeout.static_checks.generic_core_changes=false；closeout 范围保持在研究收尾文档、JSON 与相关 polymarket 证据。",
         "testEvidence": "full pytest 125 passed, 6 skipped；changed Python ruff 与 py_compile passed；git diff --check passed。",
@@ -106,7 +106,7 @@
       },
       {
         "invariant": "I6 outcome-blind perturb/remove invariance：允许面上的 outcome-blind perturb/remove 等价性已证明。",
-        "source": "G003 outcome_blind_invariance.json 与 G004 outcome_blind_invariance_g004.json。",
+        "source": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/outcome_blind_invariance.json",
         "status": "proved",
         "implementationEvidence": "benchmark.outcome_blind_invariance_g004.equivalent=true；raw_hash_unique_count=3；prohibited_inputs 包含 outcome、settlement、factor、strategy、fills、fees、positions、cash、PnL。",
         "testEvidence": "artifact audit 复核 outcome_blind_invariance_g004 static hash 与 equivalent=true；full pytest 通过。",
@@ -114,7 +114,7 @@
       },
       {
         "invariant": "I7 frozen outcome-blind representatives 与 honest deferrals：代表事件冻结且 outcome-blind；ambiguity scan、Jun4 full、747M 分布保持延后。",
-        "source": "G003 representative_sample.json、G004 representative_sample_g004.json 与 closeout.deferred_items。",
+        "source": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/representative_sample_g004.json",
         "status": "proved",
         "implementationEvidence": "benchmark representative_event_count=3；all_independent_parity_pass=true；deferred_items 保留 ambiguity-heavy scan、Jun4 49-event benchmark、完整 747M timestamp/label-match 分布。",
         "testEvidence": "canonical benchmark 与 artifact audit 复核代表样本、static hash 与 deferred gates。",
@@ -122,7 +122,7 @@
       },
       {
         "invariant": "I8 honest M1/M2/M3/resource/hash measured/MiB/deferred：M1/M2/M3 仅记录系统基准，elapsed/RSS/logical I/O/hash pass 与 MiB 单位保持一致，选择仍为 deferred。",
-        "source": "G004 benchmark_report.json、m1_m2_m3_results.json、materialization_decision.json 与 closeout.benchmark。",
+        "source": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/benchmark_report.json",
         "status": "proved",
         "implementationEvidence": "benchmark 记录 cold/warm elapsed、RSS、logical read/write、artifact_mib、source_hash_pass_count；materialization_decision.status=deferred；performance_claims_allowed=false；not_for_pnl=true。",
         "testEvidence": "artifact audit 验证 canonical/MiB/static hash；未出现 *_mb；full pytest 125 passed, 6 skipped in 28.15s。",
@@ -130,7 +130,7 @@
       },
       {
         "invariant": "I9 source-byte SHA cache、replay contract、positional ordinal 与 deterministic/resumable/failure-isolated disposable cache：cache identity 使用 source byte SHA-256，O1 replay contract 保留 positional ordinal，resume 行为确定且失败隔离。",
-        "source": "commits 982453068c/32882f23ad/463748282c、G004 cache_resume_tests.json 与 closeout.g007_closeout。",
+        "source": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/cache_resume_tests.json",
         "status": "proved",
         "implementationEvidence": "cache_identity fact 说明 M2/M3 使用实际 source byte SHA-256；physical_ordinal_recovery fact 说明 predicate pushdown 后的位置化恢复；cache_resume_tests 覆盖 bitflip、truncate、manifest corrupt/missing，且只复用 committed matching payload。",
         "testEvidence": "cache_resume_tests static hash 通过；g007_closeout.static_checks.disposable_cache_tracked=false；clean-temp compiled 和 full pytest 均通过。",
@@ -138,7 +138,7 @@
       },
       {
         "invariant": "I10 claim gates 与 Chinese/machine artifact consistency：claim gates 关闭，JSON 与中文叙述一致，不产生 alpha、PnL、策略或确认性声明。",
-        "source": "report.md、README.md、closeout.json 与 quality_gate.json。",
+        "source": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/closeout.json",
         "status": "proved",
         "implementationEvidence": "gates 中 confirmation、materialization_selection、factor_screening、alpha_pnl_strategy、production_use 均为 closed；report/README/closeout 记录 not_for_pnl=true、performance_claims_allowed=false、current panel non-confirmatory、materialization_decision=deferred。",
         "testEvidence": "4 JSON parse 通过；Han audit 通过；gate audit 通过；git diff --check 通过。",
