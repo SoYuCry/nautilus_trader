@@ -54,6 +54,20 @@ run 必须在 config 显式写 `replay: {allow_ambiguous_ties: true}` 才会运�
 `resolved_config.json`、`summary.json` 和 `run_report.md` 中。数据-only replay
 不需要该开关。
 
+## Claim scope（重要）
+
+该 event 存在 ordering-ambiguous ties 且 tie-order sensitivity replay 尚未实现,
+因此本目录所有 run 的输出强制标记:
+
+- `claim_scope: plumbing_only`
+- `ambiguous_ties_sensitivity_status: not_run`
+- `performance_claims_allowed: false`
+
+即:这些 fills/PnL 只证明"数据能正确穿过 Nautilus BacktestEngine 并形成
+边界完整的产物",**不构成任何因子或策略绩效结论**。
+
+完整环境与命令证据见 `VALIDATION_2026-07-13.md`。
+
 ## 2026-07-13 真实引擎验证（官方 1.229.0 编译 wheel）
 
 本仓库 checkout 无编译产物;验证是把 `polymarket/` 复制到独立工作区、

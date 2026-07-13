@@ -9,8 +9,10 @@ or PnL logic.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import sys
 import uuid
@@ -82,6 +84,8 @@ class NativeBacktestResultV1:
     data_health: dict[str, Any]
     fees: dict[str, Any]
     replay: dict[str, Any]
+    health_gate: dict[str, Any]
+    engine_config: dict[str, Any]
 
 
 def now_run_id() -> str:
@@ -105,12 +109,40 @@ def ensure_child(parent: Path, child: Path) -> Path:
     return child_resolved
 
 
+def expand_config_paths(config: dict[str, Any]) -> dict[str, Any]:
+    """Expand environment variables in adapter input paths (e.g. ${POLYREAPER_EVENT_DIR})."""
+    input_config = (config.get("adapter") or {}).get("input")
+    if isinstance(input_config, dict):
+        for key in ("event_dir", "ndjson_path", "bundle_dir"):
+            if isinstance(input_config.get(key), str):
+                input_config[key] = os.path.expandvars(input_config[key])
+    return config
+
+
 def load_adapter(config: Mapping[str, Any]) -> PolymarketL2DatasetV1:
     adapter_config = config.get("adapter") or {}
     name = str(adapter_config.get("name"))
     if name not in ADAPTERS:
         raise ValueError(f"unknown adapter {name!r}; expected one of {sorted(ADAPTERS)}")
     return ADAPTERS[name](repo_root=REPO_ROOT).load(adapter_config)
+
+
+def build_input_hashes(dataset: PolymarketL2DatasetV1) -> list[dict[str, Any]]:
+    """Return size/sha256 for each adapter source file so runs pin their inputs."""
+    rows: list[dict[str, Any]] = []
+    for source_file in dataset.metadata.source_files:
+        path = Path(str(source_file))
+        resolved = path if path.is_absolute() else (REPO_ROOT / path).resolve()
+        row: dict[str, Any] = {"source_file": str(source_file), "exists": resolved.is_file()}
+        if resolved.is_file():
+            digest = hashlib.sha256()
+            with resolved.open("rb") as file:
+                for chunk in iter(lambda: file.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            row["size_bytes"] = resolved.stat().st_size
+            row["sha256"] = digest.hexdigest()
+        rows.append(row)
+    return rows
 
 
 def reject_pmxt_adapter_for_nautilus_backtest(config: Mapping[str, Any]) -> str:
@@ -306,9 +338,12 @@ def _settlement_to_dict(conversion: Any) -> dict[str, Any]:
     }
 
 
-def run_from_config(config_path: Path) -> dict[str, Any]:
+def run_from_config(config_path: Path, *, event_dir_override: Path | None = None) -> dict[str, Any]:
     config_path = config_path.resolve()
-    config = load_yaml(config_path)
+    config = expand_config_paths(load_yaml(config_path))
+    if event_dir_override is not None:
+        adapter_input = config.setdefault("adapter", {}).setdefault("input", {})
+        adapter_input["event_dir"] = str(event_dir_override)
     replay_mode = reject_pmxt_adapter_for_nautilus_backtest(config)
     run_id = str((config.get("runtime") or {}).get("run_id") or now_run_id())
     output_dir = resolve_output_dir(config_path, config.get("report") or {})
@@ -317,6 +352,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     shutil.copyfile(config_path, run_dir / "original_config.yml")
 
     dataset = load_adapter(config)
+    input_hashes = build_input_hashes(dataset)
     health_config = config.get("data_health") or {}
     data_health_report = analyze_dataset_health(
         dataset,
@@ -365,10 +401,22 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
     for issue in data_health_report.issues:
         issue_counts_by_code[issue.code] = issue_counts_by_code.get(issue.code, 0) + 1
     full_health = data_health_report.to_dict()
+    health_assumptions = list(full_health["assumptions"])
+    if replay_mode == PMXT_RESEARCH_MODE:
+        # The generic checker's receive-time framing does not describe this
+        # mode; state the actual chronology so summary.json is self-consistent.
+        health_assumptions.insert(
+            0,
+            "pmxt_research mode: replay chronology is the PMXT contract clock "
+            "(timestamp, fallback timestamp_received); receive-time inversions are "
+            "diagnostics here, not blockers, and 'ok: false' from the generic "
+            "receive-time check does not mean the mode gate failed.",
+        )
     compact_health = {
         "ok": full_health["ok"],
+        "replay_mode": replay_mode,
         "summary": full_health["summary"],
-        "assumptions": full_health["assumptions"],
+        "assumptions": health_assumptions,
         "issue_count": len(full_health["issues"]),
         "issue_counts_by_code": issue_counts_by_code,
         "issue_sample_limit": 20,
@@ -392,6 +440,19 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
         fail_on_tick_size_change=bool((config.get("replay") or {}).get("fail_on_tick_size_change", False)),
         replay_clock=PMXT_REPLAY_CLOCK if replay_mode == PMXT_RESEARCH_MODE else RECEIVE_TIME_REPLAY_CLOCK,
     )
+    replay_provenance["ts_init_audit"] = dict(conversion.ts_init_audit or {})
+    engine_config_resolved = {
+        "trader_id": str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001")),
+        "book_type": "L2_MBP",
+        "oms_type": "NETTING",
+        "account_type": "CASH",
+        "starting_balance": str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")),
+        "trade_execution": bool((config.get("engine") or {}).get("trade_execution", True)),
+        "liquidity_consumption": bool((config.get("engine") or {}).get("liquidity_consumption", False)),
+        "queue_position": bool((config.get("engine") or {}).get("queue_position", False)),
+        "fee_model_enabled": bool((config.get("fees") or {}).get("enabled", True)),
+        "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
+    }
 
     settlement_prices = (
         {instrument.id: float(conversion.settlement.payout)}
@@ -430,21 +491,12 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             data_health=compact_health,
             fees=fee_report,
             replay=replay_provenance,
+            health_gate=health_gate,
+            engine_config=engine_config_resolved,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",
-            "engine_config": {
-                "trader_id": str((config.get("engine") or {}).get("trader_id", "POLY-BACKTEST-001")),
-                "book_type": "L2_MBP",
-                "oms_type": "NETTING",
-                "account_type": "CASH",
-                "starting_balance": str((config.get("portfolio") or {}).get("starting_balance", "10000 pUSD")),
-                "trade_execution": bool((config.get("engine") or {}).get("trade_execution", True)),
-                "liquidity_consumption": bool((config.get("engine") or {}).get("liquidity_consumption", False)),
-                "queue_position": bool((config.get("engine") or {}).get("queue_position", False)),
-                "fee_model_enabled": bool((config.get("fees") or {}).get("enabled", True)),
-                "maker_rebates_enabled": bool((config.get("fees") or {}).get("maker_rebates_enabled", False)),
-            },
+            "engine_config": engine_config_resolved,
             "replay": replay_provenance,
             "data_health_gate": health_gate,
             "adapter": {
@@ -452,6 +504,7 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
                 "adapter_version": dataset.metadata.adapter_version,
                 "source_type": dataset.metadata.source_type,
                 "source_files_resolved": list(dataset.metadata.source_files),
+                "input_hashes": input_hashes,
                 "assumptions": list(dataset.metadata.assumptions),
                 "warnings": list(dataset.metadata.warnings),
                 "source_quality": dict(dataset.metadata.source_quality),
@@ -531,6 +584,8 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
             "mode_health_gate_passed": health_gate["mode_health_gate_passed"],
             "blocking_codes": health_gate["blocking_codes"],
             "replay_clock_verified": health_gate["replay_clock_verified"],
+            "claim_scope": replay_provenance.get("claim_scope", "unknown"),
+            "input_hashes": input_hashes,
             "fees": report_metadata.fees,
         }
         print(json.dumps(summary, indent=2))
@@ -542,12 +597,18 @@ def run_from_config(config_path: Path) -> dict[str, Any]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument(
+        "--event-dir",
+        type=Path,
+        default=None,
+        help="Override adapter.input.event_dir (external data dependency, e.g. PolyReaper)",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    run_from_config(args.config)
+    run_from_config(args.config, event_dir_override=args.event_dir)
 
 
 if __name__ == "__main__":

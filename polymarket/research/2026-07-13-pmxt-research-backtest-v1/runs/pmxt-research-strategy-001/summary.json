@@ -1,6 +1,9 @@
 {
   "engine": "nautilus_trader.backtest.engine.BacktestEngine",
   "replay": {
+    "claim_scope": "plumbing_only",
+    "ambiguous_ties_sensitivity_status": "not_run",
+    "performance_claims_allowed": false,
     "mode": "pmxt_research",
     "replay_clock": "pmxt_replay_timestamp",
     "ordering_key": "timestamp,timestamp_received,_original_row_index",
@@ -39,9 +42,37 @@
       "replay_clock": "pmxt_replay_timestamp",
       "replay_clock_monotonic": true,
       "sequence_strictly_increasing": true,
+      "tie_breaker_verified": true,
+      "tie_break_checked_pairs": 6237,
+      "source_row_index_available": true,
       "step_count": 334501
     },
-    "ambiguous_ties_accepted": true
+    "ambiguous_ties_accepted": true,
+    "ts_init_audit": {
+      "ts_init_policy": "synthetic_monotonic_source_time",
+      "replay_clock": "pmxt_replay_timestamp",
+      "adjusted_event_count": 6237,
+      "max_synthetic_offset_ns": 4,
+      "note": "Events sharing a replay-clock timestamp are serialized by +1ns increments so Nautilus ts_init stays strictly increasing; the strategy observes these events sequentially even though the source clock cannot distinguish their order."
+    }
+  },
+  "data_health_gate": {
+    "raw_health_ok": false,
+    "mode_health_gate_passed": true,
+    "blocking_codes": [],
+    "replay_clock_verified": true
+  },
+  "engine_config": {
+    "trader_id": "POLY-BACKTEST-001",
+    "book_type": "L2_MBP",
+    "oms_type": "NETTING",
+    "account_type": "CASH",
+    "starting_balance": "10000 pUSD",
+    "trade_execution": true,
+    "liquidity_consumption": false,
+    "queue_position": false,
+    "fee_model_enabled": true,
+    "maker_rebates_enabled": false
   },
   "data_count": 334501,
   "order_book_deltas_count": 333883,
@@ -76,6 +107,7 @@
   },
   "data_health": {
     "ok": false,
+    "replay_mode": "pmxt_research",
     "summary": {
       "step_count": 334501,
       "update_count": 334501,
@@ -93,6 +125,7 @@
       "max_source_delay_ms": 330692.0
     },
     "assumptions": [
+      "pmxt_research mode: replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received); receive-time inversions are diagnostics here, not blockers, and 'ok: false' from the generic receive-time check does not mean the mode gate failed.",
       "Replay chronology is timestamp_received order, not source timestamp order.",
       "Hard failures are receive-time or local-sequence inversions.",
       "Future/source-time issues are surfaced as diagnostics for severity review.",

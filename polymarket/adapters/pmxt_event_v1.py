@@ -119,6 +119,7 @@ class PMXTEventV1Adapter:
                     timestamp_received=row["_timestamp_received_dt"],
                     timestamp=optional_utc_datetime(row.get("timestamp")),
                     updates=(update,),
+                    source_row_index=int(row["_original_row_index"]),
                 ),
             )
 

@@ -88,6 +88,8 @@ def write_backtest_reports(
             {
                 "engine": "nautilus_trader.backtest.engine.BacktestEngine",
                 "replay": getattr(result, "replay", {}),
+                "data_health_gate": getattr(result, "health_gate", {}),
+                "engine_config": getattr(result, "engine_config", {}),
                 "data_count": result.data_count,
                 "order_book_deltas_count": result.order_book_deltas_count,
                 "trade_ticks_count": result.trade_ticks_count,
@@ -147,6 +149,12 @@ def build_fills_view(fills: pd.DataFrame, *, instrument_context: Mapping[str, An
     ]
     if fills.empty:
         return pd.DataFrame(columns=columns)
+
+    # Research view is time-ordered; raw_nautilus/fills.csv keeps the engine's
+    # original row order as the audit baseline.
+    sort_key = "ts_init" if "ts_init" in fills.columns else None
+    if sort_key is not None:
+        fills = fills.sort_values(sort_key, kind="mergesort")
 
     rows: list[dict[str, Any]] = []
     fee_column = _first_existing_column(fills, _FEE_COLUMNS)
@@ -253,12 +261,16 @@ def _write_run_report_markdown(
 ) -> None:
     health_summary = result.data_health.get("summary", {})
     replay = getattr(result, "replay", {}) or {}
+    health_gate = getattr(result, "health_gate", {}) or {}
+    ts_init_audit = replay.get("ts_init_audit", {}) or {}
     lines = [
         "# Polymarket backtest run report",
         "",
         "## Replay trust boundary",
         "",
         f"- Replay mode: `{replay.get('mode', 'unknown')}`",
+        f"- Claim scope: `{replay.get('claim_scope', 'unknown')}`",
+        f"- Performance claims allowed: `{str(replay.get('performance_claims_allowed', False)).lower()}`",
         f"- Replay clock: `{replay.get('replay_clock', 'unknown')}`",
         f"- Ordering key: `{replay.get('ordering_key', 'unknown')}`",
         f"- Tie-breaker: `{replay.get('tie_breaker', 'unknown')}`",
@@ -266,13 +278,29 @@ def _write_run_report_markdown(
         f"- Adapter: `{replay.get('adapter', 'unknown')}`",
         f"- Ordering ambiguous ties: `{str(replay.get('ordering_ambiguous', False)).lower()}`"
         + (
-            f" (explicitly accepted: `{str(replay.get('ambiguous_ties_accepted', False)).lower()}`)"
+            f" (explicitly accepted: `{str(replay.get('ambiguous_ties_accepted', False)).lower()}`, "
+            f"sensitivity: `{replay.get('ambiguous_ties_sensitivity_status', 'unknown')}`)"
             if "ambiguous_ties_accepted" in replay
             else ""
         ),
         f"- Execution claims allowed: `{str(replay.get('execution_claims_allowed', False)).lower()}`",
         f"- Matching-level truth: `{str(replay.get('matching_level_truth', False)).lower()}`",
         f"- Boundary: {replay.get('disclaimer', 'unknown')}",
+        "",
+        "## Data-health gate (mode-aware)",
+        "",
+        f"- Raw health ok (mode-agnostic receive-time check): `{str(health_gate.get('raw_health_ok', 'unknown')).lower()}`",
+        f"- Mode health gate passed: `{str(health_gate.get('mode_health_gate_passed', 'unknown')).lower()}`",
+        f"- Blocking codes: `{health_gate.get('blocking_codes', [])}`",
+        f"- Replay clock verified: `{str(health_gate.get('replay_clock_verified', 'unknown')).lower()}`",
+        "- In pmxt_research mode, raw health can be `false` (receive-time inversions are diagnostics) while the mode gate passed; the mode gate is the authoritative go/no-go.",
+        "",
+        "## Synthetic ts_init audit",
+        "",
+        f"- Policy: `{ts_init_audit.get('ts_init_policy', 'unknown')}`",
+        f"- Events serialized by +1ns adjustment: `{ts_init_audit.get('adjusted_event_count', 'unknown')}`",
+        f"- Max synthetic offset from replay clock (ns): `{ts_init_audit.get('max_synthetic_offset_ns', 'unknown')}`",
+        "- Factor research and this backtest share the adapter step order and source replay clock, but factor labels aggregate tied timestamps while the strategy observes those events one-by-one on synthetic ts_init; the two views are order-consistent, not identical.",
         "",
         "## Result summary",
         "",

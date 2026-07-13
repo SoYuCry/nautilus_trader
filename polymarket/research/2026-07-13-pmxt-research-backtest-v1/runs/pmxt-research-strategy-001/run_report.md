@@ -3,15 +3,32 @@
 ## Replay trust boundary
 
 - Replay mode: `pmxt_research`
+- Claim scope: `plumbing_only`
+- Performance claims allowed: `false`
 - Replay clock: `pmxt_replay_timestamp`
 - Ordering key: `timestamp,timestamp_received,_original_row_index`
 - Tie-breaker: `timestamp_received,_original_row_index (stable mergesort)`
 - Data credibility: `pmxt_research_reconstructed_order_ambiguous_ties`
 - Adapter: `pmxt_event_v1`
-- Ordering ambiguous ties: `true` (explicitly accepted: `true`)
+- Ordering ambiguous ties: `true` (explicitly accepted: `true`, sensitivity: `not_run`)
 - Execution claims allowed: `false`
 - Matching-level truth: `false`
 - Boundary: PMXT research backtest: replay order is the deterministic reconstructed PMXT ordering (timestamp, timestamp_received, original row index), not true exchange/message order and not L3 queue truth. Fills, positions, and PnL are research results computed by Nautilus BacktestEngine on a reconstructed L2 replay; they are not matching-level evidence and must not be read as production execution predictions.
+
+## Data-health gate (mode-aware)
+
+- Raw health ok (mode-agnostic receive-time check): `false`
+- Mode health gate passed: `true`
+- Blocking codes: `[]`
+- Replay clock verified: `true`
+- In pmxt_research mode, raw health can be `false` (receive-time inversions are diagnostics) while the mode gate passed; the mode gate is the authoritative go/no-go.
+
+## Synthetic ts_init audit
+
+- Policy: `synthetic_monotonic_source_time`
+- Events serialized by +1ns adjustment: `6237`
+- Max synthetic offset from replay clock (ns): `4`
+- Factor research and this backtest share the adapter step order and source replay clock, but factor labels aggregate tied timestamps while the strategy observes those events one-by-one on synthetic ts_init; the two views are order-consistent, not identical.
 
 ## Result summary
 
@@ -67,8 +84,8 @@
 
 | ts_event | strategy | instrument | side | order_type | quantity | avg_px | fee | fee_pusd | gross_cashflow_pusd | net_cashflow_pusd | liquidity_side | status | replay_mode | data_credibility |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-06-09 16:42:19+00:00 | TakeBestAskOnce | Yes | SELL | MARKET | 1 | 1 | 0 pUSD | 0 | 1 | 1 | TAKER | FILLED | pmxt_research | pmxt_research_reconstructed_order_ambiguous_ties |
 | 2026-06-07 04:35:40.259000+00:00 | TakeBestAskOnce | Yes | BUY | MARKET | 1 | 0.81 | 0.00769 pUSD | 0.00769 | -0.81 | -0.81769 | TAKER | FILLED | pmxt_research | pmxt_research_reconstructed_order_ambiguous_ties |
+| 2026-06-09 16:42:19+00:00 | TakeBestAskOnce | Yes | SELL | MARKET | 1 | 1 | 0 pUSD | 0 | 1 | 1 | TAKER | FILLED | pmxt_research | pmxt_research_reconstructed_order_ambiguous_ties |
 
 ## Positions summary
 

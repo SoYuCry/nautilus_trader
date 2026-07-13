@@ -3,6 +3,7 @@ experiment:
 adapter:
   name: pmxt_event_v1
   input:
+    # External data dependency; see experiment.yml for env-var / --event-dir overrides.
     event_dir: C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026
     condition_id: "0x715ee73ffee65801adb9f51098cf61a14fb4262ae2b20eeb1d68528bdde59c41"
     asset_id: "93683348120137447419301462197228170067558545967622008841151707439369216600718"

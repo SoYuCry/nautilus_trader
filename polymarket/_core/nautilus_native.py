@@ -101,6 +101,7 @@ class NautilusConversionResultV1:
     settlement_mode: SettlementModeV1
     settlement_reason: str
     settlement_evidence: tuple[tuple[str, str], ...]
+    ts_init_audit: dict[str, Any] = None  # type: ignore[assignment]
 
 
 def datetime_to_nanos(value: datetime) -> int:
@@ -308,11 +309,17 @@ def convert_dataset_to_nautilus(
     terminal_ask_levels: dict[Decimal, Decimal] = {}
     terminal_last_trade: Decimal | None = None
 
+    ts_init_adjusted_count = 0
+    max_ts_init_offset_ns = 0
+
     def next_ts_init(step: L2ReplayStepV1) -> int:
-        nonlocal last_ts_init
-        ts_init = step_event_ns(step)
+        nonlocal last_ts_init, ts_init_adjusted_count, max_ts_init_offset_ns
+        clock_ns = step_event_ns(step)
+        ts_init = clock_ns
         if last_ts_init is not None and ts_init <= last_ts_init:
             ts_init = last_ts_init + 1
+            ts_init_adjusted_count += 1
+            max_ts_init_offset_ns = max(max_ts_init_offset_ns, ts_init - clock_ns)
         last_ts_init = ts_init
         return ts_init
 
@@ -455,6 +462,22 @@ def convert_dataset_to_nautilus(
         settlement_mode=settlement_mode,
         settlement_reason=settlement_reason,
         settlement_evidence=settlement_evidence,
+        ts_init_audit={
+            "ts_init_policy": (
+                "synthetic_monotonic_source_time"
+                if replay_clock == PMXT_REPLAY_CLOCK
+                else "synthetic_monotonic_receive_time"
+            ),
+            "replay_clock": replay_clock,
+            "adjusted_event_count": ts_init_adjusted_count,
+            "max_synthetic_offset_ns": max_ts_init_offset_ns,
+            "note": (
+                "Events sharing a replay-clock timestamp are serialized by +1ns "
+                "increments so Nautilus ts_init stays strictly increasing; the "
+                "strategy observes these events sequentially even though the "
+                "source clock cannot distinguish their order."
+            ),
+        },
     )
 
 

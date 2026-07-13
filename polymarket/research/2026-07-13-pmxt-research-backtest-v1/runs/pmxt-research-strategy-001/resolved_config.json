@@ -13,6 +13,9 @@
     "maker_rebates_enabled": false
   },
   "replay": {
+    "claim_scope": "plumbing_only",
+    "ambiguous_ties_sensitivity_status": "not_run",
+    "performance_claims_allowed": false,
     "mode": "pmxt_research",
     "replay_clock": "pmxt_replay_timestamp",
     "ordering_key": "timestamp,timestamp_received,_original_row_index",
@@ -51,9 +54,19 @@
       "replay_clock": "pmxt_replay_timestamp",
       "replay_clock_monotonic": true,
       "sequence_strictly_increasing": true,
+      "tie_breaker_verified": true,
+      "tie_break_checked_pairs": 6237,
+      "source_row_index_available": true,
       "step_count": 334501
     },
-    "ambiguous_ties_accepted": true
+    "ambiguous_ties_accepted": true,
+    "ts_init_audit": {
+      "ts_init_policy": "synthetic_monotonic_source_time",
+      "replay_clock": "pmxt_replay_timestamp",
+      "adjusted_event_count": 6237,
+      "max_synthetic_offset_ns": 4,
+      "note": "Events sharing a replay-clock timestamp are serialized by +1ns increments so Nautilus ts_init stays strictly increasing; the strategy observes these events sequentially even though the source clock cannot distinguish their order."
+    }
   },
   "data_health_gate": {
     "raw_health_ok": false,
@@ -70,6 +83,32 @@
       "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/event_index.json",
       "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/gamma_event.raw.json",
       "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/manifest.json"
+    ],
+    "input_hashes": [
+      {
+        "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/orderbook.parquet",
+        "exists": true,
+        "size_bytes": 29163845,
+        "sha256": "a07ff5185b0cb2ac9e08ed3814cfbd04bbfb31d7ac6bfcd5c801696cddefffa7"
+      },
+      {
+        "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/event_index.json",
+        "exists": true,
+        "size_bytes": 10079,
+        "sha256": "ee69ee8122ea9a8df8dab40a2e687d38bbe690280b2b691e5c4f61cd2d9288f4"
+      },
+      {
+        "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/gamma_event.raw.json",
+        "exists": true,
+        "size_bytes": 57210,
+        "sha256": "39a7c7e32ffd9f8e5050e252aa37723b96919c1916e612a6da1cb0bb9c5bf954"
+      },
+      {
+        "source_file": "C:/Projects/PolyReaper/data/curated/polymarket/events/highest-temperature-in-shanghai-on-june-9-2026/manifest.json",
+        "exists": true,
+        "size_bytes": 23248,
+        "sha256": "e32cecf90ac919b5793658f33d87aba0e90f5f2413071be44dbd8dd24b6dc670"
+      }
     ],
     "assumptions": [
       "PMXT orderbook.parquet rows are pre-contract WebSocket-derived observations normalized by adapter only.",
@@ -182,6 +221,7 @@
   },
   "data_health": {
     "ok": false,
+    "replay_mode": "pmxt_research",
     "summary": {
       "step_count": 334501,
       "update_count": 334501,
@@ -199,6 +239,7 @@
       "max_source_delay_ms": 330692.0
     },
     "assumptions": [
+      "pmxt_research mode: replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received); receive-time inversions are diagnostics here, not blockers, and 'ok: false' from the generic receive-time check does not mean the mode gate failed.",
       "Replay chronology is timestamp_received order, not source timestamp order.",
       "Hard failures are receive-time or local-sequence inversions.",
       "Future/source-time issues are surfaced as diagnostics for severity review.",
@@ -477,7 +518,7 @@
   },
   "runtime": {
     "run_id": "pmxt-research-strategy-001",
-    "created_at_utc": "2026-07-13T04:04:27.305865Z",
+    "created_at_utc": "2026-07-13T06:55:30.916013Z",
     "config_path": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/experiment_with_strategy.yml",
     "run_dir": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/runs/pmxt-research-strategy-001"
   }

@@ -51,7 +51,7 @@ def _iso(seconds: int) -> str:
     return _dt(seconds).isoformat().replace("+00:00", "Z")
 
 
-def _step(sequence: int, *, received: int, source: int | None) -> L2ReplayStepV1:
+def _step(sequence: int, *, received: int, source: int | None, row_index: int | None = None) -> L2ReplayStepV1:
     return L2ReplayStepV1(
         sequence=sequence,
         timestamp_received=_dt(received),
@@ -59,6 +59,7 @@ def _step(sequence: int, *, received: int, source: int | None) -> L2ReplayStepV1
         updates=(
             L2UpdateV1(event_type="price_change", market=CONDITION_ID, asset_id=YES_TOKEN, side="BUY"),
         ),
+        source_row_index=row_index,
     )
 
 
@@ -202,7 +203,7 @@ def test_verify_pmxt_replay_clock_order_accepts_contract_sorted_steps() -> None:
         steps=(
             _step(1, received=9, source=1),
             _step(2, received=3, source=2),  # receive-time inversion is fine
-            _step(3, received=2, source=None),  # falls back to receive time 2... still >= 2
+            _step(3, received=4, source=None),  # falls back to receive time 4 >= clock 2
         ),
     )
 
@@ -211,6 +212,56 @@ def test_verify_pmxt_replay_clock_order_accepts_contract_sorted_steps() -> None:
     assert check["replay_clock"] == PMXT_REPLAY_CLOCK
     assert check["replay_clock_monotonic"] is True
     assert check["step_count"] == 3
+
+
+def test_verify_pmxt_replay_clock_order_verifies_full_triple_tie_breaker() -> None:
+    # Tied replay clock: receive time must not move backwards.
+    receive_backwards = SimpleNamespace(
+        steps=(_step(1, received=5, source=4, row_index=0), _step(2, received=3, source=4, row_index=1)),
+    )
+    with pytest.raises(ValueError, match="timestamp_received moved backwards"):
+        verify_pmxt_replay_clock_order(receive_backwards)
+
+    # Fully tied group: original row index must strictly increase.
+    row_index_backwards = SimpleNamespace(
+        steps=(_step(1, received=3, source=4, row_index=7), _step(2, received=3, source=4, row_index=2)),
+    )
+    with pytest.raises(ValueError, match="source_row_index must be strictly increasing"):
+        verify_pmxt_replay_clock_order(row_index_backwards)
+
+    valid = SimpleNamespace(
+        steps=(
+            _step(1, received=3, source=4, row_index=2),
+            _step(2, received=3, source=4, row_index=7),
+            _step(3, received=9, source=4, row_index=1),
+        ),
+    )
+    check = verify_pmxt_replay_clock_order(valid)
+    assert check["tie_breaker_verified"] is True
+    assert check["tie_break_checked_pairs"] == 2
+    assert check["source_row_index_available"] is True
+
+
+def test_replay_provenance_claim_scope_downgrades_to_plumbing_only_on_ambiguity() -> None:
+    ambiguous = SimpleNamespace(
+        adapter_name="pmxt_event_v1",
+        source_files=(),
+        source_quality={"orderingStatus": "ambiguous", "orderingAmbiguousRows": 4},
+    )
+    clean = SimpleNamespace(
+        adapter_name="pmxt_event_v1",
+        source_files=(),
+        source_quality={"orderingStatus": "timestamp_ordered", "orderingAmbiguousRows": 0},
+    )
+
+    ambiguous_provenance = build_replay_provenance(mode=PMXT_RESEARCH_MODE, dataset_metadata=ambiguous)
+    clean_provenance = build_replay_provenance(mode=PMXT_RESEARCH_MODE, dataset_metadata=clean)
+
+    assert ambiguous_provenance["claim_scope"] == "plumbing_only"
+    assert ambiguous_provenance["ambiguous_ties_sensitivity_status"] == "not_run"
+    assert ambiguous_provenance["performance_claims_allowed"] is False
+    assert clean_provenance["claim_scope"] == "research_replay"
+    assert clean_provenance["performance_claims_allowed"] is False
 
 
 def test_verify_pmxt_replay_clock_order_rejects_backwards_clock_and_bad_sequence() -> None:

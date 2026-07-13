@@ -1086,7 +1086,17 @@ def test_runner_runs_pmxt_research_mode_with_marked_outputs(tmp_path: Path) -> N
     assert resolved["replay"]["execution_claims_allowed"] is False
     assert resolved["replay"]["replay_clock_check"]["replay_clock_monotonic"] is True
     assert run_summary["replay"]["mode"] == "pmxt_research"
+    # Persisted summary must be mode-aware and self-consistent on its own.
+    assert run_summary["data_health_gate"]["raw_health_ok"] is False
+    assert run_summary["data_health_gate"]["mode_health_gate_passed"] is True
+    assert run_summary["data_health_gate"]["blocking_codes"] == []
+    assert run_summary["data_health_gate"]["replay_clock_verified"] is True
+    assert run_summary["engine_config"]["trade_execution"] is True
+    assert "pmxt_research mode" in " ".join(run_summary["data_health"]["assumptions"])
+    assert run_summary["replay"]["ts_init_audit"]["ts_init_policy"] == "synthetic_monotonic_source_time"
     assert "## Replay trust boundary" in run_report
+    assert "## Data-health gate (mode-aware)" in run_report
+    assert "## Synthetic ts_init audit" in run_report
     assert "Replay mode: `pmxt_research`" in run_report
     assert "not" in run_summary["replay"]["disclaimer"]
     # The engine still replayed the data and settled the resolved token.

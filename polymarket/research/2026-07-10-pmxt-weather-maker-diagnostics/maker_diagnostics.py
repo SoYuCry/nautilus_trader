@@ -471,7 +471,9 @@ def simulate_fills(
     results: list[FillResult] = []
     window_ns = int(fill_window_seconds * 1_000_000_000)
     for probe in probes.itertuples(index=False):
-        probe_time = getattr(probe, "replay_timestamp", probe.timestamp_received)
+        # Contract clock only: probes without replay_timestamp are a hard error,
+        # never a silent receive-time fallback.
+        probe_time = probe.replay_timestamp
         start_ns = int(probe_time.value)
         end_ns = start_ns + window_ns
         threshold = max(0.0, float(probe.displayed_top_size) * queue_fraction) + order_size
@@ -548,7 +550,7 @@ def compute_markout_metrics(
     for probe, fill in zip(probes.itertuples(index=False), fills, strict=True):
         record = {
             "timestamp_received": probe.timestamp_received,
-            "replay_timestamp": getattr(probe, "replay_timestamp", probe.timestamp_received),
+            "replay_timestamp": probe.replay_timestamp,
             "time_to_close_bucket": probe.time_to_close_bucket,
             "factor_quantile": int(probe.factor_quantile),
             "factor_value": float(probe.depth_imbalance_1),
@@ -793,6 +795,9 @@ def source_quality_fields(source_quality: dict[str, Any]) -> dict[str, Any]:
         "source_quality_missing_source_timestamp_rows": int(source_quality.get("missingSourceTimestampRows", 0) or 0),
         "source_quality_stable_sort_key": source_quality.get("stableSortKey", ""),
         "ordering_ambiguous": str(source_quality.get("orderingStatus", "unknown")) == "ambiguous" or ordering_ambiguous_rows > 0,
+        "replay_clock_column": "replay_timestamp",
+        "legacy_receive_time_allowed": False,
+        "legacy_receive_time_used": False,
     }
 
 
