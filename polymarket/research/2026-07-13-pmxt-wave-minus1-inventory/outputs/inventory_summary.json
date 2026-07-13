@@ -1,0 +1,72 @@
+{
+  "allow_partial": false,
+  "checks": {
+    "cities_exact_49": true,
+    "dates_exact_9": true,
+    "event_local_missing_events_exact_278": true,
+    "events_exact_441": true,
+    "markets_exact_4851": true,
+    "no_current_confirmatory_dates": true,
+    "no_duplicate_date_city_events": true,
+    "no_event_failures": true,
+    "one_contract_version": true,
+    "one_schema_fingerprint": true,
+    "tokens_exact_9702": true
+  },
+  "city_count": 49,
+  "cohort_counts": {
+    "degraded_robustness": 196,
+    "primary_development_replication": 245
+  },
+  "confirmation_gate": "future_unseen_cohort_required",
+  "contract_versions": [
+    "highest-temperature-event-batch-v2"
+  ],
+  "current_panel_confirmation_status": "not_confirmatory",
+  "date_count": 9,
+  "dates": [
+    "2026-06-04",
+    "2026-06-05",
+    "2026-06-06",
+    "2026-06-07",
+    "2026-06-08",
+    "2026-06-09",
+    "2026-06-10",
+    "2026-06-11",
+    "2026-06-12"
+  ],
+  "duplicate_date_city_events": [],
+  "event_count": 441,
+  "event_local_corrupt_events": 49,
+  "event_local_missing_events": 278,
+  "event_type_counts_total": {
+    "book": 1675179,
+    "last_trade_price": 495681,
+    "price_change": 745011843,
+    "tick_size_change": 2888
+  },
+  "failures": [],
+  "generated_at": "2026-07-13T15:30:23.732547Z",
+  "market_count": 4851,
+  "performance_claims_allowed": false,
+  "program": "pmxt-wave-minus1-inventory",
+  "program_version": "2026-07-13.v1",
+  "prohibited_wave_minus1_inputs": [
+    "outcome",
+    "settlement",
+    "factor_result",
+    "strategy_result",
+    "fill",
+    "fee",
+    "position",
+    "cash",
+    "pnl"
+  ],
+  "root": "C:\\Projects\\PolyReaper\\data\\curated\\polymarket\\events",
+  "rows_written_total": 747185591,
+  "schema_fingerprints": [
+    "877949c816469b388bad6781f7fc64aa8f27462ebf41ffdce64491525fa20ccc"
+  ],
+  "status": "pass",
+  "token_count": 9702
+}

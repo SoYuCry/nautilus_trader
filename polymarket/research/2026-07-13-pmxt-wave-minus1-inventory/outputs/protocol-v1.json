@@ -1,0 +1,51 @@
+{
+  "cohorts": {
+    "current_confirmatory_dates": [],
+    "degraded_robustness": [
+      "2026-06-06",
+      "2026-06-07",
+      "2026-06-11",
+      "2026-06-12"
+    ],
+    "future_confirmation_requirement": "future_unseen_cohort_required",
+    "primary_development_replication": [
+      "2026-06-04",
+      "2026-06-05",
+      "2026-06-08",
+      "2026-06-09",
+      "2026-06-10"
+    ]
+  },
+  "factor_promotion_rules": [],
+  "future_cohort_sizing": null,
+  "generated_at": "2026-07-13T15:30:21.450414Z",
+  "hard_breaks": {
+    "known_corrupt_hours": [
+      "2026-06-04T14"
+    ],
+    "manifest_missing_hours": "hard_break_only_when_intersecting_event_window",
+    "nonintersecting_hours": "provenance_only_no_reset_no_exclusion_no_censor",
+    "window_semantics": "half_open_[event_start,event_end)"
+  },
+  "inventory_checks": {
+    "cities_exact_49": true,
+    "dates_exact_9": true,
+    "event_local_missing_events_exact_278": true,
+    "events_exact_441": true,
+    "markets_exact_4851": true,
+    "no_current_confirmatory_dates": true,
+    "no_duplicate_date_city_events": true,
+    "no_event_failures": true,
+    "one_contract_version": true,
+    "one_schema_fingerprint": true,
+    "tokens_exact_9702": true
+  },
+  "natural_staleness": {
+    "continuity": "not_an_automatic_hard_break",
+    "definition": "no update gap without external missing/corrupt evidence"
+  },
+  "performance_claims_allowed": false,
+  "program": "pmxt-wave-minus1-inventory",
+  "program_version": "2026-07-13.v1",
+  "protocol_version": "wave-minus1-inventory-v1"
+}

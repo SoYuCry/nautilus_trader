@@ -1,0 +1,32 @@
+{
+  "current_panel_confirmation_status": "not_confirmatory",
+  "event_local_missing_events": 278,
+  "expected_event_local_missing_events": 278,
+  "hard_break_rule": "Only externally evidenced corrupt/missing source-hour intervals intersecting the half-open event window create hard-break provenance.",
+  "natural_staleness_rule": "Observed inactivity without intersecting external missing/corrupt evidence is natural staleness, not an automatic continuity break.",
+  "outcome_blind_inputs": [
+    "manifest contract/schema",
+    "file presence/identity/hashes",
+    "row counts",
+    "event_type counts",
+    "event start/end timestamps",
+    "manifest missingHours",
+    "known corrupt/bad source hours",
+    "date/city/market/token identifiers"
+  ],
+  "performance_claims_allowed": false,
+  "program": "pmxt-wave-minus1-inventory",
+  "program_version": "2026-07-13.v1",
+  "prohibited_inputs": [
+    "outcome",
+    "settlement",
+    "factor_result",
+    "strategy_result",
+    "fill",
+    "fee",
+    "position",
+    "cash",
+    "pnl"
+  ],
+  "status": "inventory_only_ready"
+}

@@ -1,0 +1,32 @@
+program: pmxt-wave-minus1-inventory
+program_version: 2026-07-13.v1
+default_root: C:/Projects/PolyReaper/data/curated/polymarket/events
+output_dir: polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs
+scope:
+  research_only: true
+  factors: false
+  benchmarks: false
+  strategy_or_pnl: false
+  generic_nautilus_engine_changes: false
+expected_universe:
+  events: 441
+  cities: 49
+  dates: 9
+  markets: 4851
+  tokens: 9702
+  event_local_missing_events: 278
+cohorts:
+  primary_development_replication:
+    - 2026-06-04
+    - 2026-06-05
+    - 2026-06-08
+    - 2026-06-09
+    - 2026-06-10
+  degraded_robustness:
+    - 2026-06-06
+    - 2026-06-07
+    - 2026-06-11
+    - 2026-06-12
+confirmation:
+  current_panel: not_confirmatory
+  requirement: future_unseen_cohort_required
