@@ -1,4 +1,4 @@
-# PMXT Wave -1 内部研究收尾（同步至 ec8714066a；独立复核待批准）
+# PMXT Wave -1 内部研究收尾（同步至 ec8714066a；独立复核通过）
 
 本文件是中文内部研究收尾，依据当前 G001-G004 证据链和 `463748282c` 之后重新生成的 G004 规范输出，以及强制 ai-slop-cleaner 后的 `ec8714066a` 当前事实同步。它只记录系统证据、边界、阻塞项和验证状态；不提出 alpha、PnL、策略有效性、当前面板确认性、生产使用或材料化模式选择结论。
 
@@ -141,8 +141,10 @@ Not ready：
 - full-range/current diff-check：通过。
 - closeout canonical/MiB/static-hash/Han/gate audit：通过。
 - 架构范围：无 generic core changes；无 tracked disposable cache。
-- `quality_gate.json` 尚未创建；`quality_gate_json_created=false`。
-- `independent_review.status=pending`，final approval 仍待 code-reviewer + architect。
+- `quality_gate.json` 已创建；`quality_gate_json_created=true`。
+- `independent_review.status=passed`；approval=APPROVE；architect=CLEAR。
+- code-reviewer agent `019f5d45-0b3b-7190-97d7-e4a98cf98e58`：38 files；CRITICAL/HIGH/MEDIUM/LOW 全 0；prior blockers 全 PASS；recommendation=APPROVE。
+- architect agent `019f5d45-0f29-7cd1-99a5-4919bec25949`：Architectural Status=CLEAR；I1-I10 全 PASS；deferred ambiguity scan、Jun4 full benchmark、完整 747M 分布均为未来范围且 gate 关闭，不阻塞本 Wave -1 closeout。
 - `.omx/ultragoal/goals.json` 与 `.omx/ultragoal/ledger.jsonl` 是动态文件，不固定 SHA-256。
 
 ## 11. Source artifact hashes

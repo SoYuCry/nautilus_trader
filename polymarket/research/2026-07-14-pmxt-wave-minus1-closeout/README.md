@@ -16,8 +16,8 @@
 - 当前面板为 `not_confirmatory`
 - factor gate 在显式 protocol approval 前保持关闭
 - 材料化选择仍延后；Jun4 仅为 manifest feasibility / 容量投影
-- `independent_review.status=pending`，final approval 仍待 code-reviewer + architect
-- `quality_gate.json` 尚未创建
+- `independent_review.status=passed`；approval=APPROVE；architect=CLEAR
+- `quality_gate.json` 已创建；`quality_gate_json_created=true`
 
 ## 同步要点
 
@@ -35,4 +35,6 @@
 - Clean temp + installed compiled Nautilus：导入路径 `C:/Users/xhth/miniconda3/Lib/site-packages/nautilus_trader/__init__.py`；两个 test files 共 22 passed in 2.56s。
 - changed-Python ruff、py_compile、full-range/current diff-check、closeout canonical/MiB/static-hash/Han/gate audit：通过。
 - 无 generic core changes；无 tracked disposable cache。
-- final approval 仍待 code-reviewer + architect；`quality_gate_json_created=false`。
+- independent review 已通过：code-reviewer agent `019f5d45-0b3b-7190-97d7-e4a98cf98e58` 复核 38 files，CRITICAL/HIGH/MEDIUM/LOW 全 0，prior blockers 全 PASS，recommendation=APPROVE。
+- architecture gate 已通过：architect agent `019f5d45-0f29-7cd1-99a5-4919bec25949` 给出 Architectural Status=CLEAR，I1-I10 全 PASS；deferred ambiguity scan、Jun4 full benchmark、完整 747M 分布是未来范围且 gate 关闭，不阻塞本 Wave -1 closeout。
+- `quality_gate_json_created=true`。
