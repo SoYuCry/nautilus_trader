@@ -229,6 +229,14 @@ def test_verify_pmxt_replay_clock_order_verifies_full_triple_tie_breaker() -> No
     with pytest.raises(ValueError, match="source_row_index must be strictly increasing"):
         verify_pmxt_replay_clock_order(row_index_backwards)
 
+    # Fully tied pair without source_row_index: fail closed, never a silent
+    # "verified" result the third key could not actually prove.
+    missing_row_index = SimpleNamespace(
+        steps=(_step(1, received=3, source=4), _step(2, received=3, source=4)),
+    )
+    with pytest.raises(ValueError, match="tie-breaker unverifiable"):
+        verify_pmxt_replay_clock_order(missing_row_index)
+
     valid = SimpleNamespace(
         steps=(
             _step(1, received=3, source=4, row_index=2),

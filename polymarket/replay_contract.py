@@ -198,16 +198,23 @@ def verify_pmxt_replay_clock_order(dataset: PolymarketL2DatasetV1) -> dict[str, 
                         "PMXT tie-breaker violated: timestamp_received moved backwards "
                         f"inside a tied replay-clock group at sequence={step.sequence}",
                     )
-                if (
-                    step.timestamp_received == previous.timestamp_received
-                    and step.source_row_index is not None
-                    and previous.source_row_index is not None
-                    and step.source_row_index <= previous.source_row_index
-                ):
-                    raise ValueError(
-                        "PMXT tie-breaker violated: source_row_index must be strictly "
-                        f"increasing inside a fully tied group at sequence={step.sequence}",
-                    )
+                if step.timestamp_received == previous.timestamp_received:
+                    # Fully tied pair: only the original row index can prove the
+                    # declared triple ordering.  Missing it is fail-closed, not a
+                    # skipped check, so tie_breaker_verified can never be a false
+                    # positive.
+                    if step.source_row_index is None or previous.source_row_index is None:
+                        raise ValueError(
+                            "PMXT tie-breaker unverifiable: a fully tied timestamp group "
+                            f"at sequence={step.sequence} has no source_row_index, so the "
+                            "declared ordering key cannot be proven. The adapter must "
+                            "supply source_row_index for pmxt_research replay.",
+                        )
+                    if step.source_row_index <= previous.source_row_index:
+                        raise ValueError(
+                            "PMXT tie-breaker violated: source_row_index must be strictly "
+                            f"increasing inside a fully tied group at sequence={step.sequence}",
+                        )
         previous = step
         previous_clock = clock
     return {

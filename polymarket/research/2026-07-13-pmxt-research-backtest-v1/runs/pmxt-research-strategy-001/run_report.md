@@ -30,6 +30,15 @@
 - Max synthetic offset from replay clock (ns): `4`
 - Factor research and this backtest share the adapter step order and source replay clock, but factor labels aggregate tied timestamps while the strategy observes those events one-by-one on synthetic ts_init; the two views are order-consistent, not identical.
 
+## Engine fill configuration
+
+- trade_execution: `true`
+- liquidity_consumption: `false`
+- queue_position: `false`
+- book_type: `L2_MBP` / oms: `NETTING` / account: `CASH`
+- starting_balance: `10000 pUSD`
+- fee_model_enabled: `true` (maker rebates: `false`)
+
 ## Result summary
 
 | metric | value |

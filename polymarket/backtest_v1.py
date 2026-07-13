@@ -86,6 +86,7 @@ class NativeBacktestResultV1:
     replay: dict[str, Any]
     health_gate: dict[str, Any]
     engine_config: dict[str, Any]
+    input_hashes: list[dict[str, Any]]
 
 
 def now_run_id() -> str:
@@ -401,22 +402,45 @@ def run_from_config(config_path: Path, *, event_dir_override: Path | None = None
     for issue in data_health_report.issues:
         issue_counts_by_code[issue.code] = issue_counts_by_code.get(issue.code, 0) + 1
     full_health = data_health_report.to_dict()
-    health_assumptions = list(full_health["assumptions"])
+    raw_checker_assumptions = list(full_health["assumptions"])
     if replay_mode == PMXT_RESEARCH_MODE:
-        # The generic checker's receive-time framing does not describe this
-        # mode; state the actual chronology so summary.json is self-consistent.
-        health_assumptions.insert(
-            0,
+        # The generic checker frames replay as receive-time ordered with
+        # receive-time inversions as hard failures.  Neither statement applies
+        # under the pmxt_research gate, so the inapplicable lines are rewritten
+        # instead of appended-to; the raw checker's own framing stays only in
+        # data_health.json (the raw checker artifact).
+        mode_corrections = {
+            "Replay chronology is timestamp_received order, not source timestamp order.": (
+                "Replay chronology is the PMXT contract clock "
+                "(timestamp, fallback timestamp_received), not receive-time order."
+            ),
+            "Hard failures are receive-time or local-sequence inversions.": (
+                "Hard failures are local-sequence inversions and other non-PMXT error "
+                "codes; receive-time inversions are diagnostics in pmxt_research mode."
+            ),
+        }
+        health_assumptions = [
+            mode_corrections.get(assumption, assumption) for assumption in raw_checker_assumptions
+        ]
+        mode_gate_assumptions = [
             "pmxt_research mode: replay chronology is the PMXT contract clock "
             "(timestamp, fallback timestamp_received); receive-time inversions are "
             "diagnostics here, not blockers, and 'ok: false' from the generic "
             "receive-time check does not mean the mode gate failed.",
-        )
+        ]
+    else:
+        health_assumptions = raw_checker_assumptions
+        mode_gate_assumptions = [
+            "strict_capture mode: replay chronology is timestamp_received in capture "
+            "order; receive-time and local-sequence inversions are hard failures.",
+        ]
     compact_health = {
         "ok": full_health["ok"],
         "replay_mode": replay_mode,
         "summary": full_health["summary"],
         "assumptions": health_assumptions,
+        "mode_gate_assumptions": mode_gate_assumptions,
+        "raw_checker_artifact": "data_health.json",
         "issue_count": len(full_health["issues"]),
         "issue_counts_by_code": issue_counts_by_code,
         "issue_sample_limit": 20,
@@ -493,6 +517,7 @@ def run_from_config(config_path: Path, *, event_dir_override: Path | None = None
             replay=replay_provenance,
             health_gate=health_gate,
             engine_config=engine_config_resolved,
+            input_hashes=input_hashes,
         )
         resolved = {
             "engine": "nautilus_trader.backtest.engine.BacktestEngine",

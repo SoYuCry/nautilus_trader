@@ -90,6 +90,7 @@ def write_backtest_reports(
                 "replay": getattr(result, "replay", {}),
                 "data_health_gate": getattr(result, "health_gate", {}),
                 "engine_config": getattr(result, "engine_config", {}),
+                "input_hashes": getattr(result, "input_hashes", []),
                 "data_count": result.data_count,
                 "order_book_deltas_count": result.order_book_deltas_count,
                 "trade_ticks_count": result.trade_ticks_count,
@@ -262,6 +263,7 @@ def _write_run_report_markdown(
     health_summary = result.data_health.get("summary", {})
     replay = getattr(result, "replay", {}) or {}
     health_gate = getattr(result, "health_gate", {}) or {}
+    engine_config = getattr(result, "engine_config", {}) or {}
     ts_init_audit = replay.get("ts_init_audit", {}) or {}
     lines = [
         "# Polymarket backtest run report",
@@ -301,6 +303,15 @@ def _write_run_report_markdown(
         f"- Events serialized by +1ns adjustment: `{ts_init_audit.get('adjusted_event_count', 'unknown')}`",
         f"- Max synthetic offset from replay clock (ns): `{ts_init_audit.get('max_synthetic_offset_ns', 'unknown')}`",
         "- Factor research and this backtest share the adapter step order and source replay clock, but factor labels aggregate tied timestamps while the strategy observes those events one-by-one on synthetic ts_init; the two views are order-consistent, not identical.",
+        "",
+        "## Engine fill configuration",
+        "",
+        f"- trade_execution: `{str(engine_config.get('trade_execution', 'unknown')).lower()}`",
+        f"- liquidity_consumption: `{str(engine_config.get('liquidity_consumption', 'unknown')).lower()}`",
+        f"- queue_position: `{str(engine_config.get('queue_position', 'unknown')).lower()}`",
+        f"- book_type: `{engine_config.get('book_type', 'unknown')}` / oms: `{engine_config.get('oms_type', 'unknown')}` / account: `{engine_config.get('account_type', 'unknown')}`",
+        f"- starting_balance: `{engine_config.get('starting_balance', 'unknown')}`",
+        f"- fee_model_enabled: `{str(engine_config.get('fee_model_enabled', 'unknown')).lower()}` (maker rebates: `{str(engine_config.get('maker_rebates_enabled', 'unknown')).lower()}`)",
         "",
         "## Result summary",
         "",

@@ -239,13 +239,16 @@
       "max_source_delay_ms": 330692.0
     },
     "assumptions": [
-      "pmxt_research mode: replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received); receive-time inversions are diagnostics here, not blockers, and 'ok: false' from the generic receive-time check does not mean the mode gate failed.",
-      "Replay chronology is timestamp_received order, not source timestamp order.",
-      "Hard failures are receive-time or local-sequence inversions.",
+      "Replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received), not receive-time order.",
+      "Hard failures are local-sequence inversions and other non-PMXT error codes; receive-time inversions are diagnostics in pmxt_research mode.",
       "Future/source-time issues are surfaced as diagnostics for severity review.",
       "Missing source timestamps are counted so source-time diagnostics are not overread.",
       "This check never sorts, drops, or repairs data."
     ],
+    "mode_gate_assumptions": [
+      "pmxt_research mode: replay chronology is the PMXT contract clock (timestamp, fallback timestamp_received); receive-time inversions are diagnostics here, not blockers, and 'ok: false' from the generic receive-time check does not mean the mode gate failed."
+    ],
+    "raw_checker_artifact": "data_health.json",
     "issue_count": 178919,
     "issue_counts_by_code": {
       "source_delay_over_threshold": 177530,
@@ -518,7 +521,7 @@
   },
   "runtime": {
     "run_id": "pmxt-research-strategy-001",
-    "created_at_utc": "2026-07-13T06:55:30.916013Z",
+    "created_at_utc": "2026-07-13T08:08:26.503588Z",
     "config_path": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/experiment_with_strategy.yml",
     "run_dir": "polymarket/research/2026-07-13-pmxt-research-backtest-v1/runs/pmxt-research-strategy-001"
   }

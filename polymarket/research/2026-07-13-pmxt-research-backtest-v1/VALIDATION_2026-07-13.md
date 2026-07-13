@@ -20,6 +20,15 @@ remains an open item).
 
 ## Commands and results
 
+Round 3 (same environment, final code): `python -m pytest polymarket/tests -q`
+→ **132 passed, 2 failed** (the same two skew failures; the new
+ts_init-audit bridge test passes). The strategy backtest and the contract
+consistency check were regenerated with the final code; committed artifacts
+include `raw_nautilus/` (small) and an `OMITTED_ARTIFACTS.json` manifest
+pinning the uncommitted 84MB `data_health.json` by size and sha256.
+
+Round 2:
+
 ```text
 python -m pytest polymarket/tests -q
   -> 131 passed, 2 failed

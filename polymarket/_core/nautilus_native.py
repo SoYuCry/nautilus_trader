@@ -305,6 +305,7 @@ def convert_dataset_to_nautilus(
         token_id=selected_asset_id,
     )
     last_ts_init: int | None = None
+    last_replay_clock_ns: int | None = None
     terminal_bid_levels: dict[Decimal, Decimal] = {}
     terminal_ask_levels: dict[Decimal, Decimal] = {}
     terminal_last_trade: Decimal | None = None
@@ -312,15 +313,21 @@ def convert_dataset_to_nautilus(
     ts_init_adjusted_count = 0
     max_ts_init_offset_ns = 0
 
-    def next_ts_init(step: L2ReplayStepV1) -> int:
-        nonlocal last_ts_init, ts_init_adjusted_count, max_ts_init_offset_ns
-        clock_ns = step_event_ns(step)
-        ts_init = clock_ns
-        if last_ts_init is not None and ts_init <= last_ts_init:
-            ts_init = last_ts_init + 1
+    def audited_monotonic_ts(candidate: int) -> int:
+        """Audited allocator: every synthetic +1ns serialization is counted."""
+        nonlocal ts_init_adjusted_count, max_ts_init_offset_ns
+        adjusted = _next_monotonic_ts_init(candidate, last_ts_init)
+        if adjusted != candidate:
             ts_init_adjusted_count += 1
-            max_ts_init_offset_ns = max(max_ts_init_offset_ns, ts_init - clock_ns)
+            max_ts_init_offset_ns = max(max_ts_init_offset_ns, adjusted - candidate)
+        return adjusted
+
+    def next_ts_init(step: L2ReplayStepV1) -> int:
+        nonlocal last_ts_init, last_replay_clock_ns
+        clock_ns = step_event_ns(step)
+        ts_init = audited_monotonic_ts(clock_ns)
         last_ts_init = ts_init
+        last_replay_clock_ns = clock_ns
         return ts_init
 
     def append_book_updates(
@@ -406,10 +413,7 @@ def convert_dataset_to_nautilus(
                 effective_tick_size_changes.append(
                     EffectiveTickSizeChangeV1(
                         sequence=step.sequence,
-                        effective_from_ts_init=_next_monotonic_ts_init(
-                            step_event_ns(step),
-                            last_ts_init,
-                        ),
+                        effective_from_ts_init=audited_monotonic_ts(step_event_ns(step)),
                         old_tick_size=update.old_tick_size,
                         new_tick_size=update.new_tick_size,
                     ),
@@ -431,11 +435,15 @@ def convert_dataset_to_nautilus(
         last_ts_init=last_ts_init,
     )
     if settlement is not None:
-        if last_ts_init is not None and settlement.resolution_time_ns < last_ts_init:
+        # Compare against the real replay clock, not the synthetic ts_init: the
+        # +1ns serialization of tied events must not make a settlement at the
+        # final replay timestamp look like it happened "before" the data.
+        if last_replay_clock_ns is not None and settlement.resolution_time_ns < last_replay_clock_ns:
             raise ValueError(
                 "resolved Polymarket token settlement time is before the last replay "
                 "clock timestamp for the selected token: "
-                f"resolution_time_ns={settlement.resolution_time_ns}, last_replay_ts_init={last_ts_init}",
+                f"resolution_time_ns={settlement.resolution_time_ns}, "
+                f"last_replay_clock_ns={last_replay_clock_ns}",
             )
         data.append(
             InstrumentClose(
@@ -443,7 +451,7 @@ def convert_dataset_to_nautilus(
                 close_price=instrument.make_price(float(settlement.payout)),
                 close_type=InstrumentCloseType.CONTRACT_EXPIRED,
                 ts_event=settlement.resolution_time_ns,
-                ts_init=_next_monotonic_ts_init(settlement.resolution_time_ns, last_ts_init),
+                ts_init=audited_monotonic_ts(settlement.resolution_time_ns),
             ),
         )
 

@@ -1092,7 +1092,17 @@ def test_runner_runs_pmxt_research_mode_with_marked_outputs(tmp_path: Path) -> N
     assert run_summary["data_health_gate"]["blocking_codes"] == []
     assert run_summary["data_health_gate"]["replay_clock_verified"] is True
     assert run_summary["engine_config"]["trade_execution"] is True
-    assert "pmxt_research mode" in " ".join(run_summary["data_health"]["assumptions"])
+    assert run_summary["input_hashes"], "persisted summary must pin adapter input hashes"
+    assert all("sha256" in row for row in run_summary["input_hashes"])
+    # No self-contradictory chronology text: the generic receive-time framing
+    # must be rewritten, not merely prefixed, in pmxt_research artifacts.
+    embedded_assumptions = " ".join(run_summary["data_health"]["assumptions"])
+    assert "Hard failures are receive-time" not in embedded_assumptions
+    assert "chronology is timestamp_received order" not in embedded_assumptions
+    assert "PMXT contract clock" in embedded_assumptions
+    assert "pmxt_research mode" in " ".join(run_summary["data_health"]["mode_gate_assumptions"])
+    resolved_assumptions = " ".join(resolved["data_health"]["assumptions"])
+    assert "Hard failures are receive-time" not in resolved_assumptions
     assert run_summary["replay"]["ts_init_audit"]["ts_init_policy"] == "synthetic_monotonic_source_time"
     assert "## Replay trust boundary" in run_report
     assert "## Data-health gate (mode-aware)" in run_report
