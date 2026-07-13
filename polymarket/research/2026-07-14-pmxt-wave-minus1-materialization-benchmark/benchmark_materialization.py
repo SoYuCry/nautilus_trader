@@ -430,9 +430,24 @@ def _sanitized_config(config: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in sorted(config.items()) if key != "fail_after_rows"}
 
 
+def _source_content_sha256(event: EventSpec) -> str:
+    """
+    Return the actual orderbook bytes digest used for cache identity.
+
+    Inventory hashes may be path/size/mtime identities on older artifacts; the
+    benchmark cache must key only on the selected event source bytes so a
+    same-size rewrite with restored mtime cannot reuse stale materialization.
+    """
+    return sha256_file(event.orderbook_path)
+
+
 def _cache_identity(event: EventSpec, mode: Mode, config: dict[str, Any], *, contract: CacheContract = DEFAULT_CACHE_CONTRACT) -> dict[str, Any]:
+    source_content_sha256 = _source_content_sha256(event)
     return {
-        **asdict(contract), "source_hash": event.source_hash, "event_slug": event.event_slug,
+        **asdict(contract),
+        "source_content_sha256": source_content_sha256,
+        "source_hash": source_content_sha256,
+        "event_slug": event.event_slug,
         "condition_id": event.condition_id, "asset_id": event.asset_id, "mode": mode.value,
         "mode_config": _sanitized_config(config),
     }
@@ -448,7 +463,9 @@ def _artifact_metadata(event: EventSpec, mode: Mode, cache_key: str, config: dic
         "program": PROGRAM, "program_version": PROGRAM_VERSION, "cache_key": cache_key,
         "cache_identity": identity, "mode": mode.value, "mode_config": _sanitized_config(config),
         "event_slug": event.event_slug, "event_date": event.event_date, "city": event.city,
-        "condition_id": event.condition_id, "asset_id": event.asset_id, "source_hash": event.source_hash,
+        "condition_id": event.condition_id, "asset_id": event.asset_id,
+        "source_content_sha256": identity["source_content_sha256"],
+        "source_hash": identity["source_hash"],
         "ordering_domain": ORDERING_DOMAIN, "ordering_scope": "O1_only", "ordering_key": PMXT_RESEARCH_ORDERING_KEY,
         "replay_contract_version": REPLAY_CONTRACT_VERSION, "source_access_method": "pyarrow_row_group_batch_streaming_plus_selected_token_sort_buffer",
         "source_pass_count": scan.source_pass_count, "source_rows_scanned": scan.source_rows_scanned,
@@ -573,8 +590,8 @@ def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str
     config = dict(config or {})
     cache_dir = Path(output_dir) / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_key = _cache_key(event, mode, config)
     identity = _cache_identity(event, mode, config)
+    cache_key = stable_hash(identity)
     artifact_path = None if mode == Mode.M1 else cache_dir / f"{cache_key}-{mode.value.lower()}.json"
     partial_path = cache_dir / f"{cache_key}-{mode.value.lower()}.partial"
     partials = list(cache_dir.glob(f"{cache_key}-{mode.value.lower()}*.partial"))

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 import time
 from copy import deepcopy
@@ -117,8 +118,9 @@ def test_cache_identity_invalidators_and_corruption_resume(tmp_path: Path) -> No
     base_key = bench._cache_key(event, bench.Mode.M2, {"anchor_every_rows": 2}, contract=base)
     for field in ("protocol_hash", "ordering_domain", "ordering_version", "kernel_schema", "kernel_version", "label_schema", "label_schema_version"):
         assert bench._cache_key(event, bench.Mode.M2, {"anchor_every_rows": 2}, contract=replace(base, **{field: getattr(base, field) + "-changed"})) != base_key
+    assert bench._cache_key(replace(event, source_hash="path-size-mtime-identity-v2"), bench.Mode.M2, {"anchor_every_rows": 2}) == base_key
     for changed in (
-        replace(event, source_hash="source-v2"), replace(event, event_slug="other-event"),
+        replace(event, event_slug="other-event"),
         replace(event, condition_id="0xdef"), replace(event, asset_id="other-token"),
     ):
         assert bench._cache_key(changed, bench.Mode.M2, {"anchor_every_rows": 2}) != base_key
@@ -133,6 +135,54 @@ def test_cache_identity_invalidators_and_corruption_resume(tmp_path: Path) -> No
     checks = bench.run_cache_resume_tests(event, tmp_path / "checks")
     for key in ("bitflip_detected", "truncate_detected", "manifest_missing_detected", "manifest_corrupt_detected", "partial_reuse_prevented"):
         assert checks[key] is True
+
+
+def test_cache_identity_uses_source_bytes_not_size_or_mtime(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    event = _event(tmp_path)
+    out = tmp_path / "out"
+    base = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert base.cache_status == "cold_committed"
+    warm = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert warm.cache_key == base.cache_key
+    assert warm.cache_status == "warm_reused_committed_matching_payload"
+    before = event.orderbook_path.stat()
+    original = event.orderbook_path.read_bytes()
+    changed = bytearray(original)
+    changed[len(changed) // 2] ^= 1
+    event.orderbook_path.write_bytes(changed)
+    os.utime(event.orderbook_path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    after = event.orderbook_path.stat()
+    assert after.st_size == before.st_size
+    assert after.st_mtime_ns == before.st_mtime_ns
+
+    calls = 0
+
+    def fake_materialize(changed_event: object, mode: object, config: object) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        return {
+            "scan": bench.SourceScan([], changed_event.orderbook_path.stat().st_size, 0, 0, 0),
+            "trace": [],
+            "anchors": [],
+            "parity_digest": "recomputed-after-source-byte-change",
+            "ordering_digest": "recomputed-after-source-byte-change",
+            "ordering_checkpoints": [],
+            "semantic_checkpoints": [],
+            "event_type_counts": {},
+            "row_count": 0,
+            "final_state": {"bids": [], "asks": [], "tick_size": None},
+            "retained_primitive_record_count": 0,
+        }
+
+    monkeypatch.setattr(bench, "_materialize_mode", fake_materialize)
+    recomputed = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert calls == 1
+    assert recomputed.cache_key != base.cache_key
+    assert recomputed.cache_status == "cold_committed"
+    assert recomputed.source_pass_count == 1
+    assert recomputed.warm_elapsed_seconds is None
+    assert recomputed.parity_digest == "recomputed-after-source-byte-change"
+    assert bench._cache_identity(event, bench.Mode.M3, {})["source_content_sha256"] == bench.sha256_file(event.orderbook_path)
 
 
 def test_metrics_rss_io_oracle_invariance_and_portability(tmp_path: Path) -> None:
