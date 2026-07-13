@@ -70,7 +70,9 @@ def test_streaming_one_pass_parity_and_semantics(monkeypatch: pytest.MonkeyPatch
     m2 = bench.run_mode(event, bench.Mode.M2, output_dir=out, config={"anchor_every_rows": 2})
     m3 = bench.run_mode(event, bench.Mode.M3, output_dir=out)
     assert calls == 3
-    assert m1.source_pass_count == m2.source_pass_count == m3.source_pass_count == 1
+    assert m1.source_pass_count == m2.source_pass_count == m3.source_pass_count == 2
+    assert m1.source_hash_pass_count == m2.source_hash_pass_count == m3.source_hash_pass_count == 1
+    assert m1.source_materialization_pass_count == m2.source_materialization_pass_count == m3.source_materialization_pass_count == 1
     assert m1.parity_digest == m2.parity_digest == m3.parity_digest
     assert m1.row_count == 7
     assert m1.retained_primitive_record_count == 0
@@ -85,7 +87,11 @@ def test_streaming_one_pass_parity_and_semantics(monkeypatch: pytest.MonkeyPatch
     assert trace[2]["event_type"] == "trade"
     assert trace[3]["tick_size"] == "0.001"
     assert trace[-1]["timestamp"] == trace[-1]["timestamp_received"]
-    assert json.loads(m2.artifact_path.read_text(encoding="utf-8"))["metadata"]["source_pass_count"] == 1
+    metadata = json.loads(m2.artifact_path.read_text(encoding="utf-8"))["metadata"]
+    assert metadata["source_pass_count"] == 2
+    assert metadata["source_hash_pass_count"] == 1
+    assert metadata["source_materialization_pass_count"] == 1
+    assert "parses zero rows" in metadata["source_rows_scanned_semantics"]
 
 
 def test_cold_and_warm_timers_cover_commit_and_validation(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -109,7 +115,73 @@ def test_cold_and_warm_timers_cover_commit_and_validation(monkeypatch: pytest.Mo
     monkeypatch.setattr(bench, "_read_cache_payload", slow_read)
     warm = bench.run_mode(event, bench.Mode.M3, output_dir=out)
     assert warm.warm_elapsed_seconds >= 0.02
-    assert warm.source_pass_count == 0
+    assert warm.source_pass_count == 1
+    assert warm.source_hash_pass_count == 1
+    assert warm.source_materialization_pass_count == 0
+
+
+def test_source_hash_is_inside_measured_boundary_and_not_duplicated(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    event = _event(tmp_path)
+    out = tmp_path / "out"
+    original_sha256 = bench.sha256_file
+    source_hash_calls = 0
+
+    def delayed_sha256(path: Path) -> str:
+        nonlocal source_hash_calls
+        if Path(path) == event.orderbook_path:
+            source_hash_calls += 1
+            time.sleep(0.02)
+        return original_sha256(path)
+
+    monkeypatch.setattr(bench, "sha256_file", delayed_sha256)
+    result = bench.run_mode(event, bench.Mode.M1, output_dir=out)
+    assert result.cold_elapsed_seconds >= 0.02
+    assert source_hash_calls == 1
+    assert result.source_pass_count == 2
+    assert result.source_hash_pass_count == 1
+    assert result.source_materialization_pass_count == 1
+
+
+def test_artifact_metadata_reuses_precomputed_identity(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    event = _event(tmp_path)
+    out = tmp_path / "out"
+    original_sha256 = bench.sha256_file
+    source_hash_calls = 0
+
+    def counted_sha256(path: Path) -> str:
+        nonlocal source_hash_calls
+        if Path(path) == event.orderbook_path:
+            source_hash_calls += 1
+        return original_sha256(path)
+
+    monkeypatch.setattr(bench, "sha256_file", counted_sha256)
+    result = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert result.cache_status == "cold_committed"
+    assert source_hash_calls == 1
+    metadata = json.loads(result.artifact_path.read_text(encoding="utf-8"))["metadata"]
+    assert metadata["cache_identity"]["source_content_sha256"] == metadata["source_content_sha256"]
+
+
+def test_invalid_cache_probe_cost_stays_in_cold_measurement(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    event = _event(tmp_path)
+    out = tmp_path / "out"
+    base = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert base.cache_status == "cold_committed"
+    manifest_path = bench._cache_manifest_path(base.artifact_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["artifact_payload_bytes"] = -1
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    original_read = bench._read_cache_payload
+
+    def slow_invalid_read(*args: object, **kwargs: object) -> object:
+        time.sleep(0.02)
+        return original_read(*args, **kwargs)
+
+    monkeypatch.setattr(bench, "_read_cache_payload", slow_invalid_read)
+    recomputed = bench.run_mode(event, bench.Mode.M3, output_dir=out)
+    assert recomputed.cache_status == "cold_recomputed_after_invalid_cache"
+    assert recomputed.cold_elapsed_seconds >= 0.02
+    assert recomputed.source_pass_count == 2
 
 
 def test_cache_identity_invalidators_and_corruption_resume(tmp_path: Path) -> None:
@@ -179,7 +251,9 @@ def test_cache_identity_uses_source_bytes_not_size_or_mtime(monkeypatch: pytest.
     assert calls == 1
     assert recomputed.cache_key != base.cache_key
     assert recomputed.cache_status == "cold_committed"
-    assert recomputed.source_pass_count == 1
+    assert recomputed.source_pass_count == 2
+    assert recomputed.source_hash_pass_count == 1
+    assert recomputed.source_materialization_pass_count == 1
     assert recomputed.warm_elapsed_seconds is None
     assert recomputed.parity_digest == "recomputed-after-source-byte-change"
     assert bench._cache_identity(event, bench.Mode.M3, {})["source_content_sha256"] == bench.sha256_file(event.orderbook_path)
@@ -193,7 +267,12 @@ def test_metrics_rss_io_oracle_invariance_and_portability(tmp_path: Path) -> Non
     for field in bench.REQUIRED_METRIC_FIELDS:
         assert field in metrics
     assert metrics["source_file_bytes_upper_bound"] == event.orderbook_path.stat().st_size
-    assert metrics["source_pass_count"] == 1
+    assert metrics["source_pass_count"] == 2
+    assert metrics["source_hash_pass_count"] == 1
+    assert metrics["source_materialization_pass_count"] == 1
+    assert metrics["warm_source_pass_count"] == 1
+    assert metrics["warm_source_hash_pass_count"] == 1
+    assert metrics["warm_source_materialization_pass_count"] == 0
     assert "bytes_read" not in metrics
     assert "peak_memory_bytes" not in metrics
     assert metrics["peak_rss_bytes"] > 0

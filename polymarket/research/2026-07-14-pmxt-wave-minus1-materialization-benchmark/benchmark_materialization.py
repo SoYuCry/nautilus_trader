@@ -71,6 +71,8 @@ REQUIRED_METRIC_FIELDS = (
     "process_logical_read_bytes", "process_logical_write_bytes",
     "warm_process_logical_read_bytes", "warm_process_logical_write_bytes",
     "source_file_bytes_upper_bound", "source_pass_count", "warm_source_pass_count",
+    "source_hash_pass_count", "source_materialization_pass_count",
+    "warm_source_hash_pass_count", "warm_source_materialization_pass_count",
     "artifact_payload_bytes", "cache_manifest_bytes", "artifact_bytes", "row_count",
     "event_count", "token_count", "primitive_count", "retained_primitive_record_count", "parity_digest", "cache_key",
     "cache_status", "resume_behavior",
@@ -152,6 +154,8 @@ class ModeResult:
     process_logical_write_bytes: int | None
     source_file_bytes_upper_bound: int
     source_pass_count: int
+    source_hash_pass_count: int
+    source_materialization_pass_count: int
     source_rows_scanned: int
     source_row_groups_scanned: int
     source_batches_scanned: int
@@ -177,6 +181,8 @@ class ModeResult:
             "warm_process_logical_read_bytes": None,
             "warm_process_logical_write_bytes": None,
             "warm_source_pass_count": None,
+            "warm_source_hash_pass_count": None,
+            "warm_source_materialization_pass_count": None,
         })
         return data
 
@@ -457,8 +463,14 @@ def _cache_key(event: EventSpec, mode: Mode, config: dict[str, Any], *, contract
     return stable_hash(_cache_identity(event, mode, config, contract=contract))
 
 
-def _artifact_metadata(event: EventSpec, mode: Mode, cache_key: str, config: dict[str, Any], scan: SourceScan) -> dict[str, Any]:
-    identity = _cache_identity(event, mode, config)
+def _artifact_metadata(
+    event: EventSpec,
+    mode: Mode,
+    cache_key: str,
+    config: dict[str, Any],
+    scan: SourceScan,
+    identity: dict[str, Any],
+) -> dict[str, Any]:
     return {
         "program": PROGRAM, "program_version": PROGRAM_VERSION, "cache_key": cache_key,
         "cache_identity": identity, "mode": mode.value, "mode_config": _sanitized_config(config),
@@ -467,8 +479,12 @@ def _artifact_metadata(event: EventSpec, mode: Mode, cache_key: str, config: dic
         "source_content_sha256": identity["source_content_sha256"],
         "source_hash": identity["source_hash"],
         "ordering_domain": ORDERING_DOMAIN, "ordering_scope": "O1_only", "ordering_key": PMXT_RESEARCH_ORDERING_KEY,
-        "replay_contract_version": REPLAY_CONTRACT_VERSION, "source_access_method": "pyarrow_row_group_batch_streaming_plus_selected_token_sort_buffer",
-        "source_pass_count": scan.source_pass_count, "source_rows_scanned": scan.source_rows_scanned,
+        "replay_contract_version": REPLAY_CONTRACT_VERSION, "source_access_method": "sha256_source_byte_pass_plus_pyarrow_row_group_batch_streaming_selected_token_sort_buffer",
+        "source_pass_count": 1 + scan.source_pass_count,
+        "source_hash_pass_count": 1,
+        "source_materialization_pass_count": scan.source_pass_count,
+        "source_rows_scanned": scan.source_rows_scanned,
+        "source_rows_scanned_semantics": "parsed rows from materialization pass only; source hash pass reads bytes and parses zero rows",
         "source_row_groups_scanned": scan.source_row_groups_scanned, "source_batches_scanned": scan.source_batches_scanned,
         "performance_claims_allowed": False, "not_for_pnl": True, "outcome_blind": True,
         "o2_event_wide_diagnostics": "locate_only_never_execution_truth",
@@ -586,49 +602,49 @@ def _measure_call(func: Callable[[], Any]) -> CallMeasurement:
     return CallMeasurement(result, elapsed, peak, read_delta, write_delta)
 
 
-def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str, Any] | None = None) -> ModeResult:
+def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str, Any] | None = None) -> ModeResult:  # noqa: C901 - warm/cold measured boundary stays joined for accounting truth
     config = dict(config or {})
     cache_dir = Path(output_dir) / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
-    identity = _cache_identity(event, mode, config)
-    cache_key = stable_hash(identity)
-    artifact_path = None if mode == Mode.M1 else cache_dir / f"{cache_key}-{mode.value.lower()}.json"
-    partial_path = cache_dir / f"{cache_key}-{mode.value.lower()}.partial"
-    partials = list(cache_dir.glob(f"{cache_key}-{mode.value.lower()}*.partial"))
-    invalid_cache_reason: str | None = None
 
-    if artifact_path is not None and (artifact_path.exists() or _cache_manifest_path(artifact_path).exists()):
+    def measured_work() -> dict[str, Any]:
+        # This is intentionally inside the measured boundary. Every run performs
+        # exactly one source-content byte hash pass before cache lookup or
+        # materialization, and that identity is reused for artifact metadata.
+        identity = _cache_identity(event, mode, config)
+        cache_key = stable_hash(identity)
+        artifact_path = None if mode == Mode.M1 else cache_dir / f"{cache_key}-{mode.value.lower()}.json"
+        partial_path = cache_dir / f"{cache_key}-{mode.value.lower()}.partial"
+        partials = list(cache_dir.glob(f"{cache_key}-{mode.value.lower()}*.partial"))
+        invalid_cache_reason: str | None = None
+
+        if artifact_path is not None and (artifact_path.exists() or _cache_manifest_path(artifact_path).exists()):
+            try:
+                payload = _read_cache_payload(artifact_path, identity)
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                invalid_cache_reason = type(exc).__name__
+                artifact_path.unlink(missing_ok=True)
+                _cache_manifest_path(artifact_path).unlink(missing_ok=True)
+            else:
+                return {
+                    "path": "warm",
+                    "identity": identity,
+                    "cache_key": cache_key,
+                    "artifact_path": artifact_path,
+                    "partials": partials,
+                    "payload": payload,
+                }
+
         try:
-            measured = _measure_call(lambda: _read_cache_payload(artifact_path, identity))
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
-            invalid_cache_reason = type(exc).__name__
-            artifact_path.unlink(missing_ok=True)
-            _cache_manifest_path(artifact_path).unlink(missing_ok=True)
-        else:
-            payload = measured.result
-            metadata = payload["metadata"]
-            return ModeResult(
-                mode.value, event.event_slug, cache_key, "warm_reused_committed_matching_payload",
-                payload["parity_digest"], payload["ordering_digest"], REPLAY_CONTRACT_VERSION,
-                0.0, measured.elapsed_seconds, measured.peak_rss_bytes,
-                "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms", "sampled_process_working_set_during_call",
-                measured.process_logical_read_bytes, measured.process_logical_write_bytes,
-                event.orderbook_path.stat().st_size, 0, 0, 0, 0,
-                artifact_path.stat().st_size, _cache_manifest_path(artifact_path).stat().st_size,
-                artifact_path.stat().st_size + _cache_manifest_path(artifact_path).stat().st_size,
-                int(metadata["row_count"]), 1, 1, int(metadata["primitive_count"]),
-                payload["ordering_checkpoints"], payload["semantic_checkpoints"], payload["event_type_counts"],
-                int(metadata["retained_primitive_record_count"]), artifact_path,
-                {"ignored_partial_artifacts": len(partials), "reused_completed_artifact": True, "committed_matching_payload_only": True},
-            )
-
-    def cold_work() -> tuple[dict[str, Any], int, int]:
-        materialized = _materialize_mode(event, mode, config)
+            materialized = _materialize_mode(event, mode, config)
+        except IntentionalInterruption:
+            _write_atomic_json(partial_path, {"cache_key": cache_key, "status": "interrupted_uncommitted_partial"})
+            raise
         payload_bytes = manifest_bytes = 0
         if artifact_path is not None:
             scan = materialized["scan"]
             metadata = {
-                **_artifact_metadata(event, mode, cache_key, config, scan),
+                **_artifact_metadata(event, mode, cache_key, config, scan, identity),
                 "row_count": materialized["row_count"], "primitive_count": materialized["row_count"],
                 "retained_primitive_record_count": materialized["retained_primitive_record_count"],
             }
@@ -638,14 +654,48 @@ def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str
             else:
                 payload = {"metadata": metadata, "parity_digest": materialized["parity_digest"], "ordering_digest": materialized["ordering_digest"], "ordering_checkpoints": materialized["ordering_checkpoints"], "semantic_checkpoints": materialized["semantic_checkpoints"], "event_type_counts": materialized["event_type_counts"], "trace": materialized["trace"]}
             payload_bytes, manifest_bytes = _write_cache_payload(artifact_path, payload, identity)
-        return materialized, payload_bytes, manifest_bytes
+        return {
+            "path": "cold",
+            "identity": identity,
+            "cache_key": cache_key,
+            "artifact_path": artifact_path,
+            "partial_path": partial_path,
+            "partials": partials,
+            "invalid_cache_reason": invalid_cache_reason,
+            "materialized": materialized,
+            "payload_bytes": payload_bytes,
+            "manifest_bytes": manifest_bytes,
+        }
 
     try:
-        measured = _measure_call(cold_work)
+        measured = _measure_call(measured_work)
     except IntentionalInterruption:
-        _write_atomic_json(partial_path, {"cache_key": cache_key, "status": "interrupted_uncommitted_partial"})
         raise
-    materialized, payload_bytes, manifest_bytes = measured.result
+
+    work = measured.result
+    cache_key = work["cache_key"]
+    artifact_path = work["artifact_path"]
+    partials = work.get("partials", [])
+
+    if work["path"] == "warm":
+        payload = work["payload"]
+        metadata = payload["metadata"]
+        return ModeResult(
+            mode.value, event.event_slug, cache_key, "warm_reused_committed_matching_payload",
+            payload["parity_digest"], payload["ordering_digest"], REPLAY_CONTRACT_VERSION,
+            0.0, measured.elapsed_seconds, measured.peak_rss_bytes,
+            "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms", "sampled_process_working_set_during_call",
+            measured.process_logical_read_bytes, measured.process_logical_write_bytes,
+            event.orderbook_path.stat().st_size, 1, 1, 0, 0, 0, 0,
+            artifact_path.stat().st_size, _cache_manifest_path(artifact_path).stat().st_size,
+            artifact_path.stat().st_size + _cache_manifest_path(artifact_path).stat().st_size,
+            int(metadata["row_count"]), 1, 1, int(metadata["primitive_count"]),
+            payload["ordering_checkpoints"], payload["semantic_checkpoints"], payload["event_type_counts"],
+            int(metadata["retained_primitive_record_count"]), artifact_path,
+            {"ignored_partial_artifacts": len(partials), "reused_completed_artifact": True, "committed_matching_payload_only": True},
+        )
+
+    materialized = work["materialized"]
     removed_partials = 0
     for partial in partials:
         partial.unlink(missing_ok=True)
@@ -653,19 +703,18 @@ def run_mode(event: EventSpec, mode: Mode, *, output_dir: Path, config: dict[str
     scan = materialized["scan"]
     return ModeResult(
         mode.value, event.event_slug, cache_key,
-        "direct_no_persistent_derivative" if mode == Mode.M1 else ("cold_recomputed_after_invalid_cache" if invalid_cache_reason else "cold_committed"),
+        "direct_no_persistent_derivative" if mode == Mode.M1 else ("cold_recomputed_after_invalid_cache" if work.get("invalid_cache_reason") else "cold_committed"),
         materialized["parity_digest"], materialized["ordering_digest"], REPLAY_CONTRACT_VERSION,
         measured.elapsed_seconds, None, measured.peak_rss_bytes,
         "windows_psapi_GetProcessMemoryInfo_working_set_sampled_10ms", "sampled_process_working_set_during_call",
         measured.process_logical_read_bytes, measured.process_logical_write_bytes,
-        scan.source_file_bytes_upper_bound, scan.source_pass_count, scan.source_rows_scanned,
-        scan.source_row_groups_scanned, scan.source_batches_scanned,
-        payload_bytes, manifest_bytes, payload_bytes + manifest_bytes, materialized["row_count"], 1, 1,
+        scan.source_file_bytes_upper_bound, 1 + scan.source_pass_count, 1, scan.source_pass_count,
+        scan.source_rows_scanned, scan.source_row_groups_scanned, scan.source_batches_scanned,
+        work["payload_bytes"], work["manifest_bytes"], work["payload_bytes"] + work["manifest_bytes"], materialized["row_count"], 1, 1,
         materialized["row_count"], materialized["ordering_checkpoints"], materialized["semantic_checkpoints"],
         materialized["event_type_counts"], materialized["retained_primitive_record_count"], artifact_path,
-        {"ignored_partial_artifacts": len(partials), "removed_partial_artifacts": removed_partials, "reused_completed_artifact": False, "committed_matching_payload_only": True, "invalid_cache_reason": invalid_cache_reason, "failure_isolation": "per_event_token_cache_identity"},
+        {"ignored_partial_artifacts": len(partials), "removed_partial_artifacts": removed_partials, "reused_completed_artifact": False, "committed_matching_payload_only": True, "invalid_cache_reason": work.get("invalid_cache_reason"), "failure_isolation": "per_event_token_cache_identity"},
     )
-
 
 def _oracle_stream_and_reduce(event: EventSpec, *, anchor_sequences: set[int] | None = None) -> dict[str, Any]:  # noqa: C901 - deliberately independent audit reducer
     """Independent Arrow source scan and plain-dict state reducer for real O1 audit."""
@@ -1040,6 +1089,8 @@ def run_benchmark(
                 "warm_process_logical_read_bytes": application_warm.process_logical_read_bytes,
                 "warm_process_logical_write_bytes": application_warm.process_logical_write_bytes,
                 "warm_source_pass_count": application_warm.source_pass_count,
+                "warm_source_hash_pass_count": application_warm.source_hash_pass_count,
+                "warm_source_materialization_pass_count": application_warm.source_materialization_pass_count,
                 "warm_cache_status": application_warm.cache_status,
                 "application_cold_os_cache": "unknown",
             })
@@ -1081,7 +1132,8 @@ def run_benchmark(
             "ordering_scope": "O1_only", "ordering_domain": ORDERING_DOMAIN, "ordering_version": ORDERING_VERSION,
             "kernel_schema": KERNEL_SCHEMA, "kernel_version": KERNEL_VERSION,
             "label_schema": LABEL_SCHEMA, "label_schema_version": LABEL_SCHEMA_VERSION,
-            "source_access_method": "bounded_pyarrow_row_group_batch_streaming_plus_selected_token_O1_sort_buffer",
+            "source_access_method": "sha256_source_byte_pass_plus_bounded_pyarrow_row_group_batch_streaming_selected_token_O1_sort_buffer",
+            "source_rows_scanned_semantics": "parsed rows from materialization pass only; source hash pass reads bytes and parses zero rows",
             "application_cold_os_cache": "unknown", "worker_count": 1,
             "process_io_method": "Windows_GetProcessIoCounters_ReadTransferCount_WriteTransferCount_delta",
             "process_io_scope": "per_call_process_logical_transfer_bytes_not_physical_disk",
@@ -1101,9 +1153,9 @@ def run_benchmark(
         "current_panel_confirmation_status": "not_confirmatory",
         "ordering_scope": "O1_only", "ordering_domain": ORDERING_DOMAIN,
         "o2_event_wide_diagnostics": "locate_only_never_execution_truth",
-        "m1_contract": "authoritative source stream plus selected-token O1 sort buffer; digest only; no persistent derivative",
-        "m2_contract": "one source pass; sparse causal anchors created during the primitive pass; disposable committed cache",
-        "m3_contract": "one source pass; full selected-token primitives only; no orders, fills, strategy, or PnL",
+        "m1_contract": "one source-content byte hash pass plus one authoritative source materialization pass with selected-token O1 sort buffer; digest only; no persistent derivative",
+        "m2_contract": "cold path uses one source-content byte hash pass plus one materialization pass; warm path uses one source-content byte hash pass plus cache lookup/read/validation; sparse causal anchors; disposable committed cache",
+        "m3_contract": "cold path uses one source-content byte hash pass plus one materialization pass; warm path uses one source-content byte hash pass plus cache lookup/read/validation; full selected-token primitives only; no orders, fills, strategy, or PnL",
         "events": event_reports, "m1_m2_m3_results": event_reports,
         "parity_oracles": parity_oracles, "cache_resume_tests": cache_tests,
         "outcome_blind_invariance_g004": invariance,
@@ -1130,8 +1182,23 @@ def validate_report_schema(report: dict[str, Any]) -> None:  # noqa: C901 - fail
             missing = [field for field in REQUIRED_METRIC_FIELDS if field not in metrics]
             if missing:
                 raise ValueError(f"metrics for {event.get('event_slug')} {mode} missing {missing}")
-            if metrics["source_pass_count"] != 1 or metrics["source_file_bytes_upper_bound"] < 0:
-                raise ValueError("cold modes require exactly one source pass and a clearly named source-file upper bound")
+            if metrics["source_file_bytes_upper_bound"] < 0:
+                raise ValueError("modes require a clearly named source-file upper bound")
+            if metrics["source_hash_pass_count"] != 1:
+                raise ValueError("every measured mode requires exactly one source-content hash byte pass")
+            if metrics["source_pass_count"] != metrics["source_hash_pass_count"] + metrics["source_materialization_pass_count"]:
+                raise ValueError("source pass accounting must equal hash pass plus materialization pass")
+            if metrics["source_pass_count"] != 2 or metrics["source_materialization_pass_count"] != 1:
+                raise ValueError("cold modes require one hash pass plus one materialization source pass")
+            warm_pass_count = metrics.get("warm_source_pass_count")
+            warm_hash_pass_count = metrics.get("warm_source_hash_pass_count")
+            warm_materialization_pass_count = metrics.get("warm_source_materialization_pass_count")
+            if warm_hash_pass_count != 1:
+                raise ValueError("warm modes require exactly one measured source-content hash byte pass")
+            expected_warm_materialization = 1 if mode == "M1" else 0
+            expected_warm_pass_count = 1 + expected_warm_materialization
+            if warm_materialization_pass_count != expected_warm_materialization or warm_pass_count != expected_warm_pass_count:
+                raise ValueError("warm source pass accounting must distinguish application-warm M1 from cache-warm M2/M3")
     complete = report.get("complete_date_feasibility", {})
     if complete.get("expected_task_count") != 49 or len(complete.get("task_statuses", [])) != 49:
         raise ValueError("complete-date feasibility denominator must remain exactly 49")

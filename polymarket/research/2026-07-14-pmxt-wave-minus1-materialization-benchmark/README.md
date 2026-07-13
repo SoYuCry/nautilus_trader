@@ -4,7 +4,14 @@ G004 is a research-only, outcome-blind systems benchmark. Its ordering scope is
 **O1 selected-token replay only**. The bounded real G002 O3 artifact is referenced
 as external evidence; G004 does not rerun, benchmark, or claim O3 parity.
 
-M1 performs bounded PyArrow row-group/batch source streaming, filters one selected
+Every measured run first performs exactly one source-content SHA-256 byte pass inside
+the measured boundary. Cold M1/M2/M3 and application-warm M1 then perform one
+materialization/parquet source pass, so their `source_pass_count` is 2. Cache-warm
+M2/M3 perform only the hash pass plus cache lookup/read/validation, so their
+`warm_source_pass_count` is 1. `source_rows_scanned` remains the parsed row count
+from the materialization pass only; the hash pass reads bytes and parses zero rows.
+
+M1 then performs bounded PyArrow row-group/batch source streaming, filters one selected
 market/token, attaches the true physical ordinal from each global batch offset, and
 then holds only those selected rows in an O1 sort buffer. M1 and M2 retain no full
 primitive list: both use rolling digests/counts plus first/middle/last checkpoints,

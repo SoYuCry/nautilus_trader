@@ -19,6 +19,7 @@
   "program_version": "2026-07-14.g004.v3",
   "protocol_hash": "69f8be79713f7c6f37e06665950106cb6b2ced54156a385c28a963ae4a3076ae",
   "protocol_version": "wave-minus1-g003-outcome-blind-systems-calibration-v1",
-  "source_access_method": "bounded_pyarrow_row_group_batch_streaming_plus_selected_token_O1_sort_buffer",
+  "source_access_method": "sha256_source_byte_pass_plus_bounded_pyarrow_row_group_batch_streaming_selected_token_O1_sort_buffer",
+  "source_rows_scanned_semantics": "parsed rows from materialization pass only; source hash pass reads bytes and parses zero rows",
   "worker_count": 1
 }
