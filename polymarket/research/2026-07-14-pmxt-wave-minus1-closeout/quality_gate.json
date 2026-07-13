@@ -35,106 +35,34 @@
   "architectureInvariantGate": {
     "status": "passed",
     "sourceArtifacts": [
-      {
-        "path": ".omx/ultragoal/brief.md"
-      },
-      {
-        "path": ".omx/ultragoal/goals.json",
-        "dynamic": true,
-        "hashPolicy": "dynamic sourceArtifact; no static hash"
-      },
-      {
-        "path": ".omx/ultragoal/ledger.jsonl",
-        "dynamic": true,
-        "hashPolicy": "dynamic sourceArtifact; no static hash"
-      },
-      {
-        "path": ".omx/plans/pmxt-weather-441-factor-strategy-ralplan-draft.md"
-      },
-      {
-        "path": ".omx/plans/pmxt-weather-441-factor-strategy-test-spec.md"
-      },
-      {
-        "path": ".omx/plans/pmxt-weather-441-factor-strategy-consensus-handoff.md"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/report.md"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/README.md"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/closeout.json"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/quality_gate.json"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/inventory_summary.json",
-        "goal": "G001"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/protocol-v1.json",
-        "goal": "G001"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/summary.json",
-        "goal": "G002"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/real_curated_smoke_parity.json",
-        "goal": "G002"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/quality_calibration.json",
-        "goal": "G003"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/representative_sample.json",
-        "goal": "G003"
-      },
-      {
-        "path": "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/outcome_blind_invariance.json",
-        "goal": "G003"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/benchmark_manifest.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/benchmark_report.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/m1_m2_m3_results.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/materialization_decision.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/complete_date_feasibility.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/parity_oracles.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/cache_resume_tests.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/outcome_blind_invariance_g004.json",
-        "goal": "G004"
-      },
-      {
-        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/representative_sample_g004.json",
-        "goal": "G004"
-      }
+      ".omx/ultragoal/brief.md",
+      ".omx/ultragoal/goals.json",
+      ".omx/ultragoal/ledger.jsonl",
+      ".omx/plans/pmxt-weather-441-factor-strategy-ralplan-draft.md",
+      ".omx/plans/pmxt-weather-441-factor-strategy-test-spec.md",
+      ".omx/plans/pmxt-weather-441-factor-strategy-consensus-handoff.md",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/report.md",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/README.md",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/closeout.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/quality_gate.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/inventory_summary.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/protocol-v1.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/summary.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/real_curated_smoke_parity.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/quality_calibration.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/representative_sample.json",
+      "polymarket/research/2026-07-13-pmxt-wave-minus1-inventory/outputs/outcome_blind_invariance.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/benchmark_manifest.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/benchmark_report.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/m1_m2_m3_results.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/materialization_decision.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/complete_date_feasibility.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/parity_oracles.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/cache_resume_tests.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/outcome_blind_invariance_g004.json",
+      "polymarket/research/2026-07-14-pmxt-wave-minus1-materialization-benchmark/outputs/representative_sample_g004.json"
     ],
-    "evidence": "架构不变量门通过。输入覆盖 ultragoal brief、动态 goals/ledger、ralplan/test-spec/handoff、closeout report/README/JSON 以及 G001-G004 outputs。goals/ledger 作为动态 sourceArtifact 保留，不固定静态 hash。叙述只覆盖既有证据事实和关闭状态，不新增决策或外推结论。",
+    "evidence": "架构不变量门通过。输入覆盖 ultragoal brief、动态 goals/ledger、ralplan/test-spec/handoff、closeout report/README/JSON 以及 G001-G004 outputs。goals/ledger 作为动态账本 source artifacts 保留，故不固定静态 hash。叙述只覆盖既有证据事实和关闭状态，不新增决策或外推结论。",
     "invariants": [
       {
         "invariant": "I1 精确 inventory：441 events、49 cities、9 dates、4,851 markets、9,702 tokens、747,185,591 rows_written_total、278 event-local missing-hour intersections。",
