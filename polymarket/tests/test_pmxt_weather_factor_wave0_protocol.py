@@ -270,21 +270,32 @@ def test_missing_source_timestamp_falls_back_to_received_time_and_sequence_tie_b
     assert first["future_mid_return_30s"] == pytest.approx(0.25)
 
 
-def test_next_nonzero_mid_move_skips_zero_moves_and_invalid_books(factor_protocol: Any) -> None:
+def test_next_nonzero_mid_move_skips_valid_same_mid_but_stops_at_invalid_mutation(
+    factor_protocol: Any,
+) -> None:
     rows = _dataset([
         _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.45", "10")], [("0.55", "10")]),
         _book_row(2, "2026-07-14T00:00:01Z", "E1", "E1-YES", [("0.46", "9")], [("0.54", "9")]),
-        _book_row(3, "2026-07-14T00:00:02Z", "E1", "E1-YES", [("0.70", "10")], [("0.60", "10")]),
-        _book_row(4, "2026-07-14T00:00:03Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")]),
+        _book_row(3, "2026-07-14T00:00:02Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")]),
+        _book_row(4, "2026-07-14T00:00:03Z", "E1", "E1-YES", [("0.51", "9")], [("0.59", "9")]),
+        _book_row(5, "2026-07-14T00:00:04Z", "E1", "E1-YES", [("0.70", "10")], [("0.60", "10")]),
+        _book_row(6, "2026-07-14T00:00:05Z", "E1", "E1-YES", [("0.55", "10")], [("0.65", "10")]),
     ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30, 120, 600), include_labels=True)
     first = panel.loc[panel["sequence"] == 1].iloc[0]
+    before_censor = panel.loc[panel["sequence"] == 3].iloc[0]
+    invalid = panel.loc[panel["sequence"] == 5].iloc[0]
 
     assert first["mid"] == pytest.approx(0.50)
     assert first["next_nonzero_mid_move"] == pytest.approx(0.05)
     assert first["next_nonzero_mid_move_direction"] == 1
-    assert first["next_nonzero_mid_move_matched_sequence"] == 4
+    assert first["next_nonzero_mid_move_matched_sequence"] == 3
+    assert bool(invalid["actual_mutation"]) is True
+    assert invalid["book_validity"] == "crossed"
+    assert _is_missing(before_censor["next_nonzero_mid_move"])
+    assert _is_missing(before_censor["next_nonzero_mid_move_direction"])
+    assert _is_missing(before_censor["next_nonzero_mid_move_matched_sequence"])
 
 
 def test_valid_observation_count_is_diagnostic_only_and_cannot_enter_primary_shortlist(
