@@ -891,37 +891,103 @@ def _add_next_nonzero_group_labels(panel: pd.DataFrame, mutations: pd.DataFrame,
     rows = list(mutations.itertuples())
     if not rows:
         return
+    barrier_timestamps = [barrier.timestamp for barrier in barriers]
+    next_different_positions, segment_ends = _next_different_positions_by_valid_segment(rows)
+    move_indexes: list[Any] = []
+    moves: list[float] = []
+    move_directions: list[float] = []
+    matched_sequences: list[int] = []
+    censor_indexes: list[Any] = []
+    censor_reasons: list[str] = []
+
     for position, row in enumerate(rows):
         if row.book_validity != "valid":
             continue
         index = row.Index
-        current_ts = panel.loc[index, "timestamp"]
-        current_mid = float(panel.loc[index, "mid"])
-        last_ts = current_ts
-        for future_row in rows[position + 1 :]:
-            future_index = future_row.Index
-            future_ts = panel.loc[future_index, "timestamp"]
-            last_ts = future_ts
-            barrier = _first_barrier_between(barriers, current_ts, future_ts)
+        current_ts = row.timestamp
+        current_mid = float(row.mid)
+        target_position = next_different_positions[position]
+        if target_position is not None:
+            future_row = rows[target_position]
+            future_ts = future_row.timestamp
+            barrier = _first_barrier_between_sorted(barriers, barrier_timestamps, current_ts, future_ts)
             if barrier is not None:
-                panel.loc[index, "next_nonzero_mid_move_censor_reason"] = _barrier_reason(barrier)
-                break
-            if future_row.book_validity != "valid":
-                panel.loc[index, "next_nonzero_mid_move_censor_reason"] = "invalid_future_book"
-                break
-            future_mid = float(panel.loc[future_index, "mid"])
-            if future_mid == current_mid:
+                censor_indexes.append(index)
+                censor_reasons.append(_barrier_reason(barrier))
                 continue
+            future_mid = float(future_row.mid)
             move = future_mid - current_mid
-            panel.loc[index, "next_nonzero_mid_move"] = move
-            panel.loc[index, "next_nonzero_mid_move_direction"] = 1.0 if move > 0.0 else -1.0
-            panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = int(panel.loc[future_index, "sequence"])
-            break
-        else:
-            barrier = _first_barrier_between(barriers, current_ts, last_ts)
-            panel.loc[index, "next_nonzero_mid_move_censor_reason"] = (
-                _barrier_reason(barrier) if barrier is not None else "missing_future_mid"
-            )
+            move_indexes.append(index)
+            moves.append(move)
+            move_directions.append(1.0 if move > 0.0 else -1.0)
+            matched_sequences.append(int(future_row.sequence))
+            continue
+
+        segment_end = segment_ends[position]
+        invalid_position = segment_end if segment_end < len(rows) else None
+        censor_ts = rows[invalid_position].timestamp if invalid_position is not None else rows[segment_end - 1].timestamp
+        barrier = _first_barrier_between_sorted(barriers, barrier_timestamps, current_ts, censor_ts)
+        censor_indexes.append(index)
+        censor_reasons.append(_next_nonzero_censor_reason(barrier, invalid_position))
+
+    if move_indexes:
+        panel.loc[move_indexes, "next_nonzero_mid_move"] = moves
+        panel.loc[move_indexes, "next_nonzero_mid_move_direction"] = move_directions
+        panel.loc[move_indexes, "next_nonzero_mid_move_matched_sequence"] = matched_sequences
+    if censor_indexes:
+        panel.loc[censor_indexes, "next_nonzero_mid_move_censor_reason"] = censor_reasons
+
+
+def _next_nonzero_censor_reason(barrier: _LabelBarrier | None, invalid_position: int | None) -> str:
+    if barrier is not None:
+        return _barrier_reason(barrier)
+    if invalid_position is not None:
+        return "invalid_future_book"
+    return "missing_future_mid"
+
+
+def _next_different_positions_by_valid_segment(rows: list[Any]) -> tuple[list[int | None], list[int]]:
+    next_different_positions: list[int | None] = [None] * len(rows)
+    segment_ends: list[int] = [len(rows)] * len(rows)
+    position = 0
+    while position < len(rows):
+        if rows[position].book_validity != "valid":
+            position += 1
+            continue
+        segment_start = position
+        while position < len(rows) and rows[position].book_validity == "valid":
+            position += 1
+        segment_end = position
+        _fill_next_different_positions_for_segment(
+            rows,
+            segment_start,
+            segment_end,
+            next_different_positions,
+            segment_ends,
+        )
+    return next_different_positions, segment_ends
+
+
+def _fill_next_different_positions_for_segment(
+    rows: list[Any],
+    segment_start: int,
+    segment_end: int,
+    next_different_positions: list[int | None],
+    segment_ends: list[int],
+) -> None:
+    for segment_position in range(segment_start, segment_end):
+        segment_ends[segment_position] = segment_end
+
+    run_start = segment_start
+    while run_start < segment_end:
+        run_mid = float(rows[run_start].mid)
+        run_end = run_start + 1
+        while run_end < segment_end and float(rows[run_end].mid) == run_mid:
+            run_end += 1
+        target_position = run_end if run_end < segment_end else None
+        for run_position in range(run_start, run_end):
+            next_different_positions[run_position] = target_position
+        run_start = run_end
 
 
 def _first_barrier_between(
@@ -934,6 +1000,18 @@ def _first_barrier_between(
             return barrier
         if barrier.timestamp > end:
             return None
+    return None
+
+
+def _first_barrier_between_sorted(
+    barriers: list[_LabelBarrier],
+    barrier_timestamps: list[pd.Timestamp],
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+) -> _LabelBarrier | None:
+    position = bisect_right(barrier_timestamps, start)
+    if position < len(barriers) and barrier_timestamps[position] <= end:
+        return barriers[position]
     return None
 
 

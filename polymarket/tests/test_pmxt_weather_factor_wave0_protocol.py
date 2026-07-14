@@ -429,6 +429,44 @@ def test_next_nonzero_mid_move_skips_valid_same_mid_but_stops_at_invalid_mutatio
     assert _is_missing(before_censor["next_nonzero_mid_move_matched_sequence"])
 
 
+def test_next_nonzero_mid_move_labels_long_same_mid_run_without_suffix_rescans(
+    factor_protocol: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    same_mid_count = 2_000
+    panel = pd.DataFrame(
+        {
+            "timestamp": pd.date_range("2026-07-14T00:00:00Z", periods=same_mid_count + 1, freq="s"),
+            "mid": [0.50] * same_mid_count + [0.55],
+            "sequence": list(range(1, same_mid_count + 2)),
+            "book_validity": ["valid"] * (same_mid_count + 1),
+        },
+    )
+    panel["next_nonzero_mid_move"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+    panel["next_nonzero_mid_move_direction"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+    panel["next_nonzero_mid_move_matched_sequence"] = pd.Series(pd.NA, index=panel.index, dtype="Int64")
+    panel["next_nonzero_mid_move_censor_reason"] = pd.Series(None, index=panel.index, dtype="object")
+
+    barrier_probe_count = 0
+    original_probe = factor_protocol._first_barrier_between_sorted
+
+    def counting_probe(*args: Any, **kwargs: Any) -> Any:
+        nonlocal barrier_probe_count
+        barrier_probe_count += 1
+        return original_probe(*args, **kwargs)
+
+    monkeypatch.setattr(factor_protocol, "_first_barrier_between_sorted", counting_probe)
+
+    factor_protocol._add_next_nonzero_group_labels(panel, panel, [])
+
+    assert barrier_probe_count == len(panel)
+    assert panel.loc[0, "next_nonzero_mid_move"] == pytest.approx(0.05)
+    assert panel.loc[0, "next_nonzero_mid_move_direction"] == 1
+    assert panel.loc[0, "next_nonzero_mid_move_matched_sequence"] == same_mid_count + 1
+    assert panel.loc[same_mid_count - 1, "next_nonzero_mid_move"] == pytest.approx(0.05)
+    assert panel.loc[same_mid_count, "next_nonzero_mid_move_censor_reason"] == "missing_future_mid"
+
+
 def test_valid_observation_count_is_diagnostic_only_and_cannot_enter_primary_shortlist(
     factor_protocol: Any,
     preregistered_protocol: dict[str, Any],
