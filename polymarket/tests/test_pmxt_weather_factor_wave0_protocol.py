@@ -7,6 +7,7 @@ import importlib.util
 import json
 import math
 import sys
+from dataclasses import replace
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -602,7 +603,21 @@ def _multi_event_dataset() -> PolymarketL2DatasetV1:
                     ),
                 )
                 sequence += 1
-    return _dataset(steps, source_quality_by_token=source_quality_by_token)
+    canonical_steps = [
+        replace(step, sequence=index, source_row_index=index)
+        for index, step in enumerate(
+            sorted(
+                steps,
+                key=lambda step: (
+                    replay_timestamp(step),
+                    step.timestamp_received,
+                    step.source_row_index if step.source_row_index is not None else step.sequence,
+                ),
+            ),
+            start=1,
+        )
+    ]
+    return _dataset(canonical_steps, source_quality_by_token=source_quality_by_token)
 
 
 def _book_row(
