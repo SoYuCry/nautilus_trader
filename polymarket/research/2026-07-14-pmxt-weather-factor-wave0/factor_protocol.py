@@ -9,6 +9,7 @@ from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
 from dataclasses import field
+from decimal import Decimal
 from typing import Any
 
 import pandas as pd
@@ -44,13 +45,15 @@ DIAGNOSTIC_FACTOR_NAMES = (
 
 _SUPPORTED_EVENT_TYPES = frozenset({"book", "price_change", "trade", "tick_size_change"})
 _IDENTITY_COLUMNS = ["event_id", "market", "token_id"]
+_DEFAULT_TICK_SIZE = Decimal("0.01")
+_NARROW_TICK_SIZE = Decimal("0.001")
 
 
 @dataclass
 class _TokenState:
     bids: dict[float, float] = field(default_factory=dict)
     asks: dict[float, float] = field(default_factory=dict)
-    tick_size: float = 0.01
+    tick_size: Decimal = _DEFAULT_TICK_SIZE
     last_mutation_ts: pd.Timestamp | None = None
     mutation_timestamps: deque[pd.Timestamp] = field(default_factory=deque)
 
@@ -149,7 +152,7 @@ def _token_key(update: L2UpdateV1) -> tuple[str, str]:
 
 
 def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
-    tick_sizes: dict[tuple[str, str], float] = {}
+    tick_sizes: dict[tuple[str, str], Decimal] = {}
     for step in dataset.steps:
         if not step.updates:
             raise _validation_error(step, None, "updates", "must contain at least one update")
@@ -160,7 +163,7 @@ def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
 def _validate_update(
     step: L2ReplayStepV1,
     update: L2UpdateV1,
-    tick_sizes: dict[tuple[str, str], float],
+    tick_sizes: dict[tuple[str, str], Decimal],
 ) -> None:
     if not isinstance(update.event_type, str) or update.event_type not in _SUPPORTED_EVENT_TYPES:
         raise _validation_error(step, update, "event_type", "is not supported")
@@ -185,21 +188,21 @@ def _validate_update(
         return
 
     key = _token_key(update)
-    current_tick = tick_sizes.get(key, 0.01)
-    old_tick = _validate_number(step, update, "old_tick_size", update.old_tick_size)
-    new_tick = _validate_number(step, update, "new_tick_size", update.new_tick_size)
-    if not math.isclose(old_tick, current_tick, rel_tol=0.0, abs_tol=1e-12):
+    current_tick = tick_sizes.get(key, _DEFAULT_TICK_SIZE)
+    old_tick = update.old_tick_size
+    new_tick = update.new_tick_size
+    if not isinstance(old_tick, Decimal) or not old_tick.is_finite() or old_tick != current_tick:
         raise _validation_error(
             step,
             update,
             "old_tick_size",
             f"must equal current token tick size {current_tick}",
         )
-    if not math.isclose(old_tick, 0.01, rel_tol=0.0, abs_tol=1e-12):
+    if old_tick != _DEFAULT_TICK_SIZE:
         raise _validation_error(step, update, "old_tick_size", "only 0.01 -> 0.001 is supported")
-    if not math.isclose(new_tick, 0.001, rel_tol=0.0, abs_tol=1e-12):
+    if not isinstance(new_tick, Decimal) or not new_tick.is_finite() or new_tick != _NARROW_TICK_SIZE:
         raise _validation_error(step, update, "new_tick_size", "only 0.01 -> 0.001 is supported")
-    tick_sizes[key] = new_tick
+    tick_sizes[key] = _NARROW_TICK_SIZE
 
 
 def _validate_levels(
@@ -214,9 +217,10 @@ def _validate_levels(
         iterator = iter(levels)
     except TypeError as exc:
         raise _validation_error(step, update, side_name, "must be an iterable of price levels") from exc
+    seen_prices: set[float] = set()
     for position, level in enumerate(iterator):
         context = f"{side_name}[{position}]"
-        _validate_number(
+        price = _validate_number(
             step,
             update,
             f"{context}.price",
@@ -224,6 +228,14 @@ def _validate_levels(
             minimum=0.0,
             maximum=1.0,
         )
+        if price in seen_prices:
+            raise _validation_error(
+                step,
+                update,
+                f"{context}.price",
+                f"duplicate {side_name} price level {getattr(level, 'price', None)!r}",
+            )
+        seen_prices.add(price)
         _validate_number(
             step,
             update,
@@ -322,7 +334,7 @@ def _audit_record(
         "ask1": ask1,
         "mid": mid,
         "spread": spread,
-        "tick_size_regime": state.tick_size,
+        "tick_size_regime": float(state.tick_size),
         "book_staleness_seconds": staleness,
         "book_update_intensity": intensity,
         "valid_observation_counts": 1 if valid else 0,
@@ -364,7 +376,7 @@ def _apply_update(state: _TokenState, update: L2UpdateV1) -> None:
     elif update.event_type == "price_change":
         _apply_price_change(state, update)
     elif update.event_type == "tick_size_change":
-        state.tick_size = float(update.new_tick_size)  # type: ignore[arg-type]
+        state.tick_size = _NARROW_TICK_SIZE
 
 
 def _apply_price_change(state: _TokenState, update: L2UpdateV1) -> None:
@@ -690,11 +702,14 @@ def _to_float(value: Any) -> float:
 
 
 def _safe_corr(left: pd.Series, right: pd.Series) -> float:
-    if len(left) < 2 or len(right) < 2:
+    pairs = pd.concat({"factor": left, "label": right}, axis=1, join="inner").dropna()
+    if len(pairs) < 2:
         return math.nan
-    if left.nunique(dropna=True) < 2 or right.nunique(dropna=True) < 2:
+    if pairs["factor"].nunique() < 2 or pairs["label"].nunique() < 2:
         return math.nan
-    value = left.corr(right)
+    factor_ranks = pairs["factor"].rank(method="average")
+    label_ranks = pairs["label"].rank(method="average")
+    value = factor_ranks.corr(label_ranks)
     return float(value) if pd.notna(value) else math.nan
 
 
