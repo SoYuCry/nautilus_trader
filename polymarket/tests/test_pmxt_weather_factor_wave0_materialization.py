@@ -75,6 +75,23 @@ EXPECTED_CACHE_BUDGET_BYTES = 8_589_934_592
 EXPECTED_HORIZONS = (30, 120, 600)
 SOURCE_EVENT_SLUG = "highest-temperature-in-hong-kong-on-june-10-2026"
 SOURCE_MARKET_TOKEN = "E1-YES"  # noqa: S105 - synthetic Polymarket token id, not a password.
+EXPECTED_REAL_EVENT_SLUGS = (
+    "highest-temperature-in-hong-kong-on-june-10-2026",
+    "highest-temperature-in-chicago-on-june-9-2026",
+    "highest-temperature-in-amsterdam-on-june-6-2026",
+)
+EXPECTED_REAL_PARITY_STAGES = (
+    "m1_canonical_factor_protocol",
+    "m2_cold_commit",
+    "m2_warm_read",
+    "m2_corrupt_recompute_recommit",
+)
+EXPECTED_CANONICAL_RESULT_SECTIONS = (
+    "panel",
+    "labels_audit_fields",
+    "candidate_table",
+    "primary_shortlist",
+)
 COMPACT_INVENTORY_MAX_BYTES = 1_048_576
 COMPACT_EVENT_SCHEMA = {
     "event_slug",
@@ -551,7 +568,8 @@ def test_wave0_compact_canonical_inventory_is_small_and_has_exact_minimal_event_
 
     compact = _read_json(WAVE0_COMPACT_INVENTORY)
     events = compact.get("events")
-    assert isinstance(events, list) and events
+    assert isinstance(events, list)
+    assert events
     for event in events:
         assert set(event) == COMPACT_EVENT_SCHEMA
         assert not (FORBIDDEN_COMPACT_EVENT_ARRAYS & set(event))
@@ -622,6 +640,15 @@ def test_g003_parity_and_decision_artifacts_live_under_wave0_outputs_and_do_not_
     assert (BENCHMARK_DIR / "g003_materialization_decision.json").exists() is False
 
 
+def test_g003_frozen_real_parity_artifact_has_three_event_level_canonical_factor_protocol_attestations() -> None:
+    """Final G003 real gate is event-level canonical factor_result parity, not Wave-1 primitive parity_digest reuse."""
+    parity = _read_json(G003_PARITY_PATH)
+    decision = _read_json(G003_DECISION_PATH)
+
+    _assert_real_event_level_canonical_parity_gate(parity)
+    _assert_decision_respects_exact_parity_gate(decision, parity)
+
+
 def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selects_m2(
     materialization_protocol: Any,
     tmp_path: Path,
@@ -635,7 +662,8 @@ def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selec
         include_frozen_representative_real=True,
     )
     _assert_required_parity_scenarios(parity)
-    assert _read_json(api_decision_path).get("selected_mode") != "M2"
+    _assert_real_event_level_canonical_parity_gate(parity)
+    _assert_decision_respects_exact_parity_gate(_read_json(api_decision_path), parity)
 
     cli_parity_path = tmp_path / "cli-parity.json"
     cli_decision_path = tmp_path / "cli-decision.json"
@@ -657,8 +685,10 @@ def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selec
         text=True,
     )
     assert completed.returncode == 0, completed.stderr
-    _assert_required_parity_scenarios(_read_json(cli_parity_path))
-    assert _read_json(cli_decision_path).get("selected_mode") != "M2"
+    cli_parity = _read_json(cli_parity_path)
+    _assert_required_parity_scenarios(cli_parity)
+    _assert_real_event_level_canonical_parity_gate(cli_parity)
+    _assert_decision_respects_exact_parity_gate(_read_json(cli_decision_path), cli_parity)
 
 
 
@@ -983,40 +1013,177 @@ def _assert_required_parity_scenarios(parity: Any) -> None:
     missing = {
         scenario
         for scenario in required
-        if scenarios.get(scenario) not in {"evidence", "environment_blocked"}
+        if scenarios.get(scenario) != "evidence"
     }
     assert missing == set()
 
 
+def _assert_real_event_level_canonical_parity_gate(parity: Any) -> None:
+    rows = _real_parity_rows(parity)
+    assert [row.get("event_slug") for row in rows] == list(EXPECTED_REAL_EVENT_SLUGS)
+    for row in rows:
+        assert row.get("sample_kind") == "frozen_representative_real"
+        assert row.get("environment_blocked") in (None, [])
+        _assert_real_row_runs_canonical_factor_protocol(row)
+        _assert_real_row_has_exact_stage_attestations(row)
+        _assert_m3_is_primitive_audit_only(row)
+
+
+def _real_parity_rows(parity: Any) -> list[dict[str, Any]]:
+    rows = parity.get("results", []) if isinstance(parity, dict) else []
+    real_rows = [
+        row
+        for row in rows
+        if isinstance(row, dict)
+        and (
+            row.get("sample_kind") == "frozen_representative_real"
+            or row.get("event_slug") in EXPECTED_REAL_EVENT_SLUGS
+        )
+    ]
+    assert len(real_rows) == len(EXPECTED_REAL_EVENT_SLUGS)
+    return real_rows
+
+
+def _assert_real_row_runs_canonical_factor_protocol(row: dict[str, Any]) -> None:
+    attestation = row.get("parity_attestation")
+    assert isinstance(attestation, dict)
+    assert attestation.get("oracle") == "factor_protocol.run_factor_protocol"
+    assert attestation.get("horizons_seconds") == list(EXPECTED_HORIZONS)
+    assert attestation.get("cached_generated_evidence") in {True, False}
+    sources = attestation.get("sources")
+    assert isinstance(sources, dict)
+    assert sources.get("factor_protocol_sha256") == _sha256_file(FACTOR_PROTOCOL)
+    assert sources.get("protocol_json_sha256") == _sha256_file(PROTOCOL_JSON)
+    _assert_sha256(sources.get("source_artifact_sha256"))
+    if attestation.get("cached_generated_evidence") is True:
+        _assert_sha256(sources.get("generated_evidence_sha256"))
+
+
+def _assert_real_row_has_exact_stage_attestations(row: dict[str, Any]) -> None:
+    stages = row.get("parity_attestation", {}).get("stages")
+    assert isinstance(stages, dict)
+    assert set(stages) == set(EXPECTED_REAL_PARITY_STAGES)
+    canonical_digests = [_assert_stage_attestation(stages[name]) for name in EXPECTED_REAL_PARITY_STAGES]
+    assert len(set(canonical_digests)) == 1
+
+
+def _assert_stage_attestation(stage: Any) -> str:
+    assert isinstance(stage, dict)
+    assert stage.get("exact_match") is True
+    _assert_sha256(stage.get("deterministic_digest"))
+    _assert_sha256(stage.get("factor_result_digest"))
+    _assert_sha256(stage.get("semantic_bundle_sha256"))
+    assert stage["factor_result_digest"] != stage.get("primitive_parity_digest")
+    assert stage["semantic_bundle_sha256"] != stage.get("primitive_parity_digest")
+    sections = stage.get("sections")
+    assert isinstance(sections, dict)
+    assert set(sections) == set(EXPECTED_CANONICAL_RESULT_SECTIONS)
+    for section_name in EXPECTED_CANONICAL_RESULT_SECTIONS:
+        _assert_section_attestation(sections[section_name])
+    return str(stage["factor_result_digest"])
+
+
+def _assert_section_attestation(section: Any) -> None:
+    assert isinstance(section, dict)
+    for key in ("digest", "columns", "dtypes", "row_order_digest", "nulls"):
+        assert key in section
+    _assert_sha256(section["digest"])
+    _assert_sha256(section["row_order_digest"])
+    assert isinstance(section["columns"], list)
+    assert isinstance(section["dtypes"], dict)
+    assert isinstance(section["nulls"], dict)
+
+
+def _assert_m3_is_primitive_audit_only(row: dict[str, Any]) -> None:
+    m3 = row.get("modes", {}).get("M3")
+    assert isinstance(m3, dict)
+    assert m3.get("mode") == "M3"
+    assert m3.get("status") == "audit_only"
+    assert m3.get("evidence_kind") == "primitive_audit_only"
+    assert "factor_result_digest" not in m3
+    assert "semantic_bundle_sha256" not in m3
+
+
+def _assert_decision_respects_exact_parity_gate(decision: Any, parity: Any) -> None:
+    assert decision.get("selected_mode") == "M1"
+    statuses = decision.get("scenario_statuses", {})
+    assert statuses == parity.get("scenario_statuses")
+    assert all(status == "evidence" for status in statuses.values())
+    m2_status = decision.get("non_selected_modes", {}).get("M2", {}).get("status")
+    assert m2_status == "eligible_not_selected"
+
+
+def _assert_sha256(value: Any) -> None:
+    assert isinstance(value, str)
+    assert len(value) == 64
+    assert all(character in "0123456789abcdef" for character in value)
+
+
 def _collect_parity_scenarios(results: Any) -> dict[str, str]:
     scenarios: dict[str, str] = {}
-    if isinstance(results, dict) and isinstance(results.get("scenario_statuses"), dict):
-        for scenario, status in results["scenario_statuses"].items():
-            scenarios[_normalize_parity_scenario(str(scenario))] = str(status)
-    rows = results if isinstance(results, list) else results.get("results", [])
+    scenarios.update(_explicit_parity_scenarios(results))
+    rows = _parity_rows(results)
     for row in rows:
-        sample = row.get("sample_kind") or row.get("dataset_kind") or row.get("fixture_kind")
-        if sample is None:
-            sample = "frozen_representative_real" if row.get("source_rows_scanned") or row.get("event_slug") else "synthetic"
-        sample = str(sample).replace("-", "_")
-        modes = row.get("modes", {})
-        if "M1" in modes and modes["M1"].get("cold_elapsed_seconds") is not None:
-            scenarios[f"{sample}:cold_m1"] = "evidence"
-        if "M2" in modes and modes["M2"].get("cold_elapsed_seconds") is not None:
-            scenarios[f"{sample}:cold_m2"] = "evidence"
-        if any(mode.get("warm_elapsed_seconds") is not None for mode in modes.values()):
-            scenarios[f"{sample}:warm"] = "evidence"
-        if any(
-            mode.get("resume_behavior", {}).get("invalid_cache_reason")
-            or mode.get("resume_behavior", {}).get("removed_partial_artifacts")
-            for mode in modes.values()
-        ):
-            scenarios[f"{sample}:corrupt_recover"] = "evidence"
-        if "M3" in modes:
-            scenarios[f"{sample}:m3_audit"] = "evidence"
-        for blocked in row.get("environment_blocked", []):
-            scenarios[_normalize_parity_scenario(f"{sample}:{blocked}")] = "environment_blocked"
+        scenarios.update(_row_parity_scenarios(row))
     return scenarios
+
+
+def _explicit_parity_scenarios(results: Any) -> dict[str, str]:
+    if not isinstance(results, dict) or not isinstance(results.get("scenario_statuses"), dict):
+        return {}
+    return {
+        _normalize_parity_scenario(str(scenario)): str(status)
+        for scenario, status in results["scenario_statuses"].items()
+    }
+
+
+def _parity_rows(results: Any) -> list[Any]:
+    if isinstance(results, list):
+        return results
+    return list(results.get("results", []))
+
+
+def _row_parity_scenarios(row: Any) -> dict[str, str]:
+    sample = _parity_sample(row)
+    modes = row.get("modes", {})
+    scenarios: dict[str, str] = {}
+    _add_cold_scenario(scenarios, sample, modes, "M1", "cold_m1")
+    _add_cold_scenario(scenarios, sample, modes, "M2", "cold_m2")
+    if any(mode.get("warm_elapsed_seconds") is not None for mode in modes.values()):
+        scenarios[f"{sample}:warm"] = "evidence"
+    if _has_corrupt_recover_evidence(modes):
+        scenarios[f"{sample}:corrupt_recover"] = "evidence"
+    if "M3" in modes:
+        scenarios[f"{sample}:m3_audit"] = "evidence"
+    for blocked in row.get("environment_blocked", []):
+        scenarios[_normalize_parity_scenario(f"{sample}:{blocked}")] = "environment_blocked"
+    return scenarios
+
+
+def _parity_sample(row: Any) -> str:
+    sample = row.get("sample_kind") or row.get("dataset_kind") or row.get("fixture_kind")
+    if sample is None:
+        sample = "frozen_representative_real" if row.get("source_rows_scanned") or row.get("event_slug") else "synthetic"
+    return str(sample).replace("-", "_")
+
+
+def _add_cold_scenario(
+    scenarios: dict[str, str],
+    sample: str,
+    modes: dict[str, Any],
+    mode_name: str,
+    scenario_name: str,
+) -> None:
+    if mode_name in modes and modes[mode_name].get("cold_elapsed_seconds") is not None:
+        scenarios[f"{sample}:{scenario_name}"] = "evidence"
+
+
+def _has_corrupt_recover_evidence(modes: dict[str, Any]) -> bool:
+    return any(
+        mode.get("resume_behavior", {}).get("invalid_cache_reason")
+        or mode.get("resume_behavior", {}).get("removed_partial_artifacts")
+        for mode in modes.values()
+    )
 
 
 def _normalize_parity_scenario(scenario: str) -> str:
