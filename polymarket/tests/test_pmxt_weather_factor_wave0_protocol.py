@@ -1,16 +1,30 @@
 from __future__ import annotations
 
-import copy
+# ruff: noqa: E402, I001
+
 import hashlib
 import importlib.util
 import json
 import math
 import sys
+from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from polymarket._core.models import DatasetMetadataV1
+from polymarket._core.models import L2ReplayStepV1
+from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import LevelV1
+from polymarket._core.models import PolymarketL2DatasetV1
+from polymarket.replay_contract import replay_timestamp
 
 
 RESEARCH_DIR = (
@@ -124,19 +138,21 @@ def test_run_factor_protocol_rejects_noncanonical_primary_horizons(
 def test_prefix_factor_values_are_unchanged_by_appended_future_poison_rows(factor_protocol: Any) -> None:
     """
     Required API:
-      build_factor_panel(rows, *, horizons_seconds, include_labels=True) -> DataFrame
+      build_factor_panel(dataset, *, horizons_seconds, include_labels=True) -> DataFrame
 
-    Current/prefix factor values must be prefix-causal. Appending future rows with
-    poisoned outcome/PnL/future-return fields may create future labels for earlier
-    rows, but it must not alter current factor values, quality flags, or cohort
-    assignment for the original prefix.
+    Current/prefix factor values must be prefix-causal. Appending future steps with
+    poisoned audit-only metadata may create future labels for earlier steps, but it
+    must not alter current factor values, quality flags, or cohort assignment for
+    the original prefix.
     """
-    prefix = _base_rows(event_id="E1", token_id=MARKET_TOKEN_E1_YES)
-    poisoned_future = _poison_future_rows(event_id="E1", token_id=MARKET_TOKEN_E1_YES)
+    prefix_steps = _base_steps(event_id="E1", token_id=MARKET_TOKEN_E1_YES)
+    poisoned_future_steps = _poison_future_steps(event_id="E1", token_id=MARKET_TOKEN_E1_YES)
+    prefix = _dataset(prefix_steps)
+    appended = _dataset(prefix_steps + poisoned_future_steps, poison_metadata=True)
 
     prefix_panel = factor_protocol.build_factor_panel(prefix, horizons_seconds=(30, 120, 600), include_labels=True)
     appended_panel = factor_protocol.build_factor_panel(
-        prefix + poisoned_future,
+        appended,
         horizons_seconds=(30, 120, 600),
         include_labels=True,
     )
@@ -150,32 +166,17 @@ def test_outcome_settlement_and_pnl_columns_do_not_affect_factors_quality_or_can
 ) -> None:
     """
     Required API:
-      run_factor_protocol(rows, *, horizons_seconds) -> mapping/object with:
+      run_factor_protocol(dataset, *, horizons_seconds) -> mapping/object with:
         panel: DataFrame
         candidate_table: DataFrame
         primary_shortlist: DataFrame or list[dict]
 
-    Outcome/winner/settlement/PnL-like fields are forbidden inputs for current
-    factors, data quality classification, and candidate gates.
+    Outcome/winner/settlement/PnL-like fields do not exist on L2UpdateV1. Poisoning
+    dataset metadata with those names must not affect factors, data quality
+    classification, or candidate gates.
     """
-    rows = _multi_event_rows()
-    poisoned = copy.deepcopy(rows)
-    for index, row in enumerate(poisoned):
-        row.update(
-            {
-                "outcome": "YES" if index % 2 else "NO",
-                "winner": row["token_id"],
-                "settlement": 1.0 if index % 2 else 0.0,
-                "settled": True,
-                "pnl": 10_000 - index,
-                "profit": -999 + index,
-                "fee": 123,
-                "fill": "TAKER",
-                "position": index,
-                "future_return": 999 if index % 2 else -999,
-                "strategy_signal": "leak",
-            },
-        )
+    rows = _multi_event_dataset()
+    poisoned = _dataset(rows.steps, source_quality_by_token=_source_quality_by_token(rows), poison_metadata=True)
 
     clean_result = factor_protocol.run_factor_protocol(rows, horizons_seconds=(30, 120, 600))
     poisoned_result = factor_protocol.run_factor_protocol(poisoned, horizons_seconds=(30, 120, 600))
@@ -190,7 +191,7 @@ def test_outcome_settlement_and_pnl_columns_do_not_affect_factors_quality_or_can
 
 
 def test_bbo_is_reconstructed_from_local_l2_not_pmxt_row_best_bid_best_ask(factor_protocol: Any) -> None:
-    rows = [
+    rows = _dataset([
         _book_row(
             sequence=1,
             ts="2026-07-14T00:00:00Z",
@@ -201,7 +202,7 @@ def test_bbo_is_reconstructed_from_local_l2_not_pmxt_row_best_bid_best_ask(facto
             best_bid="0.01",
             best_ask="0.99",
         ),
-    ]
+    ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30, 120, 600), include_labels=False)
 
@@ -214,7 +215,7 @@ def test_bbo_is_reconstructed_from_local_l2_not_pmxt_row_best_bid_best_ask(facto
 def test_wall_clock_labels_handle_30_120_600_duplicate_timestamps_and_invalid_books(
     factor_protocol: Any,
 ) -> None:
-    rows = [
+    rows = _dataset([
         _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.60", "10")]),
         _book_row(2, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.45", "10")], [("0.55", "10")]),
         _book_row(3, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.61", "10")], [("0.59", "10")]),
@@ -222,7 +223,7 @@ def test_wall_clock_labels_handle_30_120_600_duplicate_timestamps_and_invalid_bo
         _book_row(5, "2026-07-14T00:02:00Z", "E1", "E1-YES", [("0.60", "10")], [("0.80", "10")]),
         _book_row(6, "2026-07-14T00:02:00Z", "E1", "E1-YES", [("0.65", "10")], [("0.85", "10")]),
         _book_row(7, "2026-07-14T00:10:00Z", "E1", "E1-YES", [("0.55", "10")], [("0.65", "10")]),
-    ]
+    ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30, 120, 600), include_labels=True)
     first = panel.loc[panel["sequence"] == 1].iloc[0]
@@ -247,15 +248,16 @@ def test_wall_clock_labels_handle_30_120_600_duplicate_timestamps_and_invalid_bo
 def test_missing_source_timestamp_falls_back_to_received_time_and_sequence_tie_break(
     factor_protocol: Any,
 ) -> None:
-    rows = [
+    rows = _dataset([
         _book_row(3, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.60", "10")], [("0.80", "10")], source_ts=None),
         _book_row(2, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")], source_ts=None),
         _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.50", "10")], source_ts=None),
-    ]
+    ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30,), include_labels=True)
 
     assert list(panel["sequence"]) == [1, 2, 3]
+    assert list(panel["replay_timestamp"]) == [pd.Timestamp(replay_timestamp(step)) for step in rows.steps]
     assert list(panel["timestamp"]) == [
         pd.Timestamp("2026-07-14T00:00:00Z"),
         pd.Timestamp("2026-07-14T00:00:00Z"),
@@ -268,12 +270,12 @@ def test_missing_source_timestamp_falls_back_to_received_time_and_sequence_tie_b
 
 
 def test_next_nonzero_mid_move_skips_zero_moves_and_invalid_books(factor_protocol: Any) -> None:
-    rows = [
+    rows = _dataset([
         _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.45", "10")], [("0.55", "10")]),
         _book_row(2, "2026-07-14T00:00:01Z", "E1", "E1-YES", [("0.46", "9")], [("0.54", "9")]),
         _book_row(3, "2026-07-14T00:00:02Z", "E1", "E1-YES", [("0.70", "10")], [("0.60", "10")]),
         _book_row(4, "2026-07-14T00:00:03Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")]),
-    ]
+    ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30, 120, 600), include_labels=True)
     first = panel.loc[panel["sequence"] == 1].iloc[0]
@@ -288,7 +290,7 @@ def test_valid_observation_count_is_diagnostic_only_and_cannot_enter_primary_sho
     factor_protocol: Any,
     preregistered_protocol: dict[str, Any],
 ) -> None:
-    rows = _multi_event_rows()
+    rows = _multi_event_dataset()
     valid_observation_factor = "valid_observation_counts"
 
     result = factor_protocol.run_factor_protocol(rows, horizons_seconds=(30, 120, 600))
@@ -541,37 +543,43 @@ def test_same_sign_gate_counts_distinct_primary_horizons_only(
 
 
 def test_protocol_rerun_is_deterministic_for_panel_candidates_and_digest(factor_protocol: Any) -> None:
-    rows = _multi_event_rows()
+    rows = _multi_event_dataset()
 
     first = factor_protocol.run_factor_protocol(rows, horizons_seconds=(30, 120, 600))
-    second = factor_protocol.run_factor_protocol(list(reversed(rows)), horizons_seconds=(30, 120, 600))
+    second = factor_protocol.run_factor_protocol(rows, horizons_seconds=(30, 120, 600))
 
     _assert_digest_equal(_result_frame(first, "panel"), _result_frame(second, "panel"))
     _assert_digest_equal(_result_frame(first, "candidate_table"), _result_frame(second, "candidate_table"))
     assert _result_get(first, "deterministic_digest") == _result_get(second, "deterministic_digest")
 
 
-def _base_rows(*, event_id: str, token_id: str) -> list[dict[str, Any]]:
-    return [
+def _base_rows(*, event_id: str, token_id: str) -> PolymarketL2DatasetV1:
+    return _dataset(_base_steps(event_id=event_id, token_id=token_id))
+
+
+def _base_steps(*, event_id: str, token_id: str) -> tuple[L2ReplayStepV1, ...]:
+    return (
         _book_row(1, "2026-07-14T00:00:00Z", event_id, token_id, [("0.45", "10"), ("0.44", "8")], [("0.55", "12"), ("0.56", "9")]),
         _price_row(2, "2026-07-14T00:00:10Z", event_id, token_id, "BUY", "0.46", "11"),
         _price_row(3, "2026-07-14T00:00:20Z", event_id, token_id, "SELL", "0.54", "13"),
-    ]
+    )
 
 
-def _poison_future_rows(*, event_id: str, token_id: str) -> list[dict[str, Any]]:
-    rows = [
+def _poison_future_steps(*, event_id: str, token_id: str) -> tuple[L2ReplayStepV1, ...]:
+    return (
         _book_row(4, "2026-07-14T00:00:30Z", event_id, token_id, [("0.90", "100")], [("0.91", "100")]),
         _book_row(5, "2026-07-14T00:02:00Z", event_id, token_id, [("0.10", "100")], [("0.11", "100")]),
         _book_row(6, "2026-07-14T00:10:00Z", event_id, token_id, [("0.80", "100")], [("0.81", "100")]),
-    ]
-    for row in rows:
-        row.update({field: f"poison-{field}" for field in BANNED_OUTCOME_COLUMNS})
-    return rows
+    )
 
 
-def _multi_event_rows() -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
+def _multi_event_rows() -> PolymarketL2DatasetV1:
+    return _multi_event_dataset()
+
+
+def _multi_event_dataset() -> PolymarketL2DatasetV1:
+    steps: list[L2ReplayStepV1] = []
+    source_quality_by_token: dict[str, str] = {}
     sequence = 1
     for event_id, token_ids, base_bid in [
         ("A", ["A-YES", "A-NO"], 0.40),
@@ -582,7 +590,8 @@ def _multi_event_rows() -> list[dict[str, Any]]:
             for offset, size in [(0, 10), (30, 11), (120, 12), (600, 13)]:
                 bid = base_bid + offset / 10_000
                 ask = bid + 0.10
-                rows.append(
+                source_quality_by_token[token_id] = "clean" if event_id != "C" else "degraded"
+                steps.append(
                     _book_row(
                         sequence,
                         f"2026-07-14T00:{offset // 60:02d}:{offset % 60:02d}Z",
@@ -590,11 +599,10 @@ def _multi_event_rows() -> list[dict[str, Any]]:
                         token_id,
                         [(f"{bid:.2f}", str(size))],
                         [(f"{ask:.2f}", str(size + 1))],
-                        source_quality_cohort="clean" if event_id != "C" else "degraded",
                     ),
                 )
                 sequence += 1
-    return rows
+    return _dataset(steps, source_quality_by_token=source_quality_by_token)
 
 
 def _book_row(
@@ -607,43 +615,73 @@ def _book_row(
     *,
     best_bid: str | None = None,
     best_ask: str | None = None,
-    source_quality_cohort: str = "clean",
     source_ts: str | None = "",
-) -> dict[str, Any]:
-    return {
-        "sequence": sequence,
-        "timestamp": ts if source_ts == "" else source_ts,
-        "timestamp_received": ts,
-        "event_id": event_id,
-        "market": event_id,
-        "token_id": token_id,
-        "asset_id": token_id,
-        "event_type": "book",
-        "bids": [{"price": price, "size": size} for price, size in bids],
-        "asks": [{"price": price, "size": size} for price, size in asks],
-        "best_bid": best_bid,
-        "best_ask": best_ask,
-        "source_quality_cohort": source_quality_cohort,
-    }
+) -> L2ReplayStepV1:
+    update = L2UpdateV1(
+        event_type="book",
+        market=event_id,
+        asset_id=token_id,
+        bids=tuple(LevelV1(price=Decimal(price), size=Decimal(size)) for price, size in bids),
+        asks=tuple(LevelV1(price=Decimal(price), size=Decimal(size)) for price, size in asks),
+        best_bid=Decimal(best_bid) if best_bid is not None else None,
+        best_ask=Decimal(best_ask) if best_ask is not None else None,
+    )
+    return L2ReplayStepV1(
+        sequence=sequence,
+        timestamp_received=_dt(ts),
+        timestamp=_dt(ts if source_ts == "" else source_ts) if source_ts is not None else None,
+        updates=(update,),
+        source_row_index=sequence,
+    )
 
 
-def _price_row(sequence: int, ts: str, event_id: str, token_id: str, side: str, price: str, size: str) -> dict[str, Any]:
-    return {
-        "sequence": sequence,
-        "timestamp": ts,
-        "timestamp_received": ts,
-        "event_id": event_id,
-        "market": event_id,
-        "token_id": token_id,
-        "asset_id": token_id,
-        "event_type": "price_change",
-        "side": side,
-        "price": price,
-        "size": size,
-        "best_bid": "0.02",
-        "best_ask": "0.98",
-        "source_quality_cohort": "clean",
-    }
+def _price_row(sequence: int, ts: str, event_id: str, token_id: str, side: str, price: str, size: str) -> L2ReplayStepV1:
+    update = L2UpdateV1(
+        event_type="price_change",
+        market=event_id,
+        asset_id=token_id,
+        side=side,  # type: ignore[arg-type]
+        price=Decimal(price),
+        size=Decimal(size),
+        best_bid=Decimal("0.02"),
+        best_ask=Decimal("0.98"),
+    )
+    return L2ReplayStepV1(
+        sequence=sequence,
+        timestamp_received=_dt(ts),
+        timestamp=_dt(ts),
+        updates=(update,),
+        source_row_index=sequence,
+    )
+
+
+def _dataset(
+    steps: tuple[L2ReplayStepV1, ...] | list[L2ReplayStepV1],
+    *,
+    source_quality_by_token: dict[str, str] | None = None,
+    poison_metadata: bool = False,
+) -> PolymarketL2DatasetV1:
+    source_quality: dict[str, Any] = {"cohort_by_token": source_quality_by_token or {}}
+    if poison_metadata:
+        source_quality["forbidden_poison"] = {field: f"poison-{field}" for field in BANNED_OUTCOME_COLUMNS}
+    return PolymarketL2DatasetV1(
+        metadata=DatasetMetadataV1(
+            dataset_id="synthetic-wave0",
+            adapter_name="pmxt_event_v1",
+            adapter_version="test",
+            source_type="synthetic",
+            source_quality=source_quality,
+        ),
+        steps=tuple(steps),
+    )
+
+
+def _source_quality_by_token(dataset: PolymarketL2DatasetV1) -> dict[str, str]:
+    return dict(dataset.metadata.source_quality.get("cohort_by_token", {}))
+
+
+def _dt(value: str) -> datetime:
+    return datetime.fromisoformat(value)
 
 
 def _current_factor_and_quality_columns(frame: pd.DataFrame) -> list[str]:
