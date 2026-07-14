@@ -29,6 +29,8 @@ RESEARCH_DIR = (
 MATERIALIZATION_PROTOCOL = RESEARCH_DIR / "materialization_protocol.py"
 FACTOR_PROTOCOL = RESEARCH_DIR / "factor_protocol.py"
 PROTOCOL_JSON = RESEARCH_DIR / "protocol.json"
+PMXT_EVENT_ADAPTER = Path(__file__).resolve().parents[1] / "adapters" / "pmxt_event_v1.py"
+REPLAY_CONTRACT = Path(__file__).resolve().parents[1] / "replay_contract.py"
 INVENTORY_DIR = (
     Path(__file__).resolve().parents[1]
     / "research"
@@ -520,6 +522,89 @@ def test_cache_identity_change_recomputes_only_affected_event_token(
     assert calls == {"a": 1, "b": 0}
 
 
+def test_g003_review_blocker_post_parity_m2_state_is_consistently_eligible_not_selected() -> None:
+    parity = _read_json(G003_PARITY_PATH)
+    decision = _read_json(G003_DECISION_PATH)
+
+    assert decision["selected_mode"] == "M1"
+    assert decision["non_selected_modes"]["M2"]["status"] == "eligible_not_selected"
+    assert decision["mode_policy"]["M2"] == "eligible_not_selected"
+    assert parity["mode_policy"]["M2"] == "eligible_not_selected"
+    assert decision["mode_policy"] == parity["mode_policy"]
+
+
+def test_g003_review_blocker_m2_budget_uses_final_payload_and_final_manifest_bytes(
+    materialization_protocol: Any,
+    factor_protocol: Any,
+    synthetic_dataset: Any,
+    tmp_path: Path,
+) -> None:
+    m1 = factor_protocol.run_factor_protocol(synthetic_dataset, horizons_seconds=EXPECTED_HORIZONS)
+    identity = _synthetic_cache_identity(materialization_protocol, synthetic_dataset)
+    sizing_commit = materialization_protocol.write_m2_cache_atomic(
+        m1,
+        cache_dir=tmp_path / "sizing",
+        cache_identity=identity,
+        cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+    )
+    manifest_path = Path(_result_get(sizing_commit, "manifest_path"))
+    manifest = _read_json(manifest_path)
+    payload_bytes = sum((manifest_path.parent / payload["path"]).stat().st_size for payload in manifest["payload_files"])
+    final_commit_bytes = payload_bytes + manifest_path.stat().st_size
+
+    assert manifest["payload_bytes"] == payload_bytes
+    assert manifest["cache_commit_bytes"] == final_commit_bytes
+    assert final_commit_bytes <= EXPECTED_CACHE_BUDGET_BYTES
+
+    constrained = materialization_protocol.write_m2_cache_atomic(
+        m1,
+        cache_dir=tmp_path / "constrained",
+        cache_identity=identity,
+        cache_budget_bytes=final_commit_bytes - 1,
+    )
+    assert _result_get(constrained, "commit_status") == "cache_budget_exceeded"
+    assert _result_get(constrained, "manifest_path") is None
+
+
+def test_g003_review_blocker_cache_has_no_pickle_named_legacy_alias_and_uses_canonical_json_helper(
+    materialization_protocol: Any,
+) -> None:
+    source = MATERIALIZATION_PROTOCOL.read_text(encoding="utf-8")
+
+    assert not hasattr(materialization_protocol, "_write_pickle_atomic")
+    assert "_write_legacy_payload_atomic" not in source
+    assert "globals()" not in source
+    assert '"pic" + "kle"' not in source
+    assert "factor-result.json" in source
+    assert "_write_canonical_payload_atomic" in source
+    assert "_read_canonical_payload" in source
+
+
+def test_g003_review_blocker_real_reuse_attestation_is_hash_bound_and_fail_closed(
+    materialization_protocol: Any,
+) -> None:
+    row = _real_parity_rows(_read_json(G003_PARITY_PATH))[0]
+    sources = row["parity_attestation"]["sources"]
+    expected_sources = {
+        "materialization_protocol_sha256": _sha256_file(MATERIALIZATION_PROTOCOL),
+        "pmxt_event_adapter_sha256": _sha256_file(PMXT_EVENT_ADAPTER),
+        "replay_contract_sha256": _sha256_file(REPLAY_CONTRACT),
+        "factor_protocol_sha256": _sha256_file(FACTOR_PROTOCOL),
+        "protocol_json_sha256": _sha256_file(PROTOCOL_JSON),
+        "source_hashes_sha256": _sha256_json(sources["source_hashes"]),
+    }
+
+    for key, expected_hash in expected_sources.items():
+        assert sources[key] == expected_hash
+
+    reusable_spec = {"event_slug": row["event_slug"], "hashes": sources["source_hashes"], "paths": {}}
+    assert materialization_protocol._committed_real_row_is_valid(row, reusable_spec) is True
+    for key in expected_sources:
+        tampered = copy.deepcopy(row)
+        tampered["parity_attestation"]["sources"][key] = "0" * 64
+        assert materialization_protocol._committed_real_row_is_valid(tampered, reusable_spec) is False
+
+
 def test_m3_is_rejected_as_execution_mode_and_allowed_only_for_audit(
     materialization_protocol: Any,
 ) -> None:
@@ -691,6 +776,48 @@ def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selec
     _assert_decision_respects_exact_parity_gate(_read_json(cli_decision_path), cli_parity)
 
 
+def test_g003_review_blocker_bare_parity_cli_defaults_to_synthetic_and_frozen_real_hash_reuse(
+    monkeypatch: pytest.MonkeyPatch,
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def capture_run_g003_materialization_parity(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        Path(kwargs["output_path"]).write_text("{}", encoding="utf-8")
+        Path(kwargs["decision_output_path"]).write_text("{}", encoding="utf-8")
+        return {}
+
+    monkeypatch.setattr(materialization_protocol, "run_g003_materialization_parity", capture_run_g003_materialization_parity)
+
+    assert materialization_protocol._main(
+        [
+            "parity",
+            "--output",
+            str(tmp_path / "bare-parity.json"),
+            "--decision-output",
+            str(tmp_path / "bare-decision.json"),
+        ]
+    ) == 0
+    assert calls[-1]["include_synthetic"] is True
+    assert calls[-1]["include_frozen_representative_real"] is True
+    assert calls[-1]["force_recompute_real"] is False
+
+    assert materialization_protocol._main(
+        [
+            "parity",
+            "--output",
+            str(tmp_path / "force-parity.json"),
+            "--decision-output",
+            str(tmp_path / "force-decision.json"),
+            "--force",
+        ]
+    ) == 0
+    assert calls[-1]["include_synthetic"] is True
+    assert calls[-1]["include_frozen_representative_real"] is True
+    assert calls[-1]["force_recompute_real"] is True
+
 
 def test_g003_dry_run_has_18_unique_row_balanced_shards_and_event_level_resume_units(
     materialization_protocol: Any,
@@ -767,6 +894,64 @@ def test_event_level_failure_isolation_and_resume_are_deterministic(
     assert [_event_field(event, "task_id") for event in failed_events] == [failed_task_id]
     assert len(_manifest_events(resumed_once)) == EXPECTED_TOTALS["events"] - 1
     assert _manifest_digest(resumed_once) == _manifest_digest(resumed_twice)
+
+
+def test_g003_review_blocker_resume_retains_failed_ledger_frozen_totals_remaining_totals_and_validates(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
+    failed_event = _manifest_events(manifest)[len(_manifest_events(manifest)) // 2]
+    failed_task_id = _event_field(failed_event, "task_id")
+
+    failed = materialization_protocol.record_event_failure(
+        manifest,
+        task_id=failed_task_id,
+        reason="synthetic failure",
+    )
+    resumed = materialization_protocol.build_resume_manifest(failed)
+    remaining_events = _manifest_events(resumed)
+    remaining_totals = _sum_event_totals(remaining_events)
+
+    assert resumed["frozen_totals"] == EXPECTED_TOTALS
+    assert resumed["totals"] == EXPECTED_TOTALS
+    assert resumed["remaining_totals"] == remaining_totals
+    assert resumed["remaining_totals"] == {
+        "events": EXPECTED_TOTALS["events"] - 1,
+        "markets": EXPECTED_TOTALS["markets"] - _event_field(failed_event, "markets"),
+        "tokens": EXPECTED_TOTALS["tokens"] - _event_field(failed_event, "tokens"),
+        "source_rows": EXPECTED_TOTALS["source_rows"] - _event_field(failed_event, "source_rows"),
+        "source_bytes": EXPECTED_TOTALS["source_bytes"] - _event_field(failed_event, "source_bytes"),
+    }
+    assert resumed["failed_event_ledger"] == [
+        {
+            "task_id": failed_task_id,
+            "event_slug": _event_field(failed_event, "event_slug"),
+            "reason": "synthetic failure",
+            "state": "failed",
+        }
+    ]
+    assert all(_event_field(event, "task_id") != failed_task_id for event in remaining_events)
+    materialization_protocol.validate_g003_dry_run_manifest(resumed)
+
+
+def test_g003_review_blocker_dry_run_resource_evidence_has_peak_rss_or_enforceable_memory_cap(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
+    evidence = _result_get(manifest, "resource_evidence")
+    representative_peak_rss = evidence.get("representative_peak_rss_bytes")
+    per_event_cap = evidence.get("per_event_memory_cap_bytes")
+
+    assert (
+        isinstance(representative_peak_rss, int)
+        and representative_peak_rss > 0
+    ) or (
+        isinstance(per_event_cap, int)
+        and per_event_cap > 0
+        and evidence.get("per_event_memory_cap_enforced") is True
+    )
 
 
 def test_large_derivatives_are_not_tracked_by_g003_materialization_contract(
@@ -879,6 +1064,11 @@ def _manifest_digest(manifest: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _sha256_json(value: Any) -> str:
+    payload = json.dumps(_to_builtin(value), sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -910,6 +1100,16 @@ def _event_field(event: Any, key: str) -> Any:
     if key == "source_rows":
         return _result_get(event, "source_rows")
     return _result_get(event, key)
+
+
+def _sum_event_totals(events: list[Any]) -> dict[str, int]:
+    return {
+        "events": len(events),
+        "markets": sum(int(_event_field(event, "markets")) for event in events),
+        "tokens": sum(int(_event_field(event, "tokens")) for event in events),
+        "source_rows": sum(int(_event_field(event, "source_rows")) for event in events),
+        "source_bytes": sum(int(_event_field(event, "source_bytes")) for event in events),
+    }
 
 
 def _result_get(result: Any, key: str) -> Any:
