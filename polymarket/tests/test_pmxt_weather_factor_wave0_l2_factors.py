@@ -533,6 +533,48 @@ def test_snapshot_duplicate_prices_fail_fast_with_full_context(
     )
 
 
+@pytest.mark.parametrize(
+    ("case", "field_context"),
+    [
+        ("snapshot-negative-subnormal-price", "bids[0].price"),
+        ("price-change-above-one-precision-price", "price"),
+    ],
+    ids=("snapshot-negative-subnormal-price", "price-change-above-one-precision-price"),
+)
+def test_decimal_price_bounds_fail_closed_before_ranking(
+    factor_protocol: Any,
+    case: str,
+    field_context: str,
+) -> None:
+    step = (
+        _book_step(
+            1,
+            "2026-07-14T00:00:00Z",
+            bids=[("-1E-1000", "10")],
+            asks=[("0.60", "10")],
+        )
+        if case == "snapshot-negative-subnormal-price"
+        else _price_step(1, "2026-07-14T00:00:00Z", "BUY", "1.0000000000000000000000001", "10")
+    )
+    dataset = _dataset([step])
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(
+        exc_info.value,
+        "sequence",
+        "1",
+        "event_type",
+        "book" if case == "snapshot-negative-subnormal-price" else "price_change",
+        "market",
+        EVENT,
+        "asset_id",
+        YES,
+        field_context,
+    )
+
+
 def test_zero_size_price_change_remains_a_valid_delete(factor_protocol: Any) -> None:
     dataset = _dataset(
         [
@@ -714,6 +756,71 @@ def test_invalid_locked_crossed_one_sided_and_empty_books_are_not_ranking_observ
         assert not _is_missing(row["book_update_intensity"])
 
 
+def test_known_archive_gap_censor_reason_is_exact_hard_break_provenance(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:30Z", bids=[("0.45", "10")], asks=[("0.65", "10")]),
+        ],
+        source_quality={
+            "knownArchiveGaps": [
+                {
+                    "market": EVENT,
+                    "asset_id": YES,
+                    "start": "2026-07-14T00:00:10Z",
+                    "end": "2026-07-14T00:00:20Z",
+                    "provenance": "pmxt_archive_gap",
+                },
+            ],
+        },
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+
+    assert anchor["label_censor_reason_30s"] == "hard_break:pmxt_archive_gap"
+    assert anchor["next_nonzero_mid_move_censor_reason"] == "hard_break:pmxt_archive_gap"
+
+
+def test_fixed_horizon_missing_future_mutation_sets_missing_future_mid_censor_reason(
+    factor_protocol: Any,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+
+    assert anchor["label_censor_reason_30s"] == "missing_future_mid"
+    assert _is_missing(anchor["future_mid_30s"])
+    assert _is_missing(anchor["future_mid_return_30s"])
+
+
+def test_fixed_horizon_invalid_matched_book_sets_invalid_future_book_censor_reason(
+    factor_protocol: Any,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _price_step(2, "2026-07-14T00:00:30Z", "BUY", "0.70", "10"),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+    invalid = panel.loc[panel["sequence"] == 2].iloc[0]
+
+    assert bool(invalid["actual_mutation"]) is True
+    assert invalid["book_validity"] == "crossed"
+    assert anchor["future_book_validity_30s"] == "crossed"
+    assert anchor["label_censor_reason_30s"] == "invalid_future_book"
+    assert _is_missing(anchor["future_mid_30s"])
+    assert _is_missing(anchor["future_mid_return_30s"])
+
+
 def test_next_nonzero_label_is_censored_by_first_future_invalid_actual_mutation(
     factor_protocol: Any,
 ) -> None:
@@ -735,6 +842,30 @@ def test_next_nonzero_label_is_censored_by_first_future_invalid_actual_mutation(
     assert _is_missing(anchor["next_nonzero_mid_move"])
     assert _is_missing(anchor["next_nonzero_mid_move_direction"])
     assert _is_missing(anchor["next_nonzero_mid_move_matched_sequence"])
+    assert anchor["next_nonzero_mid_move_censor_reason"] == "invalid_future_book"
+
+
+def test_next_nonzero_label_sets_missing_future_mid_when_no_later_nonzero_move_exists(
+    factor_protocol: Any,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:10Z", bids=[("0.40", "11")], asks=[("0.60", "9")]),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+    same_mid = panel.loc[panel["sequence"] == 2].iloc[0]
+
+    assert bool(same_mid["actual_mutation"]) is True
+    assert bool(same_mid["ranking_observation"]) is True
+    assert same_mid["mid"] == pytest.approx(anchor["mid"])
+    assert _is_missing(anchor["next_nonzero_mid_move"])
+    assert _is_missing(anchor["next_nonzero_mid_move_direction"])
+    assert _is_missing(anchor["next_nonzero_mid_move_matched_sequence"])
+    assert anchor["next_nonzero_mid_move_censor_reason"] == "missing_future_mid"
 
 
 def test_next_nonzero_label_skips_valid_same_mid_mutations_before_valid_changed_mid(
@@ -1032,6 +1163,7 @@ def _dataset(
     steps: list[L2ReplayStepV1] | tuple[L2ReplayStepV1, ...],
     *,
     dataset_id: str = "synthetic-wave0-l2-factors",
+    source_quality: dict[str, Any] | None = None,
 ) -> PolymarketL2DatasetV1:
     return PolymarketL2DatasetV1(
         metadata=DatasetMetadataV1(
@@ -1039,6 +1171,7 @@ def _dataset(
             adapter_name="pmxt_event_v1",
             adapter_version="test",
             source_type="synthetic",
+            source_quality=source_quality or {},
         ),
         steps=tuple(steps),
     )
