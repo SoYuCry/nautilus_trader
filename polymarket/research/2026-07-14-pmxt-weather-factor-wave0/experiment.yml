@@ -6,6 +6,8 @@ language: zh-CN
 protocol:
   file: polymarket/research/2026-07-14-pmxt-weather-factor-wave0/protocol.json
   schema_version: pmxt_weather_factor_wave0_preregistration.v1
+  definition_version: pmxt_weather_factor_wave0_factor_definitions.g002.v2
+  implementation_alignment_commit: b6e1daa29c
   require_protocol_hash: true
   freeze_before_factor_results: true
 
@@ -26,11 +28,29 @@ input:
       dates: [2026-06-06, 2026-06-07, 2026-06-11, 2026-06-12]
       expected_events: 196
     current_confirmatory_dates: []
+  source_quality:
+    trusted_exact_cohorts: [clean, degraded]
+    missing_or_invalid_policy: unknown
+    unknown_clean_gate_eligible: false
+    knownArchiveGaps:
+      schema: list_of_exact_objects
+      required_fields: [market, asset_id, start, end, provenance]
+      extra_fields_allowed: false
+      string_fields_nonempty: [market, asset_id, provenance]
+      timestamps: timezone_aware_start_end
+      range_constraint: end_gt_start
+      malformed_policy: fail_before_replay_mutation
+      barrier: declared_gap_start_hard_break
+      unknown_gap_inference_allowed: false
   large_panel_outputs_tracked: false
 
 replay:
   adapter: PMXTEventV1Adapter
   contract: replay_contract.py
+  runtime_types:
+    level_type: LevelV1
+    numeric_type: Decimal
+    string_float_or_dict_coercion_allowed: false
   ordering_domain: O1_selected_token
   o1_sort_key: [timestamp, timestamp_received, physical_original_row_ordinal]
   o2_event_wide_use: diagnostics_only
@@ -49,6 +69,10 @@ materialization:
 factors:
   ranking_scope: pure_order_book_state_only
   max_depth_levels: 5
+  implementation_invariants:
+    incremental_top5_cached_book_factors_for_ordinary_delta_flow_tick_noop: true
+    full_rebuild_allowed_for_snapshots: true
+    performance_result_claim: false
   prefix_causal_required: true
   outcome_blind_required: true
   ranking_eligible:
@@ -79,13 +103,25 @@ factors:
 labels:
   primary_elapsed_wall_clock_seconds: [30, 120, 600]
   next_nonzero_mid_move: true
+  cannot_cross_first_applicable_barrier: true
+  barriers:
+    - hard_break
+    - token_close
+    - market_close
+  audit_columns:
+    fixed_horizon_template: label_censor_reason_<h>s
+    next_nonzero: next_nonzero_mid_move_censor_reason
+    hard_break: hard_break_provenance
+  resolution_time_close_scope:
+    token_id_set: token_close
+    token_id_absent: market_wide_close
   valid_observation:
     status: diagnostic_only
     can_substitute_elapsed_time: false
     can_trigger_candidate_gate_alone: false
   censor_at:
     - hard_break
-    - event_close
+    - market_close
     - token_close
     - invalid_future_book
     - missing_future_mid
@@ -122,6 +158,8 @@ analysis:
   candidate_gate:
     same_sign_min_primary_elapsed_horizons: 2
     clean_positive_event_share_min: 0.60
+    clean_gate_cohorts: [clean]
+    unknown_source_quality_clean_gate_eligible: false
     block_bootstrap_interval_excludes_zero_min_primary_horizons: 1
     sole_dependence_on_widest_spread_allowed: false
     clean_degraded_sign_reversal_allowed: false

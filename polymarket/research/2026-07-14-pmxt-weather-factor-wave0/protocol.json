@@ -19,7 +19,14 @@
       "clarify_replay_contract_clock_order_scope_only",
       "clarify_original_step_order_no_sorting_or_fallback",
       "clarify_actual_mutation_staleness_intensity_ranking_and_label_semantics",
-      "clarify_local_reconstructed_l2_and_row_bbo_audit_only"
+      "clarify_local_reconstructed_l2_and_row_bbo_audit_only",
+      "align_g002_protocol_with_b6e1daa29c_runtime_semantics",
+      "clarify_strict_LevelV1_Decimal_runtime_types_no_string_float_coercion",
+      "clarify_source_quality_unknown_policy_and_clean_gate_exclusion",
+      "define_knownArchiveGaps_exact_schema_and_declared_gap_start_barriers",
+      "clarify_resolution_time_token_vs_market_close_scope",
+      "clarify_label_barrier_audit_columns",
+      "clarify_incremental_top5_cached_book_factor_invariant_not_result"
     ],
     "id": "G002_factor_definition_completion",
     "no_441_event_new_results_read": true,
@@ -31,7 +38,9 @@
       "horizons",
       "candidate_gate",
       "claim_scope"
-    ]
+    ],
+    "implementation_alignment_commit": "b6e1daa29c",
+    "definition_version": "pmxt_weather_factor_wave0_factor_definitions.g002.v2"
   },
   "candidate_gate": {
     "claim_scope_if_passed": "exploratory_shortlist_for_future_preregistration_only",
@@ -42,9 +51,16 @@
       "complete_coverage_failure_hash_required": true,
       "flow_quarantine_allowed": false,
       "same_sign_min_primary_elapsed_horizons": 2,
-      "sole_dependence_on_widest_spread_allowed": false
+      "sole_dependence_on_widest_spread_allowed": false,
+      "unknown_source_quality_allowed_to_satisfy_clean_gate": false,
+      "source_quality_missing_or_invalid_policy": "unknown_excluded_from_clean_gates"
     },
-    "zero_candidates_is_valid_outcome": true
+    "zero_candidates_is_valid_outcome": true,
+    "clean_gate_cohorts": [
+      "clean"
+    ],
+    "unknown_source_quality_clean_gate_eligible": false,
+    "degraded_can_upgrade_claim_scope": false
   },
   "claims": {
     "alpha_claim_allowed": false,
@@ -57,7 +73,7 @@
     "strategy_claim_allowed": false
   },
   "created_at": "2026-07-14",
-  "definition_version": "pmxt_weather_factor_wave0_factor_definitions.g002.v1",
+  "definition_version": "pmxt_weather_factor_wave0_factor_definitions.g002.v2",
   "definitions": {
     "actual_mutation": {
       "atomic_step_application": true,
@@ -127,7 +143,27 @@
       "sorting_allowed": false,
       "steps_consumption": "verified_original_order",
       "steps_original_order_source": "PolymarketL2DatasetV1.steps",
-      "typed_steps_required": true
+      "typed_steps_required": true,
+      "runtime_types": {
+        "dataset_type": "PolymarketL2DatasetV1",
+        "step_type": "L2ReplayStepV1",
+        "update_type": "L2UpdateV1",
+        "level_type": "LevelV1",
+        "numeric_type": "Decimal",
+        "strict_runtime_types_required": true,
+        "level_dict_coercion_allowed": false,
+        "string_numeric_coercion_allowed": false,
+        "float_numeric_coercion_allowed": false,
+        "integer_numeric_coercion_allowed": false,
+        "finite_decimal_required_for": [
+          "LevelV1.price",
+          "LevelV1.size",
+          "L2UpdateV1.price",
+          "L2UpdateV1.size",
+          "L2UpdateV1.old_tick_size",
+          "L2UpdateV1.new_tick_size"
+        ]
+      }
     },
     "diagnostic_factor_definitions": [
       {
@@ -276,7 +312,13 @@
       "accepted_transition": "explicit_exact_token_level_0.01_to_0.001_change_accepted_by_canonical_validation",
       "default_tick": 0.01,
       "implicit_tick_inference_allowed": false,
-      "token_level_transition_required_for_0_001": true
+      "token_level_transition_required_for_0_001": true,
+      "runtime_type": "Decimal",
+      "accepted_tick_runtime_values": [
+        "Decimal('0.01')",
+        "Decimal('0.001')"
+      ],
+      "string_or_float_coercion_allowed": false
     },
     "update_intensity": {
       "based_only_on": "actual_mutation",
@@ -296,7 +338,116 @@
       "window": "(t-30s, t]",
       "window_seconds": 30
     },
-    "version": "pmxt_weather_factor_wave0_factor_definitions.g002.v1"
+    "version": "pmxt_weather_factor_wave0_factor_definitions.g002.v2",
+    "canonical_runtime_types": {
+      "dataset_type": "PolymarketL2DatasetV1",
+      "step_type": "L2ReplayStepV1",
+      "update_type": "L2UpdateV1",
+      "level_type": "LevelV1",
+      "numeric_type": "Decimal",
+      "strict_runtime_types_required": true,
+      "level_dict_coercion_allowed": false,
+      "string_numeric_coercion_allowed": false,
+      "float_numeric_coercion_allowed": false,
+      "integer_numeric_coercion_allowed": false,
+      "finite_decimal_required_for": [
+        "LevelV1.price",
+        "LevelV1.size",
+        "L2UpdateV1.price",
+        "L2UpdateV1.size",
+        "L2UpdateV1.old_tick_size",
+        "L2UpdateV1.new_tick_size"
+      ]
+    },
+    "source_quality_cohort_policy": {
+      "source": "dataset.metadata.source_quality.cohort_by_token",
+      "trusted_exact_cohorts": [
+        "clean",
+        "degraded"
+      ],
+      "missing_policy": "unknown",
+      "invalid_policy": "unknown",
+      "unknown_clean_gate_eligible": false,
+      "clean_gate_cohorts": [
+        "clean"
+      ],
+      "degraded_reported_separately": true,
+      "invalid_examples": [
+        "missing mapping",
+        "non-dict source_quality",
+        "non-string token",
+        "non-string cohort",
+        "cohort not exactly clean or degraded"
+      ]
+    },
+    "knownArchiveGaps": {
+      "source": "dataset.metadata.source_quality.knownArchiveGaps",
+      "absent_policy": "no_declared_archive_gaps",
+      "container_schema": "list",
+      "item_schema": {
+        "type": "object",
+        "required_exact_fields": [
+          "market",
+          "asset_id",
+          "start",
+          "end",
+          "provenance"
+        ],
+        "extra_fields_allowed": false,
+        "market": "nonempty string condition_id",
+        "asset_id": "nonempty string token asset_id",
+        "provenance": "nonempty string",
+        "start": "timezone-aware timestamp",
+        "end": "timezone-aware timestamp",
+        "range_constraint": "end > start"
+      },
+      "malformed_policy": "fail_closed_before_replay_mutation",
+      "barrier_scope": "token_scoped_by_market_and_asset_id",
+      "barrier_timestamp": "declared_gap_start",
+      "barrier_kind": "hard_break",
+      "barrier_reason": "hard_break:<provenance>",
+      "hard_break_provenance_column": "hard_break_provenance",
+      "unknown_gap_inference_allowed": false
+    },
+    "resolution_time_close_policy": {
+      "source": "MarketMetadataV1.resolution_time",
+      "timestamp_required_timezone_aware": true,
+      "token_id_set_scope": "token_close_for_matching_condition_id_and_token_id",
+      "token_id_absent_scope": "market_wide_close_for_matching_condition_id",
+      "token_id_set_reason": "token_close:<resolution_source_or_unknown>",
+      "token_id_absent_reason": "close:<resolution_source_or_unknown>"
+    },
+    "label_barrier_policy": {
+      "fixed_horizon_cannot_cross_first_applicable_barrier": true,
+      "next_nonzero_cannot_cross_first_applicable_barrier": true,
+      "barrier_interval": "anchor_timestamp < barrier_timestamp <= matched_mutation_timestamp",
+      "barrier_kinds": [
+        "hard_break",
+        "token_close",
+        "close"
+      ],
+      "invalid_actual_mutation_is_next_nonzero_segment_barrier": true,
+      "audit_columns": [
+        "label_censor_reason_<h>s",
+        "next_nonzero_mid_move_censor_reason",
+        "hard_break_provenance"
+      ]
+    },
+    "book_factor_performance_semantics": {
+      "incremental_top5_and_cached_book_factors_required_for": [
+        "ordinary_price_change_delta",
+        "trade_or_flow_only_update",
+        "tick_only_update",
+        "noop"
+      ],
+      "full_book_rescan_allowed_for": [
+        "snapshot_book_update",
+        "heap_rebuild_after_snapshot"
+      ],
+      "ordinary_delta_full_book_rescan_allowed": false,
+      "claim_type": "implementation_invariant_not_performance_result",
+      "no_alpha_latency_throughput_or_production_claim": true
+    }
   },
   "factors": {
     "diagnostic_only": [
@@ -351,7 +502,7 @@
     "construction": {
       "censor_at": [
         "hard_break",
-        "event_close",
+        "market_close",
         "token_close",
         "invalid_future_book",
         "missing_future_mid"
@@ -360,7 +511,16 @@
       "feature_sealed_before_label": true,
       "fixed_wall_clock_target_policy": "first_actual_mutation_at_or_after_target",
       "invalid_target_policy": "censor_value",
-      "next_nonzero_policy": "skip_valid_equal_mid_actual_mutations; first_invalid_actual_mutation_is_censor_barrier"
+      "next_nonzero_policy": "skip_valid_equal_mid_actual_mutations; first_invalid_actual_mutation_is_censor_barrier; cannot_cross_first_applicable_hard_break_or_close",
+      "first_applicable_barrier_policy": "fixed_horizon_and_next_nonzero_labels_cannot_cross_first_hard_break_token_close_or_market_close",
+      "barrier_interval": "anchor_timestamp < barrier_timestamp <= matched_mutation_timestamp",
+      "audit_columns": [
+        "label_censor_reason_<h>s",
+        "next_nonzero_mid_move_censor_reason",
+        "hard_break_provenance"
+      ],
+      "known_archive_gap_policy": "declared_gap_start_is_hard_break_barrier; unknown_gaps_not_inferred",
+      "resolution_time_close_policy": "token_id_set_token_close_token_id_absent_market_wide_close"
     },
     "primary": [
       {
@@ -433,7 +593,24 @@
     "disposable_derivatives_regenerable_from_hashes": true,
     "failure_isolation_unit": "event",
     "large_panel_outputs_tracked_in_git": false,
-    "partial_or_failed_events_cannot_silently_pass_gates": true
+    "partial_or_failed_events_cannot_silently_pass_gates": true,
+    "implementation_alignment_commit": "b6e1daa29c",
+    "book_factor_performance_semantics": {
+      "incremental_top5_and_cached_book_factors_required_for": [
+        "ordinary_price_change_delta",
+        "trade_or_flow_only_update",
+        "tick_only_update",
+        "noop"
+      ],
+      "full_book_rescan_allowed_for": [
+        "snapshot_book_update",
+        "heap_rebuild_after_snapshot"
+      ],
+      "ordinary_delta_full_book_rescan_allowed": false,
+      "claim_type": "implementation_invariant_not_performance_result",
+      "no_alpha_latency_throughput_or_production_claim": true
+    },
+    "pre_results_no_new_441_event_factor_results_read": true
   },
   "ordering_and_replay": {
     "O1": {
@@ -463,7 +640,13 @@
     "canonical_adapter": "PMXTEventV1Adapter",
     "canonical_contract": "replay_contract.py",
     "factor_layer_strict_canonical_update_validation_required": true,
-    "replay_contract_scope": "replay_clock_and_step_order_only"
+    "replay_contract_scope": "replay_clock_and_step_order_only",
+    "strict_runtime_types_required": true,
+    "canonical_runtime_types": {
+      "level_type": "LevelV1",
+      "numeric_type": "Decimal",
+      "string_float_or_dict_coercion_allowed": false
+    }
   },
   "provenance": {
     "source_documents": [
@@ -534,5 +717,57 @@
     "markets": 4851,
     "rows_written_total": 747185591,
     "tokens": 9702
+  },
+  "source_quality": {
+    "cohort_by_token_policy": {
+      "source": "dataset.metadata.source_quality.cohort_by_token",
+      "trusted_exact_cohorts": [
+        "clean",
+        "degraded"
+      ],
+      "missing_policy": "unknown",
+      "invalid_policy": "unknown",
+      "unknown_clean_gate_eligible": false,
+      "clean_gate_cohorts": [
+        "clean"
+      ],
+      "degraded_reported_separately": true,
+      "invalid_examples": [
+        "missing mapping",
+        "non-dict source_quality",
+        "non-string token",
+        "non-string cohort",
+        "cohort not exactly clean or degraded"
+      ]
+    },
+    "knownArchiveGaps_schema": {
+      "source": "dataset.metadata.source_quality.knownArchiveGaps",
+      "absent_policy": "no_declared_archive_gaps",
+      "container_schema": "list",
+      "item_schema": {
+        "type": "object",
+        "required_exact_fields": [
+          "market",
+          "asset_id",
+          "start",
+          "end",
+          "provenance"
+        ],
+        "extra_fields_allowed": false,
+        "market": "nonempty string condition_id",
+        "asset_id": "nonempty string token asset_id",
+        "provenance": "nonempty string",
+        "start": "timezone-aware timestamp",
+        "end": "timezone-aware timestamp",
+        "range_constraint": "end > start"
+      },
+      "malformed_policy": "fail_closed_before_replay_mutation",
+      "barrier_scope": "token_scoped_by_market_and_asset_id",
+      "barrier_timestamp": "declared_gap_start",
+      "barrier_kind": "hard_break",
+      "barrier_reason": "hard_break:<provenance>",
+      "hard_break_provenance_column": "hard_break_provenance",
+      "unknown_gap_inference_allowed": false
+    }
   }
 }

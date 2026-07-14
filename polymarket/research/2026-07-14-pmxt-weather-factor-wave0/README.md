@@ -5,8 +5,9 @@
 ## G002 因子定义补全 amendment
 
 - Amendment 时间：2026-07-14T16:01:45+08:00。
+- Amendment definition version：`pmxt_weather_factor_wave0_factor_definitions.g002.v2`，对齐 committed implementation `b6e1daa29c`。
 - Amendment 原因：在读取任何新的 441-event factor 结果之前，把 G001 已注册的因子名称补全为可执行、可复核的 factor definition，消除输入、replay、mutation、tick、BBO 与排名观测口径的歧义。
-- Amendment 边界：只补定义，不改 factor registry、horizon、candidate gate、claim scope 或任何结果解释；不是事后调参，不读取、不引用、不回应 441-event 新结果。
+- Amendment 边界：只补定义，不改 factor registry、horizon、candidate gate、claim scope 或任何结果解释；不是事后调参，不读取、不引用、不回应 441-event 新结果。`b6e1daa29c` 对齐只记录实现语义，不报告性能结果、alpha、PnL 或候选结论。
 
 ## 依据与范围
 
@@ -55,7 +56,11 @@ If later reports show flow factors, they are quarantine diagnostics only and mus
 - Identifier mapping is fixed: `event_id = dataset.metadata.dataset_id`, `market = condition_id`, and `token_id = asset_id`.
 - `steps` are consumed in the verified original order stored in `PolymarketL2DatasetV1.steps`; there is no sorting, fallback ordering, shard-position ordering, or reconstruction from arbitrary `dict` enumeration order.
 - `replay_contract.py` verifies replay clock/order only: non-decreasing replay clock, strictly increasing `sequence`, and provable `timestamp_received` / `source_row_index` tie-breaks inside tied-clock groups. Field presence, field normalization, token/market boundaries, canonical update validity, book validity, and censor semantics are strict factor-layer validation responsibilities. Do not claim `replay_contract.py` verifies those checks.
+- Runtime canonical update validation is strict: level entries must be `LevelV1`, and level price/size plus tick-size fields must be finite `Decimal` values. The factor layer does not coerce strings, floats, ints, or dict-shaped levels into canonical runtime values.
 - Ranking anchors must come from typed steps that pass clock/order checks and factor-layer canonical validation. Failed steps, events, or tokens must be recorded as failure, skip, censor, or diagnostic; they cannot silently enter ranking.
+- `source_quality.cohort_by_token` trusts only exact string cohorts `clean` and `degraded`. Missing, non-dict, non-string, or any other cohort value becomes `unknown`; `unknown` is never eligible for clean candidate gates.
+- `source_quality.knownArchiveGaps` is either absent or a list of exact objects with only `market`, `asset_id`, `start`, `end`, and `provenance`. `market`, `asset_id`, and `provenance` must be nonempty strings; `start` and `end` must be timezone-aware timestamps; `end > start`. Malformed gap declarations fail closed before replay mutation. Each declared gap `start` is a token-scoped hard-break label barrier with declared provenance. Unknown archive gaps are not inferred.
+- `MarketMetadataV1.resolution_time` is a label close barrier. If `token_id` is set, the close applies only to that token; if `token_id` is absent, the close is market-wide for the `condition_id`.
 
 ## Replay, O1, and BBO boundaries
 
@@ -77,6 +82,7 @@ If later reports show flow factors, they are quarantine diagnostics only and mus
 - `book_staleness_seconds(t) = max(0, t - last_actual_mutation_time)`, where `last_actual_mutation_time` is the most recent actual mutation for the same token at or before `t`. Before the first actual mutation, staleness is invalid/diagnostic and cannot enter ranking.
 - `book_update_intensity(t) = count(actual_mutation_time in (t-30s, t]) / 30`, in mutations/sec. The window is exactly the bounded left-open, right-closed rolling window `(t-30s, t]`. It counts same-token actual mutations only; invalid-but-mutated books still count for staleness/intensity, while trade-only, flow-only, tick-only, no-op, and parse failures do not.
 - `ranking_observation = actual_mutation AND valid_book`. Invalid, crossed/locked/empty, flow-only, trade-only, tick-only, noop, hard-break, parse failure, and contract/canonical validation failure states do not participate in ranking; they may only enter failure/censor/diagnostic statistics.
+- Implementation performance semantics are fixed but are not results: ordinary deltas, flow-only updates, tick-only updates, and no-ops use incremental top-5/cached book-factor state and must avoid full-book rescans; snapshot `book` updates may rebuild the local book/heaps. This is an implementation invariant only, not an alpha, latency, throughput, or production claim.
 
 ### 公式符号
 
@@ -114,7 +120,9 @@ If later reports show flow factors, they are quarantine diagnostics only and mus
 - `mid_move_600s`
 - `next_nonzero_mid_move`
 
-Labels are generated after sealing the causal feature anchor. Fixed wall-clock labels choose the first actual mutation at or after the target timestamp; if duplicate actual mutations share that timestamp, the final state for that timestamp is used. An invalid target censors the value. `next_nonzero_mid_move` may skip valid equal-mid actual mutations, but the first invalid actual mutation is a censor barrier; hard breaks, event close, token close, and missing future mids also censor.
+Labels are generated after sealing the causal feature anchor. Fixed wall-clock labels choose the first actual mutation at or after the target timestamp; if duplicate actual mutations share that timestamp, the final state for that timestamp is used. Fixed horizon labels cannot cross the first applicable hard-break or close barrier between anchor and matched mutation. An invalid target censors the value. `next_nonzero_mid_move` may skip valid equal-mid actual mutations, but it cannot cross the first applicable hard-break or close barrier and the first invalid actual mutation is a censor barrier; missing future mids also censor.
+
+Required audit columns are `label_censor_reason_<h>s` for each fixed horizon, `next_nonzero_mid_move_censor_reason`, and `hard_break_provenance`. Hard-break censor reasons carry declared `knownArchiveGaps.provenance`; this provenance records declared gaps only and does not imply unknown-gap inference.
 
 `valid_observation` horizon 只允许作为诊断字段，用于解释活跃度和 label availability，不能替代 elapsed time，不能单独触发候选晋级。
 
@@ -131,6 +139,7 @@ Labels are generated after sealing the causal feature anchor. Fixed wall-clock l
 - source-quality cohort 与 hard-break provenance。
 
 clean 与 degraded 必须分开报告。degraded 可以降低、隔离或拒绝候选，但不能升级 claim scope。
+`unknown` source-quality cohort 必须作为 failure/censor/coverage 诊断或单独 cohort 处理，不能并入 clean，也不能满足 clean gates。
 
 ## 聚合与统计口径
 
