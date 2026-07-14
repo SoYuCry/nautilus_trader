@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
@@ -417,6 +418,45 @@ def test_malformed_canonical_update_fails_fast_with_update_context(
     )
 
 
+@pytest.mark.parametrize(
+    ("case", "field_context"),
+    [
+        ("snapshot-level-not-level-v1", "bids"),
+        ("snapshot-price-string", "bids[0].price"),
+        ("snapshot-size-float", "bids[0].size"),
+        ("price-change-price-string", "price"),
+        ("price-change-size-float", "size"),
+        ("trade-price-float", "price"),
+        ("trade-size-string", "size"),
+        ("tick-old-string", "old_tick_size"),
+        ("tick-new-float", "new_tick_size"),
+    ],
+)
+def test_canonical_numeric_fields_require_runtime_decimal_and_level_types(
+    factor_protocol: Any,
+    case: str,
+    field_context: str,
+) -> None:
+    update = _runtime_type_violation_update(case)
+    dataset = _dataset([_step(1, "2026-07-14T00:00:00Z", update)])
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(
+        exc_info.value,
+        "sequence",
+        "1",
+        "event_type",
+        str(update.event_type),
+        "market",
+        EVENT,
+        "asset_id",
+        YES,
+        field_context,
+    )
+
+
 @pytest.mark.parametrize("duplicate_side", ["bids", "asks"], ids=("duplicate-bid", "duplicate-ask"))
 def test_snapshot_duplicate_prices_fail_fast_with_full_context(
     factor_protocol: Any,
@@ -547,6 +587,58 @@ def test_update_intensity_is_a_bounded_rolling_window_over_long_histories(
     assert panel.loc[panel["sequence"] == 182, "book_update_intensity"].iloc[0] == pytest.approx(1 / 30)
     assert panel["book_update_intensity"].max() <= 1.0
     assert comparison_count[0] <= 80 * len(steps)
+
+
+def test_incremental_depth_processing_has_bounded_near_linear_sorted_item_work(
+    factor_protocol: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sorted_item_count = _install_sorted_item_probe(factor_protocol, monkeypatch)
+    work_by_depth: dict[int, int] = {}
+
+    for depth in (100, 200, 400):
+        before = sorted_item_count[0]
+        panel = factor_protocol.build_factor_panel(
+            _incremental_depth_dataset(depth),
+            horizons_seconds=(30,),
+            include_labels=False,
+        )
+        work_by_depth[depth] = sorted_item_count[0] - before
+        assert len(panel) == depth + 1
+        assert panel.iloc[-1]["bid1"] < panel.iloc[-1]["ask1"]
+
+    assert work_by_depth[200] <= 2.5 * work_by_depth[100], work_by_depth
+    assert work_by_depth[400] <= 2.5 * work_by_depth[200], work_by_depth
+    for depth, item_work in work_by_depth.items():
+        assert item_work <= 32 * (depth + 1), work_by_depth
+
+
+def test_trade_tick_and_noop_rows_do_not_rescan_the_full_deep_book(
+    factor_protocol: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sorted_item_count = _install_sorted_item_probe(factor_protocol, monkeypatch)
+
+    factor_protocol.build_factor_panel(
+        _incremental_depth_dataset(400),
+        horizons_seconds=(30,),
+        include_labels=False,
+    )
+    mutation_only_work = sorted_item_count[0]
+
+    factor_protocol.build_factor_panel(
+        _incremental_depth_dataset(400, include_nonmutation_rows=True),
+        horizons_seconds=(30,),
+        include_labels=False,
+    )
+    work_with_nonmutations = sorted_item_count[0] - mutation_only_work
+
+    nonmutation_overhead = work_with_nonmutations - mutation_only_work
+    assert nonmutation_overhead <= 3 * 40, {
+        "mutation_only": mutation_only_work,
+        "with_trade_tick_noop": work_with_nonmutations,
+        "nonmutation_overhead": nonmutation_overhead,
+    }
 
 
 def test_invalid_locked_crossed_one_sided_and_empty_books_are_not_ranking_observations(
@@ -1081,6 +1173,141 @@ def _malformed_update(case: str) -> L2UpdateV1:
         ),
     }
     return updates[case]
+
+
+def _runtime_type_violation_update(case: str) -> L2UpdateV1:
+    valid_ask = (LevelV1(price=Decimal("0.60"), size=Decimal(10)),)
+    updates = {
+        "snapshot-level-not-level-v1": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(SimpleNamespace(price=Decimal("0.40"), size=Decimal(10)),),  # type: ignore[arg-type]
+            asks=valid_ask,
+        ),
+        "snapshot-price-string": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price="0.40", size=Decimal(10)),),  # type: ignore[arg-type]
+            asks=valid_ask,
+        ),
+        "snapshot-size-float": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("0.40"), size=10.0),),  # type: ignore[arg-type]
+            asks=valid_ask,
+        ),
+        "price-change-price-string": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price="0.40",  # type: ignore[arg-type]
+            size=Decimal(10),
+        ),
+        "price-change-size-float": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.40"),
+            size=10.0,  # type: ignore[arg-type]
+        ),
+        "trade-price-float": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=0.50,  # type: ignore[arg-type]
+            size=Decimal(1),
+        ),
+        "trade-size-string": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.50"),
+            size="1",  # type: ignore[arg-type]
+        ),
+        "tick-old-string": L2UpdateV1(
+            event_type="tick_size_change",
+            market=EVENT,
+            asset_id=YES,
+            old_tick_size="0.01",  # type: ignore[arg-type]
+            new_tick_size=Decimal("0.001"),
+        ),
+        "tick-new-float": L2UpdateV1(
+            event_type="tick_size_change",
+            market=EVENT,
+            asset_id=YES,
+            old_tick_size=Decimal("0.01"),
+            new_tick_size=0.001,  # type: ignore[arg-type]
+        ),
+    }
+    return updates[case]
+
+
+def _incremental_depth_dataset(
+    depth: int,
+    *,
+    include_nonmutation_rows: bool = False,
+) -> PolymarketL2DatasetV1:
+    timestamp = "2026-07-14T00:00:00Z"
+    steps = [
+        _book_step(
+            1,
+            timestamp,
+            bids=[("0.05", "10")],
+            asks=[("0.90", "10")],
+        ),
+    ]
+    final_price = Decimal("0.10")
+    for position in range(depth):
+        final_price = Decimal("0.10") + Decimal(position) / Decimal(1000)
+        steps.append(
+            _price_step(
+                position + 2,
+                timestamp,
+                "BUY",
+                format(final_price, "f"),
+                "10",
+            ),
+        )
+
+    if include_nonmutation_rows:
+        sequence = depth + 2
+        steps.extend(
+            [
+                _price_step(sequence, timestamp, "BUY", format(final_price, "f"), "10"),
+                _trade_step(sequence + 1, timestamp),
+                _tick_step(sequence + 2, timestamp, old="0.01", new="0.001"),
+            ],
+        )
+    return _dataset(steps)
+
+
+def _install_sorted_item_probe(
+    factor_protocol: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> list[int]:
+    sorted_item_count = [0]
+    native_sorted = sorted
+
+    def counting_sorted(
+        values: Any,
+        /,
+        *,
+        key: Any = None,
+        reverse: bool = False,
+    ) -> list[Any]:
+        materialized = list(values)
+        sorted_item_count[0] += len(materialized)
+        return native_sorted(materialized, key=key, reverse=reverse)
+
+    monkeypatch.setattr(factor_protocol, "sorted", counting_sorted, raising=False)
+    return sorted_item_count
 
 
 def _assert_error_context(error: ValueError, *fragments: str) -> None:

@@ -24,6 +24,7 @@ from polymarket._core.models import DatasetMetadataV1
 from polymarket._core.models import L2ReplayStepV1
 from polymarket._core.models import L2UpdateV1
 from polymarket._core.models import LevelV1
+from polymarket._core.models import MarketMetadataV1
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket.replay_contract import replay_timestamp
 
@@ -40,6 +41,7 @@ PROTOCOL_JSON = RESEARCH_DIR / "protocol.json"
 # not a password/secret, and keeping it as a constant avoids Bandit S106's
 # keyword-argument false positive on `token_id=...`.
 MARKET_TOKEN_E1_YES = "E1-YES"  # noqa: S105 - Polymarket market token id, not a password/secret.
+MARKET_TOKEN_E1_NO = "E1-NO"  # noqa: S105 - Polymarket market token id, not a password/secret.
 
 BANNED_OUTCOME_COLUMNS = {
     "outcome",
@@ -246,6 +248,135 @@ def test_wall_clock_labels_handle_30_120_600_duplicate_timestamps_and_invalid_bo
     assert "future_mid_return_valid_observations_30" not in panel.columns
 
 
+def test_known_archive_gap_censors_fixed_horizon_and_next_nonzero_labels_with_provenance(
+    factor_protocol: Any,
+) -> None:
+    provenance = "fixture-archive-manifest-row-7"
+    dataset = _dataset(
+        [
+            _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.60", "10")]),
+            _book_row(2, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.45", "10")], [("0.65", "10")]),
+        ],
+        source_quality_by_token={"E1-YES": "clean"},
+    )
+    source_quality = dict(dataset.metadata.source_quality)
+    source_quality["knownArchiveGaps"] = [
+        {
+            "market": "E1",
+            "asset_id": "E1-YES",
+            "start": "2026-07-14T00:00:10Z",
+            "end": _dt("2026-07-14T00:00:20Z"),
+            "provenance": provenance,
+        },
+    ]
+    dataset = _replace_dataset_metadata(dataset, source_quality=source_quality)
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+
+    assert _is_missing(anchor["future_mid_30s"])
+    assert _is_missing(anchor["future_mid_return_30s"])
+    assert _is_missing(anchor["next_nonzero_mid_move"])
+    assert _is_missing(anchor["next_nonzero_mid_move_matched_sequence"])
+    _assert_censor_reason(anchor, "label_censor_reason_30s", "hard_break", provenance)
+    _assert_censor_reason(anchor, "next_nonzero_mid_move_censor_reason", "hard_break", provenance)
+    assert provenance in set(panel["hard_break_provenance"].dropna().astype(str))
+
+
+@pytest.mark.parametrize(
+    ("gap_fields", "field_context"),
+    [
+        ({"end": "2026-07-14T00:00:20Z"}, "start"),
+        ({"start": "not-a-timestamp", "end": "2026-07-14T00:00:20Z"}, "start"),
+        ({"start": "2026-07-14T00:00:10Z"}, "end"),
+        ({"start": "2026-07-14T00:00:10Z", "end": "not-a-timestamp"}, "end"),
+        (
+            {"start": "2026-07-14T00:00:20Z", "end": "2026-07-14T00:00:20Z"},
+            "end",
+        ),
+    ],
+    ids=("missing-start", "invalid-start", "missing-end", "invalid-end", "nonpositive-range"),
+)
+def test_malformed_known_archive_gap_fails_closed(
+    factor_protocol: Any,
+    gap_fields: dict[str, Any],
+    field_context: str,
+) -> None:
+    dataset = _dataset(
+        [_book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.60", "10")])],
+        source_quality_by_token={"E1-YES": "clean"},
+    )
+    source_quality = dict(dataset.metadata.source_quality)
+    source_quality["knownArchiveGaps"] = [
+        {
+            "market": "E1",
+            "asset_id": "E1-YES",
+            "provenance": "fixture-malformed-gap",
+            **gap_fields,
+        },
+    ]
+    dataset = _replace_dataset_metadata(dataset, source_quality=source_quality)
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+
+    message = str(exc_info.value).lower()
+    assert "knownarchivegaps" in message
+    assert field_context.lower() in message
+
+
+@pytest.mark.parametrize("close_scope", ["token", "market"], ids=("token-close", "market-close"))
+def test_resolution_time_is_a_scoped_label_censor_barrier(
+    factor_protocol: Any,
+    close_scope: str,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.60", "10")]),
+            _book_row(2, "2026-07-14T00:00:00Z", "E1", "E1-NO", [("0.30", "10")], [("0.70", "10")]),
+            _book_row(3, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.45", "10")], [("0.65", "10")]),
+            _book_row(4, "2026-07-14T00:00:30Z", "E1", "E1-NO", [("0.35", "10")], [("0.75", "10")]),
+        ],
+        source_quality_by_token={"E1-YES": "clean", "E1-NO": "clean"},
+    )
+    market_metadata = (
+        MarketMetadataV1(
+            condition_id="E1",
+            token_id="E1-YES" if close_scope == "token" else None,
+            resolution_time=_dt("2026-07-14T00:00:15Z"),
+            resolution_source="fixture-resolution-carrier",
+        ),
+    )
+    dataset = _replace_dataset_metadata(dataset, market_metadata=market_metadata)
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    yes_anchor = panel.loc[
+        (panel["sequence"] == 1) & (panel["token_id"] == MARKET_TOKEN_E1_YES)
+    ].iloc[0]
+    no_anchor = panel.loc[
+        (panel["sequence"] == 2) & (panel["token_id"] == MARKET_TOKEN_E1_NO)
+    ].iloc[0]
+
+    assert _is_missing(yes_anchor["future_mid_return_30s"])
+    assert _is_missing(yes_anchor["next_nonzero_mid_move"])
+    yes_reason = str(yes_anchor["label_censor_reason_30s"]).lower()
+    yes_next_reason = str(yes_anchor["next_nonzero_mid_move_censor_reason"]).lower()
+    expected_reason = "token_close" if close_scope == "token" else "close"
+    assert expected_reason in yes_reason
+    assert expected_reason in yes_next_reason
+
+    if close_scope == "token":
+        assert no_anchor["future_mid_return_30s"] == pytest.approx(0.05)
+        assert no_anchor["next_nonzero_mid_move"] == pytest.approx(0.05)
+    else:
+        assert _is_missing(no_anchor["future_mid_return_30s"])
+        assert _is_missing(no_anchor["next_nonzero_mid_move"])
+        no_reason = str(no_anchor["label_censor_reason_30s"]).lower()
+        no_next_reason = str(no_anchor["next_nonzero_mid_move_censor_reason"]).lower()
+        assert "close" in no_reason
+        assert "close" in no_next_reason
+
+
 def test_missing_source_timestamp_falls_back_to_received_time_and_sequence_tie_break(
     factor_protocol: Any,
 ) -> None:
@@ -419,6 +550,78 @@ def test_clean_and_degraded_cohorts_are_separate_and_sign_reversal_blocks_candid
     assert row["clean_positive_event_share"] == pytest.approx(0.70)
     assert bool(row["clean_degraded_sign_reversal"]) is True
     assert bool(row["passes_shortlist"]) is False
+
+
+def test_adapter_shaped_missing_cohort_fails_closed_for_panel_and_candidate_gate(
+    factor_protocol: Any,
+) -> None:
+    dataset = _base_rows(event_id="E1", token_id=MARKET_TOKEN_E1_YES)
+    adapter_shaped_source_quality = {
+        "coverageStatus": "partial",
+        "orderingStatus": "exact",
+        "snapshotReplayStatus": "not_run",
+        "metadataJoinStatus": "joined",
+        "knownArchiveGaps": [],
+    }
+    dataset = _replace_dataset_metadata(dataset, source_quality=adapter_shaped_source_quality)
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+    observed_cohort = panel["source_quality_cohort"].iloc[0]
+    cohort_metrics = pd.DataFrame(
+        [
+            {
+                "factor": "depth_imbalance_1",
+                "horizon_seconds": horizon,
+                "cohort": observed_cohort,
+                "event_ic": event_ic,
+                "positive_event_share": 0.70,
+                "block_bootstrap_interval_excludes_zero": True,
+                **dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True),
+            }
+            for horizon, event_ic in ((30, 0.20), (120, 0.18), (600, 0.16))
+        ],
+    )
+    gated = factor_protocol.apply_candidate_gates(cohort_metrics)
+    row = gated.loc[gated["factor"] == "depth_imbalance_1"].iloc[0]
+
+    assert bool(row["passes_shortlist"]) is False
+    assert _is_missing(row["clean_positive_event_share"])
+    assert observed_cohort == "unknown"
+
+
+@pytest.mark.parametrize("cohort", ["clean", "degraded"])
+def test_explicit_source_quality_cohort_mapping_is_preserved(
+    factor_protocol: Any,
+    cohort: str,
+) -> None:
+    dataset = _dataset(
+        _base_steps(event_id="E1", token_id=MARKET_TOKEN_E1_YES),
+        source_quality_by_token={"E1-YES": cohort},
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    assert set(panel["source_quality_cohort"]) == {cohort}
+
+
+@pytest.mark.parametrize("invalid_cohort", ["pristine", "CLEAN", True, None])
+def test_invalid_source_quality_cohort_mapping_fails_or_remains_non_clean(
+    factor_protocol: Any,
+    invalid_cohort: Any,
+) -> None:
+    dataset = _dataset(
+        _base_steps(event_id="E1", token_id=MARKET_TOKEN_E1_YES),
+        source_quality_by_token={"E1-YES": invalid_cohort},  # type: ignore[dict-item]
+    )
+
+    try:
+        panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+    except ValueError as exc:
+        message = str(exc).lower()
+        assert "cohort" in message
+        assert "e1-yes" in message
+    else:
+        assert set(panel["source_quality_cohort"]) == {"unknown"}
 
 
 def test_candidate_gate_fails_closed_without_required_evidence_and_passes_only_when_complete(
@@ -794,6 +997,20 @@ def _source_quality_by_token(dataset: PolymarketL2DatasetV1) -> dict[str, str]:
     return dict(dataset.metadata.source_quality.get("cohort_by_token", {}))
 
 
+def _replace_dataset_metadata(
+    dataset: PolymarketL2DatasetV1,
+    *,
+    source_quality: dict[str, Any] | None = None,
+    market_metadata: tuple[MarketMetadataV1, ...] | None = None,
+) -> PolymarketL2DatasetV1:
+    metadata_changes: dict[str, Any] = {}
+    if source_quality is not None:
+        metadata_changes["source_quality"] = source_quality
+    if market_metadata is not None:
+        metadata_changes["market_metadata"] = market_metadata
+    return replace(dataset, metadata=replace(dataset.metadata, **metadata_changes))
+
+
 def _dt(value: str) -> datetime:
     return datetime.fromisoformat(value)
 
@@ -862,3 +1079,10 @@ def _assert_no_banned_columns(columns: Any) -> None:
 
 def _is_missing(value: Any) -> bool:
     return value is None or (isinstance(value, float) and math.isnan(value)) or bool(pd.isna(value))
+
+
+def _assert_censor_reason(row: pd.Series, column: str, *fragments: str) -> None:
+    assert column in row.index
+    reason = str(row[column]).lower()
+    for fragment in fragments:
+        assert fragment.lower() in reason, (column, reason)
