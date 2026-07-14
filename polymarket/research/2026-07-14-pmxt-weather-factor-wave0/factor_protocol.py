@@ -10,6 +10,8 @@ from typing import Any
 import pandas as pd
 
 
+PRIMARY_HORIZONS_SECONDS = (30, 120, 600)
+
 PRIMARY_FACTOR_NAMES = (
     "depth_imbalance_1",
     "depth_imbalance_3",
@@ -131,7 +133,9 @@ def build_factor_panel(
 
 
 def run_factor_protocol(rows: Iterable[dict[str, Any]], *, horizons_seconds: Iterable[int]) -> dict[str, Any]:
-    horizons = tuple(int(horizon) for horizon in horizons_seconds)
+    horizons = tuple(horizons_seconds)
+    if horizons != PRIMARY_HORIZONS_SECONDS:
+        raise ValueError(f"horizons_seconds must exactly match {PRIMARY_HORIZONS_SECONDS}")
     panel = build_factor_panel(rows, horizons_seconds=horizons, include_labels=True)
     candidate_table = _build_candidate_table(panel, horizons)
     primary_shortlist = candidate_table[
@@ -179,9 +183,20 @@ def apply_candidate_gates(cohort_metrics: pd.DataFrame) -> pd.DataFrame:
         degraded = group[group["cohort"] == "degraded"]
         clean_ics = [float(v) for v in clean["event_ic"].dropna()]
         pos_share = float(clean["positive_event_share"].mean()) if not clean.empty else math.nan
-        signs = {1 if v > 0 else -1 for v in clean_ics if v != 0}
-        same_sign_two_horizons = any(sum(1 for v in clean_ics if (v > 0) == (sign > 0)) >= 2 for sign in signs)
-        block_bootstrap_interval_excludes_zero = _any_explicit_true(group, "block_bootstrap_interval_excludes_zero")
+        primary_horizon_ics = (
+            clean[clean["horizon_seconds"].isin(PRIMARY_HORIZONS_SECONDS)]
+            .groupby("horizon_seconds", sort=True)["event_ic"]
+            .mean()
+            .dropna()
+        )
+        same_sign_two_horizons = bool(
+            (primary_horizon_ics > 0).sum() >= 2 or (primary_horizon_ics < 0).sum() >= 2,
+        )
+        bootstrap_scope = clean[clean["horizon_seconds"].isin(PRIMARY_HORIZONS_SECONDS)]
+        block_bootstrap_interval_excludes_zero = _any_explicit_true(
+            bootstrap_scope,
+            "block_bootstrap_interval_excludes_zero",
+        )
         widest_spread_independent = _all_explicit_true(group, "widest_spread_independent")
         coverage_complete = _all_explicit_true(group, "coverage_complete")
         failure_manifest_complete = _all_explicit_true(group, "failure_manifest_complete")
@@ -460,15 +475,15 @@ def _safe_corr(left: pd.Series, right: pd.Series) -> float:
 
 
 def _any_explicit_true(frame: pd.DataFrame, column: str) -> bool:
-    if column not in frame.columns:
+    if frame.empty or column not in frame.columns:
         return False
-    return any(value is True for value in frame[column].dropna())
+    return any(type(value) is bool and value is True for value in frame[column])
 
 
 def _all_explicit_true(frame: pd.DataFrame, column: str) -> bool:
-    if column not in frame.columns or frame[column].dropna().empty:
+    if frame.empty or column not in frame.columns:
         return False
-    return all(value is True for value in frame[column].dropna())
+    return all(type(value) is bool and value is True for value in frame[column])
 
 
 def _frame_digest(frame: pd.DataFrame) -> str:
