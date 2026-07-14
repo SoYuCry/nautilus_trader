@@ -344,6 +344,63 @@ def test_aggregation_is_row_to_token_to_event_to_global_equal_weight_not_row_wei
     assert metric["global_event_equal_ic"] != pytest.approx(metric["row_weighted_ic_audit"])
 
 
+@pytest.mark.parametrize(
+    ("factor_values", "label_returns", "expected_spearman"),
+    [
+        ([-0.6, -0.2, 0.2, 0.6], [0.001, 0.004, 0.009, 0.016], 1.0),
+        ([-0.4, -0.4, 0.1, 0.6], [0.001, 0.004, 0.004, 0.016], 5 / 6),
+    ],
+    ids=("strictly-monotone-nonlinear", "average-rank-ties"),
+)
+def test_candidate_ic_uses_spearman_ranks_through_public_protocol_path(
+    factor_protocol: Any,
+    preregistered_protocol: dict[str, Any],
+    factor_values: list[float],
+    label_returns: list[float],
+    expected_spearman: float,
+) -> None:
+    assert "event_ic_spearman" in preregistered_protocol["metrics"]
+    pearson = pd.Series(factor_values).corr(pd.Series(label_returns))
+    assert pearson != pytest.approx(expected_spearman)
+
+    result = factor_protocol.run_factor_protocol(
+        _candidate_ic_dataset(factor_values, label_returns),
+        horizons_seconds=(30, 120, 600),
+    )
+    candidate_table = _result_frame(result, "candidate_table")
+    metric = candidate_table.query("factor == 'depth_imbalance_1' and horizon_seconds == 30").iloc[0]
+
+    assert metric["row_count"] == len(factor_values)
+    assert metric["global_event_equal_ic"] == pytest.approx(expected_spearman, abs=1e-12)
+
+
+def test_spearman_correlation_drops_paired_missing_values_consistently(factor_protocol: Any) -> None:
+    factor_values = pd.Series([-0.6, -0.2, 999.0, 0.2, 0.6])
+    label_returns = pd.Series([0.001, 0.004, math.nan, 0.009, 0.016])
+
+    observed = factor_protocol._safe_corr(factor_values, label_returns)
+
+    assert observed == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    ("factor_values", "label_returns"),
+    [
+        ([1.0, math.nan], [math.nan, 2.0]),
+        ([1.0, 1.0, math.nan], [2.0, 3.0, 4.0]),
+    ],
+    ids=("fewer-than-two-paired-values", "fewer-than-two-distinct-factor-values"),
+)
+def test_spearman_correlation_fails_closed_without_two_valid_distinct_pairs(
+    factor_protocol: Any,
+    factor_values: list[float],
+    label_returns: list[float],
+) -> None:
+    observed = factor_protocol._safe_corr(pd.Series(factor_values), pd.Series(label_returns))
+
+    assert math.isnan(observed)
+
+
 def test_clean_and_degraded_cohorts_are_separate_and_sign_reversal_blocks_candidates(
     factor_protocol: Any,
 ) -> None:
@@ -629,6 +686,37 @@ def _multi_event_dataset() -> PolymarketL2DatasetV1:
         )
     ]
     return _dataset(canonical_steps, source_quality_by_token=source_quality_by_token)
+
+
+def _candidate_ic_dataset(
+    factor_values: list[float],
+    label_returns: list[float],
+) -> PolymarketL2DatasetV1:
+    assert factor_values
+    assert len(factor_values) == len(label_returns)
+    mids = [Decimal("0.40")]
+    for label_return in label_returns:
+        mids.append(mids[-1] + Decimal(str(label_return)))
+
+    steps: list[L2ReplayStepV1] = []
+    factor_path = [*factor_values, factor_values[-1]]
+    for position, (mid, factor_value) in enumerate(zip(mids, factor_path, strict=True)):
+        factor = Decimal(str(factor_value))
+        bid_size = Decimal(10) * (Decimal(1) + factor)
+        ask_size = Decimal(10) * (Decimal(1) - factor)
+        elapsed_seconds = position * 30
+        timestamp = f"2026-07-14T00:{elapsed_seconds // 60:02d}:{elapsed_seconds % 60:02d}Z"
+        steps.append(
+            _book_row(
+                position + 1,
+                timestamp,
+                "SPEARMAN-EVENT",
+                "SPEARMAN-TOKEN",
+                [(format(mid - Decimal("0.05"), "f"), format(bid_size, "f"))],
+                [(format(mid + Decimal("0.05"), "f"), format(ask_size, "f"))],
+            ),
+        )
+    return _dataset(steps)
 
 
 def _book_row(

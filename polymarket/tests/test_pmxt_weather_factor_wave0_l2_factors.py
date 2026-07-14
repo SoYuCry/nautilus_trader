@@ -278,8 +278,8 @@ def test_tick_size_regime_is_explicit_token_state_and_visible_price_gaps_do_not_
     panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
 
     assert panel.loc[panel["sequence"] == 1, "tick_size_regime"].iloc[0] == pytest.approx(0.01)
-    assert panel.loc[panel["sequence"] == 2, "tick_size_regime"].iloc[0] == pytest.approx(0.001)
-    assert panel.loc[panel["sequence"] == 3, "tick_size_regime"].iloc[0] == pytest.approx(0.001)
+    assert panel.loc[panel["sequence"] == 2, "tick_size_regime"].iloc[0] == 0.001
+    assert panel.loc[panel["sequence"] == 3, "tick_size_regime"].iloc[0] == 0.001
     assert panel.loc[panel["sequence"] == 4, "tick_size_regime"].iloc[0] == pytest.approx(0.01)
 
 
@@ -306,6 +306,44 @@ def test_tick_size_change_fails_fast_when_contract_is_not_exact(
 
     with pytest.raises(ValueError, match=r"(?i)tick"):
         factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "field_context"),
+    [
+        ("0.0100000000005", "0.001", "old_tick_size"),
+        ("0.01", "0.0010000000005", "new_tick_size"),
+    ],
+    ids=("near-miss-old", "near-miss-new"),
+)
+def test_tick_size_change_requires_exact_decimal_contract(
+    factor_protocol: Any,
+    old: str,
+    new: str,
+    field_context: str,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _tick_step(2, "2026-07-14T00:00:01Z", old=old, new=new),
+        ],
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(
+        exc_info.value,
+        "sequence",
+        "2",
+        "event_type",
+        "tick_size_change",
+        "market",
+        EVENT,
+        "asset_id",
+        YES,
+        field_context,
+    )
 
 
 def test_empty_canonical_step_fails_fast_with_sequence_context(factor_protocol: Any) -> None:
@@ -376,6 +414,34 @@ def test_malformed_canonical_update_fails_fast_with_update_context(
         "asset_id",
         update.asset_id,
         field_context,
+    )
+
+
+@pytest.mark.parametrize("duplicate_side", ["bids", "asks"], ids=("duplicate-bid", "duplicate-ask"))
+def test_snapshot_duplicate_prices_fail_fast_with_full_context(
+    factor_protocol: Any,
+    duplicate_side: str,
+) -> None:
+    bids = [("0.40", "10"), ("0.40", "11")] if duplicate_side == "bids" else [("0.40", "10")]
+    asks = [("0.60", "10"), ("0.60", "11")] if duplicate_side == "asks" else [("0.60", "10")]
+    dataset = _dataset([_book_step(1, "2026-07-14T00:00:00Z", bids=bids, asks=asks)])
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(
+        exc_info.value,
+        "sequence",
+        "1",
+        "event_type",
+        "book",
+        "market",
+        EVENT,
+        "asset_id",
+        YES,
+        duplicate_side,
+        "duplicate",
+        "price",
     )
 
 
