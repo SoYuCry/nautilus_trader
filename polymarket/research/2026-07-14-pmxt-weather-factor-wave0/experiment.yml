@@ -20,6 +20,7 @@ input:
     markets: 4851
     tokens: 9702
     rows_written_total: 747185591
+    source_bytes_total: 6008295014
   cohorts:
     clean_primary_development_replication:
       dates: [2026-06-04, 2026-06-05, 2026-06-08, 2026-06-09, 2026-06-10]
@@ -108,6 +109,8 @@ materialization:
     parity_subcommand: parity
     parity_default_real_event_mode: reuse_hash_validated_committed_rows
     parity_force_real_event_mode: force_recompute_real
+    parity_force_command: parity --force
+    parity_reuse_command: parity
 
 factors:
   ranking_scope: pure_order_book_state_only
@@ -214,6 +217,7 @@ outputs:
   track_large_panel_outputs: false
   tracked_compact_artifacts:
     - outputs/compact_canonical_inventory.json
+    - outputs/g003_dry_run_manifest.json
     - outputs/g003_materialization_parity.json
     - outputs/g003_materialization_decision.json
   required_compact_artifacts:
