@@ -3,6 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from bisect import bisect_left
+from bisect import bisect_right
+from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
 from dataclasses import field
@@ -39,13 +42,17 @@ DIAGNOSTIC_FACTOR_NAMES = (
     "valid_observation_counts",
 )
 
+_SUPPORTED_EVENT_TYPES = frozenset({"book", "price_change", "trade", "tick_size_change"})
+_IDENTITY_COLUMNS = ["event_id", "market", "token_id"]
+
+
 @dataclass
 class _TokenState:
     bids: dict[float, float] = field(default_factory=dict)
     asks: dict[float, float] = field(default_factory=dict)
     tick_size: float = 0.01
     last_mutation_ts: pd.Timestamp | None = None
-    mutation_timestamps: list[pd.Timestamp] = field(default_factory=list)
+    mutation_timestamps: deque[pd.Timestamp] = field(default_factory=deque)
 
 
 def build_factor_panel(
@@ -57,38 +64,42 @@ def build_factor_panel(
     if not isinstance(dataset, PolymarketL2DatasetV1):
         raise TypeError("build_factor_panel requires PolymarketL2DatasetV1 input")
     verify_pmxt_replay_clock_order(dataset)
+    _validate_dataset(dataset)
 
     states: dict[tuple[str, str], _TokenState] = {}
     records: list[dict[str, Any]] = []
     cohort_by_token = _cohort_by_token(dataset)
+    event_id = dataset.metadata.dataset_id
+    horizons = tuple(int(horizon) for horizon in horizons_seconds)
 
     for step in dataset.steps:
         step_ts = pd.Timestamp(replay_timestamp(step))
-        touched: dict[tuple[str, str], dict[str, Any]] = {}
+        touched: dict[tuple[str, str], list[str]] = {}
         for update in step.updates:
             key = _token_key(update)
-            state = states.setdefault(key, _TokenState())
-            info = touched.setdefault(
-                key,
-                {"actual_mutation": False, "event_types": [], "market": key[0], "asset_id": key[1]},
-            )
-            info["event_types"].append(update.event_type)
-            if _apply_update(state, update):
-                info["actual_mutation"] = True
+            touched.setdefault(key, []).append(update.event_type)
+            states.setdefault(key, _TokenState())
 
-        for key, info in touched.items():
+        pre_step_books = {
+            key: (states[key].bids.copy(), states[key].asks.copy())
+            for key in touched
+        }
+        for update in step.updates:
+            _apply_update(states[_token_key(update)], update)
+
+        for key, event_types in touched.items():
             state = states[key]
-            actual_mutation = bool(info["actual_mutation"])
-            if actual_mutation:
-                state.last_mutation_ts = step_ts
-                state.mutation_timestamps.append(step_ts)
+            pre_bids, pre_asks = pre_step_books[key]
+            actual_mutation = state.bids != pre_bids or state.asks != pre_asks
+            _advance_mutation_window(state, step_ts, actual_mutation=actual_mutation)
             records.append(
                 _audit_record(
                     state=state,
                     key=key,
                     step=step,
                     step_ts=step_ts,
-                    event_type="|".join(dict.fromkeys(info["event_types"])),
+                    event_id=event_id,
+                    event_type="|".join(dict.fromkeys(event_types)),
                     actual_mutation=actual_mutation,
                     source_quality_cohort=cohort_by_token.get(key[1], "clean"),
                 ),
@@ -98,7 +109,7 @@ def build_factor_panel(
     if panel.empty:
         return panel
     if include_labels:
-        panel = _add_labels(panel, tuple(int(h) for h in horizons_seconds))
+        panel = _add_labels(panel, horizons)
     return panel.reset_index(drop=True)
 
 
@@ -125,12 +136,143 @@ def run_factor_protocol(dataset: PolymarketL2DatasetV1, *, horizons_seconds: Ite
 
 def _cohort_by_token(dataset: PolymarketL2DatasetV1) -> dict[str, str]:
     source_quality = getattr(dataset.metadata, "source_quality", {}) or {}
+    if not isinstance(source_quality, dict):
+        return {}
     raw = source_quality.get("cohort_by_token", {})
+    if not isinstance(raw, dict):
+        return {}
     return {str(token): str(cohort) for token, cohort in dict(raw).items()}
 
 
 def _token_key(update: L2UpdateV1) -> tuple[str, str]:
-    return (str(update.market), str(update.asset_id))
+    return (update.market, update.asset_id)
+
+
+def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
+    tick_sizes: dict[tuple[str, str], float] = {}
+    for step in dataset.steps:
+        if not step.updates:
+            raise _validation_error(step, None, "updates", "must contain at least one update")
+        for update in step.updates:
+            _validate_update(step, update, tick_sizes)
+
+
+def _validate_update(
+    step: L2ReplayStepV1,
+    update: L2UpdateV1,
+    tick_sizes: dict[tuple[str, str], float],
+) -> None:
+    if not isinstance(update.event_type, str) or update.event_type not in _SUPPORTED_EVENT_TYPES:
+        raise _validation_error(step, update, "event_type", "is not supported")
+    if not isinstance(update.market, str) or not update.market.strip():
+        raise _validation_error(step, update, "market", "must be nonempty")
+    if not isinstance(update.asset_id, str) or not update.asset_id.strip():
+        raise _validation_error(step, update, "asset_id", "must be nonempty")
+
+    if update.event_type == "book":
+        _validate_levels(step, update, "bids", update.bids)
+        _validate_levels(step, update, "asks", update.asks)
+        return
+    if update.event_type == "price_change":
+        _validate_side(step, update)
+        _validate_number(step, update, "price", update.price, minimum=0.0, maximum=1.0)
+        _validate_number(step, update, "size", update.size, minimum=0.0)
+        return
+    if update.event_type == "trade":
+        _validate_side(step, update)
+        _validate_number(step, update, "price", update.price, minimum=0.0, maximum=1.0)
+        _validate_number(step, update, "size", update.size, minimum=0.0, minimum_inclusive=False)
+        return
+
+    key = _token_key(update)
+    current_tick = tick_sizes.get(key, 0.01)
+    old_tick = _validate_number(step, update, "old_tick_size", update.old_tick_size)
+    new_tick = _validate_number(step, update, "new_tick_size", update.new_tick_size)
+    if not math.isclose(old_tick, current_tick, rel_tol=0.0, abs_tol=1e-12):
+        raise _validation_error(
+            step,
+            update,
+            "old_tick_size",
+            f"must equal current token tick size {current_tick}",
+        )
+    if not math.isclose(old_tick, 0.01, rel_tol=0.0, abs_tol=1e-12):
+        raise _validation_error(step, update, "old_tick_size", "only 0.01 -> 0.001 is supported")
+    if not math.isclose(new_tick, 0.001, rel_tol=0.0, abs_tol=1e-12):
+        raise _validation_error(step, update, "new_tick_size", "only 0.01 -> 0.001 is supported")
+    tick_sizes[key] = new_tick
+
+
+def _validate_levels(
+    step: L2ReplayStepV1,
+    update: L2UpdateV1,
+    side_name: str,
+    levels: Iterable[Any] | None,
+) -> None:
+    if levels is None:
+        raise _validation_error(step, update, side_name, "must be an iterable of price levels")
+    try:
+        iterator = iter(levels)
+    except TypeError as exc:
+        raise _validation_error(step, update, side_name, "must be an iterable of price levels") from exc
+    for position, level in enumerate(iterator):
+        context = f"{side_name}[{position}]"
+        _validate_number(
+            step,
+            update,
+            f"{context}.price",
+            getattr(level, "price", None),
+            minimum=0.0,
+            maximum=1.0,
+        )
+        _validate_number(
+            step,
+            update,
+            f"{context}.size",
+            getattr(level, "size", None),
+            minimum=0.0,
+            minimum_inclusive=False,
+        )
+
+
+def _validate_side(step: L2ReplayStepV1, update: L2UpdateV1) -> None:
+    if update.side not in ("BUY", "SELL"):
+        raise _validation_error(step, update, "side", "must be exactly BUY or SELL")
+
+
+def _validate_number(
+    step: L2ReplayStepV1,
+    update: L2UpdateV1,
+    field_name: str,
+    raw_value: Any,
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+    minimum_inclusive: bool = True,
+) -> float:
+    value = _to_float(raw_value)
+    if not math.isfinite(value):
+        raise _validation_error(step, update, field_name, "must be finite")
+    if minimum is not None and (value < minimum if minimum_inclusive else value <= minimum):
+        operator = ">=" if minimum_inclusive else ">"
+        raise _validation_error(step, update, field_name, f"must be {operator} {minimum}")
+    if maximum is not None and value > maximum:
+        raise _validation_error(step, update, field_name, f"must be <= {maximum}")
+    return value
+
+
+def _validation_error(
+    step: L2ReplayStepV1,
+    update: L2UpdateV1 | None,
+    field_name: str,
+    detail: str,
+) -> ValueError:
+    event_type = update.event_type if update is not None else "<missing>"
+    market = update.market if update is not None else "<missing>"
+    asset_id = update.asset_id if update is not None else "<missing>"
+    return ValueError(
+        f"sequence={step.sequence}, event_type={event_type!r}, market={market!r}, "
+        f"asset_id={asset_id!r}, field={field_name}: {detail}",
+    )
 
 
 def _audit_record(
@@ -139,6 +281,7 @@ def _audit_record(
     key: tuple[str, str],
     step: L2ReplayStepV1,
     step_ts: pd.Timestamp,
+    event_id: str,
     event_type: str,
     actual_mutation: bool,
     source_quality_cohort: str,
@@ -159,10 +302,10 @@ def _audit_record(
         if state.last_mutation_ts is not None
         else math.nan
     )
-    intensity = _mutation_intensity(state.mutation_timestamps, step_ts)
+    intensity = len(state.mutation_timestamps) / 30.0
 
     record = {
-        "event_id": key[0],
+        "event_id": event_id,
         "token_id": key[1],
         "market": key[0],
         "asset_id": key[1],
@@ -200,58 +343,38 @@ def _audit_record(
     return record
 
 
-def _mutation_intensity(mutation_timestamps: list[pd.Timestamp], ts: pd.Timestamp) -> float:
+def _advance_mutation_window(
+    state: _TokenState,
+    ts: pd.Timestamp,
+    *,
+    actual_mutation: bool,
+) -> None:
     left = ts - pd.Timedelta(seconds=30)
-    return sum(1 for mutation_ts in mutation_timestamps if left < mutation_ts <= ts) / 30.0
+    while state.mutation_timestamps and state.mutation_timestamps[0] <= left:
+        state.mutation_timestamps.popleft()
+    if actual_mutation:
+        state.last_mutation_ts = ts
+        state.mutation_timestamps.append(ts)
 
 
-def _apply_update(state: _TokenState, update: L2UpdateV1) -> bool:
+def _apply_update(state: _TokenState, update: L2UpdateV1) -> None:
     if update.event_type == "book":
-        new_bids = _levels_from(update.bids)
-        new_asks = _levels_from(update.asks)
-        changed = new_bids != state.bids or new_asks != state.asks
-        state.bids = new_bids
-        state.asks = new_asks
-        return changed
-    if update.event_type == "price_change":
-        return _apply_price_change(state, update)
-    if update.event_type == "tick_size_change":
-        _apply_tick_size_change(state, update)
-        return False
-    return False
+        state.bids = _levels_from(update.bids)
+        state.asks = _levels_from(update.asks)
+    elif update.event_type == "price_change":
+        _apply_price_change(state, update)
+    elif update.event_type == "tick_size_change":
+        state.tick_size = float(update.new_tick_size)  # type: ignore[arg-type]
 
 
-def _apply_price_change(state: _TokenState, update: L2UpdateV1) -> bool:
-    side = str(update.side or "").upper()
-    book = state.bids if side == "BUY" else state.asks if side == "SELL" else None
-    if book is None:
-        return False
-    price = _to_float(update.price)
-    size = _to_float(update.size)
-    if not math.isfinite(price) or not math.isfinite(size):
-        return False
-    old_size = book.get(price)
-    if size <= 0:
-        if old_size is None:
-            return False
-        del book[price]
-        return True
-    if old_size == size:
-        return False
-    book[price] = size
-    return True
-
-
-def _apply_tick_size_change(state: _TokenState, update: L2UpdateV1) -> None:
-    old_tick = _to_float(update.old_tick_size)
-    new_tick = _to_float(update.new_tick_size)
-    if not math.isfinite(old_tick) or not math.isfinite(new_tick):
-        raise ValueError("tick_size_change requires old_tick_size and new_tick_size")
-    if not math.isclose(old_tick, state.tick_size, rel_tol=0.0, abs_tol=1e-12):
-        raise ValueError("tick_size_change old_tick_size does not match current token tick state")
-    if not math.isclose(new_tick, 0.001, rel_tol=0.0, abs_tol=1e-12):
-        raise ValueError("tick_size_change only supports transition to 0.001")
-    state.tick_size = new_tick
+def _apply_price_change(state: _TokenState, update: L2UpdateV1) -> None:
+    book = state.bids if update.side == "BUY" else state.asks
+    price = float(update.price)  # type: ignore[arg-type]
+    size = float(update.size)  # type: ignore[arg-type]
+    if size == 0.0:
+        book.pop(price, None)
+    else:
+        book[price] = size
 
 
 def aggregate_factor_metrics(token_rows: pd.DataFrame) -> pd.DataFrame:
@@ -263,12 +386,13 @@ def aggregate_factor_metrics(token_rows: pd.DataFrame) -> pd.DataFrame:
         event_ic = group.groupby("event_id", sort=True)["token_ic"].mean()
         row_weight_sum = float((group["token_ic"] * group["row_count"]).sum())
         row_count_sum = float(group["row_count"].sum())
+        identity_columns = [column for column in _IDENTITY_COLUMNS if column in group.columns]
         out.append(
             {
                 "factor": factor,
                 "horizon_seconds": horizon,
                 "event_count": int(group["event_id"].nunique()),
-                "token_count": int(group["token_id"].nunique()),
+                "token_count": len(group[identity_columns].drop_duplicates()),
                 "row_count": int(row_count_sum),
                 "global_event_equal_ic": float(event_ic.mean()),
                 "row_weighted_ic_audit": row_weight_sum / row_count_sum if row_count_sum else math.nan,
@@ -340,13 +464,7 @@ def apply_candidate_gates(cohort_metrics: pd.DataFrame) -> pd.DataFrame:
 
 
 def _levels_from(values: Iterable[Any]) -> dict[float, float]:
-    levels: dict[float, float] = {}
-    for value in values:
-        price = _to_float(getattr(value, "price", None))
-        size = _to_float(getattr(value, "size", None))
-        if math.isfinite(price) and math.isfinite(size) and size > 0:
-            levels[price] = size
-    return levels
+    return {float(value.price): float(value.size) for value in values}
 
 
 def _sorted_levels(levels: dict[float, float], *, reverse: bool) -> list[tuple[float, float]]:
@@ -425,38 +543,37 @@ def _liquidity_asymmetry(bids: list[tuple[float, float]], asks: list[tuple[float
     return (c_bid - c_ask) / denom if denom else math.nan
 
 
-def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:  # noqa: C901
+def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
     panel = panel.copy()
     for horizon in horizons:
-        for column in (
-            f"future_mid_{horizon}s",
-            f"future_mid_return_{horizon}s",
-            f"future_book_validity_{horizon}s",
-            f"label_matched_timestamp_{horizon}s",
-        ):
-            panel[column] = pd.NA
+        panel[f"future_mid_{horizon}s"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+        panel[f"future_mid_return_{horizon}s"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+        panel[f"future_book_validity_{horizon}s"] = pd.Series(None, index=panel.index, dtype="object")
+        panel[f"label_matched_timestamp_{horizon}s"] = pd.Series(
+            pd.NaT,
+            index=panel.index,
+            dtype="datetime64[ns, UTC]",
+        )
 
-    panel["next_nonzero_mid_move"] = pd.NA
-    panel["next_nonzero_mid_move_direction"] = pd.NA
-    panel["next_nonzero_mid_move_matched_sequence"] = pd.NA
+    panel["next_nonzero_mid_move"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+    panel["next_nonzero_mid_move_direction"] = pd.Series(math.nan, index=panel.index, dtype="float64")
+    panel["next_nonzero_mid_move_matched_sequence"] = pd.Series(pd.NA, index=panel.index, dtype="Int64")
 
-    for token_index in panel.groupby("token_id", sort=False).groups.values():
-        indexes = list(token_index)
-        token = panel.loc[indexes]
-        anchor_token = token[token["ranking_observation"]]
-        target_token = token[token["actual_mutation"]]
-        anchor_indexes = list(anchor_token.index)
-        target_indexes = list(target_token.index)
-        target_timestamps = list(target_token["timestamp"])
-        for position, index in enumerate(anchor_indexes):
+    for _, token in panel.groupby(_IDENTITY_COLUMNS, sort=False):
+        anchors = token[token["ranking_observation"]]
+        mutations = token[token["actual_mutation"]]
+        target_indexes = list(mutations.index)
+        target_timestamps = list(mutations["timestamp"])
+
+        for index in anchors.index:
             current_ts = panel.loc[index, "timestamp"]
-            current_mid = panel.loc[index, "mid"]
+            current_mid = float(panel.loc[index, "mid"])
             for horizon in horizons:
                 target = current_ts + pd.Timedelta(seconds=horizon)
-                match_index = _first_at_or_after_group_last(target_indexes, target_timestamps, target)
+                match_index = _fixed_horizon_match(target_indexes, target_timestamps, target)
                 if match_index is None:
                     continue
-                future_mid = panel.loc[match_index, "mid"]
+                future_mid = float(panel.loc[match_index, "mid"])
                 future_validity = panel.loc[match_index, "book_validity"]
                 panel.loc[index, f"label_matched_timestamp_{horizon}s"] = panel.loc[match_index, "timestamp"]
                 panel.loc[index, f"future_book_validity_{horizon}s"] = future_validity
@@ -464,32 +581,53 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
                     panel.loc[index, f"future_mid_{horizon}s"] = future_mid
                     panel.loc[index, f"future_mid_return_{horizon}s"] = future_mid - current_mid
 
-            if not math.isfinite(current_mid):
-                continue
-            future_anchor_indexes = anchor_indexes[position + 1 :]
-            for future_index in future_anchor_indexes:
-                future_mid = panel.loc[future_index, "mid"]
-                if panel.loc[future_index, "book_validity"] != "valid" or not math.isfinite(future_mid):
-                    continue
-                move = future_mid - current_mid
-                if move != 0:
-                    panel.loc[index, "next_nonzero_mid_move"] = move
-                    panel.loc[index, "next_nonzero_mid_move_direction"] = 1 if move > 0 else -1
-                    panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = panel.loc[future_index, "sequence"]
-                    break
+        _add_next_nonzero_group_labels(panel, mutations)
     return panel
 
 
-def _first_at_or_after_group_last(indexes: list[int], timestamps: list[pd.Timestamp], target: pd.Timestamp) -> int | None:
-    for position, (index, timestamp) in enumerate(zip(indexes, timestamps, strict=True)):
-        if timestamp >= target:
-            group_last = index
-            for next_index, next_timestamp in zip(indexes[position + 1 :], timestamps[position + 1 :], strict=True):
-                if next_timestamp != timestamp:
-                    break
-                group_last = next_index
-            return group_last
-    return None
+def _fixed_horizon_match(
+    indexes: list[int],
+    timestamps: list[pd.Timestamp],
+    target: pd.Timestamp,
+) -> int | None:
+    position = bisect_left(timestamps, target)
+    if position == len(timestamps):
+        return None
+    final_position = bisect_right(timestamps, timestamps[position]) - 1
+    return indexes[final_position]
+
+
+def _add_next_nonzero_group_labels(panel: pd.DataFrame, mutations: pd.DataFrame) -> None:
+    valid_segment: list[int] = []
+    for row in mutations.itertuples():
+        if row.book_validity == "valid":
+            valid_segment.append(row.Index)
+        else:
+            _add_next_nonzero_segment_labels(panel, valid_segment)
+            valid_segment = []
+    _add_next_nonzero_segment_labels(panel, valid_segment)
+
+
+def _add_next_nonzero_segment_labels(panel: pd.DataFrame, indexes: list[int]) -> None:
+    if len(indexes) < 2:
+        return
+    mids = [float(panel.loc[index, "mid"]) for index in indexes]
+    next_different: list[int | None] = [None] * len(indexes)
+    for position in range(len(indexes) - 2, -1, -1):
+        if mids[position + 1] != mids[position]:
+            next_different[position] = position + 1
+        else:
+            next_different[position] = next_different[position + 1]
+
+    for position, target_position in enumerate(next_different):
+        if target_position is None:
+            continue
+        index = indexes[position]
+        target_index = indexes[target_position]
+        move = mids[target_position] - mids[position]
+        panel.loc[index, "next_nonzero_mid_move"] = move
+        panel.loc[index, "next_nonzero_mid_move_direction"] = 1.0 if move > 0.0 else -1.0
+        panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = int(panel.loc[target_index, "sequence"])
 
 
 def _build_candidate_table(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
@@ -501,13 +639,14 @@ def _build_candidate_table(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd
             label = f"future_mid_return_{horizon}s"
             if label not in panel.columns:
                 continue
-            for (event_id, token_id), group in panel.groupby(["event_id", "token_id"], sort=True):
+            for (event_id, market, token_id), group in panel.groupby(_IDENTITY_COLUMNS, sort=True):
                 ranking = group[group["ranking_observation"]]
                 valid = ranking[[factor, label]].dropna()
                 token_ic = _safe_corr(valid[factor], valid[label])
                 token_rows.append(
                     {
                         "event_id": event_id,
+                        "market": market,
                         "token_id": token_id,
                         "factor": factor,
                         "horizon_seconds": horizon,
@@ -521,8 +660,8 @@ def _build_candidate_table(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd
 
     cohort_rows: list[dict[str, Any]] = []
     if not token_metrics.empty:
-        token_cohorts = panel.groupby(["event_id", "token_id"], sort=True)["source_quality_cohort"].first()
-        token_metrics = token_metrics.join(token_cohorts.rename("cohort"), on=["event_id", "token_id"])
+        token_cohorts = panel.groupby(_IDENTITY_COLUMNS, sort=True)["source_quality_cohort"].first()
+        token_metrics = token_metrics.join(token_cohorts.rename("cohort"), on=_IDENTITY_COLUMNS)
         for (factor, horizon, cohort), group in token_metrics.groupby(["factor", "horizon_seconds", "cohort"], sort=True):
             event_ic = group.groupby("event_id", sort=True)["token_ic"].mean()
             cohort_rows.append(
