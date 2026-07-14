@@ -326,10 +326,20 @@ def _token_key(update: L2UpdateV1) -> tuple[str, str]:
 
 def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
     tick_sizes: dict[tuple[str, str], Decimal] = {}
-    for step in dataset.steps:
+    for step_index, step in enumerate(dataset.steps):
+        if not isinstance(step, L2ReplayStepV1):
+            raise ValueError(
+                f"steps[{step_index}] must be L2ReplayStepV1; "
+                f"actual type={type(step).__module__}.{type(step).__qualname__}",
+            )
         if not step.updates:
             raise _validation_error(step, None, "updates", "must contain at least one update")
-        for update in step.updates:
+        for update_index, update in enumerate(step.updates):
+            if not isinstance(update, L2UpdateV1):
+                raise ValueError(
+                    f"sequence={step.sequence}, updates[{update_index}] must be L2UpdateV1; "
+                    f"actual type={type(update).__module__}.{type(update).__qualname__}",
+                )
             _validate_update(step, update, tick_sizes)
 
 
