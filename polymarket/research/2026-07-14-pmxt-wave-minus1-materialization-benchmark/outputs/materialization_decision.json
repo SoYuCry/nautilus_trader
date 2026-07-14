@@ -1,8 +1,6 @@
 {
-  "m2_selection": "never_select_pending_exact_parity",
   "not_for_pnl": true,
   "performance_claims_allowed": false,
   "reason": "ambiguity role remains external/resource-deferred and all 49 Jun4 tasks remain manifest-feasibility-only",
-  "selected_mode": "M1",
   "status": "deferred"
 }

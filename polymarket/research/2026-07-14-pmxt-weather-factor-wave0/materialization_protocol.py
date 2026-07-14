@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 import sys
+import time
 from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -42,6 +43,15 @@ EXPECTED_SHARDS = 18
 EXPECTED_WORKER_CAP = 1
 EXPECTED_CACHE_BUDGET_BYTES = 8_589_934_592
 M2_STATUS = "disabled_pending_parity"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+WAVE0_OUTPUTS_DIR = Path(__file__).with_name("outputs")
+BENCHMARK_OUTPUTS_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "2026-07-14-pmxt-wave-minus1-materialization-benchmark"
+    / "outputs"
+)
 
 
 
@@ -492,6 +502,44 @@ def large_derivative_tracking_policy() -> str:
 
 
 def _event_manifest_row(row: dict[str, Any]) -> dict[str, Any]:
+    if "orderbook_bytes" in row:
+        source_bytes = int(row["orderbook_bytes"])
+        source_sha = row["source_sha256"]
+        source_path = row["source_path"]
+        identity_material = {
+            "event_id": row["event_id"],
+            "event_slug": row["event_slug"],
+            "source_sha256": source_sha,
+        }
+        hard_break = {
+            "corrupt_hour_breaks": int(row["hard_break_corrupt_hour_count"]),
+            "missing_hour_breaks": int(row["hard_break_missing_hour_count"]),
+            "status": row["hard_break_status"],
+        }
+        return {
+            "city": row["city"],
+            "cohort": row["cohort_role"],
+            "event_date": row["event_date"],
+            "event_identity_hash": _sha256_json(identity_material),
+            "event_slug": row["event_slug"],
+            "expected_mode": "M1",
+            "failure_isolation_unit": "event",
+            "hard_break": hard_break,
+            "initial_state": "pending",
+            "markets": int(row["markets"]),
+            "relative_source_path": source_path,
+            "source_bytes": source_bytes,
+            "source_hash": source_sha,
+            "source_identity": {
+                "orderbook_identity_sha256": source_sha,
+                "schema_fingerprint": "wave0_compact_minimal_event_v1",
+            },
+            "source_rows": int(row["rows_written"]),
+            "state": "pending",
+            "task_id": "g003-event-" + _sha256_json(identity_material)[:24],
+            "tokens": int(row["tokens"]),
+        }
+
     orderbook = row["orderbook_file"]
     hashes = row["hashes"]
     paths = row["paths"]
@@ -821,13 +869,17 @@ def _load_compact_or_parquet_inventory(
         compact_path = Path(compact_canonical_inventory_path)
         compact = _read_json(compact_path)
         event_inventory = pd.DataFrame(compact["events"])
-        token_inventory = pd.DataFrame(compact["tokens"])
+        if "tokens" in compact:
+            token_inventory = pd.DataFrame(compact["tokens"])
+        else:
+            token_inventory = pd.DataFrame({"asset_id": range(int(compact["totals"]["tokens"]))})
         return (
             event_inventory,
             token_inventory,
             compact.get("inventory_summary", {}),
             {
                 "compact_canonical_inventory_sha256": _sha256_file(compact_path),
+                "compact_canonical_inventory_path": _repo_relative(compact_path),
                 "compact_canonical_inventory_source": compact.get("source_provenance", {}).get("source", "wave_minus1_inventory"),
             },
         )
@@ -897,6 +949,269 @@ def _read_canonical_payload(path: Path) -> dict[str, Any]:
     }
 
 
+def run_g003_materialization_parity(
+    *,
+    output_path: str | Path | None = None,
+    decision_output_path: str | Path | None = None,
+    include_synthetic: bool = False,
+    include_frozen_representative_real: bool = False,
+    benchmark_results_path: str | Path | None = None,
+    benchmark_decision_path: str | Path | None = None,
+    cache_resume_tests_path: str | Path | None = None,
+) -> dict[str, Any]:
+    benchmark_results_path = Path(benchmark_results_path or BENCHMARK_OUTPUTS_DIR / "m1_m2_m3_results.json")
+    benchmark_decision_path = Path(benchmark_decision_path or BENCHMARK_OUTPUTS_DIR / "materialization_decision.json")
+    cache_resume_tests_path = Path(cache_resume_tests_path or BENCHMARK_OUTPUTS_DIR / "cache_resume_tests.json")
+    scenario_statuses: dict[str, str] = {}
+    results: list[dict[str, Any]] = []
+
+    if include_synthetic:
+        synthetic = _run_synthetic_materialization_parity()
+        results.append(synthetic)
+        scenario_statuses.update(_scenario_statuses_for_row(synthetic))
+
+    if include_frozen_representative_real:
+        frozen = _load_frozen_representative_real_parity(
+            benchmark_results_path=benchmark_results_path,
+            cache_resume_tests_path=cache_resume_tests_path,
+        )
+        results.append(frozen)
+        scenario_statuses.update(_scenario_statuses_for_row(frozen))
+
+    parity = {
+        "program": "pmxt-weather-factor-wave0-g003-materialization-parity",
+        "program_version": "2026-07-14.g003.parity.v1",
+        "mode_policy": {"M1": "oracle", "M2": M2_STATUS, "M3": "audit_only"},
+        "scenario_statuses": scenario_statuses,
+        "results": results,
+        "source_benchmark_evidence": _source_benchmark_evidence(
+            benchmark_results_path=benchmark_results_path,
+            benchmark_decision_path=benchmark_decision_path,
+            cache_resume_tests_path=cache_resume_tests_path,
+        ),
+    }
+    decision = _build_g003_materialization_decision(parity)
+    if output_path is not None:
+        _write_json_atomic(parity, Path(output_path))
+    if decision_output_path is not None:
+        _write_json_atomic(decision, Path(decision_output_path))
+    return parity
+
+
+def _run_synthetic_materialization_parity() -> dict[str, Any]:
+    with TemporaryDirectory(prefix="g003-synthetic-parity-") as tmp:
+        cache_dir = Path(tmp) / "cache"
+        result = _synthetic_attested_factor_result()
+        identity = {
+            "adapter_version": "synthetic",
+            "cohort_metadata_hash": "3" * 64,
+            "dataset_id": "synthetic-g003-materialization",
+            "event_slug": "synthetic-g003-materialization",
+            "factor_code_sha256": "4" * 64,
+            "factor_schema": "factor_protocol_public_result_v1",
+            "horizons_seconds": list(PRIMARY_HORIZONS_SECONDS),
+            "label_schema": "factor_protocol_primary_labels_v1",
+            "market_slug": "synthetic-g003-materialization",
+            "mode": "M2",
+            "mode_version": "g003-m2-disposable-factor-cache-v1",
+            "orderbook_identity_sha256": "2" * 64,
+            "protocol_json_sha256": "5" * 64,
+            "replay_ordering_version": "O1",
+            "source_content_sha256": "1" * 64,
+            "summary_schema": "factor_protocol_candidate_shortlist_v1",
+            "token_id": "SYN-YES",
+        }
+        t0 = time.perf_counter()
+        m1 = _copy_factor_result(result)
+        cold_m1 = time.perf_counter() - t0
+        t0 = time.perf_counter()
+        write_m2_cache_atomic(
+            result,
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+        )
+        cold_m2 = time.perf_counter() - t0
+        t0 = time.perf_counter()
+        warm = read_m2_cache_or_recompute(
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            m1_factory=lambda: m1,
+        )
+        warm_elapsed = time.perf_counter() - t0
+        inject_m2_cache_fault(cache_dir, "bitflip")
+        corrupt = read_m2_cache_or_recompute(
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            m1_factory=lambda: m1,
+        )
+    return {
+        "sample_kind": "synthetic",
+        "modes": {
+            "M1": {
+                "cold_elapsed_seconds": cold_m1,
+                "cache_status": "direct_no_persistent_derivative",
+            },
+            "M2": {
+                "cold_elapsed_seconds": cold_m2,
+                "warm_elapsed_seconds": warm_elapsed,
+                "cache_status": warm["cache_status"],
+                "resume_behavior": {
+                    "invalid_cache_reason": corrupt["cache_status"],
+                    "removed_partial_artifacts": 0,
+                },
+            },
+            "M3": resolve_audit_mode("M3"),
+        },
+        "parity_attestation": {
+            "m1_digest": result["deterministic_digest"],
+            "warm_digest": warm["result"]["deterministic_digest"],
+            "corrupt_recover_digest": corrupt["result"]["deterministic_digest"],
+            "exact_match": (
+                result["deterministic_digest"]
+                == warm["result"]["deterministic_digest"]
+                == corrupt["result"]["deterministic_digest"]
+            ),
+        },
+    }
+
+
+def _synthetic_attested_factor_result() -> dict[str, Any]:
+    factor = _factor_protocol().PRIMARY_FACTOR_NAMES[0]
+    panel = pd.DataFrame(
+        [
+            {
+                "event_id": "synthetic-g003-materialization",
+                "market": "synthetic-market",
+                "token_id": "SYN-YES",
+                "sequence": 1,
+                factor: 1.0,
+                "ranking_observation": True,
+                "source_quality_cohort": "clean",
+            },
+        ],
+    )
+    candidate_table = pd.DataFrame(
+        [
+            {
+                "factor": factor,
+                "horizon_seconds": PRIMARY_HORIZONS_SECONDS[0],
+                "passes_shortlist": True,
+                "event_count": 1,
+                "token_count": 1,
+                "row_count": 1,
+            },
+        ],
+    )
+    primary_shortlist = candidate_table.reset_index(drop=True)
+    panel_digest = _factor_protocol()._frame_digest(panel)
+    candidate_digest = _factor_protocol()._frame_digest(candidate_table)
+    return {
+        "panel": panel,
+        "candidate_table": candidate_table,
+        "primary_shortlist": primary_shortlist,
+        "deterministic_digest": hashlib.sha256(f"{panel_digest}:{candidate_digest}".encode()).hexdigest(),
+    }
+
+
+def _load_frozen_representative_real_parity(
+    *,
+    benchmark_results_path: Path,
+    cache_resume_tests_path: Path,
+) -> dict[str, Any]:
+    benchmark_results = _read_json(benchmark_results_path)
+    if not isinstance(benchmark_results, list) or not benchmark_results:
+        raise AssertionError("frozen benchmark results must be a non-empty list")
+    cache_resume_tests = _read_json(cache_resume_tests_path)
+    representative_modes = benchmark_results[0].get("modes", {})
+    row = {
+        "sample_kind": "frozen_representative_real",
+        "event_slug": benchmark_results[0].get("event_slug"),
+        "source_rows_scanned": benchmark_results[0].get("source_rows_scanned")
+        or representative_modes.get("M1", {}).get("source_rows_scanned")
+        or representative_modes.get("M1", {}).get("row_count")
+        or 1,
+        "modes": representative_modes,
+        "cache_resume_evidence": cache_resume_tests,
+        "frozen_representative_real_event_count": len(benchmark_results),
+    }
+    return row
+
+
+def _scenario_statuses_for_row(row: dict[str, Any]) -> dict[str, str]:
+    sample = str(row["sample_kind"])
+    modes = row.get("modes", {})
+    statuses: dict[str, str] = {}
+    statuses[f"{sample}:cold_m1"] = "evidence" if modes.get("M1", {}).get("cold_elapsed_seconds") is not None else "environment_blocked"
+    statuses[f"{sample}:cold_m2"] = "evidence" if modes.get("M2", {}).get("cold_elapsed_seconds") is not None else "environment_blocked"
+    statuses[f"{sample}:warm"] = (
+        "evidence"
+        if any(mode.get("warm_elapsed_seconds") is not None for mode in modes.values() if isinstance(mode, dict))
+        else "environment_blocked"
+    )
+    statuses[f"{sample}:corrupt_recover"] = (
+        "evidence"
+        if any(
+            isinstance(mode, dict)
+            and (
+                mode.get("resume_behavior", {}).get("invalid_cache_reason")
+                or mode.get("resume_behavior", {}).get("removed_partial_artifacts")
+            )
+            for mode in modes.values()
+        )
+        else "environment_blocked"
+    )
+    statuses[f"{sample}:m3_audit"] = "evidence" if "M3" in modes else "environment_blocked"
+    return statuses
+
+
+def _build_g003_materialization_decision(parity: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "program": "pmxt-weather-factor-wave0-g003-materialization-decision",
+        "program_version": "2026-07-14.g003.decision.v1",
+        "selected_mode": "M1",
+        "non_selected_modes": {
+            "M2": {
+                "status": M2_STATUS,
+                "reason": "M2 remains a disposable cache and is not selected for Wave0 materialization execution.",
+            },
+            "M3": {
+                "status": "audit_only",
+                "reason": "M3 may be inspected only as benchmark evidence, never selected for execution.",
+            },
+        },
+        "mode_policy": parity["mode_policy"],
+        "scenario_statuses": parity["scenario_statuses"],
+        "source_benchmark_evidence": parity["source_benchmark_evidence"],
+        "not_for_pnl": True,
+        "performance_claims_allowed": False,
+    }
+
+
+def _source_benchmark_evidence(
+    *,
+    benchmark_results_path: Path,
+    benchmark_decision_path: Path,
+    cache_resume_tests_path: Path,
+) -> dict[str, Any]:
+    return {
+        "m1_m2_m3_results_path": _repo_relative(benchmark_results_path),
+        "m1_m2_m3_results_sha256": _sha256_file(benchmark_results_path),
+        "materialization_decision_path": _repo_relative(benchmark_decision_path),
+        "materialization_decision_sha256": _sha256_file(benchmark_decision_path),
+        "cache_resume_tests_path": _repo_relative(cache_resume_tests_path),
+        "cache_resume_tests_sha256": _sha256_file(cache_resume_tests_path),
+        "status": "frozen_representative_real_evidence_reused_without_overwrite",
+    }
+
+
+def _repo_relative(path: str | Path) -> str:
+    try:
+        return str(Path(path).resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
@@ -913,11 +1228,30 @@ def _main(argv: list[str] | None = None) -> int:
     dry.add_argument("--worker-cap", type=int, default=EXPECTED_WORKER_CAP)
     dry.add_argument("--cache-budget-bytes", type=int, default=EXPECTED_CACHE_BUDGET_BYTES)
     dry.add_argument("--output", required=True)
+    parity = sub.add_parser("parity")
+    parity.add_argument("--output", required=True)
+    parity.add_argument("--decision-output", required=True)
+    parity.add_argument("--include-synthetic", action="store_true")
+    parity.add_argument("--include-frozen-representative-real", action="store_true")
+    parity.add_argument("--benchmark-results", default=None)
+    parity.add_argument("--benchmark-decision", default=None)
+    parity.add_argument("--cache-resume-tests", default=None)
     validate = sub.add_parser("validate-manifest")
     validate.add_argument("--manifest", required=True)
     args = parser.parse_args(argv)
     if args.command == "validate-manifest":
         validate_g003_dry_run_manifest(_read_json(args.manifest))
+        return 0
+    if args.command == "parity":
+        run_g003_materialization_parity(
+            output_path=args.output,
+            decision_output_path=args.decision_output,
+            include_synthetic=args.include_synthetic,
+            include_frozen_representative_real=args.include_frozen_representative_real,
+            benchmark_results_path=args.benchmark_results,
+            benchmark_decision_path=args.benchmark_decision,
+            cache_resume_tests_path=args.cache_resume_tests,
+        )
         return 0
     benchmark_report = Path(args.benchmark_report)
     benchmark_dir = benchmark_report.parent
