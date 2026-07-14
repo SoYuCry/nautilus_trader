@@ -104,18 +104,20 @@ def test_build_factor_panel_consumes_dataset_steps_in_canonical_order_without_re
     assert list(panel["replay_timestamp"]) == [pd.Timestamp(replay_timestamp(step)) for step in dataset.steps]
 
 
+@pytest.mark.parametrize("include_labels", [False, True], ids=("without-labels", "with-labels"))
 def test_build_factor_panel_rejects_non_monotonic_canonical_replay_clock(
     factor_protocol: Any,
+    include_labels: bool,
 ) -> None:
-    dataset = _dataset(
-        [
-            _book_step(1, "2026-07-14T00:00:02Z", bids=[("0.45", "10")], asks=[("0.55", "10")]),
-            _book_step(2, "2026-07-14T00:00:01Z", bids=[("0.44", "10")], asks=[("0.56", "10")]),
-        ],
-    )
+    dataset = _non_monotonic_dataset()
 
     with pytest.raises(ValueError, match=r"(?i)(replay|order|clock)"):
-        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=include_labels)
+
+
+def test_run_factor_protocol_rejects_non_monotonic_canonical_replay_clock(factor_protocol: Any) -> None:
+    with pytest.raises(ValueError, match=r"(?i)(replay|order|clock)"):
+        factor_protocol.run_factor_protocol(_non_monotonic_dataset(), horizons_seconds=(30, 120, 600))
 
 
 def test_registered_pure_l2_factor_math_matches_canonical_definitions(factor_protocol: Any) -> None:
@@ -142,9 +144,10 @@ def test_registered_pure_l2_factor_math_matches_canonical_definitions(factor_pro
         ],
     )
 
-    row = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False).iloc[0]
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+    row = panel.iloc[0]
 
-    assert row["ranking_observation"] is True
+    assert bool(row["ranking_observation"]) is True
     assert row["bid1"] == pytest.approx(0.49)
     assert row["ask1"] == pytest.approx(0.51)
     assert row["mid"] == pytest.approx(0.50)
@@ -159,6 +162,8 @@ def test_registered_pure_l2_factor_math_matches_canonical_definitions(factor_pro
     assert row["bid_ask_liquidity_asymmetry"] == pytest.approx(-19 / 65)
     assert row["distance_to_zero_one"] == pytest.approx(0.50)
     assert row["tick_size_regime"] == pytest.approx(0.01)
+    assert pd.api.types.is_bool_dtype(panel["actual_mutation"])
+    assert pd.api.types.is_bool_dtype(panel["ranking_observation"])
 
 
 def test_price_change_insert_change_and_delete_rebuild_local_l2_bbo_while_ignoring_row_bbo(
@@ -263,8 +268,12 @@ def test_staleness_resets_only_on_actual_book_mutation_and_update_intensity_coun
     assert panel.loc[4, "book_staleness_seconds"] == pytest.approx(0.0)
     assert panel.loc[5, "book_staleness_seconds"] == pytest.approx(9.0)
     assert panel.loc[6, "book_staleness_seconds"] == pytest.approx(0.0)
-    assert panel.loc[4, "book_update_intensity"] == pytest.approx(2 / 30)
-    assert panel.loc[6, "book_update_intensity"] == pytest.approx(2 / 30)
+    assert panel.loc[4, "book_update_intensity"] == pytest.approx(1 / 30)
+    assert panel.loc[6, "book_update_intensity"] == pytest.approx(1 / 30)
+    assert pd.api.types.is_bool_dtype(panel["actual_mutation"])
+    assert pd.api.types.is_bool_dtype(panel["ranking_observation"])
+    assert list(panel["actual_mutation"]) == [False, True, False, False, True, False, True]
+    assert list(panel["ranking_observation"]) == [False, True, False, False, True, False, False]
 
 
 def test_update_intensity_is_token_local_and_uses_strict_left_thirty_second_boundary(
@@ -327,7 +336,7 @@ def test_candidate_metrics_use_ranking_observations_only(factor_protocol: Any) -
     panel = _result_frame(result, "panel")
     candidate_table = _result_frame(result, "candidate_table")
 
-    assert panel.loc[panel["sequence"] == 2, "ranking_observation"].iloc[0] is False
+    assert bool(panel.loc[panel["sequence"] == 2, "ranking_observation"].iloc[0]) is False
     depth_imbalance_rows = candidate_table[candidate_table["factor"] == "depth_imbalance_1"]
     row_counts = dict(zip(depth_imbalance_rows["horizon_seconds"], depth_imbalance_rows["row_count"], strict=True))
     assert row_counts[30] == 2
@@ -519,6 +528,15 @@ def _dataset(steps: list[L2ReplayStepV1] | tuple[L2ReplayStepV1, ...]) -> Polyma
             source_type="synthetic",
         ),
         steps=tuple(steps),
+    )
+
+
+def _non_monotonic_dataset() -> PolymarketL2DatasetV1:
+    return _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:02Z", bids=[("0.45", "10")], asks=[("0.55", "10")]),
+            _book_step(2, "2026-07-14T00:00:01Z", bids=[("0.44", "10")], asks=[("0.56", "10")]),
+        ],
     )
 
 

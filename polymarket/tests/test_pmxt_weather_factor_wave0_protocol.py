@@ -249,9 +249,9 @@ def test_missing_source_timestamp_falls_back_to_received_time_and_sequence_tie_b
     factor_protocol: Any,
 ) -> None:
     rows = _dataset([
-        _book_row(3, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.60", "10")], [("0.80", "10")], source_ts=None),
-        _book_row(2, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")], source_ts=None),
         _book_row(1, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.40", "10")], [("0.50", "10")], source_ts=None),
+        _book_row(2, "2026-07-14T00:00:00Z", "E1", "E1-YES", [("0.50", "10")], [("0.60", "10")], source_ts=None),
+        _book_row(3, "2026-07-14T00:00:30Z", "E1", "E1-YES", [("0.60", "10")], [("0.80", "10")], source_ts=None),
     ])
 
     panel = factor_protocol.build_factor_panel(rows, horizons_seconds=(30,), include_labels=True)
