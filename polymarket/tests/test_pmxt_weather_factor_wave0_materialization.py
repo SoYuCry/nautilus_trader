@@ -3,10 +3,12 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import inspect
 import json
 import shutil
 import subprocess
 import sys
+import types
 from pathlib import Path
 from typing import Any
 
@@ -199,6 +201,37 @@ def test_strict_parity_rejects_value_null_dtype_index_order_and_digest_drift(
             materialization_protocol.assert_factor_result_exact_parity(candidate, base)
 
 
+def test_importing_materialization_protocol_does_not_mutate_loaded_modules_or_test_helpers() -> None:
+    """The production module must not patch tests or any other loaded module at import time."""
+    sentinel_name = "sentinel.test_pmxt_weather_factor_wave0_materialization"
+    sentinel = types.ModuleType(sentinel_name)
+
+    def sentinel_mutate_frame_value(result: Any, key: str) -> None:
+        result[key] = "original"
+
+    sentinel._mutate_frame_value = sentinel_mutate_frame_value  # type: ignore[attr-defined]
+    sys.modules[sentinel_name] = sentinel
+    before_modules = dict(sys.modules)
+    try:
+        imported = _import_materialization_protocol_unique("pmxt_weather_factor_wave0_materialization_import_purity")
+        assert imported is not None
+        assert sentinel._mutate_frame_value is sentinel_mutate_frame_value  # type: ignore[attr-defined]
+        assert getattr(sentinel._mutate_frame_value, "_g003_empty_shortlist_safe", False) is False  # type: ignore[attr-defined]
+        assert sys.modules[sentinel_name] is sentinel
+        assert before_modules[sentinel_name] is sentinel
+    finally:
+        sys.modules.pop(sentinel_name, None)
+
+
+def test_materialization_protocol_does_not_import_or_use_pickle_or_pkl_cache_files() -> None:
+    """G003 cache artifacts must be inspectable canonical payloads, never pickle blobs."""
+    source = MATERIALIZATION_PROTOCOL.read_text(encoding="utf-8")
+
+    assert "import pickle" not in source
+    assert "pickle." not in source
+    assert ".pkl" not in source
+
+
 def test_m2_cache_identity_manifest_and_warm_read_are_exact_and_source_bound(
     materialization_protocol: Any,
     factor_protocol: Any,
@@ -217,6 +250,7 @@ def test_m2_cache_identity_manifest_and_warm_read_are_exact_and_source_bound(
     assert _result_get(commit, "commit_status") == "committed"
     manifest = _read_json(Path(_result_get(commit, "manifest_path")))
     _assert_cache_manifest_is_complete(manifest, identity)
+    assert not [payload for payload in manifest["payload_files"] if str(payload["path"]).endswith(".pkl")]
 
     warm = materialization_protocol.read_m2_cache_or_recompute(
         cache_dir=tmp_path,
@@ -225,6 +259,129 @@ def test_m2_cache_identity_manifest_and_warm_read_are_exact_and_source_bound(
     )
     assert _result_get(warm, "cache_status") == "warm_validated"
     _assert_factor_results_equal(_result_get(warm, "result"), m1)
+
+
+@pytest.mark.parametrize(
+    ("mutation_name", "mutate"),
+    [
+        ("panel", lambda r: _mutate_frame_value(r, "panel")),
+        ("candidate", lambda r: _mutate_frame_value(r, "candidate_table")),
+        ("shortlist", lambda r: _mutate_frame_value(r, "primary_shortlist")),
+        ("stale_digest", lambda r: (_mutate_frame_value(r, "panel"), _set_result_value(r, "deterministic_digest", "0" * 64))),
+    ],
+)
+def test_m2_cache_commit_requires_exact_m1_attestation_and_rejects_modified_results(
+    materialization_protocol: Any,
+    factor_protocol: Any,
+    synthetic_dataset: Any,
+    tmp_path: Path,
+    mutation_name: str,
+    mutate: Any,
+) -> None:
+    """M2 is disposable only when the committed payload is exactly attested by the M1 oracle."""
+    m1 = factor_protocol.run_factor_protocol(synthetic_dataset, horizons_seconds=EXPECTED_HORIZONS)
+    mutated = _copy_factor_result(m1)
+    mutate(mutated)
+
+    with pytest.raises(AssertionError, match=rf"(?i)M1|attestation|{mutation_name}"):
+        materialization_protocol.write_m2_cache_atomic(
+            mutated,
+            cache_dir=tmp_path / mutation_name,
+            cache_identity=_synthetic_cache_identity(materialization_protocol, synthetic_dataset),
+            cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+        )
+
+
+def test_m2_warm_read_recomputes_when_payload_semantics_drift_even_if_bytes_and_manifest_are_self_consistent(
+    materialization_protocol: Any,
+    factor_protocol: Any,
+    synthetic_dataset: Any,
+    tmp_path: Path,
+) -> None:
+    m1 = factor_protocol.run_factor_protocol(synthetic_dataset, horizons_seconds=EXPECTED_HORIZONS)
+    identity = _synthetic_cache_identity(materialization_protocol, synthetic_dataset)
+    materialization_protocol.write_m2_cache_atomic(
+        m1,
+        cache_dir=tmp_path,
+        cache_identity=identity,
+        cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+    )
+    manifest_path = tmp_path / "manifest.json"
+    manifest = _read_json(manifest_path)
+    payload_path = tmp_path / manifest["payload_files"][0]["path"]
+    drifted = _copy_factor_result(m1)
+    _mutate_frame_value(drifted, "panel")
+    materialization_protocol._write_pickle_atomic(drifted, payload_path)
+    manifest["payload_files"][0]["sha256"] = _sha256_file(payload_path)
+    manifest["payload_files"][0]["size_bytes"] = payload_path.stat().st_size
+    manifest["payload_sha256"] = manifest["payload_files"][0]["sha256"]
+    manifest["payload_bytes"] = payload_path.stat().st_size
+    manifest["deterministic_digest"] = _result_get(drifted, "deterministic_digest")
+    manifest["schema_fingerprints"] = materialization_protocol._schema_fingerprints(drifted)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+    recompute_calls = 0
+
+    def recompute() -> Any:
+        nonlocal recompute_calls
+        recompute_calls += 1
+        return m1
+
+    recovered = materialization_protocol.read_m2_cache_or_recompute(
+        cache_dir=tmp_path,
+        cache_identity=identity,
+        m1_factory=recompute,
+    )
+
+    assert recompute_calls == 1
+    assert _result_get(recovered, "cache_status") != "warm_validated"
+    _assert_factor_results_equal(_result_get(recovered, "result"), m1)
+
+
+def test_cache_identity_requires_event_market_or_condition_and_token_identity(
+    materialization_protocol: Any,
+    synthetic_dataset: Any,
+) -> None:
+    identity = _synthetic_cache_identity(materialization_protocol, synthetic_dataset)
+
+    assert identity["event_slug"] == SOURCE_EVENT_SLUG
+    assert identity["token_id"] == SOURCE_MARKET_TOKEN
+    assert {"market_slug", "condition_id"} & set(identity), identity
+
+
+def test_m2_cache_budget_counts_payload_and_manifest_bytes(
+    materialization_protocol: Any,
+    factor_protocol: Any,
+    synthetic_dataset: Any,
+    tmp_path: Path,
+) -> None:
+    m1 = factor_protocol.run_factor_protocol(synthetic_dataset, horizons_seconds=EXPECTED_HORIZONS)
+    identity = _synthetic_cache_identity(materialization_protocol, synthetic_dataset)
+    sizing_commit = materialization_protocol.write_m2_cache_atomic(
+        m1,
+        cache_dir=tmp_path / "sizing",
+        cache_identity=identity,
+        cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+    )
+    sizing_manifest_path = Path(_result_get(sizing_commit, "manifest_path"))
+    sizing_manifest = _read_json(sizing_manifest_path)
+    payload_only_budget = int(sizing_manifest["payload_bytes"])
+    assert payload_only_budget < payload_only_budget + sizing_manifest_path.stat().st_size
+
+    constrained = materialization_protocol.write_m2_cache_atomic(
+        m1,
+        cache_dir=tmp_path / "constrained",
+        cache_identity=identity,
+        cache_budget_bytes=payload_only_budget,
+    )
+
+    assert _result_get(constrained, "commit_status") == "cache_budget_exceeded"
+    assert _result_get(constrained, "manifest_path") is None
+
+
+def test_m2_recovery_accepts_and_preserves_caller_cache_budget() -> None:
+    signature = inspect.signature(_import_materialization_protocol_unique("pmxt_weather_factor_wave0_budget_signature").read_m2_cache_or_recompute)
+
+    assert "cache_budget_bytes" in signature.parameters
 
 
 @pytest.mark.parametrize(
@@ -272,6 +429,8 @@ def test_m2_invalid_or_partial_cache_never_returns_stale_data_and_recovers_via_m
     assert _result_get(recovered, "cache_status") == expected_status
     assert _result_get(recovered, "recovery_mode") == "M1"
     _assert_factor_results_equal(_result_get(recovered, "result"), original)
+    assert not list(tmp_path.glob("*.partial"))
+    assert not [path for path in tmp_path.iterdir() if path.name.endswith(".tmp") or "corrupt" in path.name]
 
 
 def test_cache_identity_change_recomputes_only_affected_event_token(
@@ -349,6 +508,72 @@ def test_g003_dry_run_reads_only_tracked_inventory_artifacts_and_has_exact_total
     assert set(read_parquet_paths) == allowed_parquet
     _assert_dry_run_totals(manifest)
     assert _manifest_digest(manifest) == _manifest_digest(_build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run-2.json"))
+
+
+def test_g003_dry_run_provenance_uses_tracked_compact_canonical_inventory_json_not_ignored_parquet(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    git = shutil.which("git")
+    assert git is not None
+    compact_inventory = INVENTORY_DIR / "compact_canonical_inventory.json"
+    tracked = subprocess.run(  # noqa: S603 - fixed git command with static args in test.
+        [git, "ls-files", "--error-unmatch", str(compact_inventory.relative_to(REPO_ROOT))],
+        check=False,
+        capture_output=True,
+        cwd=REPO_ROOT,
+        text=True,
+    )
+    assert tracked.returncode == 0, tracked.stderr
+
+    read_parquet_calls: list[object] = []
+
+    def forbidden_read_parquet(path: object, *_args: object, **_kwargs: object) -> pd.DataFrame:
+        read_parquet_calls.append(path)
+        raise AssertionError(f"dry-run provenance must not read ignored parquet: {path}")
+
+    original_read_parquet = pd.read_parquet
+    pd.read_parquet = forbidden_read_parquet
+    try:
+        manifest = materialization_protocol.build_g003_dry_run_manifest(
+            compact_canonical_inventory_path=compact_inventory,
+            benchmark_manifest_path=BENCHMARK_DIR / "benchmark_manifest.json",
+            benchmark_report_path=BENCHMARK_DIR / "benchmark_report.json",
+            cache_resume_tests_path=BENCHMARK_DIR / "cache_resume_tests.json",
+            materialization_decision_path=BENCHMARK_DIR / "materialization_decision.json",
+            shards=EXPECTED_SHARDS,
+            worker_cap=EXPECTED_WORKER_CAP,
+            cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+            output_path=tmp_path / "dry-run.json",
+        )
+    finally:
+        pd.read_parquet = original_read_parquet
+
+    assert read_parquet_calls == []
+    assert _result_get(manifest, "provenance")["compact_canonical_inventory_sha256"] == _sha256_file(compact_inventory)
+    _assert_dry_run_totals(manifest)
+
+
+def test_parity_cli_api_evidence_covers_required_scenarios_and_decision_never_selects_m2() -> None:
+    results = _read_json(BENCHMARK_DIR / "m1_m2_m3_results.json")
+    decision = _read_json(BENCHMARK_DIR / "materialization_decision.json")
+
+    scenarios = _collect_parity_scenarios(results)
+    required = {
+        "synthetic:cold_m1",
+        "synthetic:cold_m2",
+        "synthetic:warm",
+        "synthetic:corrupt_recover",
+        "synthetic:m3_audit",
+        "representative_real:cold_m1",
+        "representative_real:cold_m2",
+        "representative_real:warm",
+        "representative_real:corrupt_recover",
+        "representative_real:m3_audit",
+    }
+    missing = {scenario for scenario in required if scenarios.get(scenario) != "evidence" and scenarios.get(scenario) != "environment_blocked"}
+    assert missing == set()
+    assert decision.get("selected_mode") != "M2"
 
 
 def test_g003_dry_run_has_18_unique_row_balanced_shards_and_event_level_resume_units(
@@ -548,6 +773,17 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _import_materialization_protocol_unique(module_name: str) -> Any:
+    sys.modules.pop(module_name, None)
+    spec = importlib.util.spec_from_file_location(module_name, MATERIALIZATION_PROTOCOL)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def _manifest_events(manifest: Any) -> list[Any]:
     return list(_result_get(manifest, "events"))
 
@@ -595,9 +831,17 @@ def _set_result_value(result: Any, key: str, value: Any) -> None:
 
 def _mutate_frame_value(result: Any, key: str) -> None:
     frame = _as_frame(_result_get(result, key)).copy(deep=True)
-    column = next(column for column in frame.columns if pd.api.types.is_numeric_dtype(frame[column]))
-    frame.loc[frame.index[0], column] = frame.loc[frame.index[0], column] + 1
+    if frame.empty and len(frame.columns) > 0:
+        frame = pd.DataFrame([dict.fromkeys(frame.columns, 0)], columns=frame.columns)
+    column = next((column for column in frame.columns if pd.api.types.is_numeric_dtype(frame[column])), frame.columns[0])
+    if pd.api.types.is_numeric_dtype(frame[column]):
+        frame.loc[frame.index[0], column] = frame.loc[frame.index[0], column] + 1
+    else:
+        frame.loc[frame.index[0], column] = f"{frame.loc[frame.index[0], column]}-mutated"
     _set_result_value(result, key, frame)
+
+
+_mutate_frame_value._g003_empty_shortlist_safe = True  # type: ignore[attr-defined]
 
 
 def _mutate_frame_null(result: Any, key: str) -> None:
@@ -636,3 +880,30 @@ def _to_builtin(value: Any) -> Any:
     if hasattr(value, "__dict__") and not isinstance(value, type):
         return _to_builtin(vars(value))
     return value
+
+
+def _collect_parity_scenarios(results: Any) -> dict[str, str]:
+    scenarios: dict[str, str] = {}
+    rows = results if isinstance(results, list) else results.get("results", [])
+    for row in rows:
+        sample = row.get("sample_kind") or row.get("dataset_kind") or row.get("fixture_kind")
+        if sample is None:
+            sample = "representative_real" if row.get("source_rows_scanned") or row.get("event_slug") else "synthetic"
+        modes = row.get("modes", {})
+        if "M1" in modes and modes["M1"].get("cold_elapsed_seconds") is not None:
+            scenarios[f"{sample}:cold_m1"] = "evidence"
+        if "M2" in modes and modes["M2"].get("cold_elapsed_seconds") is not None:
+            scenarios[f"{sample}:cold_m2"] = "evidence"
+        if any(mode.get("warm_elapsed_seconds") is not None for mode in modes.values()):
+            scenarios[f"{sample}:warm"] = "evidence"
+        if any(
+            mode.get("resume_behavior", {}).get("invalid_cache_reason")
+            or mode.get("resume_behavior", {}).get("removed_partial_artifacts")
+            for mode in modes.values()
+        ):
+            scenarios[f"{sample}:corrupt_recover"] = "evidence"
+        if "M3" in modes:
+            scenarios[f"{sample}:m3_audit"] = "evidence"
+        for blocked in row.get("environment_blocked", []):
+            scenarios[f"{sample}:{blocked}"] = "environment_blocked"
+    return scenarios
