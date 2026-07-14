@@ -43,6 +43,14 @@ BANNED_OUTCOME_COLUMNS = {
     "strategy_signal",
 }
 
+STRICT_CANDIDATE_EVIDENCE_COLUMNS = (
+    "block_bootstrap_interval_excludes_zero",
+    "widest_spread_independent",
+    "coverage_complete",
+    "failure_manifest_complete",
+    "canonical_hashes_complete",
+)
+
 
 @pytest.fixture
 def factor_protocol() -> Any:
@@ -77,6 +85,41 @@ def test_factor_name_registries_match_preregistered_protocol_exactly(
 
     assert tuple(factor_protocol.PRIMARY_FACTOR_NAMES) == tuple(factors["ranking_eligible"])
     assert tuple(factor_protocol.DIAGNOSTIC_FACTOR_NAMES) == tuple(factors["diagnostic_only"])
+
+
+def test_primary_horizon_registry_matches_preregistered_wall_clock_labels_exactly(
+    factor_protocol: Any,
+    preregistered_protocol: dict[str, Any],
+) -> None:
+    expected = (30, 120, 600)
+    protocol_horizons = tuple(
+        label["seconds"]
+        for label in preregistered_protocol["labels"]["primary"]
+        if label["type"] == "elapsed_wall_clock_seconds"
+    )
+
+    assert expected == factor_protocol.PRIMARY_HORIZONS_SECONDS
+    assert protocol_horizons == expected
+
+
+@pytest.mark.parametrize(
+    "horizons_seconds",
+    [
+        (30, 30, 120),
+        (30, 120),
+        (30, 120, 900),
+    ],
+    ids=("duplicate", "missing-primary", "non-primary"),
+)
+def test_run_factor_protocol_rejects_noncanonical_primary_horizons(
+    factor_protocol: Any,
+    horizons_seconds: tuple[int, ...],
+) -> None:
+    with pytest.raises(ValueError, match=r"(?i)horizon"):
+        factor_protocol.run_factor_protocol(
+            _base_rows(event_id="E1", token_id=MARKET_TOKEN_E1_YES),
+            horizons_seconds=horizons_seconds,
+        )
 
 
 def test_prefix_factor_values_are_unchanged_by_appended_future_poison_rows(factor_protocol: Any) -> None:
@@ -345,6 +388,72 @@ def test_candidate_gate_fails_closed_without_required_evidence_and_passes_only_w
     assert bool(complete_row["failure_manifest_complete"]) is True
     assert bool(complete_row["canonical_hashes_complete"]) is True
     assert bool(complete_row["passes_shortlist"]) is True
+
+
+@pytest.mark.parametrize("evidence_column", STRICT_CANDIDATE_EVIDENCE_COLUMNS)
+@pytest.mark.parametrize(
+    "evidence_values",
+    [(True, pd.NA), (True, False)],
+    ids=("unknown-is-not-complete", "explicit-false"),
+)
+def test_candidate_gate_rejects_incomplete_or_negative_explicit_evidence(
+    factor_protocol: Any,
+    evidence_column: str,
+    evidence_values: tuple[bool, bool | Any],
+) -> None:
+    rows = []
+    for index, horizon_seconds in enumerate((30, 120)):
+        evidence = dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True)
+        evidence[evidence_column] = evidence_values[index]
+        rows.append(
+            {
+                "factor": "depth_imbalance_1",
+                "horizon_seconds": horizon_seconds,
+                "cohort": "clean",
+                "event_ic": 0.20 - index * 0.02,
+                "positive_event_share": 0.70,
+                **evidence,
+            },
+        )
+
+    gated = factor_protocol.apply_candidate_gates(pd.DataFrame(rows))
+    row = gated.loc[gated["factor"] == "depth_imbalance_1"].iloc[0]
+
+    assert bool(row[evidence_column]) is False
+    assert bool(row["passes_shortlist"]) is False
+
+
+@pytest.mark.parametrize(
+    ("horizons_seconds", "expected"),
+    [
+        ((30, 30), False),
+        ((30, 900), False),
+        ((30, 120), True),
+    ],
+    ids=("duplicate-30s", "non-primary-900s", "two-distinct-primary"),
+)
+def test_same_sign_gate_counts_distinct_primary_horizons_only(
+    factor_protocol: Any,
+    horizons_seconds: tuple[int, int],
+    expected: bool,
+) -> None:
+    metrics = pd.DataFrame(
+        [
+            {
+                "factor": "depth_imbalance_1",
+                "horizon_seconds": horizon_seconds,
+                "cohort": "clean",
+                "event_ic": 0.20 - index * 0.02,
+                "positive_event_share": 0.70,
+            }
+            for index, horizon_seconds in enumerate(horizons_seconds)
+        ],
+    )
+
+    gated = factor_protocol.apply_candidate_gates(metrics)
+    row = gated.loc[gated["factor"] == "depth_imbalance_1"].iloc[0]
+
+    assert bool(row["same_sign_two_primary_horizons"]) is expected
 
 
 def test_protocol_rerun_is_deterministic_for_panel_candidates_and_digest(factor_protocol: Any) -> None:
