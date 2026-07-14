@@ -7,7 +7,7 @@
   "non_selected_modes": {
     "M2": {
       "reason": "M2 remains a disposable cache and is not selected for Wave0 materialization execution.",
-      "status": "disabled_pending_parity"
+      "status": "eligible_not_selected"
     },
     "M3": {
       "reason": "M3 may be inspected only as benchmark evidence, never selected for execution.",
@@ -21,7 +21,7 @@
   "scenario_statuses": {
     "frozen_representative_real:cold_m1": "evidence",
     "frozen_representative_real:cold_m2": "evidence",
-    "frozen_representative_real:corrupt_recover": "environment_blocked",
+    "frozen_representative_real:corrupt_recover": "evidence",
     "frozen_representative_real:m3_audit": "evidence",
     "frozen_representative_real:warm": "evidence",
     "synthetic:cold_m1": "evidence",

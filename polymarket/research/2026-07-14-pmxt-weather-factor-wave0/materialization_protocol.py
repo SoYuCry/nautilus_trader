@@ -47,10 +47,20 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 WAVE0_OUTPUTS_DIR = Path(__file__).with_name("outputs")
+INVENTORY_OUTPUTS_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "2026-07-13-pmxt-wave-minus1-inventory"
+    / "outputs"
+)
 BENCHMARK_OUTPUTS_DIR = (
     Path(__file__).resolve().parents[1]
     / "2026-07-14-pmxt-wave-minus1-materialization-benchmark"
     / "outputs"
+)
+FROZEN_REAL_EVENT_SLUGS = (
+    "highest-temperature-in-hong-kong-on-june-10-2026",
+    "highest-temperature-in-chicago-on-june-9-2026",
+    "highest-temperature-in-amsterdam-on-june-6-2026",
 )
 
 
@@ -955,6 +965,7 @@ def run_g003_materialization_parity(
     decision_output_path: str | Path | None = None,
     include_synthetic: bool = False,
     include_frozen_representative_real: bool = False,
+    force_recompute_real: bool = False,
     benchmark_results_path: str | Path | None = None,
     benchmark_decision_path: str | Path | None = None,
     cache_resume_tests_path: str | Path | None = None,
@@ -971,12 +982,14 @@ def run_g003_materialization_parity(
         scenario_statuses.update(_scenario_statuses_for_row(synthetic))
 
     if include_frozen_representative_real:
-        frozen = _load_frozen_representative_real_parity(
+        frozen_rows = _load_or_run_frozen_representative_real_parity(
             benchmark_results_path=benchmark_results_path,
             cache_resume_tests_path=cache_resume_tests_path,
+            force_recompute_real=force_recompute_real,
         )
-        results.append(frozen)
-        scenario_statuses.update(_scenario_statuses_for_row(frozen))
+        results.extend(frozen_rows)
+        for frozen in frozen_rows:
+            scenario_statuses.update(_scenario_statuses_for_row(frozen))
 
     parity = {
         "program": "pmxt-weather-factor-wave0-g003-materialization-parity",
@@ -1114,28 +1127,372 @@ def _synthetic_attested_factor_result() -> dict[str, Any]:
     }
 
 
-def _load_frozen_representative_real_parity(
+def _load_or_run_frozen_representative_real_parity(
     *,
     benchmark_results_path: Path,
     cache_resume_tests_path: Path,
-) -> dict[str, Any]:
+    force_recompute_real: bool,
+) -> list[dict[str, Any]]:
+    if not force_recompute_real:
+        reused = _load_valid_committed_real_parity_rows()
+        if reused is not None:
+            return reused
+    return _run_frozen_representative_real_parity(
+        benchmark_results_path=benchmark_results_path,
+        cache_resume_tests_path=cache_resume_tests_path,
+    )
+
+
+def _run_frozen_representative_real_parity(
+    *,
+    benchmark_results_path: Path,
+    cache_resume_tests_path: Path,
+) -> list[dict[str, Any]]:
     benchmark_results = _read_json(benchmark_results_path)
     if not isinstance(benchmark_results, list) or not benchmark_results:
         raise AssertionError("frozen benchmark results must be a non-empty list")
     cache_resume_tests = _read_json(cache_resume_tests_path)
-    representative_modes = benchmark_results[0].get("modes", {})
+    primitive_by_slug = {
+        str(row.get("event_slug")): row
+        for row in benchmark_results
+        if isinstance(row, dict) and row.get("event_slug") in FROZEN_REAL_EVENT_SLUGS
+    }
+    rows = []
+    for spec in _load_frozen_real_event_specs():
+        primitive_row = primitive_by_slug.get(spec["event_slug"], {})
+        rows.append(_run_real_event_materialization_parity(spec, primitive_row, cache_resume_tests))
+    return rows
+
+
+def _load_valid_committed_real_parity_rows(
+    artifact_path: Path = WAVE0_OUTPUTS_DIR / "g003_materialization_parity.json",
+) -> list[dict[str, Any]] | None:
+    if not artifact_path.exists():
+        return None
+    try:
+        artifact = _read_json(artifact_path)
+    except (json.JSONDecodeError, OSError):
+        return None
+    rows = [
+        row
+        for row in artifact.get("results", [])
+        if isinstance(row, dict) and row.get("sample_kind") == "frozen_representative_real"
+    ]
+    if [row.get("event_slug") for row in rows] != list(FROZEN_REAL_EVENT_SLUGS):
+        return None
+    expected_by_slug = {spec["event_slug"]: spec for spec in _load_frozen_real_event_specs()}
+    for row in rows:
+        if not _committed_real_row_is_valid(row, expected_by_slug[str(row["event_slug"])]):
+            return None
+    return rows
+
+
+def _committed_real_row_is_valid(row: dict[str, Any], spec: dict[str, Any]) -> bool:
+    attestation = row.get("parity_attestation", {})
+    sources = attestation.get("sources", {})
+    expected_sources = {
+        "factor_protocol_sha256": _sha256_file(Path(__file__).with_name("factor_protocol.py")),
+        "protocol_json_sha256": _sha256_file(Path(__file__).with_name("protocol.json")),
+        "source_artifact_sha256": _sha256_json(_real_source_hashes(spec)),
+    }
+    if attestation.get("oracle") != "factor_protocol.run_factor_protocol":
+        return False
+    if attestation.get("horizons_seconds") != list(PRIMARY_HORIZONS_SECONDS):
+        return False
+    if any(sources.get(key) != value for key, value in expected_sources.items()):
+        return False
+    try:
+        _assert_real_row_exact_gates(row)
+    except AssertionError:
+        return False
+    return row.get("modes", {}).get("M3", {}).get("evidence_kind") == "primitive_audit_only"
+
+
+def _load_frozen_real_event_specs(
+    *,
+    inventory_dir: Path = INVENTORY_OUTPUTS_DIR,
+) -> list[dict[str, Any]]:
+    events_frame = pd.read_parquet(inventory_dir / "event_inventory.parquet")
+    tokens_frame = pd.read_parquet(inventory_dir / "token_inventory.parquet")
+    specs: list[dict[str, Any]] = []
+    for slug in FROZEN_REAL_EVENT_SLUGS:
+        event = events_frame[events_frame["event_slug"] == slug].iloc[0].to_dict()
+        token = (
+            tokens_frame[tokens_frame["event_slug"] == slug]
+            .sort_values(["market_index", "token_side"])
+            .iloc[0]
+            .to_dict()
+        )
+        paths = _dict_from_jsonish(event["paths"])
+        hashes = _dict_from_jsonish(event["hashes"])
+        specs.append(
+            {
+                "asset_id": str(token["asset_id"]),
+                "city": str(event["city"]),
+                "cohort_role": str(event["cohort_role"]),
+                "condition_id": str(token["condition_id"]),
+                "event_date": str(event["event_date"]),
+                "event_dir": Path(paths["event_dir"]),
+                "event_id": str(event["event_id"]),
+                "event_slug": slug,
+                "hashes": {str(key): str(value) for key, value in hashes.items()},
+                "market_index": int(token["market_index"]),
+                "orderbook_path": Path(paths["orderbook"]),
+                "paths": {str(key): str(value) for key, value in paths.items()},
+                "rows_written": int(event["rows_written"]),
+                "token_side": str(token["token_side"]),
+            }
+        )
+    return specs
+
+
+def _run_real_event_materialization_parity(
+    spec: dict[str, Any],
+    primitive_row: dict[str, Any],
+    cache_resume_tests: dict[str, Any],
+) -> dict[str, Any]:
+    from polymarket.adapters.pmxt_event_v1 import PMXTEventV1Adapter
+
+    with TemporaryDirectory(prefix=f"g003-real-parity-{spec['event_slug']}-") as tmp:
+        cache_dir = Path(tmp) / "m2-cache"
+        dataset = PMXTEventV1Adapter(repo_root=REPO_ROOT).load(
+            {
+                "input": {
+                    "asset_id": spec["asset_id"],
+                    "condition_id": spec["condition_id"],
+                    "dataset_id": spec["event_slug"],
+                    "event_dir": str(spec["event_dir"]),
+                }
+            }
+        )
+        identity = build_cache_identity(
+            dataset=dataset,
+            event_slug=spec["event_slug"],
+            token_id=spec["asset_id"],
+            source_content_sha256=_sha256_file(spec["orderbook_path"]),
+            orderbook_identity_sha256=spec["hashes"].get("orderbook_identity_sha256", ""),
+            adapter_version="PMXTEventV1Adapter.v1",
+            replay_ordering_version="O1",
+            protocol_json_sha256=_sha256_file(Path(__file__).with_name("protocol.json")),
+            factor_code_sha256=_sha256_file(Path(__file__).with_name("factor_protocol.py")),
+            horizons_seconds=PRIMARY_HORIZONS_SECONDS,
+            cohort_metadata_hash=_sha256_json(
+                {
+                    "cohort_role": spec["cohort_role"],
+                    "event_date": spec["event_date"],
+                    "hard_break_status": primitive_row.get("hard_break_status"),
+                    "source_quality": getattr(dataset.metadata, "source_quality", {}),
+                }
+            ),
+            mode="M2",
+        )
+
+        t0 = time.perf_counter()
+        m1 = materialize_m1_factor_result(
+            dataset,
+            horizons_seconds=PRIMARY_HORIZONS_SECONDS,
+            event_slug=spec["event_slug"],
+            token_id=spec["asset_id"],
+        )
+        m1_elapsed = time.perf_counter() - t0
+        m1_stage = _stage_attestation(m1, oracle=m1)
+
+        t0 = time.perf_counter()
+        commit = write_m2_cache_atomic(
+            m1,
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+        )
+        m2_cold_elapsed = time.perf_counter() - t0
+        if commit.get("commit_status") != "committed":
+            raise AssertionError(f"M2 cold commit failed for {spec['event_slug']}: {commit}")
+        manifest_path = Path(str(commit["manifest_path"]))
+        manifest = _read_json(manifest_path)
+        m2_cold_stage = _stage_attestation(m1, oracle=m1, manifest=manifest)
+
+        t0 = time.perf_counter()
+        warm = read_m2_cache_or_recompute(
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            m1_factory=lambda: _copy_factor_result(m1),
+        )
+        warm_elapsed = time.perf_counter() - t0
+        if warm["cache_status"] != "warm_validated":
+            raise AssertionError(f"M2 warm read failed for {spec['event_slug']}: {warm['cache_status']}")
+        assert_factor_result_exact_parity(warm["result"], m1)
+        warm_stage = _stage_attestation(warm["result"], oracle=m1, manifest=manifest)
+
+        inject_m2_cache_fault(cache_dir, "bitflip")
+        corrupt = read_m2_cache_or_recompute(
+            cache_dir=cache_dir,
+            cache_identity=identity,
+            m1_factory=lambda: _copy_factor_result(m1),
+        )
+        if corrupt["cache_status"] == "warm_validated":
+            raise AssertionError(f"M2 corrupt recovery did not detect corruption for {spec['event_slug']}")
+        assert_factor_result_exact_parity(corrupt["result"], m1)
+        recommit_manifest = _read_json(cache_dir / "manifest.json")
+        corrupt_stage = _stage_attestation(corrupt["result"], oracle=m1, manifest=recommit_manifest)
+
+    primitive_modes = primitive_row.get("modes", {}) if isinstance(primitive_row, dict) else {}
+    primitive_m3 = primitive_modes.get("M3", {}) if isinstance(primitive_modes, dict) else {}
+    source_hashes = _real_source_hashes(spec)
     row = {
         "sample_kind": "frozen_representative_real",
-        "event_slug": benchmark_results[0].get("event_slug"),
-        "source_rows_scanned": benchmark_results[0].get("source_rows_scanned")
-        or representative_modes.get("M1", {}).get("source_rows_scanned")
-        or representative_modes.get("M1", {}).get("row_count")
-        or 1,
-        "modes": representative_modes,
-        "cache_resume_evidence": cache_resume_tests,
-        "frozen_representative_real_event_count": len(benchmark_results),
+        "event_slug": spec["event_slug"],
+        "city": spec["city"],
+        "event_date": spec["event_date"],
+        "condition_id": spec["condition_id"],
+        "asset_id": spec["asset_id"],
+        "source_rows_scanned": primitive_modes.get("M1", {}).get("source_rows_scanned")
+        or primitive_modes.get("M1", {}).get("row_count")
+        or len(dataset.steps),
+        "modes": {
+            "M1": {
+                "cache_status": "direct_no_persistent_derivative",
+                "cold_elapsed_seconds": m1_elapsed,
+                "mode": "M1",
+            },
+            "M2": {
+                "cache_status": warm["cache_status"],
+                "cold_elapsed_seconds": m2_cold_elapsed,
+                "warm_elapsed_seconds": warm_elapsed,
+                "mode": "M2",
+                "resume_behavior": {
+                    "invalid_cache_reason": corrupt["cache_status"],
+                    "recovery_mode": corrupt.get("recovery_mode"),
+                    "removed_partial_artifacts": 0,
+                    "recommitted_matching_payload": True,
+                },
+            },
+            "M3": _primitive_audit_only_mode(primitive_m3, cache_resume_tests),
+        },
+        "parity_attestation": {
+            "cached_generated_evidence": False,
+            "oracle": "factor_protocol.run_factor_protocol",
+            "horizons_seconds": list(PRIMARY_HORIZONS_SECONDS),
+            "sources": {
+                "adapter": "PMXTEventV1Adapter/O1",
+                "factor_protocol_sha256": _sha256_file(Path(__file__).with_name("factor_protocol.py")),
+                "protocol_json_sha256": _sha256_file(Path(__file__).with_name("protocol.json")),
+                "source_artifact_sha256": _sha256_json(source_hashes),
+                "source_hashes": source_hashes,
+            },
+            "stages": {
+                "m1_canonical_factor_protocol": m1_stage,
+                "m2_cold_commit": m2_cold_stage,
+                "m2_warm_read": warm_stage,
+                "m2_corrupt_recompute_recommit": corrupt_stage,
+            },
+        },
     }
+    _assert_real_row_exact_gates(row)
     return row
+
+
+def _stage_attestation(
+    result: dict[str, Any],
+    *,
+    oracle: dict[str, Any],
+    manifest: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    assert_factor_result_exact_parity(result, oracle)
+    stage = {
+        "deterministic_digest": result["deterministic_digest"],
+        "exact_match": True,
+        "factor_result_digest": factor_result_digest(result),
+        "semantic_bundle_sha256": _semantic_bundle_digest(result),
+        "sections": _canonical_result_sections(result),
+    }
+    if manifest is not None:
+        stage["artifact_hashes"] = {
+            "manifest_sha256": _sha256_json(manifest),
+            "payload_sha256": manifest.get("payload_sha256"),
+            "semantic_bundle_sha256": manifest.get("semantic_bundle_sha256"),
+        }
+    return stage
+
+
+def _canonical_result_sections(result: dict[str, Any]) -> dict[str, Any]:
+    panel = _as_frame(result["panel"])
+    label_columns = [
+        column
+        for column in panel.columns
+        if str(column).startswith(("future_", "label_", "next_nonzero_"))
+        or str(column) in {"ranking_observation", "book_validity", "hard_break_provenance"}
+    ]
+    labels = panel[label_columns].copy() if label_columns else pd.DataFrame(index=panel.index)
+    return {
+        "panel": _frame_section_attestation(panel),
+        "labels_audit_fields": _frame_section_attestation(labels),
+        "candidate_table": _frame_section_attestation(_as_frame(result["candidate_table"])),
+        "primary_shortlist": _frame_section_attestation(_as_frame(result["primary_shortlist"])),
+    }
+
+
+def _frame_section_attestation(frame: pd.DataFrame) -> dict[str, Any]:
+    frame = _as_frame(frame)
+    return {
+        "columns": [str(column) for column in frame.columns],
+        "digest": _factor_protocol()._frame_digest(frame),
+        "dtypes": {str(column): str(dtype) for column, dtype in frame.dtypes.items()},
+        "nulls": {str(column): int(frame[column].isna().sum()) for column in frame.columns},
+        "row_order_digest": _sha256_json(
+            {
+                "index": [_encode_scalar(value) for value in frame.index.tolist()],
+                "sequence": (
+                    [_encode_scalar(value) for value in frame["sequence"].tolist()]
+                    if "sequence" in frame.columns
+                    else list(range(len(frame)))
+                ),
+            }
+        ),
+    }
+
+
+def _real_source_hashes(spec: dict[str, Any]) -> dict[str, str]:
+    hashes = dict(spec["hashes"])
+    paths = spec["paths"]
+    for name, path_text in paths.items():
+        path = Path(path_text)
+        if path.is_file():
+            hashes[f"{name}_actual_sha256"] = _sha256_file(path)
+    return {key: hashes[key] for key in sorted(hashes)}
+
+
+def _primitive_audit_only_mode(
+    primitive_m3: dict[str, Any],
+    cache_resume_tests: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "mode": "M3",
+        "status": "audit_only",
+        "evidence_kind": "primitive_audit_only",
+        "primitive_parity_digest": primitive_m3.get("parity_digest"),
+        "primitive_row_count": primitive_m3.get("primitive_count") or primitive_m3.get("row_count"),
+        "source_file_bytes_upper_bound": primitive_m3.get("source_file_bytes_upper_bound"),
+        "cache_resume_audit_status": cache_resume_tests.get("status") or "available",
+    }
+
+
+def _assert_real_row_exact_gates(row: dict[str, Any]) -> None:
+    stages = row["parity_attestation"]["stages"]
+    digests = {stage["factor_result_digest"] for stage in stages.values()}
+    if len(digests) != 1:
+        raise AssertionError(f"factor_result_digest parity failed for {row['event_slug']}")
+    if not all(stage["exact_match"] is True for stage in stages.values()):
+        raise AssertionError(f"exact parity failed for {row['event_slug']}")
+    if row.get("environment_blocked"):
+        raise AssertionError(f"unexpected environment_blocked for {row['event_slug']}")
+
+
+def _dict_from_jsonish(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        return json.loads(value)
+    return dict(value)
 
 
 def _scenario_statuses_for_row(row: dict[str, Any]) -> dict[str, str]:
@@ -1166,13 +1523,14 @@ def _scenario_statuses_for_row(row: dict[str, Any]) -> dict[str, str]:
 
 
 def _build_g003_materialization_decision(parity: dict[str, Any]) -> dict[str, Any]:
+    m2_status = "eligible_not_selected" if _m2_exact_parity_gate_passed(parity) else M2_STATUS
     return {
         "program": "pmxt-weather-factor-wave0-g003-materialization-decision",
         "program_version": "2026-07-14.g003.decision.v1",
         "selected_mode": "M1",
         "non_selected_modes": {
             "M2": {
-                "status": M2_STATUS,
+                "status": m2_status,
                 "reason": "M2 remains a disposable cache and is not selected for Wave0 materialization execution.",
             },
             "M3": {
@@ -1186,6 +1544,33 @@ def _build_g003_materialization_decision(parity: dict[str, Any]) -> dict[str, An
         "not_for_pnl": True,
         "performance_claims_allowed": False,
     }
+
+
+def _m2_exact_parity_gate_passed(parity: dict[str, Any]) -> bool:
+    statuses = parity.get("scenario_statuses", {})
+    if not statuses or any(status != "evidence" for status in statuses.values()):
+        return False
+    real_rows = [
+        row
+        for row in parity.get("results", [])
+        if isinstance(row, dict) and row.get("sample_kind") == "frozen_representative_real"
+    ]
+    if [row.get("event_slug") for row in real_rows] != list(FROZEN_REAL_EVENT_SLUGS):
+        return False
+    for row in real_rows:
+        stages = row.get("parity_attestation", {}).get("stages", {})
+        if set(stages) != {
+            "m1_canonical_factor_protocol",
+            "m2_cold_commit",
+            "m2_warm_read",
+            "m2_corrupt_recompute_recommit",
+        }:
+            return False
+        if len({stage.get("factor_result_digest") for stage in stages.values()}) != 1:
+            return False
+        if any(stage.get("exact_match") is not True for stage in stages.values()):
+            return False
+    return True
 
 
 def _source_benchmark_evidence(
@@ -1233,6 +1618,7 @@ def _main(argv: list[str] | None = None) -> int:
     parity.add_argument("--decision-output", required=True)
     parity.add_argument("--include-synthetic", action="store_true")
     parity.add_argument("--include-frozen-representative-real", action="store_true")
+    parity.add_argument("--force", action="store_true", help="recompute real event parity instead of reusing valid committed Wave0 artifact rows")
     parity.add_argument("--benchmark-results", default=None)
     parity.add_argument("--benchmark-decision", default=None)
     parity.add_argument("--cache-resume-tests", default=None)
@@ -1248,6 +1634,7 @@ def _main(argv: list[str] | None = None) -> int:
             decision_output_path=args.decision_output,
             include_synthetic=args.include_synthetic,
             include_frozen_representative_real=args.include_frozen_representative_real,
+            force_recompute_real=args.force,
             benchmark_results_path=args.benchmark_results,
             benchmark_decision_path=args.benchmark_decision,
             cache_resume_tests_path=args.cache_resume_tests,
