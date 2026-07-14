@@ -44,7 +44,6 @@ BANNED_OUTCOME_COLUMNS = {
 }
 
 STRICT_CANDIDATE_EVIDENCE_COLUMNS = (
-    "block_bootstrap_interval_excludes_zero",
     "widest_spread_independent",
     "coverage_complete",
     "failure_manifest_complete",
@@ -399,11 +398,12 @@ def test_candidate_gate_fails_closed_without_required_evidence_and_passes_only_w
 def test_candidate_gate_rejects_incomplete_or_negative_explicit_evidence(
     factor_protocol: Any,
     evidence_column: str,
-    evidence_values: tuple[bool, bool | Any],
+    evidence_values: tuple[object, object],
 ) -> None:
     rows = []
     for index, horizon_seconds in enumerate((30, 120)):
         evidence = dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True)
+        evidence["block_bootstrap_interval_excludes_zero"] = True
         evidence[evidence_column] = evidence_values[index]
         rows.append(
             {
@@ -421,6 +421,53 @@ def test_candidate_gate_rejects_incomplete_or_negative_explicit_evidence(
 
     assert bool(row[evidence_column]) is False
     assert bool(row["passes_shortlist"]) is False
+
+
+@pytest.mark.parametrize(
+    ("horizons_seconds", "bootstrap_values", "expected"),
+    [
+        ((30, 120), (True, False), True),
+        ((30, 120), (False, False), False),
+        ((30, 120), (pd.NA, False), False),
+        ((30, 120), (True, pd.NA), True),
+        ((30, 900), (False, True), False),
+        ((30, 120), None, False),
+    ],
+    ids=(
+        "one-primary-true",
+        "all-primary-false",
+        "na-does-not-contribute-true",
+        "primary-true-with-na",
+        "non-primary-true",
+        "missing-evidence-column",
+    ),
+)
+def test_block_bootstrap_gate_requires_at_least_one_explicit_true_primary_horizon(
+    factor_protocol: Any,
+    horizons_seconds: tuple[int, int],
+    bootstrap_values: tuple[object, object] | None,
+    expected: bool,
+) -> None:
+    rows = []
+    for index, horizon_seconds in enumerate(horizons_seconds):
+        evidence = dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True)
+        if bootstrap_values is not None:
+            evidence["block_bootstrap_interval_excludes_zero"] = bootstrap_values[index]
+        rows.append(
+            {
+                "factor": "depth_imbalance_1",
+                "horizon_seconds": horizon_seconds,
+                "cohort": "clean",
+                "event_ic": 0.20 - index * 0.02,
+                "positive_event_share": 0.70,
+                **evidence,
+            },
+        )
+
+    gated = factor_protocol.apply_candidate_gates(pd.DataFrame(rows))
+    row = gated.loc[gated["factor"] == "depth_imbalance_1"].iloc[0]
+
+    assert bool(row["block_bootstrap_interval_excludes_zero"]) is expected
 
 
 @pytest.mark.parametrize(
