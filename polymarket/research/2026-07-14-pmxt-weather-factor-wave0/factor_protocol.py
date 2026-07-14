@@ -10,12 +10,16 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from dataclasses import field
 from decimal import Decimal
+from heapq import heapify
+from heapq import heappop
+from heapq import heappush
 from typing import Any
 
 import pandas as pd
 
 from polymarket._core.models import L2ReplayStepV1
 from polymarket._core.models import L2UpdateV1
+from polymarket._core.models import LevelV1
 from polymarket._core.models import PolymarketL2DatasetV1
 from polymarket.replay_contract import replay_timestamp
 from polymarket.replay_contract import verify_pmxt_replay_clock_order
@@ -47,12 +51,77 @@ _SUPPORTED_EVENT_TYPES = frozenset({"book", "price_change", "trade", "tick_size_
 _IDENTITY_COLUMNS = ["event_id", "market", "token_id"]
 _DEFAULT_TICK_SIZE = Decimal("0.01")
 _NARROW_TICK_SIZE = Decimal("0.001")
+_DECIMAL_ZERO = Decimal(0)
+_DECIMAL_ONE = Decimal(1)
+_MISSING_LEVEL = object()
+_BOOK_SIDES = ("BUY", "SELL")
+
+
+@dataclass(frozen=True)
+class _LabelBarrier:
+    timestamp: pd.Timestamp
+    reason: str
+    kind: str
+    provenance: str | None = None
+
+
+@dataclass
+class _BarrierIndex:
+    token: dict[tuple[str, str], list[_LabelBarrier]] = field(default_factory=dict)
+    market: dict[str, list[_LabelBarrier]] = field(default_factory=dict)
+
+    def for_token(self, key: tuple[str, str]) -> list[_LabelBarrier]:
+        barriers = [*self.token.get(key, ()), *self.market.get(key[0], ())]
+        barriers.sort(key=lambda barrier: barrier.timestamp)
+        return barriers
+
+
+@dataclass
+class _StepBookTracker:
+    original_levels: dict[tuple[str, float], float | object] = field(default_factory=dict)
+    pre_snapshot_sides: dict[str, dict[float, float]] = field(default_factory=dict)
+
+    def record_level(self, state: _TokenState, side: str, price: float) -> None:
+        if side in self.pre_snapshot_sides:
+            return
+        book = _book_side(state, side)
+        self.original_levels.setdefault((side, price), book.get(price, _MISSING_LEVEL))
+
+    def capture_snapshot_side(self, state: _TokenState, side: str) -> None:
+        if side in self.pre_snapshot_sides:
+            return
+        pre_step = _book_side(state, side).copy()
+        for (tracked_side, price), original in self.original_levels.items():
+            if tracked_side != side:
+                continue
+            if original is _MISSING_LEVEL:
+                pre_step.pop(price, None)
+            else:
+                pre_step[price] = float(original)
+        self.pre_snapshot_sides[side] = pre_step
+
+    def final_state_changed(self, state: _TokenState) -> bool:
+        for side, pre_step in self.pre_snapshot_sides.items():
+            if _book_side(state, side) != pre_step:
+                return True
+        for (side, price), original in self.original_levels.items():
+            if side in self.pre_snapshot_sides:
+                continue
+            if _book_side(state, side).get(price, _MISSING_LEVEL) != original:
+                return True
+        return False
 
 
 @dataclass
 class _TokenState:
     bids: dict[float, float] = field(default_factory=dict)
     asks: dict[float, float] = field(default_factory=dict)
+    bid_heap: list[tuple[float, int, float]] = field(default_factory=list)
+    ask_heap: list[tuple[float, int, float]] = field(default_factory=list)
+    bid_versions: dict[float, int] = field(default_factory=dict)
+    ask_versions: dict[float, int] = field(default_factory=dict)
+    level_version: int = 0
+    book_cache: dict[str, Any] | None = None
     tick_size: Decimal = _DEFAULT_TICK_SIZE
     last_mutation_ts: pd.Timestamp | None = None
     mutation_timestamps: deque[pd.Timestamp] = field(default_factory=deque)
@@ -68,6 +137,7 @@ def build_factor_panel(
         raise TypeError("build_factor_panel requires PolymarketL2DatasetV1 input")
     verify_pmxt_replay_clock_order(dataset)
     _validate_dataset(dataset)
+    barrier_index = _build_barrier_index(dataset)
 
     states: dict[tuple[str, str], _TokenState] = {}
     records: list[dict[str, Any]] = []
@@ -83,18 +153,18 @@ def build_factor_panel(
             touched.setdefault(key, []).append(update.event_type)
             states.setdefault(key, _TokenState())
 
-        pre_step_books = {
-            key: (states[key].bids.copy(), states[key].asks.copy())
-            for key in touched
-        }
+        trackers = {key: _StepBookTracker() for key in touched}
         for update in step.updates:
-            _apply_update(states[_token_key(update)], update)
+            key = _token_key(update)
+            _apply_update(states[key], update, trackers[key])
 
         for key, event_types in touched.items():
             state = states[key]
-            pre_bids, pre_asks = pre_step_books[key]
-            actual_mutation = state.bids != pre_bids or state.asks != pre_asks
+            actual_mutation = trackers[key].final_state_changed(state)
+            if actual_mutation:
+                state.book_cache = None
             _advance_mutation_window(state, step_ts, actual_mutation=actual_mutation)
+            barriers = barrier_index.for_token(key)
             records.append(
                 _audit_record(
                     state=state,
@@ -104,7 +174,8 @@ def build_factor_panel(
                     event_id=event_id,
                     event_type="|".join(dict.fromkeys(event_types)),
                     actual_mutation=actual_mutation,
-                    source_quality_cohort=cohort_by_token.get(key[1], "clean"),
+                    source_quality_cohort=cohort_by_token.get(key[1], "unknown"),
+                    hard_break_provenance=_next_hard_break_provenance(barriers, step_ts),
                 ),
             )
 
@@ -112,7 +183,7 @@ def build_factor_panel(
     if panel.empty:
         return panel
     if include_labels:
-        panel = _add_labels(panel, horizons)
+        panel = _add_labels(panel, horizons, barrier_index)
     return panel.reset_index(drop=True)
 
 
@@ -144,7 +215,109 @@ def _cohort_by_token(dataset: PolymarketL2DatasetV1) -> dict[str, str]:
     raw = source_quality.get("cohort_by_token", {})
     if not isinstance(raw, dict):
         return {}
-    return {str(token): str(cohort) for token, cohort in dict(raw).items()}
+    return {
+        token: cohort
+        for token, cohort in raw.items()
+        if isinstance(token, str) and isinstance(cohort, str) and cohort in {"clean", "degraded"}
+    }
+
+
+def _build_barrier_index(dataset: PolymarketL2DatasetV1) -> _BarrierIndex:
+    barriers = _BarrierIndex()
+    _add_known_archive_gaps(dataset, barriers)
+    _add_resolution_closes(dataset, barriers)
+    for values in (*barriers.token.values(), *barriers.market.values()):
+        values.sort(key=lambda barrier: barrier.timestamp)
+    return barriers
+
+
+def _add_known_archive_gaps(dataset: PolymarketL2DatasetV1, barriers: _BarrierIndex) -> None:
+    source_quality = getattr(dataset.metadata, "source_quality", {}) or {}
+    if not isinstance(source_quality, dict):
+        return
+    raw_gaps = source_quality.get("knownArchiveGaps", [])
+    if not isinstance(raw_gaps, list):
+        raise ValueError("source_quality.knownArchiveGaps must be a list")
+    for position, raw_gap in enumerate(raw_gaps):
+        context = f"source_quality.knownArchiveGaps[{position}]"
+        market, asset_id, provenance, start, end = _parse_known_archive_gap(raw_gap, context)
+        if end <= start:
+            raise ValueError(f"{context}.end must be later than start")
+        barriers.token.setdefault((market, asset_id), []).append(
+            _LabelBarrier(
+                timestamp=start,
+                reason=f"hard_break:{provenance}",
+                kind="hard_break",
+                provenance=provenance,
+            ),
+        )
+
+
+def _parse_known_archive_gap(
+    raw_gap: Any,
+    context: str,
+) -> tuple[str, str, str, pd.Timestamp, pd.Timestamp]:
+    expected_fields = {"market", "asset_id", "start", "end", "provenance"}
+    if not isinstance(raw_gap, dict):
+        raise ValueError(f"{context} must be an object")
+    missing = expected_fields - raw_gap.keys()
+    extra = raw_gap.keys() - expected_fields
+    if missing:
+        raise ValueError(f"{context}.{sorted(missing)[0]} is required")
+    if extra:
+        raise ValueError(f"{context} has unsupported field {sorted(extra)[0]!r}")
+    market = raw_gap["market"]
+    asset_id = raw_gap["asset_id"]
+    provenance = raw_gap["provenance"]
+    if not isinstance(market, str) or not market.strip():
+        raise ValueError(f"{context}.market must be a nonempty string")
+    if not isinstance(asset_id, str) or not asset_id.strip():
+        raise ValueError(f"{context}.asset_id must be a nonempty string")
+    if not isinstance(provenance, str) or not provenance.strip():
+        raise ValueError(f"{context}.provenance must be a nonempty string")
+    start = _parse_utc_metadata_timestamp(raw_gap["start"], f"{context}.start")
+    end = _parse_utc_metadata_timestamp(raw_gap["end"], f"{context}.end")
+    return market, asset_id, provenance, start, end
+
+
+def _add_resolution_closes(dataset: PolymarketL2DatasetV1, barriers: _BarrierIndex) -> None:
+    for position, metadata in enumerate(dataset.metadata.market_metadata):
+        if metadata.resolution_time is None:
+            continue
+        context = f"market_metadata[{position}]"
+        market = metadata.condition_id
+        if not isinstance(market, str) or not market.strip():
+            raise ValueError(f"{context}.condition_id must be a nonempty string")
+        close_time = _parse_utc_metadata_timestamp(metadata.resolution_time, f"{context}.resolution_time")
+        source = metadata.resolution_source if isinstance(metadata.resolution_source, str) else "unknown"
+        if metadata.token_id is None:
+            barriers.market.setdefault(market, []).append(
+                _LabelBarrier(
+                    timestamp=close_time,
+                    reason=f"close:{source}",
+                    kind="close",
+                ),
+            )
+            continue
+        if not isinstance(metadata.token_id, str) or not metadata.token_id.strip():
+            raise ValueError(f"{context}.token_id must be a nonempty string or None")
+        barriers.token.setdefault((market, metadata.token_id), []).append(
+            _LabelBarrier(
+                timestamp=close_time,
+                reason=f"token_close:{source}",
+                kind="token_close",
+            ),
+        )
+
+
+def _parse_utc_metadata_timestamp(value: Any, context: str) -> pd.Timestamp:
+    try:
+        timestamp = pd.Timestamp(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{context} must be a UTC-parseable timestamp") from exc
+    if pd.isna(timestamp) or timestamp.tzinfo is None:
+        raise ValueError(f"{context} must be a UTC-parseable timezone-aware timestamp")
+    return timestamp.tz_convert("UTC")
 
 
 def _token_key(update: L2UpdateV1) -> tuple[str, str]:
@@ -220,6 +393,8 @@ def _validate_levels(
     seen_prices: set[float] = set()
     for position, level in enumerate(iterator):
         context = f"{side_name}[{position}]"
+        if not isinstance(level, LevelV1):
+            raise _validation_error(step, update, context, "must be LevelV1")
         price = _validate_number(
             step,
             update,
@@ -261,7 +436,9 @@ def _validate_number(
     maximum: float | None = None,
     minimum_inclusive: bool = True,
 ) -> float:
-    value = _to_float(raw_value)
+    if not isinstance(raw_value, Decimal):
+        raise _validation_error(step, update, field_name, "must be Decimal")
+    value = float(raw_value)
     if not math.isfinite(value):
         raise _validation_error(step, update, field_name, "must be finite")
     if minimum is not None and (value < minimum if minimum_inclusive else value <= minimum):
@@ -297,15 +474,15 @@ def _audit_record(
     event_type: str,
     actual_mutation: bool,
     source_quality_cohort: str,
+    hard_break_provenance: str | None,
 ) -> dict[str, Any]:
-    bid_levels = _sorted_levels(state.bids, reverse=True)
-    ask_levels = _sorted_levels(state.asks, reverse=False)
-    bid1 = bid_levels[0][0] if bid_levels else math.nan
-    ask1 = ask_levels[0][0] if ask_levels else math.nan
-    validity = _book_validity(bid1, ask1)
+    cached = _book_snapshot(state)
+    bid1 = cached["bid1"]
+    ask1 = cached["ask1"]
+    validity = cached["validity"]
     valid = validity == "valid"
-    mid = (bid1 + ask1) / 2 if valid else math.nan
-    spread = ask1 - bid1 if valid else math.nan
+    mid = cached["mid"]
+    spread = cached["spread"]
     ranking_observation = bool(actual_mutation and valid)
     staleness = (
         0.0
@@ -327,6 +504,7 @@ def _audit_record(
         "replay_timestamp": step_ts,
         "event_type": event_type,
         "source_quality_cohort": source_quality_cohort,
+        "hard_break_provenance": hard_break_provenance,
         "actual_mutation": actual_mutation,
         "ranking_observation": ranking_observation,
         "book_validity": validity,
@@ -339,17 +517,7 @@ def _audit_record(
         "book_update_intensity": intensity,
         "valid_observation_counts": 1 if valid else 0,
     }
-    ranking_values = {
-        "depth_imbalance_1": _depth_imbalance(bid_levels, ask_levels, 1),
-        "depth_imbalance_3": _depth_imbalance(bid_levels, ask_levels, 3),
-        "depth_imbalance_5": _depth_imbalance(bid_levels, ask_levels, 5),
-        "microprice_minus_mid": _microprice_minus_mid(bid_levels, ask_levels, mid),
-        "top_level_depth": _top_level_depth(bid_levels, ask_levels),
-        "depth_slope": _depth_slope(bid_levels, ask_levels),
-        "depth_concentration": _depth_concentration(bid_levels, ask_levels),
-        "bid_ask_liquidity_asymmetry": _liquidity_asymmetry(bid_levels, ask_levels),
-        "distance_to_zero_one": min(mid, 1.0 - mid) if valid else math.nan,
-    }
+    ranking_values = cached["ranking_values"]
     for factor, value in ranking_values.items():
         record[factor] = value if valid else math.nan
     return record
@@ -369,24 +537,39 @@ def _advance_mutation_window(
         state.mutation_timestamps.append(ts)
 
 
-def _apply_update(state: _TokenState, update: L2UpdateV1) -> None:
+def _apply_update(state: _TokenState, update: L2UpdateV1, tracker: _StepBookTracker) -> None:
     if update.event_type == "book":
+        tracker.capture_snapshot_side(state, "BUY")
+        tracker.capture_snapshot_side(state, "SELL")
         state.bids = _levels_from(update.bids)
         state.asks = _levels_from(update.asks)
+        _rebuild_heaps(state)
+        state.book_cache = None
     elif update.event_type == "price_change":
-        _apply_price_change(state, update)
+        _apply_price_change(state, update, tracker)
     elif update.event_type == "tick_size_change":
         state.tick_size = _NARROW_TICK_SIZE
 
 
-def _apply_price_change(state: _TokenState, update: L2UpdateV1) -> None:
+def _apply_price_change(state: _TokenState, update: L2UpdateV1, tracker: _StepBookTracker) -> None:
     book = state.bids if update.side == "BUY" else state.asks
+    versions = state.bid_versions if update.side == "BUY" else state.ask_versions
+    heap = state.bid_heap if update.side == "BUY" else state.ask_heap
     price = float(update.price)  # type: ignore[arg-type]
     size = float(update.size)  # type: ignore[arg-type]
+    tracker.record_level(state, update.side, price)
+    current = book.get(price, _MISSING_LEVEL)
+    if (size == 0.0 and current is _MISSING_LEVEL) or current == size:
+        return
+    state.level_version += 1
+    versions[price] = state.level_version
     if size == 0.0:
         book.pop(price, None)
     else:
         book[price] = size
+        priority = -price if update.side == "BUY" else price
+        heappush(heap, (priority, state.level_version, price))
+    state.book_cache = None
 
 
 def aggregate_factor_metrics(token_rows: pd.DataFrame) -> pd.DataFrame:
@@ -479,6 +662,72 @@ def _levels_from(values: Iterable[Any]) -> dict[float, float]:
     return {float(value.price): float(value.size) for value in values}
 
 
+def _book_side(state: _TokenState, side: str) -> dict[float, float]:
+    return state.bids if side == "BUY" else state.asks
+
+
+def _rebuild_heaps(state: _TokenState) -> None:
+    state.level_version += 1
+    base_version = state.level_version
+    state.bid_versions = dict.fromkeys(state.bids, base_version)
+    state.ask_versions = dict.fromkeys(state.asks, base_version)
+    state.bid_heap = [(-price, base_version, price) for price in state.bids]
+    state.ask_heap = [(price, base_version, price) for price in state.asks]
+    heapify(state.bid_heap)
+    heapify(state.ask_heap)
+
+
+def _top_levels(state: _TokenState, side: str, depth: int = 5) -> list[tuple[float, float]]:
+    book = state.bids if side == "BUY" else state.asks
+    heap = state.bid_heap if side == "BUY" else state.ask_heap
+    versions = state.bid_versions if side == "BUY" else state.ask_versions
+    out: list[tuple[float, float]] = []
+    skipped: list[tuple[float, int, float]] = []
+    while heap and len(out) < depth:
+        priority, version, price = heappop(heap)
+        if versions.get(price) != version or price not in book:
+            continue
+        out.append((price, book[price]))
+        skipped.append((priority, version, price))
+    for item in skipped:
+        heappush(heap, item)
+    return out
+
+
+def _book_snapshot(state: _TokenState) -> dict[str, Any]:
+    if state.book_cache is not None:
+        return state.book_cache
+    bid_levels = _top_levels(state, "BUY")
+    ask_levels = _top_levels(state, "SELL")
+    bid1 = bid_levels[0][0] if bid_levels else math.nan
+    ask1 = ask_levels[0][0] if ask_levels else math.nan
+    validity = _book_validity(bid1, ask1)
+    valid = validity == "valid"
+    mid = (bid1 + ask1) / 2 if valid else math.nan
+    ranking_values = {
+        "depth_imbalance_1": _depth_imbalance(bid_levels, ask_levels, 1),
+        "depth_imbalance_3": _depth_imbalance(bid_levels, ask_levels, 3),
+        "depth_imbalance_5": _depth_imbalance(bid_levels, ask_levels, 5),
+        "microprice_minus_mid": _microprice_minus_mid(bid_levels, ask_levels, mid),
+        "top_level_depth": _top_level_depth(bid_levels, ask_levels),
+        "depth_slope": _depth_slope(bid_levels, ask_levels),
+        "depth_concentration": _depth_concentration(bid_levels, ask_levels),
+        "bid_ask_liquidity_asymmetry": _liquidity_asymmetry(bid_levels, ask_levels),
+        "distance_to_zero_one": min(mid, 1.0 - mid) if valid else math.nan,
+    }
+    state.book_cache = {
+        "bid_levels": bid_levels,
+        "ask_levels": ask_levels,
+        "bid1": bid1,
+        "ask1": ask1,
+        "validity": validity,
+        "mid": mid,
+        "spread": ask1 - bid1 if valid else math.nan,
+        "ranking_values": ranking_values,
+    }
+    return state.book_cache
+
+
 def _sorted_levels(levels: dict[float, float], *, reverse: bool) -> list[tuple[float, float]]:
     return sorted(levels.items(), key=lambda item: item[0], reverse=reverse)
 
@@ -555,12 +804,13 @@ def _liquidity_asymmetry(bids: list[tuple[float, float]], asks: list[tuple[float
     return (c_bid - c_ask) / denom if denom else math.nan
 
 
-def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
+def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...], barrier_index: _BarrierIndex) -> pd.DataFrame:
     panel = panel.copy()
     for horizon in horizons:
         panel[f"future_mid_{horizon}s"] = pd.Series(math.nan, index=panel.index, dtype="float64")
         panel[f"future_mid_return_{horizon}s"] = pd.Series(math.nan, index=panel.index, dtype="float64")
         panel[f"future_book_validity_{horizon}s"] = pd.Series(None, index=panel.index, dtype="object")
+        panel[f"label_censor_reason_{horizon}s"] = pd.Series(None, index=panel.index, dtype="object")
         panel[f"label_matched_timestamp_{horizon}s"] = pd.Series(
             pd.NaT,
             index=panel.index,
@@ -570,8 +820,10 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
     panel["next_nonzero_mid_move"] = pd.Series(math.nan, index=panel.index, dtype="float64")
     panel["next_nonzero_mid_move_direction"] = pd.Series(math.nan, index=panel.index, dtype="float64")
     panel["next_nonzero_mid_move_matched_sequence"] = pd.Series(pd.NA, index=panel.index, dtype="Int64")
+    panel["next_nonzero_mid_move_censor_reason"] = pd.Series(None, index=panel.index, dtype="object")
 
-    for _, token in panel.groupby(_IDENTITY_COLUMNS, sort=False):
+    for (_, market, token_id), token in panel.groupby(_IDENTITY_COLUMNS, sort=False):
+        barriers = barrier_index.for_token((market, token_id))
         anchors = token[token["ranking_observation"]]
         mutations = token[token["actual_mutation"]]
         target_indexes = list(mutations.index)
@@ -585,6 +837,10 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
                 match_index = _fixed_horizon_match(target_indexes, target_timestamps, target)
                 if match_index is None:
                     continue
+                barrier = _first_barrier_between(barriers, current_ts, panel.loc[match_index, "timestamp"])
+                if barrier is not None:
+                    panel.loc[index, f"label_censor_reason_{horizon}s"] = _barrier_reason(barrier)
+                    continue
                 future_mid = float(panel.loc[match_index, "mid"])
                 future_validity = panel.loc[match_index, "book_validity"]
                 panel.loc[index, f"label_matched_timestamp_{horizon}s"] = panel.loc[match_index, "timestamp"]
@@ -593,7 +849,7 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
                     panel.loc[index, f"future_mid_{horizon}s"] = future_mid
                     panel.loc[index, f"future_mid_return_{horizon}s"] = future_mid - current_mid
 
-        _add_next_nonzero_group_labels(panel, mutations)
+        _add_next_nonzero_group_labels(panel, mutations, barriers)
     return panel
 
 
@@ -609,18 +865,18 @@ def _fixed_horizon_match(
     return indexes[final_position]
 
 
-def _add_next_nonzero_group_labels(panel: pd.DataFrame, mutations: pd.DataFrame) -> None:
+def _add_next_nonzero_group_labels(panel: pd.DataFrame, mutations: pd.DataFrame, barriers: list[_LabelBarrier]) -> None:
     valid_segment: list[int] = []
     for row in mutations.itertuples():
         if row.book_validity == "valid":
             valid_segment.append(row.Index)
         else:
-            _add_next_nonzero_segment_labels(panel, valid_segment)
+            _add_next_nonzero_segment_labels(panel, valid_segment, barriers)
             valid_segment = []
-    _add_next_nonzero_segment_labels(panel, valid_segment)
+    _add_next_nonzero_segment_labels(panel, valid_segment, barriers)
 
 
-def _add_next_nonzero_segment_labels(panel: pd.DataFrame, indexes: list[int]) -> None:
+def _add_next_nonzero_segment_labels(panel: pd.DataFrame, indexes: list[int], barriers: list[_LabelBarrier]) -> None:
     if len(indexes) < 2:
         return
     mids = [float(panel.loc[index, "mid"]) for index in indexes]
@@ -636,10 +892,42 @@ def _add_next_nonzero_segment_labels(panel: pd.DataFrame, indexes: list[int]) ->
             continue
         index = indexes[position]
         target_index = indexes[target_position]
+        barrier = _first_barrier_between(
+            barriers,
+            panel.loc[index, "timestamp"],
+            panel.loc[target_index, "timestamp"],
+        )
+        if barrier is not None:
+            panel.loc[index, "next_nonzero_mid_move_censor_reason"] = _barrier_reason(barrier)
+            continue
         move = mids[target_position] - mids[position]
         panel.loc[index, "next_nonzero_mid_move"] = move
         panel.loc[index, "next_nonzero_mid_move_direction"] = 1.0 if move > 0.0 else -1.0
         panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = int(panel.loc[target_index, "sequence"])
+
+
+def _first_barrier_between(
+    barriers: list[_LabelBarrier],
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+) -> _LabelBarrier | None:
+    for barrier in barriers:
+        if start < barrier.timestamp <= end:
+            return barrier
+        if barrier.timestamp > end:
+            return None
+    return None
+
+
+def _barrier_reason(barrier: _LabelBarrier) -> str:
+    return f"{barrier.reason}:{barrier.provenance}" if barrier.provenance else barrier.reason
+
+
+def _next_hard_break_provenance(barriers: list[_LabelBarrier], ts: pd.Timestamp) -> str | None:
+    for barrier in barriers:
+        if barrier.kind == "hard_break" and barrier.timestamp >= ts:
+            return barrier.provenance
+    return None
 
 
 def _build_candidate_table(panel: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
