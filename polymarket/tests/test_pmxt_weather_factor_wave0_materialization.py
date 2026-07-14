@@ -35,6 +35,10 @@ INVENTORY_DIR = (
     / "2026-07-13-pmxt-wave-minus1-inventory"
     / "outputs"
 )
+WAVE0_OUTPUTS_DIR = RESEARCH_DIR / "outputs"
+WAVE0_COMPACT_INVENTORY = WAVE0_OUTPUTS_DIR / "compact_canonical_inventory.json"
+G003_PARITY_PATH = WAVE0_OUTPUTS_DIR / "g003_materialization_parity.json"
+G003_DECISION_PATH = WAVE0_OUTPUTS_DIR / "g003_materialization_decision.json"
 BENCHMARK_DIR = (
     Path(__file__).resolve().parents[1]
     / "research"
@@ -71,6 +75,33 @@ EXPECTED_CACHE_BUDGET_BYTES = 8_589_934_592
 EXPECTED_HORIZONS = (30, 120, 600)
 SOURCE_EVENT_SLUG = "highest-temperature-in-hong-kong-on-june-10-2026"
 SOURCE_MARKET_TOKEN = "E1-YES"  # noqa: S105 - synthetic Polymarket token id, not a password.
+COMPACT_INVENTORY_MAX_BYTES = 1_048_576
+COMPACT_EVENT_SCHEMA = {
+    "event_slug",
+    "event_id",
+    "city",
+    "event_date",
+    "cohort_role",
+    "markets",
+    "tokens",
+    "rows_written",
+    "orderbook_bytes",
+    "source_path",
+    "source_sha256",
+    "hard_break_missing_hour_count",
+    "hard_break_corrupt_hour_count",
+    "hard_break_status",
+}
+FORBIDDEN_COMPACT_EVENT_ARRAYS = {
+    "nonintersecting_missing_hours",
+    "nonintersecting_corrupt_hours",
+    "raw_missing_hours",
+    "raw_corrupt_hours",
+    "event_local_missing_hours",
+    "event_local_corrupt_hours",
+    "missing_hour_breaks",
+    "corrupt_hour_breaks",
+}
 
 
 @pytest.fixture(scope="module")
@@ -483,42 +514,60 @@ def test_m3_is_rejected_as_execution_mode_and_allowed_only_for_audit(
     assert _result_get(audit, "status") == "audit_only"
 
 
-def test_g003_dry_run_reads_only_tracked_inventory_artifacts_and_has_exact_totals(
+def test_g003_dry_run_reads_only_wave0_compact_inventory_artifact_and_has_exact_totals(
     monkeypatch: pytest.MonkeyPatch,
     materialization_protocol: Any,
     tmp_path: Path,
 ) -> None:
-    allowed_parquet = {
-        (INVENTORY_DIR / "event_inventory.parquet").resolve(),
-        (INVENTORY_DIR / "token_inventory.parquet").resolve(),
-    }
     read_parquet_paths: list[Path] = []
-    original_read_parquet = pd.read_parquet
 
     def guarded_read_parquet(path: object, *args: object, **kwargs: object) -> pd.DataFrame:
         resolved = Path(path).resolve()
         read_parquet_paths.append(resolved)
-        assert resolved in allowed_parquet, f"dry-run must not read source parquet {resolved}"
-        return original_read_parquet(path, *args, **kwargs)
+        raise AssertionError(f"dry-run must read Wave0 compact JSON, not parquet: {resolved}")
 
     monkeypatch.setattr(pd, "read_parquet", guarded_read_parquet)
 
     manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
 
-    assert set(read_parquet_paths) == allowed_parquet
+    assert read_parquet_paths == []
     _assert_dry_run_totals(manifest)
     assert _manifest_digest(manifest) == _manifest_digest(_build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run-2.json"))
 
 
-def test_g003_dry_run_provenance_uses_tracked_compact_canonical_inventory_json_not_ignored_parquet(
+def test_wave0_compact_canonical_inventory_is_small_and_has_exact_minimal_event_schema() -> None:
+    """Wave0 compact inventory is a sharding/provenance contract, not a Wave-1 duplicate."""
+    git = shutil.which("git")
+    assert git is not None
+    tracked = subprocess.run(  # noqa: S603 - fixed git command with static args in test.
+        [git, "ls-files", "--error-unmatch", str(WAVE0_COMPACT_INVENTORY.relative_to(REPO_ROOT))],
+        check=False,
+        capture_output=True,
+        cwd=REPO_ROOT,
+        text=True,
+    )
+    assert tracked.returncode == 0, tracked.stderr
+    assert WAVE0_COMPACT_INVENTORY.stat().st_size <= COMPACT_INVENTORY_MAX_BYTES
+
+    compact = _read_json(WAVE0_COMPACT_INVENTORY)
+    events = compact.get("events")
+    assert isinstance(events, list) and events
+    for event in events:
+        assert set(event) == COMPACT_EVENT_SCHEMA
+        assert not (FORBIDDEN_COMPACT_EVENT_ARRAYS & set(event))
+        assert not Path(event["source_path"]).is_absolute()
+        assert len(event["source_sha256"]) == 64
+        assert event["hard_break_status"] in {"none", "missing", "corrupt", "missing_and_corrupt"}
+
+
+def test_g003_dry_run_provenance_uses_wave0_compact_canonical_inventory_json_not_wave1_duplicate(
     materialization_protocol: Any,
     tmp_path: Path,
 ) -> None:
     git = shutil.which("git")
     assert git is not None
-    compact_inventory = INVENTORY_DIR / "compact_canonical_inventory.json"
     tracked = subprocess.run(  # noqa: S603 - fixed git command with static args in test.
-        [git, "ls-files", "--error-unmatch", str(compact_inventory.relative_to(REPO_ROOT))],
+        [git, "ls-files", "--error-unmatch", str(WAVE0_COMPACT_INVENTORY.relative_to(REPO_ROOT))],
         check=False,
         capture_output=True,
         cwd=REPO_ROOT,
@@ -536,11 +585,11 @@ def test_g003_dry_run_provenance_uses_tracked_compact_canonical_inventory_json_n
     pd.read_parquet = forbidden_read_parquet
     try:
         manifest = materialization_protocol.build_g003_dry_run_manifest(
-            compact_canonical_inventory_path=compact_inventory,
+            compact_canonical_inventory_path=WAVE0_COMPACT_INVENTORY,
             benchmark_manifest_path=BENCHMARK_DIR / "benchmark_manifest.json",
             benchmark_report_path=BENCHMARK_DIR / "benchmark_report.json",
             cache_resume_tests_path=BENCHMARK_DIR / "cache_resume_tests.json",
-            materialization_decision_path=BENCHMARK_DIR / "materialization_decision.json",
+            materialization_decision_path=G003_DECISION_PATH,
             shards=EXPECTED_SHARDS,
             worker_cap=EXPECTED_WORKER_CAP,
             cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
@@ -550,30 +599,67 @@ def test_g003_dry_run_provenance_uses_tracked_compact_canonical_inventory_json_n
         pd.read_parquet = original_read_parquet
 
     assert read_parquet_calls == []
-    assert _result_get(manifest, "provenance")["compact_canonical_inventory_sha256"] == _sha256_file(compact_inventory)
+    provenance = _result_get(manifest, "provenance")
+    assert provenance["compact_canonical_inventory_sha256"] == _sha256_file(WAVE0_COMPACT_INVENTORY)
+    assert provenance.get("compact_canonical_inventory_path") == str(WAVE0_COMPACT_INVENTORY.relative_to(REPO_ROOT))
+    assert "2026-07-13-pmxt-wave-minus1-inventory" not in json.dumps(provenance, sort_keys=True)
     _assert_dry_run_totals(manifest)
 
 
-def test_parity_cli_api_evidence_covers_required_scenarios_and_decision_never_selects_m2() -> None:
-    results = _read_json(BENCHMARK_DIR / "m1_m2_m3_results.json")
-    decision = _read_json(BENCHMARK_DIR / "materialization_decision.json")
+def test_g003_parity_and_decision_artifacts_live_under_wave0_outputs_and_do_not_overwrite_wave1_benchmark_evidence() -> None:
+    assert G003_PARITY_PATH.exists()
+    assert G003_DECISION_PATH.exists()
+    assert G003_PARITY_PATH.parent == WAVE0_OUTPUTS_DIR
+    assert G003_DECISION_PATH.parent == WAVE0_OUTPUTS_DIR
 
-    scenarios = _collect_parity_scenarios(results)
-    required = {
-        "synthetic:cold_m1",
-        "synthetic:cold_m2",
-        "synthetic:warm",
-        "synthetic:corrupt_recover",
-        "synthetic:m3_audit",
-        "representative_real:cold_m1",
-        "representative_real:cold_m2",
-        "representative_real:warm",
-        "representative_real:corrupt_recover",
-        "representative_real:m3_audit",
-    }
-    missing = {scenario for scenario in required if scenarios.get(scenario) != "evidence" and scenarios.get(scenario) != "environment_blocked"}
-    assert missing == set()
+    parity = _read_json(G003_PARITY_PATH)
+    decision = _read_json(G003_DECISION_PATH)
+
+    assert parity.get("source_benchmark_evidence", {}).get("m1_m2_m3_results_sha256") == _sha256_file(BENCHMARK_DIR / "m1_m2_m3_results.json")
+    assert decision.get("source_benchmark_evidence", {}).get("materialization_decision_sha256") == _sha256_file(BENCHMARK_DIR / "materialization_decision.json")
     assert decision.get("selected_mode") != "M2"
+    assert (BENCHMARK_DIR / "g003_materialization_parity.json").exists() is False
+    assert (BENCHMARK_DIR / "g003_materialization_decision.json").exists() is False
+
+
+def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selects_m2(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    api_parity_path = tmp_path / "api-parity.json"
+    api_decision_path = tmp_path / "api-decision.json"
+    parity = materialization_protocol.run_g003_materialization_parity(
+        output_path=api_parity_path,
+        decision_output_path=api_decision_path,
+        include_synthetic=True,
+        include_frozen_representative_real=True,
+    )
+    _assert_required_parity_scenarios(parity)
+    assert _read_json(api_decision_path).get("selected_mode") != "M2"
+
+    cli_parity_path = tmp_path / "cli-parity.json"
+    cli_decision_path = tmp_path / "cli-decision.json"
+    completed = subprocess.run(  # noqa: S603 - fixed Python executable and repo-local script path in test.
+        [
+            sys.executable,
+            str(MATERIALIZATION_PROTOCOL),
+            "parity",
+            "--output",
+            str(cli_parity_path),
+            "--decision-output",
+            str(cli_decision_path),
+            "--include-synthetic",
+            "--include-frozen-representative-real",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    _assert_required_parity_scenarios(_read_json(cli_parity_path))
+    assert _read_json(cli_decision_path).get("selected_mode") != "M2"
+
 
 
 def test_g003_dry_run_has_18_unique_row_balanced_shards_and_event_level_resume_units(
@@ -689,13 +775,11 @@ def test_large_derivatives_are_not_tracked_by_g003_materialization_contract(
 
 def _build_dry_run_manifest(module: Any, output_path: Path) -> Any:
     manifest = module.build_g003_dry_run_manifest(
-        event_inventory_path=INVENTORY_DIR / "event_inventory.parquet",
-        token_inventory_path=INVENTORY_DIR / "token_inventory.parquet",
-        inventory_summary_path=INVENTORY_DIR / "inventory_summary.json",
+        compact_canonical_inventory_path=WAVE0_COMPACT_INVENTORY,
         benchmark_manifest_path=BENCHMARK_DIR / "benchmark_manifest.json",
         benchmark_report_path=BENCHMARK_DIR / "benchmark_report.json",
         cache_resume_tests_path=BENCHMARK_DIR / "cache_resume_tests.json",
-        materialization_decision_path=BENCHMARK_DIR / "materialization_decision.json",
+        materialization_decision_path=G003_DECISION_PATH,
         shards=EXPECTED_SHARDS,
         worker_cap=EXPECTED_WORKER_CAP,
         cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
@@ -882,13 +966,39 @@ def _to_builtin(value: Any) -> Any:
     return value
 
 
+def _assert_required_parity_scenarios(parity: Any) -> None:
+    scenarios = _collect_parity_scenarios(parity)
+    required = {
+        "synthetic:cold_m1",
+        "synthetic:cold_m2",
+        "synthetic:warm",
+        "synthetic:corrupt_recover",
+        "synthetic:m3_audit",
+        "frozen_representative_real:cold_m1",
+        "frozen_representative_real:cold_m2",
+        "frozen_representative_real:warm",
+        "frozen_representative_real:corrupt_recover",
+        "frozen_representative_real:m3_audit",
+    }
+    missing = {
+        scenario
+        for scenario in required
+        if scenarios.get(scenario) not in {"evidence", "environment_blocked"}
+    }
+    assert missing == set()
+
+
 def _collect_parity_scenarios(results: Any) -> dict[str, str]:
     scenarios: dict[str, str] = {}
+    if isinstance(results, dict) and isinstance(results.get("scenario_statuses"), dict):
+        for scenario, status in results["scenario_statuses"].items():
+            scenarios[_normalize_parity_scenario(str(scenario))] = str(status)
     rows = results if isinstance(results, list) else results.get("results", [])
     for row in rows:
         sample = row.get("sample_kind") or row.get("dataset_kind") or row.get("fixture_kind")
         if sample is None:
-            sample = "representative_real" if row.get("source_rows_scanned") or row.get("event_slug") else "synthetic"
+            sample = "frozen_representative_real" if row.get("source_rows_scanned") or row.get("event_slug") else "synthetic"
+        sample = str(sample).replace("-", "_")
         modes = row.get("modes", {})
         if "M1" in modes and modes["M1"].get("cold_elapsed_seconds") is not None:
             scenarios[f"{sample}:cold_m1"] = "evidence"
@@ -905,5 +1015,13 @@ def _collect_parity_scenarios(results: Any) -> dict[str, str]:
         if "M3" in modes:
             scenarios[f"{sample}:m3_audit"] = "evidence"
         for blocked in row.get("environment_blocked", []):
-            scenarios[f"{sample}:{blocked}"] = "environment_blocked"
+            scenarios[_normalize_parity_scenario(f"{sample}:{blocked}")] = "environment_blocked"
     return scenarios
+
+
+def _normalize_parity_scenario(scenario: str) -> str:
+    normalized = scenario.replace("-", "_").replace("corrupt_recovery", "corrupt_recover")
+    sample, separator, scenario_name = normalized.partition(":")
+    if separator and sample == "representative_real":
+        sample = "frozen_representative_real"
+    return f"{sample}:{scenario_name}" if separator else normalized
