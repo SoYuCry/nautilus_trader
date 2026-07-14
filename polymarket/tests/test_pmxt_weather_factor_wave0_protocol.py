@@ -470,6 +470,43 @@ def test_block_bootstrap_gate_requires_at_least_one_explicit_true_primary_horizo
     assert bool(row["block_bootstrap_interval_excludes_zero"]) is expected
 
 
+def test_block_bootstrap_gate_ignores_true_evidence_from_degraded_cohort(
+    factor_protocol: Any,
+) -> None:
+    rows = []
+    for horizon_seconds in (30, 120, 600):
+        rows.append(
+            {
+                "factor": "depth_imbalance_1",
+                "horizon_seconds": horizon_seconds,
+                "cohort": "clean",
+                "event_ic": 0.20,
+                "positive_event_share": 0.70,
+                "block_bootstrap_interval_excludes_zero": False,
+                **dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True),
+            },
+        )
+    rows.append(
+        {
+            "factor": "depth_imbalance_1",
+            "horizon_seconds": 30,
+            "cohort": "degraded",
+            "event_ic": 0.10,
+            "positive_event_share": 0.70,
+            "block_bootstrap_interval_excludes_zero": True,
+            **dict.fromkeys(STRICT_CANDIDATE_EVIDENCE_COLUMNS, True),
+        },
+    )
+
+    gated = factor_protocol.apply_candidate_gates(pd.DataFrame(rows))
+    row = gated.loc[gated["factor"] == "depth_imbalance_1"].iloc[0]
+
+    assert bool(row["same_sign_two_primary_horizons"]) is True
+    assert bool(row["clean_degraded_sign_reversal"]) is False
+    assert bool(row["block_bootstrap_interval_excludes_zero"]) is False
+    assert bool(row["passes_shortlist"]) is False
+
+
 @pytest.mark.parametrize(
     ("horizons_seconds", "expected"),
     [
