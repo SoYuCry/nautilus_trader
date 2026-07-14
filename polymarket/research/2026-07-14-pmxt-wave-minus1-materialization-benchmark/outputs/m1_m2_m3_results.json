@@ -1,5 +1,8 @@
 [
   {
+    "environment_blocked": [
+      "corrupt_recover"
+    ],
     "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
     "hard_break_status": "not_flagged_by_representative_role",
     "modes": {
@@ -330,9 +333,13 @@
     },
     "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
     "parity_pass": true,
-    "role": "largest_event"
+    "role": "largest_event",
+    "sample_kind": "representative_real"
   },
   {
+    "environment_blocked": [
+      "corrupt_recover"
+    ],
     "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
     "hard_break_status": "not_flagged_by_representative_role",
     "modes": {
@@ -663,9 +670,13 @@
     },
     "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
     "parity_pass": true,
-    "role": "median_volume_event"
+    "role": "median_volume_event",
+    "sample_kind": "representative_real"
   },
   {
+    "environment_blocked": [
+      "corrupt_recover"
+    ],
     "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
     "hard_break_status": "inventory_role_degraded_case_requires_manifest_intersection_evidence",
     "modes": {
@@ -996,6 +1007,20 @@
     },
     "natural_staleness_status": "distinct_from_hard_break; update gaps alone are not hard breaks",
     "parity_pass": true,
-    "role": "degraded_event_local_missing_case"
+    "role": "degraded_event_local_missing_case",
+    "sample_kind": "representative_real"
+  },
+  {
+    "environment_blocked": [
+      "cold_m1",
+      "cold_m2",
+      "warm",
+      "corrupt_recover",
+      "m3_audit"
+    ],
+    "modes": {},
+    "reason": "synthetic parity CLI/API evidence blocked in frozen benchmark artifact; G003 protocol exercises API via unit tests",
+    "sample_kind": "synthetic",
+    "status": "environment_blocked"
   }
 ]

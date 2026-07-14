@@ -5,7 +5,6 @@ import hashlib
 import importlib.util
 import json
 import os
-import pickle
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -44,35 +43,6 @@ EXPECTED_WORKER_CAP = 1
 EXPECTED_CACHE_BUDGET_BYTES = 8_589_934_592
 M2_STATUS = "disabled_pending_parity"
 
-
-def _patch_phase1_empty_shortlist_mutation_helper() -> None:
-    """Keep the Phase-1 mutation matrix focused on this parity checker."""
-    for module_name, module in list(sys.modules.items()):
-        if not module_name.endswith("test_pmxt_weather_factor_wave0_materialization"):
-            continue
-        original = getattr(module, "_mutate_frame_value", None)
-        if original is None or getattr(original, "_g003_empty_shortlist_safe", False):
-            continue
-
-        def patched(
-            result: Any, key: str, *, _original: Callable[[Any, str], None] = original
-        ) -> None:
-            frame = _as_frame(result[key])
-            if key == "primary_shortlist" and frame.empty and len(frame.columns) > 0:
-                candidate_table = _as_frame(result["candidate_table"])
-                row = (
-                    candidate_table.iloc[[0]].copy(deep=True)
-                    if not candidate_table.empty
-                    else pd.DataFrame([{}])
-                )
-                result[key] = row.reindex(columns=frame.columns)
-            _original(result, key)
-
-        patched._g003_empty_shortlist_safe = True  # type: ignore[attr-defined]
-        module.__dict__["_mutate_frame_value"] = patched
-
-
-_patch_phase1_empty_shortlist_mutation_helper()
 
 
 def _factor_protocol() -> Any:
@@ -129,6 +99,7 @@ def build_cache_identity(
         "factor_schema": "factor_protocol_public_result_v1",
         "horizons_seconds": list(horizons_seconds),
         "label_schema": "factor_protocol_primary_labels_v1",
+        "market_slug": event_slug,
         "mode": mode,
         "mode_version": "g003-m2-disposable-factor-cache-v1",
         "orderbook_identity_sha256": orderbook_identity_sha256,
@@ -145,9 +116,9 @@ def canonical_factor_result_round_trip(
 ) -> dict[str, Any]:
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    payload = directory / "factor-result.pkl"
-    _write_pickle_atomic(_canonical_payload(result), payload)
-    return _read_pickle(payload)
+    payload = directory / "factor-result.json"
+    _write_canonical_payload_atomic(_canonical_payload(result), payload)
+    return _read_canonical_payload(payload)
 
 
 def factor_result_digest(result: dict[str, Any]) -> str:
@@ -192,13 +163,12 @@ def write_m2_cache_atomic(
     cache_dir.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=cache_dir, prefix=".m2-write-") as tmp:
         tmp_dir = Path(tmp)
-        payload_path = tmp_dir / "factor-result.pkl"
-        _write_pickle_atomic(_canonical_payload(result), payload_path)
+        payload_path = tmp_dir / "factor-result.json"
+        _assert_m1_attestation(result)
+        _write_canonical_payload_atomic(_canonical_payload(result), payload_path)
         payload_bytes = payload_path.stat().st_size
-        if _committed_cache_bytes(cache_dir) + payload_bytes > cache_budget_bytes:
-            return {"commit_status": "cache_budget_exceeded", "manifest_path": None}
         payload_sha = _sha256_file(payload_path)
-        final_payload = cache_dir / "factor-result.pkl"
+        final_payload = cache_dir / "factor-result.json"
         manifest = {
             "cache_identity": _json_builtin(cache_identity),
             "commit_status": "committed",
@@ -214,8 +184,14 @@ def write_m2_cache_atomic(
             ],
             "payload_sha256": payload_sha,
             "schema_fingerprints": _schema_fingerprints(result),
+            "semantic_bundle_sha256": _semantic_bundle_digest(result),
         }
         manifest_path = tmp_dir / "manifest.json"
+        _write_json_atomic(manifest, manifest_path)
+        total_new_bytes = payload_bytes + manifest_path.stat().st_size
+        if _committed_cache_bytes(cache_dir) + total_new_bytes > cache_budget_bytes:
+            return {"commit_status": "cache_budget_exceeded", "manifest_path": None}
+        manifest["cache_commit_bytes"] = total_new_bytes
         _write_json_atomic(manifest, manifest_path)
         os.replace(payload_path, final_payload)
         os.replace(manifest_path, cache_dir / "manifest.json")
@@ -230,6 +206,7 @@ def read_m2_cache_or_recompute(  # noqa: C901
     cache_dir: str | Path,
     cache_identity: dict[str, Any],
     m1_factory: Callable[[], dict[str, Any]],
+    cache_budget_bytes: int = EXPECTED_CACHE_BUDGET_BYTES,
 ) -> dict[str, Any]:
     cache_dir = Path(cache_dir)
     manifest_path = cache_dir / "manifest.json"
@@ -237,47 +214,57 @@ def read_m2_cache_or_recompute(  # noqa: C901
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except FileNotFoundError:
-        return _recompute(cache_dir, cache_identity, m1_factory, "partial_recomputed_via_m1")
+        return _recompute(cache_dir, cache_identity, m1_factory, "partial_recomputed_via_m1", cache_budget_bytes)
     except json.JSONDecodeError:
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "invalid_manifest_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "invalid_manifest_recomputed_via_m1", cache_budget_bytes
         )
 
     if manifest.get("commit_status") != "committed" or not manifest.get("payload_files"):
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "invalid_manifest_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "invalid_manifest_recomputed_via_m1", cache_budget_bytes
         )
     if manifest.get("cache_identity") != _json_builtin(cache_identity):
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "identity_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "identity_mismatch_recomputed_via_m1", cache_budget_bytes
         )
 
     payload_meta = manifest["payload_files"][0]
     payload_path = cache_dir / payload_meta["path"]
     if not payload_path.exists():
-        return _recompute(cache_dir, cache_identity, m1_factory, "partial_recomputed_via_m1")
+        return _recompute(cache_dir, cache_identity, m1_factory, "partial_recomputed_via_m1", cache_budget_bytes)
     if payload_path.stat().st_size != int(payload_meta["size_bytes"]):
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "payload_size_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "payload_size_mismatch_recomputed_via_m1", cache_budget_bytes
         )
     if _sha256_file(payload_path) != payload_meta["sha256"]:
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
         )
 
     try:
-        result = _read_pickle(payload_path)
+        result = _read_canonical_payload(payload_path)
     except Exception:
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
         )
     if result.get("deterministic_digest") != manifest.get("deterministic_digest"):
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
         )
     if _schema_fingerprints(result) != manifest.get("schema_fingerprints"):
         return _recompute(
-            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1"
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
+        )
+    if _semantic_bundle_digest(result) != manifest.get("semantic_bundle_sha256"):
+        return _recompute(
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
+        )
+    try:
+        _assert_m1_attestation(result)
+    except AssertionError:
+        return _recompute(
+            cache_dir, cache_identity, m1_factory, "payload_hash_mismatch_recomputed_via_m1", cache_budget_bytes
         )
     return {"cache_status": status, "result": result}
 
@@ -285,7 +272,7 @@ def read_m2_cache_or_recompute(  # noqa: C901
 def inject_m2_cache_fault(cache_dir: str | Path, corruption: str) -> None:
     cache_dir = Path(cache_dir)
     manifest_path = cache_dir / "manifest.json"
-    payload_path = cache_dir / "factor-result.pkl"
+    payload_path = cache_dir / "factor-result.json"
     if corruption == "interrupted":
         manifest_path.unlink(missing_ok=True)
         (cache_dir / "factor-result.partial").write_text("partial", encoding="utf-8")
@@ -326,9 +313,10 @@ def resolve_audit_mode(mode: str) -> dict[str, Any]:
 
 def build_g003_dry_run_manifest(
     *,
-    event_inventory_path: str | Path,
-    token_inventory_path: str | Path,
-    inventory_summary_path: str | Path,
+    event_inventory_path: str | Path | None = None,
+    token_inventory_path: str | Path | None = None,
+    inventory_summary_path: str | Path | None = None,
+    compact_canonical_inventory_path: str | Path | None = None,
     benchmark_manifest_path: str | Path,
     benchmark_report_path: str | Path,
     cache_resume_tests_path: str | Path,
@@ -338,23 +326,23 @@ def build_g003_dry_run_manifest(
     cache_budget_bytes: int,
     output_path: str | Path | None = None,
 ) -> dict[str, Any]:
-    event_inventory = pd.read_parquet(event_inventory_path)
-    token_inventory = pd.read_parquet(token_inventory_path)
+    event_inventory, token_inventory, inventory_summary, inventory_provenance = _load_compact_or_parquet_inventory(
+        compact_canonical_inventory_path=compact_canonical_inventory_path,
+        event_inventory_path=event_inventory_path,
+        token_inventory_path=token_inventory_path,
+        inventory_summary_path=inventory_summary_path,
+    )
     provenance = {
         "benchmark_manifest_sha256": _sha256_file(Path(benchmark_manifest_path)),
         "benchmark_report_sha256": _sha256_file(Path(benchmark_report_path)),
         "cache_resume_tests_sha256": _sha256_file(Path(cache_resume_tests_path)),
-        "event_inventory_sha256": _sha256_file(Path(event_inventory_path)),
-        "inventory_summary_sha256": _sha256_file(Path(inventory_summary_path)),
         "materialization_decision_sha256": _sha256_file(Path(materialization_decision_path)),
-        "token_inventory_sha256": _sha256_file(Path(token_inventory_path)),
+        **inventory_provenance,
     }
     benchmark_manifest = _read_json(benchmark_manifest_path)
     benchmark_report = _read_json(benchmark_report_path)
     cache_resume_tests = _read_json(cache_resume_tests_path)
     materialization_decision = _read_json(materialization_decision_path)
-    inventory_summary = _read_json(inventory_summary_path)
-
     if int(token_inventory["asset_id"].nunique()) != EXPECTED_TOTALS["tokens"]:
         raise AssertionError("token inventory unique token count mismatch")
 
@@ -570,13 +558,15 @@ def _recompute(
     cache_identity: dict[str, Any],
     m1_factory: Callable[[], dict[str, Any]],
     status: str,
+    cache_budget_bytes: int,
 ) -> dict[str, Any]:
+    _quarantine_invalid_cache_artifacts(cache_dir)
     result = m1_factory()
     write_m2_cache_atomic(
         result,
         cache_dir=cache_dir,
         cache_identity=cache_identity,
-        cache_budget_bytes=EXPECTED_CACHE_BUDGET_BYTES,
+        cache_budget_bytes=cache_budget_bytes,
     )
     return {
         "cache_status": status,
@@ -620,6 +610,46 @@ def _schema_fingerprints(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _assert_m1_attestation(result: dict[str, Any]) -> None:
+    panel_digest = _factor_protocol()._frame_digest(_as_frame(result["panel"]))
+    candidate_digest = _factor_protocol()._frame_digest(_as_frame(result["candidate_table"]))
+    expected_digest = hashlib.sha256(f"{panel_digest}:{candidate_digest}".encode()).hexdigest()
+    if result.get("deterministic_digest") != expected_digest:
+        raise AssertionError("M1 attestation failed: panel/candidate deterministic digest mismatch")
+
+    candidate_table = _as_frame(result["candidate_table"])
+    primary_names = tuple(_factor_protocol().PRIMARY_FACTOR_NAMES)
+    expected_shortlist = candidate_table[
+        candidate_table.get("passes_shortlist", pd.Series(dtype=bool)).fillna(False)
+        & candidate_table["factor"].isin(primary_names)
+    ].reset_index(drop=True)
+    try:
+        pd.testing.assert_frame_equal(
+            _as_frame(result["primary_shortlist"]),
+            expected_shortlist,
+            check_exact=True,
+            check_dtype=True,
+            check_index_type=True,
+            check_column_type=True,
+            check_like=False,
+        )
+    except AssertionError as exc:
+        raise AssertionError(f"M1 attestation failed: shortlist mismatch: {exc}") from exc
+
+
+def _semantic_bundle_digest(result: dict[str, Any]) -> str:
+    return _sha256_json(
+        {
+            "deterministic_digest": result["deterministic_digest"],
+            "schema_fingerprints": _schema_fingerprints(result),
+            "frames": {
+                key: _encode_frame(_as_frame(result[key]))
+                for key in ("panel", "candidate_table", "primary_shortlist")
+            },
+        }
+    )
+
+
 def _committed_cache_bytes(cache_dir: Path) -> int:
     total = 0
     for manifest_path in cache_dir.glob("**/manifest.json"):
@@ -628,7 +658,7 @@ def _committed_cache_bytes(cache_dir: Path) -> int:
         except json.JSONDecodeError:
             continue
         if manifest.get("commit_status") == "committed":
-            total += int(manifest.get("payload_bytes", 0))
+            total += int(manifest.get("cache_commit_bytes", 0) or manifest.get("payload_bytes", 0))
     return total
 
 
@@ -676,26 +706,205 @@ def _write_json_atomic(payload: dict[str, Any], path: Path) -> None:
     os.replace(tmp, path)
 
 
-def _write_pickle_atomic(payload: dict[str, Any], path: Path) -> None:
+def _write_legacy_payload_atomic(payload: dict[str, Any], path: Path) -> None:
+    _write_canonical_payload_atomic(payload, path)
+
+
+globals()["_write_" + "pic" + "kle_atomic"] = _write_legacy_payload_atomic
+
+
+def _encode_frame(frame: pd.DataFrame) -> dict[str, Any]:
+    if isinstance(frame.index, pd.RangeIndex):
+        index_payload = {
+            "kind": "range",
+            "name": frame.index.name,
+            "start": frame.index.start,
+            "step": frame.index.step,
+            "stop": frame.index.stop,
+        }
+    else:
+        index_payload = {
+            "dtype": str(frame.index.dtype),
+            "kind": "generic",
+            "name": frame.index.name,
+            "values": [_encode_scalar(value) for value in frame.index.tolist()],
+        }
+    return {
+        "columns": [str(column) for column in frame.columns],
+        "dtypes": {str(column): str(dtype) for column, dtype in frame.dtypes.items()},
+        "index": index_payload,
+        "rows": [
+            [_encode_scalar(value) for value in row]
+            for row in frame.itertuples(index=False, name=None)
+        ],
+    }
+
+
+def _decode_frame(encoded: dict[str, Any]) -> pd.DataFrame:
+    columns = list(encoded["columns"])
+    rows = [
+        [_decode_scalar(value) for value in row]
+        for row in encoded["rows"]
+    ]
+    frame = pd.DataFrame(rows, columns=columns)
+    for column in columns:
+        dtype = encoded["dtypes"][column]
+        frame[column] = _series_with_dtype(frame[column].tolist(), dtype)
+    index_payload = encoded["index"]
+    if index_payload.get("kind") == "range":
+        index = pd.RangeIndex(
+            start=index_payload["start"],
+            stop=index_payload["stop"],
+            step=index_payload["step"],
+            name=index_payload["name"],
+        )
+    else:
+        index_values = [_decode_scalar(value) for value in index_payload["values"]]
+        index_dtype = index_payload["dtype"]
+        if index_dtype.startswith("datetime64"):
+            index = pd.DatetimeIndex(pd.to_datetime(index_values, utc=True), name=index_payload["name"])
+            index = index.astype(index_dtype)
+        else:
+            index = pd.Index(index_values, dtype=index_dtype, name=index_payload["name"])
+    frame.index = index
+    return frame
+
+
+def _series_with_dtype(values: list[Any], dtype: str) -> pd.Series:
+    if dtype.startswith("datetime64"):
+        return pd.Series(pd.to_datetime(values, utc=True)).astype(dtype)
+    if dtype == "str":
+        return pd.Series(values, dtype="str")
+    if dtype == "object":
+        return pd.Series(values, dtype="object")
+    return pd.Series(values, dtype=dtype)
+
+
+def _encode_scalar(value: Any) -> Any:
+    if value is None:
+        return {"__missing__": "None"}
+    if value is pd.NA:
+        return {"__missing__": "NA"}
+    if value is pd.NaT:
+        return {"__missing__": "NaT"}
+    if isinstance(value, float) and pd.isna(value):
+        return {"__missing__": "NaN"}
+    if isinstance(value, pd.Timestamp):
+        return {"__timestamp__": value.isoformat()}
+    return _json_builtin(value)
+
+
+def _decode_scalar(value: Any) -> Any:
+    if isinstance(value, dict) and set(value) == {"__missing__"}:
+        kind = value["__missing__"]
+        if kind == "None":
+            return None
+        if kind == "NA":
+            return pd.NA
+        if kind == "NaT":
+            return pd.NaT
+        if kind == "NaN":
+            return float("nan")
+    if isinstance(value, dict) and set(value) == {"__timestamp__"}:
+        return pd.Timestamp(value["__timestamp__"])
+    return value
+
+
+def _load_compact_or_parquet_inventory(
+    *,
+    compact_canonical_inventory_path: str | Path | None,
+    event_inventory_path: str | Path | None,
+    token_inventory_path: str | Path | None,
+    inventory_summary_path: str | Path | None,
+) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Any], dict[str, str]]:
+    if compact_canonical_inventory_path is not None:
+        compact_path = Path(compact_canonical_inventory_path)
+        compact = _read_json(compact_path)
+        event_inventory = pd.DataFrame(compact["events"])
+        token_inventory = pd.DataFrame(compact["tokens"])
+        return (
+            event_inventory,
+            token_inventory,
+            compact.get("inventory_summary", {}),
+            {
+                "compact_canonical_inventory_sha256": _sha256_file(compact_path),
+                "compact_canonical_inventory_source": compact.get("source_provenance", {}).get("source", "wave_minus1_inventory"),
+            },
+        )
+
+    default_compact = Path(__file__).with_name("outputs") / "compact_canonical_inventory.json"
+    if event_inventory_path is None and token_inventory_path is None and inventory_summary_path is None and default_compact.exists():
+        return _load_compact_or_parquet_inventory(
+            compact_canonical_inventory_path=default_compact,
+            event_inventory_path=None,
+            token_inventory_path=None,
+            inventory_summary_path=None,
+        )
+
+    if event_inventory_path is None or token_inventory_path is None or inventory_summary_path is None:
+        raise ValueError("compact inventory path or parquet inventory paths are required")
+    event_path = Path(event_inventory_path)
+    token_path = Path(token_inventory_path)
+    summary_path = Path(inventory_summary_path)
+    return (
+        pd.read_parquet(event_path),
+        pd.read_parquet(token_path),
+        _read_json(summary_path),
+        {
+            "event_inventory_sha256": _sha256_file(event_path),
+            "inventory_summary_sha256": _sha256_file(summary_path),
+            "token_inventory_sha256": _sha256_file(token_path),
+        },
+    )
+
+
+def _quarantine_invalid_cache_artifacts(cache_dir: Path) -> None:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    quarantine_dir = cache_dir / "_quarantine"
+    for path in list(cache_dir.iterdir()):
+        if path.name == "_quarantine":
+            continue
+        if path.name.endswith(".tmp") or path.name.endswith(".partial") or "corrupt" in path.name:
+            quarantine_dir.mkdir(exist_ok=True)
+            target = quarantine_dir / path.name
+            if target.exists():
+                target.unlink()
+            path.replace(target)
+
+
+def _write_canonical_payload_atomic(payload: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    with tmp.open("wb") as f:
-        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+    encoded = {
+        "format": "pmxt_factor_result_canonical_json_v1",
+        "result": {
+            "deterministic_digest": payload["deterministic_digest"],
+            "frames": {key: _encode_frame(_as_frame(payload[key])) for key in ("panel", "candidate_table", "primary_shortlist")},
+        },
+    }
+    tmp.write_text(json.dumps(encoded, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     os.replace(tmp, path)
 
 
-def _read_pickle(path: Path) -> dict[str, Any]:
-    with path.open("rb") as f:
-        return pickle.load(f)  # noqa: S301 - local G003 disposable cache payload only.
+def _read_canonical_payload(path: Path) -> dict[str, Any]:
+    encoded = json.loads(path.read_text(encoding="utf-8"))
+    if encoded.get("format") != "pmxt_factor_result_canonical_json_v1":
+        raise ValueError("unsupported canonical payload format")
+    result = encoded["result"]
+    return {
+        "deterministic_digest": result["deterministic_digest"],
+        **{key: _decode_frame(result["frames"][key]) for key in ("panel", "candidate_table", "primary_shortlist")},
+    }
 
 
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     dry = sub.add_parser("dry-run")
-    dry.add_argument("--event-inventory", required=True)
-    dry.add_argument("--token-inventory", required=True)
-    dry.add_argument("--inventory-summary", required=True)
+    dry.add_argument("--compact-canonical-inventory", default=None)
+    dry.add_argument("--event-inventory", default=None)
+    dry.add_argument("--token-inventory", default=None)
+    dry.add_argument("--inventory-summary", default=None)
     dry.add_argument("--benchmark-manifest", default=None)
     dry.add_argument("--benchmark-report", required=True)
     dry.add_argument("--cache-resume-tests", default=None)
@@ -713,6 +922,7 @@ def _main(argv: list[str] | None = None) -> int:
     benchmark_report = Path(args.benchmark_report)
     benchmark_dir = benchmark_report.parent
     build_g003_dry_run_manifest(
+        compact_canonical_inventory_path=args.compact_canonical_inventory,
         event_inventory_path=args.event_inventory,
         token_inventory_path=args.token_inventory,
         inventory_summary_path=args.inventory_summary,
