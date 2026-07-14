@@ -1,0 +1,162 @@
+program: pmxt-weather-factor-wave0
+program_version: 2026-07-14.g001.prereg.v1
+status: preregistered_not_executed
+language: zh-CN
+
+protocol:
+  file: polymarket/research/2026-07-14-pmxt-weather-factor-wave0/protocol.json
+  schema_version: pmxt_weather_factor_wave0_preregistration.v1
+  require_protocol_hash: true
+  freeze_before_factor_results: true
+
+input:
+  root: C:/Projects/PolyReaper/data/curated/polymarket/events
+  universe:
+    events: 441
+    cities: 49
+    dates: 9
+    markets: 4851
+    tokens: 9702
+    rows_written_total: 747185591
+  cohorts:
+    clean_primary_development_replication:
+      dates: [2026-06-04, 2026-06-05, 2026-06-08, 2026-06-09, 2026-06-10]
+      expected_events: 245
+    degraded_robustness:
+      dates: [2026-06-06, 2026-06-07, 2026-06-11, 2026-06-12]
+      expected_events: 196
+    current_confirmatory_dates: []
+  large_panel_outputs_tracked: false
+
+replay:
+  adapter: PMXTEventV1Adapter
+  contract: replay_contract.py
+  ordering_domain: O1_selected_token
+  o1_sort_key: [timestamp, timestamp_received, physical_original_row_ordinal]
+  o2_event_wide_use: diagnostics_only
+  o3_callback_use: boundary_parity_evidence_only
+  bbo_source: locally_reconstructed_L2
+  pmxt_row_bbo_use: audit_only
+  invalid_book_policy: explicit_censor_or_diagnostic_flag
+
+materialization:
+  oracle: M1_direct_replay
+  m2_allowed: only_after_exact_factor_label_summary_parity
+  m3_use: audit_only
+  cache_identity: source_byte_sha256_plus_protocol_hash
+  event_level_single_read_optimization: require_exact_O1_parity
+
+factors:
+  ranking_scope: pure_order_book_state_only
+  max_depth_levels: 5
+  prefix_causal_required: true
+  outcome_blind_required: true
+  ranking_eligible:
+    - depth_imbalance_1
+    - depth_imbalance_3
+    - depth_imbalance_5
+    - microprice_minus_mid
+    - spread
+    - top_level_depth
+    - depth_slope
+    - depth_concentration
+    - bid_ask_liquidity_asymmetry
+    - distance_to_zero_one
+    - tick_size_regime
+  diagnostic_only:
+    - book_staleness_seconds
+    - book_update_intensity
+    - valid_observation_counts
+  flow_quarantine:
+    ranking_eligible: false
+    names:
+      - ofi
+      - order_flow_imbalance
+      - trade_pressure
+      - cancel_pressure
+      - message_order_sensitive_flow
+
+labels:
+  primary_elapsed_wall_clock_seconds: [30, 120, 600]
+  next_nonzero_mid_move: true
+  valid_observation:
+    status: diagnostic_only
+    can_substitute_elapsed_time: false
+    can_trigger_candidate_gate_alone: false
+  censor_at:
+    - hard_break
+    - event_close
+    - token_close
+    - invalid_future_book
+    - missing_future_mid
+  duplicate_timestamp_policy: use_O1_order_and_fixed_match_rule
+
+aggregation:
+  order: [row_or_anchor, token, event, global]
+  within_event_token_weight: equal
+  global_event_weight: equal
+  row_count_domination_allowed: false
+  coverage_counts_diagnostic_only: true
+
+analysis:
+  stratification:
+    - clean_vs_degraded
+    - lifecycle_time_to_event_end
+    - activity_book_update_intensity
+    - spread_regime
+    - tick_size_regime
+    - source_quality_cohort
+    - hard_break_provenance
+  metrics:
+    - event_ic_spearman
+    - positive_event_share
+    - nonzero_move_hit_rate
+    - conditional_average_win_loss
+    - quantile_monotonicity
+    - block_bootstrap_interval
+    - horizon_consistency
+    - city_date_stability
+    - spread_conditioning
+    - clean_degraded_sensitivity
+    - concentration_diagnostics
+  candidate_gate:
+    same_sign_min_primary_elapsed_horizons: 2
+    clean_positive_event_share_min: 0.60
+    block_bootstrap_interval_excludes_zero_min_primary_horizons: 1
+    sole_dependence_on_widest_spread_allowed: false
+    clean_degraded_sign_reversal_allowed: false
+    flow_quarantine_allowed: false
+    claim_scope_if_passed: exploratory_shortlist_for_future_preregistration_only
+
+outputs:
+  base_dir: polymarket/research/2026-07-14-pmxt-weather-factor-wave0/outputs
+  track_large_panel_outputs: false
+  required_compact_artifacts:
+    - run_manifest.json
+    - coverage_summary.json
+    - factor_summary.json
+    - candidate_gate.json
+    - diagnostics.json
+    - hashes.json
+  disallowed_artifacts:
+    - pnl
+    - strategy_result
+    - orders
+    - fills
+    - positions
+    - cash
+
+prohibited_claims:
+  alpha: false
+  pnl: false
+  strategy: false
+  execution_quality: false
+  production_readiness: false
+  current_panel_confirmation: false
+
+failure_isolation:
+  unit: event
+  partial_or_failed_events_cannot_silently_pass_gates: true
+  record_failures_skips_censors: true
+  deterministic_task_ids: true
+  canonical_hashes_required: true

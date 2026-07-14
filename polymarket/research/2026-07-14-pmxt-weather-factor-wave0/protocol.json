@@ -1,0 +1,270 @@
+{
+  "aggregation": {
+    "coverage_counts_diagnostic_only": true,
+    "global_event_weight": "equal",
+    "headline_weighting": "event_equal_global",
+    "order": [
+      "row_or_anchor",
+      "token",
+      "event",
+      "global"
+    ],
+    "row_count_domination_allowed": false,
+    "within_event_token_weight": "equal"
+  },
+  "candidate_gate": {
+    "claim_scope_if_passed": "exploratory_shortlist_for_future_preregistration_only",
+    "requirements": {
+      "block_bootstrap_interval_excludes_zero_min_primary_horizons": 1,
+      "clean_degraded_sign_reversal_allowed": false,
+      "clean_positive_event_share_min": 0.6,
+      "complete_coverage_failure_hash_required": true,
+      "flow_quarantine_allowed": false,
+      "same_sign_min_primary_elapsed_horizons": 2,
+      "sole_dependence_on_widest_spread_allowed": false
+    },
+    "zero_candidates_is_valid_outcome": true
+  },
+  "claims": {
+    "alpha_claim_allowed": false,
+    "current_panel_confirmatory": false,
+    "execution_quality_claim_allowed": false,
+    "materialization_mode_selection_claim_allowed": false,
+    "pnl_claim_allowed": false,
+    "production_readiness_claim_allowed": false,
+    "research_only": true,
+    "strategy_claim_allowed": false
+  },
+  "created_at": "2026-07-14",
+  "factors": {
+    "diagnostic_only": [
+      "book_staleness_seconds",
+      "book_update_intensity",
+      "valid_observation_counts"
+    ],
+    "flow_quarantine": {
+      "allowed_use": "separate_quarantine_diagnostics_only",
+      "names": [
+        "ofi",
+        "order_flow_imbalance",
+        "trade_pressure",
+        "cancel_pressure",
+        "message_order_sensitive_flow"
+      ],
+      "ranking_eligible": false
+    },
+    "outcome_blind_required": true,
+    "prefix_causal_required": true,
+    "prohibited_inputs": [
+      "outcome",
+      "settlement",
+      "winner",
+      "future_return_direction",
+      "future_return_magnitude",
+      "strategy_decision",
+      "fills",
+      "fees",
+      "positions",
+      "cash",
+      "pnl"
+    ],
+    "ranking_eligible": [
+      "depth_imbalance_1",
+      "depth_imbalance_3",
+      "depth_imbalance_5",
+      "microprice_minus_mid",
+      "spread",
+      "top_level_depth",
+      "depth_slope",
+      "depth_concentration",
+      "bid_ask_liquidity_asymmetry",
+      "distance_to_zero_one",
+      "tick_size_regime"
+    ],
+    "ranking_eligible_scope": "pure_order_book_state_only"
+  },
+  "labels": {
+    "construction": {
+      "censor_at": [
+        "hard_break",
+        "event_close",
+        "token_close",
+        "invalid_future_book",
+        "missing_future_mid"
+      ],
+      "duplicate_timestamp_policy": "use_O1_order_and_fixed_match_rule",
+      "feature_sealed_before_label": true
+    },
+    "primary": [
+      {
+        "name": "mid_move_30s",
+        "seconds": 30,
+        "type": "elapsed_wall_clock_seconds"
+      },
+      {
+        "name": "mid_move_120s",
+        "seconds": 120,
+        "type": "elapsed_wall_clock_seconds"
+      },
+      {
+        "name": "mid_move_600s",
+        "seconds": 600,
+        "type": "elapsed_wall_clock_seconds"
+      },
+      {
+        "name": "next_nonzero_mid_move",
+        "type": "next_nonzero_mid_move"
+      }
+    ],
+    "valid_observation": {
+      "can_substitute_elapsed_time": false,
+      "can_trigger_candidate_gate_alone": false,
+      "status": "diagnostic_only"
+    }
+  },
+  "language": "zh-CN",
+  "materialization": {
+    "M1": {
+      "description": "direct replay",
+      "role": "oracle"
+    },
+    "M2": {
+      "cache_identity": "source_byte_sha256_plus_protocol_hash",
+      "role": "accelerator_only_after_exact_factor_label_summary_parity"
+    },
+    "M3": {
+      "role": "audit_only"
+    },
+    "event_level_single_read_optimization_allowed_only_after_exact_O1_parity": true,
+    "mode_selection_in_this_artifact": "deferred"
+  },
+  "metrics": [
+    "event_ic_spearman",
+    "positive_event_share",
+    "nonzero_move_hit_rate",
+    "conditional_average_win_loss",
+    "quantile_monotonicity",
+    "block_bootstrap_interval",
+    "horizon_consistency",
+    "city_date_stability",
+    "spread_conditioning",
+    "clean_degraded_sensitivity",
+    "concentration_diagnostics"
+  ],
+  "no_results_in_artifact": true,
+  "operations": {
+    "canonical_hashes_required": [
+      "source_bytes",
+      "protocol",
+      "replay_contract",
+      "factor_schema",
+      "label_schema",
+      "aggregation_schema",
+      "summary"
+    ],
+    "deterministic_rerun_required": true,
+    "disposable_derivatives_regenerable_from_hashes": true,
+    "failure_isolation_unit": "event",
+    "large_panel_outputs_tracked_in_git": false,
+    "partial_or_failed_events_cannot_silently_pass_gates": true
+  },
+  "ordering_and_replay": {
+    "O1": {
+      "boundary": "deterministic selected-token replay, not true websocket/exchange/L3 queue order",
+      "name": "selected-token deterministic replay order",
+      "sort_key": [
+        "timestamp",
+        "timestamp_received",
+        "physical_original_row_ordinal"
+      ]
+    },
+    "O2": {
+      "allowed_use": "diagnostics_only",
+      "name": "event-wide diagnostic/materialization order",
+      "ranking_truth_allowed": false
+    },
+    "O3": {
+      "allowed_use": "boundary/parity evidence only for this wave",
+      "name": "Nautilus native callback order",
+      "offline_factor_ranking_truth_allowed": false
+    },
+    "bbo": {
+      "invalid_book_policy": "explicit_censor_or_diagnostic_flag_no_silent_fill",
+      "pmxt_row_best_bid_best_ask_factor_input_allowed": false,
+      "pmxt_row_best_bid_best_ask_use": "audit_only",
+      "source": "locally_reconstructed_L2"
+    },
+    "canonical_adapter": "PMXTEventV1Adapter",
+    "canonical_contract": "replay_contract.py"
+  },
+  "provenance": {
+    "source_documents": [
+      {
+        "path": ".omx/ultragoal/brief.md",
+        "sha256": "106224ca964f3c43440b757424bf62a3e92711addc5ccf04fd41f763b700bb68"
+      },
+      {
+        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/README.md",
+        "sha256": "50711a44f0903e3239e6c59c352c91e4550d7cf9b36d186bbc9f770003022bc6"
+      },
+      {
+        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/report.md",
+        "sha256": "1520efd0854598665831c8150b2e8cb3b091c02d63e76dec405bfd282ca4265c"
+      },
+      {
+        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/closeout.json",
+        "sha256": "bb783e941053e0464f8a8f1cad9d14265718b70ea213e4eea4e1a7326186b99e"
+      },
+      {
+        "path": "polymarket/research/2026-07-14-pmxt-wave-minus1-closeout/quality_gate.json",
+        "sha256": "ae0ba1d2ff7f44f54024582bd4782376f65704d97f18c9b6acb2fa4f0746c809"
+      }
+    ],
+    "workspace_branch": "research/pmxt-weather-factor-wave0"
+  },
+  "schema_version": "pmxt_weather_factor_wave0_preregistration.v1",
+  "scope": "G001 preregistration before new 441-event factor results",
+  "status": "preregistered_not_executed",
+  "stratification": [
+    "clean_vs_degraded",
+    "lifecycle_time_to_event_end",
+    "activity_book_update_intensity",
+    "spread_regime",
+    "tick_size_regime",
+    "source_quality_cohort",
+    "hard_break_provenance"
+  ],
+  "universe": {
+    "cities": 49,
+    "cohorts": {
+      "clean_primary_development_replication": {
+        "dates": [
+          "2026-06-04",
+          "2026-06-05",
+          "2026-06-08",
+          "2026-06-09",
+          "2026-06-10"
+        ],
+        "event_count": 245,
+        "use": "development_internal_replication_only"
+      },
+      "degraded_robustness": {
+        "dates": [
+          "2026-06-06",
+          "2026-06-07",
+          "2026-06-11",
+          "2026-06-12"
+        ],
+        "event_count": 196,
+        "use": "robustness_and_applicability_limits_only"
+      }
+    },
+    "current_confirmatory_dates": [],
+    "current_panel_status": "not_confirmatory",
+    "dates": 9,
+    "events": 441,
+    "markets": 4851,
+    "rows_written_total": 747185591,
+    "tokens": 9702
+  }
+}
