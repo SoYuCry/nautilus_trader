@@ -367,6 +367,54 @@ def test_empty_canonical_step_fails_fast_with_sequence_context(factor_protocol: 
     _assert_error_context(exc_info.value, "sequence", "1", "updates")
 
 
+def test_canonical_dataset_rejects_duck_typed_replay_step_with_index_and_type_context(
+    factor_protocol: Any,
+) -> None:
+    valid_step = _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")])
+    duck_step = SimpleNamespace(
+        sequence=valid_step.sequence,
+        timestamp_received=valid_step.timestamp_received,
+        timestamp=valid_step.timestamp,
+        updates=valid_step.updates,
+        source_row_index=valid_step.source_row_index,
+    )
+    dataset = _dataset([valid_step])
+    object.__setattr__(dataset, "steps", (duck_step,))
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(exc_info.value, "steps[0]", "type", "L2ReplayStepV1")
+
+
+def test_canonical_step_rejects_duck_typed_update_with_sequence_update_index_and_type_context(
+    factor_protocol: Any,
+) -> None:
+    valid_update = _price_update("BUY", "0.40", "10")
+    duck_update = SimpleNamespace(
+        event_type=valid_update.event_type,
+        market=valid_update.market,
+        asset_id=valid_update.asset_id,
+        side=valid_update.side,
+        price=valid_update.price,
+        size=valid_update.size,
+        bids=valid_update.bids,
+        asks=valid_update.asks,
+        best_bid=valid_update.best_bid,
+        best_ask=valid_update.best_ask,
+        old_tick_size=valid_update.old_tick_size,
+        new_tick_size=valid_update.new_tick_size,
+    )
+    step = _step(7, "2026-07-14T00:00:00Z", valid_update)
+    object.__setattr__(step, "updates", (duck_update,))
+    dataset = _dataset([step])
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(exc_info.value, "sequence", "7", "updates[0]", "type", "L2UpdateV1")
+
+
 @pytest.mark.parametrize(
     ("case", "field_context"),
     [
