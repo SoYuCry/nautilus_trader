@@ -448,14 +448,20 @@ def _validate_number(
 ) -> float:
     if not isinstance(raw_value, Decimal):
         raise _validation_error(step, update, field_name, "must be Decimal")
+    if not raw_value.is_finite():
+        raise _validation_error(step, update, field_name, "must be finite")
+    decimal_minimum = Decimal(str(minimum)) if minimum is not None else None
+    decimal_maximum = Decimal(str(maximum)) if maximum is not None else None
+    if decimal_minimum is not None and (
+        raw_value < decimal_minimum if minimum_inclusive else raw_value <= decimal_minimum
+    ):
+        operator = ">=" if minimum_inclusive else ">"
+        raise _validation_error(step, update, field_name, f"must be {operator} {minimum}")
+    if decimal_maximum is not None and raw_value > decimal_maximum:
+        raise _validation_error(step, update, field_name, f"must be <= {maximum}")
     value = float(raw_value)
     if not math.isfinite(value):
         raise _validation_error(step, update, field_name, "must be finite")
-    if minimum is not None and (value < minimum if minimum_inclusive else value <= minimum):
-        operator = ">=" if minimum_inclusive else ">"
-        raise _validation_error(step, update, field_name, f"must be {operator} {minimum}")
-    if maximum is not None and value > maximum:
-        raise _validation_error(step, update, field_name, f"must be <= {maximum}")
     return value
 
 
@@ -846,6 +852,10 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...], barrier_index: _
                 target = current_ts + pd.Timedelta(seconds=horizon)
                 match_index = _fixed_horizon_match(target_indexes, target_timestamps, target)
                 if match_index is None:
+                    barrier = _first_barrier_between(barriers, current_ts, target)
+                    panel.loc[index, f"label_censor_reason_{horizon}s"] = (
+                        _barrier_reason(barrier) if barrier is not None else "missing_future_mid"
+                    )
                     continue
                 barrier = _first_barrier_between(barriers, current_ts, panel.loc[match_index, "timestamp"])
                 if barrier is not None:
@@ -858,6 +868,8 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...], barrier_index: _
                 if future_validity == "valid" and math.isfinite(current_mid) and math.isfinite(future_mid):
                     panel.loc[index, f"future_mid_{horizon}s"] = future_mid
                     panel.loc[index, f"future_mid_return_{horizon}s"] = future_mid - current_mid
+                else:
+                    panel.loc[index, f"label_censor_reason_{horizon}s"] = "invalid_future_book"
 
         _add_next_nonzero_group_labels(panel, mutations, barriers)
     return panel
@@ -876,44 +888,40 @@ def _fixed_horizon_match(
 
 
 def _add_next_nonzero_group_labels(panel: pd.DataFrame, mutations: pd.DataFrame, barriers: list[_LabelBarrier]) -> None:
-    valid_segment: list[int] = []
-    for row in mutations.itertuples():
-        if row.book_validity == "valid":
-            valid_segment.append(row.Index)
-        else:
-            _add_next_nonzero_segment_labels(panel, valid_segment, barriers)
-            valid_segment = []
-    _add_next_nonzero_segment_labels(panel, valid_segment, barriers)
-
-
-def _add_next_nonzero_segment_labels(panel: pd.DataFrame, indexes: list[int], barriers: list[_LabelBarrier]) -> None:
-    if len(indexes) < 2:
+    rows = list(mutations.itertuples())
+    if not rows:
         return
-    mids = [float(panel.loc[index, "mid"]) for index in indexes]
-    next_different: list[int | None] = [None] * len(indexes)
-    for position in range(len(indexes) - 2, -1, -1):
-        if mids[position + 1] != mids[position]:
-            next_different[position] = position + 1
+    for position, row in enumerate(rows):
+        if row.book_validity != "valid":
+            continue
+        index = row.Index
+        current_ts = panel.loc[index, "timestamp"]
+        current_mid = float(panel.loc[index, "mid"])
+        last_ts = current_ts
+        for future_row in rows[position + 1 :]:
+            future_index = future_row.Index
+            future_ts = panel.loc[future_index, "timestamp"]
+            last_ts = future_ts
+            barrier = _first_barrier_between(barriers, current_ts, future_ts)
+            if barrier is not None:
+                panel.loc[index, "next_nonzero_mid_move_censor_reason"] = _barrier_reason(barrier)
+                break
+            if future_row.book_validity != "valid":
+                panel.loc[index, "next_nonzero_mid_move_censor_reason"] = "invalid_future_book"
+                break
+            future_mid = float(panel.loc[future_index, "mid"])
+            if future_mid == current_mid:
+                continue
+            move = future_mid - current_mid
+            panel.loc[index, "next_nonzero_mid_move"] = move
+            panel.loc[index, "next_nonzero_mid_move_direction"] = 1.0 if move > 0.0 else -1.0
+            panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = int(panel.loc[future_index, "sequence"])
+            break
         else:
-            next_different[position] = next_different[position + 1]
-
-    for position, target_position in enumerate(next_different):
-        if target_position is None:
-            continue
-        index = indexes[position]
-        target_index = indexes[target_position]
-        barrier = _first_barrier_between(
-            barriers,
-            panel.loc[index, "timestamp"],
-            panel.loc[target_index, "timestamp"],
-        )
-        if barrier is not None:
-            panel.loc[index, "next_nonzero_mid_move_censor_reason"] = _barrier_reason(barrier)
-            continue
-        move = mids[target_position] - mids[position]
-        panel.loc[index, "next_nonzero_mid_move"] = move
-        panel.loc[index, "next_nonzero_mid_move_direction"] = 1.0 if move > 0.0 else -1.0
-        panel.loc[index, "next_nonzero_mid_move_matched_sequence"] = int(panel.loc[target_index, "sequence"])
+            barrier = _first_barrier_between(barriers, current_ts, last_ts)
+            panel.loc[index, "next_nonzero_mid_move_censor_reason"] = (
+                _barrier_reason(barrier) if barrier is not None else "missing_future_mid"
+            )
 
 
 def _first_barrier_between(
@@ -930,7 +938,7 @@ def _first_barrier_between(
 
 
 def _barrier_reason(barrier: _LabelBarrier) -> str:
-    return f"{barrier.reason}:{barrier.provenance}" if barrier.provenance else barrier.reason
+    return barrier.reason
 
 
 def _next_hard_break_provenance(barriers: list[_LabelBarrier], ts: pd.Timestamp) -> str | None:
