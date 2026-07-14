@@ -12,6 +12,27 @@
     "row_count_domination_allowed": false,
     "within_event_token_weight": "equal"
   },
+  "amendment": {
+    "changes": [
+      "pre_results_definition_completion",
+      "clarify_canonical_input_and_factor_layer_validation",
+      "clarify_replay_contract_clock_order_scope_only",
+      "clarify_original_step_order_no_sorting_or_fallback",
+      "clarify_actual_mutation_staleness_intensity_ranking_and_label_semantics",
+      "clarify_local_reconstructed_l2_and_row_bbo_audit_only"
+    ],
+    "id": "G002_factor_definition_completion",
+    "no_441_event_new_results_read": true,
+    "pre_results": true,
+    "reason": "Pre-results definition completion: convert the G001 registered factor names into executable, reviewable definitions and freeze input, replay, mutation, tick, BBO, label, and ranking-observation semantics before reading any new 441-event factor results.",
+    "timestamp": "2026-07-14T16:01:45+08:00",
+    "unchanged": [
+      "factor_registry",
+      "horizons",
+      "candidate_gate",
+      "claim_scope"
+    ]
+  },
   "candidate_gate": {
     "claim_scope_if_passed": "exploratory_shortlist_for_future_preregistration_only",
     "requirements": {
@@ -36,6 +57,247 @@
     "strategy_claim_allowed": false
   },
   "created_at": "2026-07-14",
+  "definition_version": "pmxt_weather_factor_wave0_factor_definitions.g002.v1",
+  "definitions": {
+    "actual_mutation": {
+      "atomic_step_application": true,
+      "counts_as_mutation": [
+        "price_level_inserted",
+        "price_level_deleted",
+        "level_size_changed",
+        "bbo_changed",
+        "visible_depth_changed",
+        "visible_l2_state_changed_even_if_final_book_missing_locked_crossed_or_invalid"
+      ],
+      "definition": "pre-step versus final post-step canonical visible reconstructed L2 state change after all canonical L2 updates in one typed step are applied atomically",
+      "does_not_count": [
+        "parse_failure",
+        "trade_only_message",
+        "flow_only_message",
+        "tick_only_event",
+        "duplicate_noop",
+        "normalized_price_size_unchanged",
+        "intra_step_change_reverted_before_final_post_step_state"
+      ],
+      "intra_step_reverted_change_counts_as_mutation": false,
+      "validity_controls": "ranking_and_label_availability_only"
+    },
+    "book_source": {
+      "factor_source": "locally_reconstructed_L2",
+      "invalid_book_policy": "explicit_censor_or_diagnostic_flag_no_silent_fill",
+      "row_best_bid_best_ask_factor_input_allowed": false,
+      "row_best_bid_best_ask_label_anchor_allowed": false,
+      "row_best_bid_best_ask_use": "audit_only",
+      "valid_book_required": [
+        "non_empty_bid",
+        "non_empty_ask",
+        "best_bid_less_than_best_ask",
+        "prices_within_0_1"
+      ]
+    },
+    "canonical_input": {
+      "arbitrary_dict_rows_allowed": false,
+      "contract_failure_policy": "record_failure_skip_or_censor_no_silent_ranking",
+      "factor_layer_strict_canonical_update_validation_required": true,
+      "fallback_ordering_allowed": false,
+      "identifier_mapping": {
+        "event_id": "dataset.metadata.dataset_id",
+        "market": "condition_id",
+        "token_id": "asset_id"
+      },
+      "physical_original_row_ordinal_source": "steps_original_order",
+      "replay_contract": "replay_contract.py",
+      "replay_contract_does_not_verify": [
+        "field_presence",
+        "field_normalization",
+        "token_boundaries",
+        "market_boundaries",
+        "canonical_update_validity",
+        "book_validity",
+        "censor_semantics"
+      ],
+      "replay_contract_scope": "replay_clock_and_step_order_only",
+      "replay_contract_verifies": [
+        "replay_clock_non_decreasing",
+        "sequence_strictly_increasing",
+        "timestamp_received_tie_break",
+        "source_row_index_tie_break_for_fully_tied_clock_groups"
+      ],
+      "schema": "PolymarketL2DatasetV1",
+      "sorting_allowed": false,
+      "steps_consumption": "verified_original_order",
+      "steps_original_order_source": "PolymarketL2DatasetV1.steps",
+      "typed_steps_required": true
+    },
+    "diagnostic_factor_definitions": [
+      {
+        "allowed_use": "diagnostic_stratification_coverage_failure_explanation",
+        "name": "book_staleness_seconds",
+        "ranking_eligible": false
+      },
+      {
+        "allowed_use": "diagnostic_stratification_coverage_failure_explanation",
+        "name": "book_update_intensity",
+        "ranking_eligible": false
+      },
+      {
+        "allowed_use": "diagnostic_coverage_only",
+        "name": "valid_observation_counts",
+        "ranking_eligible": false
+      }
+    ],
+    "flow_quarantine": {
+      "allowed_use": "separate_quarantine_diagnostics_only",
+      "not_allowed_for": [
+        "ranking",
+        "candidate_gate",
+        "claim_upgrade",
+        "production_signal"
+      ],
+      "not_for_pnl": true,
+      "ranking_eligible": false,
+      "research_only": true
+    },
+    "language": "zh-CN",
+    "primary_factor_formulas": [
+      {
+        "formula": "(D^b_1 - D^a_1) / (D^b_1 + D^a_1)",
+        "name": "depth_imbalance_1",
+        "ranking_eligible": true,
+        "scope": "best_level_depth_only"
+      },
+      {
+        "formula": "(D^b_3 - D^a_3) / (D^b_3 + D^a_3)",
+        "name": "depth_imbalance_3",
+        "ranking_eligible": true,
+        "scope": "top_3_levels_cumulative_depth"
+      },
+      {
+        "formula": "(D^b_5 - D^a_5) / (D^b_5 + D^a_5)",
+        "name": "depth_imbalance_5",
+        "ranking_eligible": true,
+        "scope": "top_5_levels_cumulative_depth"
+      },
+      {
+        "formula": "(a_1 * B_1 + b_1 * A_1) / (B_1 + A_1) - m",
+        "name": "microprice_minus_mid",
+        "ranking_eligible": true,
+        "scope": "top_level_reconstructed_bbo_only"
+      },
+      {
+        "formula": "a_1 - b_1",
+        "name": "spread",
+        "ranking_eligible": true,
+        "unit": "probability_price"
+      },
+      {
+        "formula": "B_1 + A_1",
+        "name": "top_level_depth",
+        "ranking_eligible": true,
+        "scope": "best_bid_plus_best_ask_quantity_only"
+      },
+      {
+        "formula": "top 5 sizes padded zero; x=(0,.25,.5,.75,1); per-side p_i=q_i/Q; g_x=2*sum(x_i*p_i)-1; factor=(g_bid+g_ask)/2",
+        "name": "depth_slope",
+        "ranking_eligible": true,
+        "scope": "top_5_depth_shape_from_reconstructed_local_l2"
+      },
+      {
+        "formula": "(bid1_depth/sum_bid_top5 + ask1_depth/sum_ask_top5)/2",
+        "name": "depth_concentration",
+        "ranking_eligible": true,
+        "scope": "two_side_average_top_level_share_from_reconstructed_local_l2"
+      },
+      {
+        "formula": "(c_bid-c_ask)/(c_bid+c_ask), where c_side=top1_depth/sum_side_top5",
+        "name": "bid_ask_liquidity_asymmetry",
+        "ranking_eligible": true,
+        "scope": "bid_vs_ask_top_level_concentration_asymmetry_from_reconstructed_local_l2"
+      },
+      {
+        "formula": "min(m, 1 - m)",
+        "name": "distance_to_zero_one",
+        "ranking_eligible": true,
+        "scope": "distance_from_mid_to_payout_boundaries"
+      },
+      {
+        "formula": "categorical {0.01, 0.001}; default 0.01 unless explicit token-level 0.01->0.001 transition is validated",
+        "implicit_inference_allowed": false,
+        "name": "tick_size_regime",
+        "ranking_eligible": true
+      }
+    ],
+    "ranking_observation": {
+      "excluded": [
+        "invalid_book",
+        "crossed_book",
+        "locked_book",
+        "empty_side",
+        "flow_only",
+        "trade_only",
+        "tick_only",
+        "noop",
+        "hard_break",
+        "parse_failure",
+        "contract_failure",
+        "canonical_validation_failure"
+      ],
+      "formula": "actual_mutation AND valid_book",
+      "included": [
+        "actual_mutation",
+        "valid_book"
+      ],
+      "ranking_eligible": true
+    },
+    "staleness": {
+      "based_only_on": "actual_mutation",
+      "before_first_actual_mutation": "invalid_or_diagnostic_only",
+      "counts_invalid_visible_l2_mutations": true,
+      "formula": "max(0, t - last_actual_mutation_time_for_same_token_at_or_before_t)",
+      "name": "book_staleness_seconds",
+      "ranking_eligible": false,
+      "unit": "seconds"
+    },
+    "symbols": {
+      "ask_depth_K": "D^a_K = sum_{i=1..K} A_i",
+      "ask_levels": "(a_i, A_i) for i=1..5, prices ascending",
+      "bid_depth_K": "D^b_K = sum_{i=1..K} B_i",
+      "bid_levels": "(b_i, B_i) for i=1..5, prices descending",
+      "mid": "m = (b_1 + a_1) / 2",
+      "side_share": "p^x_i = q^x_i / Q^x",
+      "side_total": "Q^x = sum_{i=1..5} q^x_i",
+      "spread": "s = a_1 - b_1"
+    },
+    "tick_size_policy": {
+      "accepted_ticks": [
+        0.01,
+        0.001
+      ],
+      "accepted_transition": "explicit_exact_token_level_0.01_to_0.001_change_accepted_by_canonical_validation",
+      "default_tick": 0.01,
+      "implicit_tick_inference_allowed": false,
+      "token_level_transition_required_for_0_001": true
+    },
+    "update_intensity": {
+      "based_only_on": "actual_mutation",
+      "bounded_rolling_window": true,
+      "counts_invalid_visible_l2_mutations": true,
+      "excluded_events": [
+        "trade_only",
+        "flow_only",
+        "tick_only",
+        "noop",
+        "parse_failure"
+      ],
+      "formula": "count(actual_mutation_time_for_same_token in (t-30s, t]) / 30",
+      "name": "book_update_intensity",
+      "ranking_eligible": false,
+      "unit": "mutations_per_second",
+      "window": "(t-30s, t]",
+      "window_seconds": 30
+    },
+    "version": "pmxt_weather_factor_wave0_factor_definitions.g002.v1"
+  },
   "factors": {
     "diagnostic_only": [
       "book_staleness_seconds",
@@ -51,7 +313,9 @@
         "cancel_pressure",
         "message_order_sensitive_flow"
       ],
-      "ranking_eligible": false
+      "not_for_pnl": true,
+      "ranking_eligible": false,
+      "research_only": true
     },
     "outcome_blind_required": true,
     "prefix_causal_required": true,
@@ -92,8 +356,11 @@
         "invalid_future_book",
         "missing_future_mid"
       ],
-      "duplicate_timestamp_policy": "use_O1_order_and_fixed_match_rule",
-      "feature_sealed_before_label": true
+      "duplicate_timestamp_policy": "use_final_state_for_duplicate_timestamp_group",
+      "feature_sealed_before_label": true,
+      "fixed_wall_clock_target_policy": "first_actual_mutation_at_or_after_target",
+      "invalid_target_policy": "censor_value",
+      "next_nonzero_policy": "skip_valid_equal_mid_actual_mutations; first_invalid_actual_mutation_is_censor_barrier"
     },
     "primary": [
       {
@@ -171,12 +438,10 @@
   "ordering_and_replay": {
     "O1": {
       "boundary": "deterministic selected-token replay, not true websocket/exchange/L3 queue order",
+      "fallback_ordering_allowed": false,
       "name": "selected-token deterministic replay order",
-      "sort_key": [
-        "timestamp",
-        "timestamp_received",
-        "physical_original_row_ordinal"
-      ]
+      "sorting_allowed": false,
+      "source": "PolymarketL2DatasetV1.steps_verified_original_order"
     },
     "O2": {
       "allowed_use": "diagnostics_only",
@@ -191,11 +456,14 @@
     "bbo": {
       "invalid_book_policy": "explicit_censor_or_diagnostic_flag_no_silent_fill",
       "pmxt_row_best_bid_best_ask_factor_input_allowed": false,
+      "pmxt_row_best_bid_best_ask_label_anchor_allowed": false,
       "pmxt_row_best_bid_best_ask_use": "audit_only",
       "source": "locally_reconstructed_L2"
     },
     "canonical_adapter": "PMXTEventV1Adapter",
-    "canonical_contract": "replay_contract.py"
+    "canonical_contract": "replay_contract.py",
+    "factor_layer_strict_canonical_update_validation_required": true,
+    "replay_contract_scope": "replay_clock_and_step_order_only"
   },
   "provenance": {
     "source_documents": [
