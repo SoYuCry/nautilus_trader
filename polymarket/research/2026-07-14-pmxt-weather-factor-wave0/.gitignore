@@ -1,0 +1,31 @@
+# Wave0 keeps only compact, reproducible artifacts in git.
+# Tracked outputs currently include:
+# - outputs/compact_canonical_inventory.json
+# - outputs/g003_materialization_parity.json
+# - outputs/g003_materialization_decision.json
+
+__pycache__/
+*.py[cod]
+
+# Disposable M2/M3 caches and atomic-write leftovers.
+outputs/cache*/
+outputs/**/cache*/
+outputs/**/*.partial
+outputs/**/.m2-write-*/
+outputs/**/_quarantine/
+
+# Large derived panels, shards, traces, and columnar/intermediate files.
+outputs/**/panel*/
+outputs/**/panels*/
+outputs/**/shard*/
+outputs/**/shards*/
+outputs/**/trace*/
+outputs/**/traces*/
+outputs/**/*.parquet
+outputs/**/*.feather
+outputs/**/*.arrow
+outputs/**/*.pkl
+outputs/**/*.pickle
+
+# Local dry-run manifests are regenerated/validated, not tracked compact artifacts.
+outputs/g003_dry_run_manifest*.json

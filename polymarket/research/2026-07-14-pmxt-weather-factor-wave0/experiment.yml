@@ -60,11 +60,54 @@ replay:
   invalid_book_policy: explicit_censor_or_diagnostic_flag
 
 materialization:
+  sidecar: materialization_protocol.py
   oracle: M1_direct_replay
+  selected_mode: M1
+  m1:
+    role: oracle
+    persistent_derivative: false
+  m2:
+    cache_format: safe_json
+    cache_scope: disposable_derivative
+    exact_parity_status_if_gate_passed: eligible_not_selected
+    selected_for_wave0_execution: false
+    cache_identity: source_byte_sha256_plus_protocol_hash
+    cache_budget_bytes: 8589934592
   m2_allowed: only_after_exact_factor_label_summary_parity
-  m3_use: audit_only
+  m3_use: primitive_audit_only
+  m3_selectable_execution_mode: false
   cache_identity: source_byte_sha256_plus_protocol_hash
-  event_level_single_read_optimization: require_exact_O1_parity
+  event_level_single_read_optimization:
+    enabled: false
+    status: deferred_pending_exact_parity
+  parity_evidence:
+    synthetic_required: true
+    frozen_representative_real_events: 3
+    real_event_slugs:
+      - highest-temperature-in-hong-kong-on-june-10-2026
+      - highest-temperature-in-chicago-on-june-9-2026
+      - highest-temperature-in-amsterdam-on-june-6-2026
+    first_materializing_run: parity_force_recompute_real
+    reuse_policy: hash_validated_committed_rows
+    force_flag: --force
+  dry_run_manifest:
+    exact_totals:
+      events: 441
+      markets: 4851
+      tokens: 9702
+      source_rows: 747185591
+      source_bytes: 6008295014
+    shards: 18
+    worker_cap: 1
+    cache_budget_bytes: 8589934592
+    failure_isolation_unit: event
+    event_state_on_start: pending
+  cli:
+    dry_run_subcommand: dry-run
+    validate_subcommand: validate-manifest
+    parity_subcommand: parity
+    parity_default_real_event_mode: reuse_hash_validated_committed_rows
+    parity_force_real_event_mode: force_recompute_real
 
 factors:
   ranking_scope: pure_order_book_state_only
@@ -169,6 +212,10 @@ analysis:
 outputs:
   base_dir: polymarket/research/2026-07-14-pmxt-weather-factor-wave0/outputs
   track_large_panel_outputs: false
+  tracked_compact_artifacts:
+    - outputs/compact_canonical_inventory.json
+    - outputs/g003_materialization_parity.json
+    - outputs/g003_materialization_decision.json
   required_compact_artifacts:
     - run_manifest.json
     - coverage_summary.json
@@ -176,6 +223,14 @@ outputs:
     - candidate_gate.json
     - diagnostics.json
     - hashes.json
+  untracked_derivatives:
+    - caches
+    - panels
+    - shards
+    - traces
+    - partials
+    - parquet
+    - pickle
   disallowed_artifacts:
     - pnl
     - strategy_result
@@ -198,3 +253,5 @@ failure_isolation:
   record_failures_skips_censors: true
   deterministic_task_ids: true
   canonical_hashes_required: true
+  dry_run_resume_policy: skip_failed_event_level_units
+  failed_event_state: failed
