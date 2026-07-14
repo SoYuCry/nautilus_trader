@@ -193,6 +193,70 @@ def test_price_change_insert_change_and_delete_rebuild_local_l2_bbo_while_ignori
     assert panel.loc[3, "spread"] == pytest.approx(0.03)
 
 
+def test_atomic_multi_update_revert_is_not_an_actual_book_mutation(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _multi_update_step(
+                2,
+                "2026-07-14T00:00:10Z",
+                (
+                    _price_update("BUY", "0.40", "11"),
+                    _price_update("BUY", "0.40", "10"),
+                ),
+            ),
+            _tick_step(3, "2026-07-14T00:00:20Z", old="0.01", new="0.001"),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    assert list(panel["bid1"]) == pytest.approx([0.40, 0.40, 0.40])
+    assert list(panel["ask1"]) == pytest.approx([0.60, 0.60, 0.60])
+    assert list(panel["top_level_depth"]) == pytest.approx([20.0, 20.0, 20.0])
+    assert list(panel["actual_mutation"]) == [True, False, False]
+    assert list(panel["ranking_observation"]) == [True, False, False]
+    assert list(panel["book_staleness_seconds"]) == pytest.approx([0.0, 10.0, 20.0])
+    assert list(panel["book_update_intensity"]) == pytest.approx([1 / 30, 1 / 30, 1 / 30])
+
+
+def test_panel_identity_keeps_dataset_event_market_and_token_boundaries(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", market="condition-A", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:01Z", market="condition-B", bids=[("0.20", "10")], asks=[("0.40", "10")]),
+        ],
+        dataset_id="dataset-wave0-boundaries",
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    assert list(panel["event_id"]) == ["dataset-wave0-boundaries", "dataset-wave0-boundaries"]
+    assert list(panel["market"]) == ["condition-A", "condition-B"]
+    assert list(panel["token_id"]) == [YES, YES]
+
+
+def test_labels_do_not_cross_markets_when_the_same_asset_id_is_reused(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", market="condition-A", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:01Z", market="condition-B", bids=[("0.20", "10")], asks=[("0.40", "10")]),
+            _book_step(3, "2026-07-14T00:00:30Z", market="condition-B", bids=[("0.25", "10")], asks=[("0.45", "10")]),
+            _book_step(4, "2026-07-14T00:00:31Z", market="condition-A", bids=[("0.50", "10")], asks=[("0.70", "10")]),
+        ],
+        dataset_id="dataset-wave0-boundaries",
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+
+    assert anchor["label_matched_timestamp_30s"] == pd.Timestamp("2026-07-14T00:00:31Z")
+    assert anchor["future_mid_30s"] == pytest.approx(0.60)
+    assert anchor["future_mid_return_30s"] == pytest.approx(0.10)
+    assert anchor["next_nonzero_mid_move"] == pytest.approx(0.10)
+    assert anchor["next_nonzero_mid_move_matched_sequence"] == 4
+
+
 def test_tick_size_regime_is_explicit_token_state_and_visible_price_gaps_do_not_change_it(
     factor_protocol: Any,
 ) -> None:
@@ -242,6 +306,94 @@ def test_tick_size_change_fails_fast_when_contract_is_not_exact(
 
     with pytest.raises(ValueError, match=r"(?i)tick"):
         factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+
+def test_empty_canonical_step_fails_fast_with_sequence_context(factor_protocol: Any) -> None:
+    clock = _dt("2026-07-14T00:00:00Z")
+    dataset = _dataset(
+        [
+            L2ReplayStepV1(
+                sequence=1,
+                timestamp_received=clock,
+                timestamp=clock,
+                updates=(),
+                source_row_index=1,
+            ),
+        ],
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(exc_info.value, "sequence", "1", "updates")
+
+
+@pytest.mark.parametrize(
+    ("case", "field_context"),
+    [
+        ("unsupported-event-type", "event_type"),
+        ("price-change-invalid-side", "side"),
+        ("price-change-missing-price", "price"),
+        ("price-change-nonfinite-price", "price"),
+        ("price-change-price-below-zero", "price"),
+        ("price-change-price-above-one", "price"),
+        ("price-change-missing-size", "size"),
+        ("price-change-nonfinite-size", "size"),
+        ("price-change-negative-size", "size"),
+        ("snapshot-nonfinite-price", "bids"),
+        ("snapshot-price-below-zero", "bids"),
+        ("snapshot-price-above-one", "asks"),
+        ("snapshot-zero-size", "bids"),
+        ("snapshot-negative-size", "asks"),
+        ("trade-missing-side", "side"),
+        ("trade-invalid-side", "side"),
+        ("trade-missing-price", "price"),
+        ("trade-nonfinite-price", "price"),
+        ("trade-price-above-one", "price"),
+        ("trade-missing-size", "size"),
+        ("trade-nonpositive-size", "size"),
+    ],
+)
+def test_malformed_canonical_update_fails_fast_with_update_context(
+    factor_protocol: Any,
+    case: str,
+    field_context: str,
+) -> None:
+    update = _malformed_update(case)
+    dataset = _dataset([_step(1, "2026-07-14T00:00:00Z", update)])
+
+    with pytest.raises(ValueError) as exc_info:
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    _assert_error_context(
+        exc_info.value,
+        "sequence",
+        "1",
+        "event_type",
+        str(update.event_type),
+        "market",
+        update.market,
+        "asset_id",
+        update.asset_id,
+        field_context,
+    )
+
+
+def test_zero_size_price_change_remains_a_valid_delete(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _price_step(2, "2026-07-14T00:00:01Z", "BUY", "0.40", "0"),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+    deleted = panel.loc[panel["sequence"] == 2].iloc[0]
+
+    assert bool(deleted["actual_mutation"]) is True
+    assert bool(deleted["ranking_observation"]) is False
+    assert deleted["book_validity"] == "missing"
+    assert _is_missing(deleted["bid1"])
 
 
 def test_staleness_resets_only_on_actual_book_mutation_and_update_intensity_counts_mutations(
@@ -297,6 +449,40 @@ def test_update_intensity_is_token_local_and_uses_strict_left_thirty_second_boun
     assert panel.loc[panel["sequence"] == 2, "book_update_intensity"].iloc[0] == pytest.approx(1 / 30)
 
 
+def test_update_intensity_is_a_bounded_rolling_window_over_long_histories(
+    factor_protocol: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    steps = [
+        _book_step(
+            second + 1,
+            f"2026-07-14T00:{second // 60:02d}:{second % 60:02d}Z",
+            bids=[("0.40", str(10 + second % 2))],
+            asks=[("0.60", str(10 + second % 2))],
+        )
+        for second in range(181)
+    ]
+    steps.append(
+        _book_step(
+            182,
+            "2026-07-14T01:00:00Z",
+            bids=[("0.40", "12")],
+            asks=[("0.60", "12")],
+        ),
+    )
+    comparison_count = [0]
+    monkeypatch.setattr(factor_protocol, "pd", _PandasClockProbe(pd, comparison_count))
+
+    panel = factor_protocol.build_factor_panel(_dataset(steps), horizons_seconds=(30,), include_labels=False)
+
+    assert panel.loc[panel["sequence"] == 31, "book_update_intensity"].iloc[0] == pytest.approx(1.0)
+    assert panel.loc[panel["sequence"] == 91, "book_update_intensity"].iloc[0] == pytest.approx(1.0)
+    assert panel.loc[panel["sequence"] == 181, "book_update_intensity"].iloc[0] == pytest.approx(1.0)
+    assert panel.loc[panel["sequence"] == 182, "book_update_intensity"].iloc[0] == pytest.approx(1 / 30)
+    assert panel["book_update_intensity"].max() <= 1.0
+    assert comparison_count[0] <= 80 * len(steps)
+
+
 def test_invalid_locked_crossed_one_sided_and_empty_books_are_not_ranking_observations(
     factor_protocol: Any,
 ) -> None:
@@ -320,6 +506,92 @@ def test_invalid_locked_crossed_one_sided_and_empty_books_are_not_ranking_observ
             assert _is_missing(row[factor]), factor
         assert not _is_missing(row["tick_size_regime"])
         assert not _is_missing(row["book_update_intensity"])
+
+
+def test_next_nonzero_label_is_censored_by_first_future_invalid_actual_mutation(
+    factor_protocol: Any,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _price_step(2, "2026-07-14T00:00:10Z", "BUY", "0.70", "10"),
+            _book_step(3, "2026-07-14T00:00:20Z", bids=[("0.45", "10")], asks=[("0.65", "10")]),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+    invalid = panel.loc[panel["sequence"] == 2].iloc[0]
+
+    assert bool(invalid["actual_mutation"]) is True
+    assert bool(invalid["ranking_observation"]) is False
+    assert invalid["book_validity"] == "crossed"
+    assert _is_missing(anchor["next_nonzero_mid_move"])
+    assert _is_missing(anchor["next_nonzero_mid_move_direction"])
+    assert _is_missing(anchor["next_nonzero_mid_move_matched_sequence"])
+
+
+def test_next_nonzero_label_skips_valid_same_mid_mutations_before_valid_changed_mid(
+    factor_protocol: Any,
+) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:10Z", bids=[("0.40", "11")], asks=[("0.60", "9")]),
+            _book_step(3, "2026-07-14T00:00:20Z", bids=[("0.45", "10")], asks=[("0.65", "10")]),
+        ],
+    )
+
+    panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=True)
+    anchor = panel.loc[panel["sequence"] == 1].iloc[0]
+    same_mid = panel.loc[panel["sequence"] == 2].iloc[0]
+
+    assert bool(same_mid["actual_mutation"]) is True
+    assert bool(same_mid["ranking_observation"]) is True
+    assert same_mid["mid"] == pytest.approx(anchor["mid"])
+    assert anchor["next_nonzero_mid_move"] == pytest.approx(0.05)
+    assert anchor["next_nonzero_mid_move_direction"] == 1
+    assert anchor["next_nonzero_mid_move_matched_sequence"] == 3
+
+
+@pytest.mark.parametrize(
+    "column",
+    [
+        "future_mid_30s",
+        "future_mid_return_30s",
+        "next_nonzero_mid_move",
+        "next_nonzero_mid_move_direction",
+    ],
+)
+def test_numeric_label_outputs_use_numeric_dtypes(factor_protocol: Any, column: str) -> None:
+    panel = factor_protocol.build_factor_panel(
+        _typed_label_dataset(),
+        horizons_seconds=(30,),
+        include_labels=True,
+    )
+
+    assert pd.api.types.is_numeric_dtype(panel[column]), (column, panel[column].dtype)
+    assert not pd.api.types.is_object_dtype(panel[column]), (column, panel[column].dtype)
+
+
+def test_label_matched_timestamp_uses_utc_datetime_dtype(factor_protocol: Any) -> None:
+    panel = factor_protocol.build_factor_panel(
+        _typed_label_dataset(),
+        horizons_seconds=(30,),
+        include_labels=True,
+    )
+
+    assert str(panel["label_matched_timestamp_30s"].dtype) == "datetime64[ns, UTC]"
+
+
+def test_next_nonzero_matched_sequence_uses_nullable_integer_dtype(factor_protocol: Any) -> None:
+    panel = factor_protocol.build_factor_panel(
+        _typed_label_dataset(),
+        horizons_seconds=(30,),
+        include_labels=True,
+    )
+
+    assert str(panel["next_nonzero_mid_move_matched_sequence"].dtype) == "Int64"
 
 
 def test_candidate_metrics_use_ranking_observations_only(factor_protocol: Any) -> None:
@@ -440,6 +712,7 @@ def _book_step(
     *,
     bids: list[tuple[str, str]],
     asks: list[tuple[str, str]],
+    market: str = EVENT,
     token_id: str = YES,
     best_bid: str | None = None,
     best_ask: str | None = None,
@@ -447,7 +720,7 @@ def _book_step(
 ) -> L2ReplayStepV1:
     update = L2UpdateV1(
         event_type="book",
-        market=EVENT,
+        market=market,
         asset_id=token_id,
         bids=tuple(_level(price, size) for price, size in bids),
         asks=tuple(_level(price, size) for price, size in asks),
@@ -464,11 +737,27 @@ def _price_step(
     price: str,
     size: str,
     *,
+    market: str = EVENT,
     token_id: str = YES,
 ) -> L2ReplayStepV1:
-    update = L2UpdateV1(
+    return _step(
+        sequence,
+        ts,
+        _price_update(side, price, size, market=market, token_id=token_id),
+    )
+
+
+def _price_update(
+    side: str,
+    price: str,
+    size: str,
+    *,
+    market: str = EVENT,
+    token_id: str = YES,
+) -> L2UpdateV1:
+    return L2UpdateV1(
         event_type="price_change",
-        market=EVENT,
+        market=market,
         asset_id=token_id,
         side=side,  # type: ignore[arg-type]
         price=Decimal(price),
@@ -476,7 +765,6 @@ def _price_step(
         best_bid=Decimal("0.01"),
         best_ask=Decimal("0.99"),
     )
-    return _step(sequence, ts, update)
 
 
 def _trade_step(sequence: int, ts: str, *, size: str = "1", token_id: str = YES) -> L2ReplayStepV1:
@@ -519,10 +807,29 @@ def _step(
     )
 
 
-def _dataset(steps: list[L2ReplayStepV1] | tuple[L2ReplayStepV1, ...]) -> PolymarketL2DatasetV1:
+def _multi_update_step(
+    sequence: int,
+    ts: str,
+    updates: tuple[L2UpdateV1, ...],
+) -> L2ReplayStepV1:
+    clock = _dt(ts)
+    return L2ReplayStepV1(
+        sequence=sequence,
+        timestamp_received=clock,
+        timestamp=clock,
+        updates=updates,
+        source_row_index=sequence,
+    )
+
+
+def _dataset(
+    steps: list[L2ReplayStepV1] | tuple[L2ReplayStepV1, ...],
+    *,
+    dataset_id: str = "synthetic-wave0-l2-factors",
+) -> PolymarketL2DatasetV1:
     return PolymarketL2DatasetV1(
         metadata=DatasetMetadataV1(
-            dataset_id="synthetic-wave0-l2-factors",
+            dataset_id=dataset_id,
             adapter_name="pmxt_event_v1",
             adapter_version="test",
             source_type="synthetic",
@@ -538,6 +845,226 @@ def _non_monotonic_dataset() -> PolymarketL2DatasetV1:
             _book_step(2, "2026-07-14T00:00:01Z", bids=[("0.44", "10")], asks=[("0.56", "10")]),
         ],
     )
+
+
+def _typed_label_dataset() -> PolymarketL2DatasetV1:
+    return _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _book_step(2, "2026-07-14T00:00:30Z", bids=[("0.45", "11")], asks=[("0.65", "9")]),
+        ],
+    )
+
+
+def _malformed_update(case: str) -> L2UpdateV1:
+    updates = {
+        "unsupported-event-type": L2UpdateV1(
+            event_type="cancel",  # type: ignore[arg-type]
+            market=EVENT,
+            asset_id=YES,
+        ),
+        "price-change-invalid-side": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="buy",  # type: ignore[arg-type]
+            price=Decimal("0.40"),
+            size=Decimal(10),
+        ),
+        "price-change-missing-price": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            size=Decimal(10),
+        ),
+        "price-change-nonfinite-price": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("NaN"),
+            size=Decimal(10),
+        ),
+        "price-change-price-below-zero": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("-0.01"),
+            size=Decimal(10),
+        ),
+        "price-change-price-above-one": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("1.01"),
+            size=Decimal(10),
+        ),
+        "price-change-missing-size": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.40"),
+        ),
+        "price-change-nonfinite-size": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.40"),
+            size=Decimal("NaN"),
+        ),
+        "price-change-negative-size": L2UpdateV1(
+            event_type="price_change",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.40"),
+            size=Decimal(-1),
+        ),
+        "snapshot-nonfinite-price": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("NaN"), size=Decimal(10)),),
+            asks=(LevelV1(price=Decimal("0.60"), size=Decimal(10)),),
+        ),
+        "snapshot-price-below-zero": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("-0.01"), size=Decimal(10)),),
+            asks=(LevelV1(price=Decimal("0.60"), size=Decimal(10)),),
+        ),
+        "snapshot-price-above-one": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("0.40"), size=Decimal(10)),),
+            asks=(LevelV1(price=Decimal("1.01"), size=Decimal(10)),),
+        ),
+        "snapshot-zero-size": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("0.40"), size=Decimal(0)),),
+            asks=(LevelV1(price=Decimal("0.60"), size=Decimal(10)),),
+        ),
+        "snapshot-negative-size": L2UpdateV1(
+            event_type="book",
+            market=EVENT,
+            asset_id=YES,
+            bids=(LevelV1(price=Decimal("0.40"), size=Decimal(10)),),
+            asks=(LevelV1(price=Decimal("0.60"), size=Decimal(-1)),),
+        ),
+        "trade-missing-side": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            price=Decimal("0.50"),
+            size=Decimal(1),
+        ),
+        "trade-invalid-side": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="HOLD",  # type: ignore[arg-type]
+            price=Decimal("0.50"),
+            size=Decimal(1),
+        ),
+        "trade-missing-price": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            size=Decimal(1),
+        ),
+        "trade-nonfinite-price": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("Infinity"),
+            size=Decimal(1),
+        ),
+        "trade-price-above-one": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("1.01"),
+            size=Decimal(1),
+        ),
+        "trade-missing-size": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.50"),
+        ),
+        "trade-nonpositive-size": L2UpdateV1(
+            event_type="trade",
+            market=EVENT,
+            asset_id=YES,
+            side="BUY",
+            price=Decimal("0.50"),
+            size=Decimal(0),
+        ),
+    }
+    return updates[case]
+
+
+def _assert_error_context(error: ValueError, *fragments: str) -> None:
+    message = str(error).lower()
+    for fragment in fragments:
+        assert fragment.lower() in message, (fragment, str(error))
+
+
+class _PandasClockProbe:
+    def __init__(self, pandas_module: Any, comparison_count: list[int]) -> None:
+        self._pandas = pandas_module
+        self._comparison_count = comparison_count
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._pandas, name)
+
+    def Timestamp(self, value: Any) -> _CountingTimestamp:
+        timestamp = self._pandas.Timestamp(value)
+        return _CountingTimestamp(timestamp.value / 1_000_000_000, self._comparison_count)
+
+    def Timedelta(self, *args: Any, **kwargs: Any) -> _CountingDuration:
+        duration = self._pandas.Timedelta(*args, **kwargs)
+        return _CountingDuration(duration.total_seconds())
+
+
+class _CountingTimestamp:
+    def __init__(self, seconds: float, comparison_count: list[int]) -> None:
+        self.seconds = seconds
+        self.comparison_count = comparison_count
+
+    def __sub__(self, other: _CountingTimestamp | _CountingDuration) -> _CountingTimestamp | _CountingDuration:
+        if isinstance(other, _CountingDuration):
+            return _CountingTimestamp(self.seconds - other.seconds, self.comparison_count)
+        return _CountingDuration(self.seconds - other.seconds)
+
+    def __lt__(self, other: _CountingTimestamp) -> bool:
+        self.comparison_count[0] += 1
+        return self.seconds < other.seconds
+
+    def __le__(self, other: _CountingTimestamp) -> bool:
+        self.comparison_count[0] += 1
+        return self.seconds <= other.seconds
+
+
+class _CountingDuration:
+    def __init__(self, seconds: float) -> None:
+        self.seconds = seconds
+
+    def total_seconds(self) -> float:
+        return self.seconds
 
 
 def _level(price: str, size: str) -> LevelV1:
