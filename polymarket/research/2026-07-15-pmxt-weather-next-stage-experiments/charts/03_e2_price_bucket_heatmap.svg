@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="30" font-size="20" font-family="sans-serif">E2 120s Price Bucket IC</text>
+<text x="265.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">depth_imbalance_1</text>
+<text x="415.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">microprice_minus_mid</text>
+<text x="180" y="98" text-anchor="end" font-size="12" font-family="sans-serif">[0,0.04)</text>
+<rect x="190" y="70" width="148" height="43" fill="rgb(64,155,190)"/>
+<text x="265.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.099</text>
+<rect x="340" y="70" width="148" height="43" fill="rgb(36,131,218)"/>
+<text x="415.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.142</text>
+<text x="180" y="143" text-anchor="end" font-size="12" font-family="sans-serif">[0.04,0.20)</text>
+<rect x="190" y="115" width="148" height="43" fill="rgb(148,191,106)"/>
+<text x="265.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">-0.033</text>
+<rect x="340" y="115" width="148" height="43" fill="rgb(131,206,123)"/>
+<text x="415.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">-0.006</text>
+<text x="180" y="188" text-anchor="end" font-size="12" font-family="sans-serif">[0.20,0.80]</text>
+<rect x="190" y="160" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="265.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.205</text>
+<rect x="340" y="160" width="148" height="43" fill="rgb(38,132,216)"/>
+<text x="415.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.140</text>
+<text x="180" y="233" text-anchor="end" font-size="12" font-family="sans-serif">(0.80,0.96]</text>
+<rect x="190" y="205" width="148" height="43" fill="rgb(127,210,127)"/>
+<text x="265.0" y="233" text-anchor="middle" font-size="13" font-family="monospace">NA</text>
+<rect x="340" y="205" width="148" height="43" fill="rgb(127,210,127)"/>
+<text x="415.0" y="233" text-anchor="middle" font-size="13" font-family="monospace">NA</text>
+<text x="180" y="278" text-anchor="end" font-size="12" font-family="sans-serif">(0.96,1]</text>
+<rect x="190" y="250" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="265.0" y="278" text-anchor="middle" font-size="13" font-family="monospace">0.310</text>
+<rect x="340" y="250" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="415.0" y="278" text-anchor="middle" font-size="13" font-family="monospace">0.284</text>
+</svg>

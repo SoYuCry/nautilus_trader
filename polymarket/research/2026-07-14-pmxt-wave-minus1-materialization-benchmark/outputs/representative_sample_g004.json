@@ -1,0 +1,26 @@
+{
+  "ambiguity_boundary": "G003 real scan resource-deferred; bounded real G002 ordering-parity artifact is external representative evidence and not global heaviest",
+  "ambiguity_role_status": "deferred",
+  "events": [
+    {
+      "city": "Hong Kong",
+      "event_date": "2026-06-10",
+      "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+      "role": "largest_event"
+    },
+    {
+      "city": "Chicago",
+      "event_date": "2026-06-09",
+      "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+      "role": "median_volume_event"
+    },
+    {
+      "city": "Amsterdam",
+      "event_date": "2026-06-06",
+      "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+      "role": "degraded_event_local_missing_case"
+    }
+  ],
+  "g002_o3_status": "external_reference_only_not_rerun_not_claimed",
+  "g004_ordering_scope": "O1_only"
+}

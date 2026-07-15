@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="30" font-size="20" font-family="sans-serif">valid_obs Diagnostic Zero Rate</text>
+<text x="265.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">depth_imbalance_1</text>
+<text x="415.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">microprice_minus_mid</text>
+<text x="180" y="98" text-anchor="end" font-size="12" font-family="sans-serif">10</text>
+<rect x="190" y="70" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="265.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.838</text>
+<rect x="340" y="70" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="415.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.838</text>
+<text x="180" y="143" text-anchor="end" font-size="12" font-family="sans-serif">50</text>
+<rect x="190" y="115" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="265.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.654</text>
+<rect x="340" y="115" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="415.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.654</text>
+<text x="180" y="188" text-anchor="end" font-size="12" font-family="sans-serif">200</text>
+<rect x="190" y="160" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="265.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.424</text>
+<rect x="340" y="160" width="148" height="43" fill="rgb(0,100,255)"/>
+<text x="415.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.424</text>
+</svg>

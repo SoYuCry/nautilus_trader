@@ -1,0 +1,10 @@
+{
+  "bitflip_detected": true,
+  "committed_matching_payload_only": true,
+  "failure_isolation": "per_event_token_cache_identity_no_partial_reuse",
+  "interrupted_resume_digest": "2698710bca21d079938bd30c50357d2359bf2c42cd6dbb161e0c5a0946c1b2fc",
+  "manifest_corrupt_detected": true,
+  "manifest_missing_detected": true,
+  "partial_reuse_prevented": true,
+  "truncate_detected": true
+}

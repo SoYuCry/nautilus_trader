@@ -1,0 +1,59 @@
+{
+  "created_at": "2026-07-15T05:27:20.011094+00:00",
+  "main_factors": [
+    "depth_imbalance_1",
+    "microprice_minus_mid"
+  ],
+  "appendix_factors": [
+    "depth_imbalance_1",
+    "depth_imbalance_3",
+    "depth_imbalance_5",
+    "microprice_minus_mid",
+    "spread",
+    "top_level_depth",
+    "depth_slope",
+    "depth_concentration",
+    "bid_ask_liquidity_asymmetry",
+    "distance_to_zero_one",
+    "tick_size_regime"
+  ],
+  "main_horizons_seconds": [
+    30,
+    120,
+    600
+  ],
+  "diagnostic_horizons_seconds": [
+    60,
+    300,
+    900
+  ],
+  "valid_obs_diagnostic_only": [
+    10,
+    50,
+    200
+  ],
+  "activity_buckets_mutations_per_second_30s": {
+    "low": "<0.1",
+    "medium": "[0.1,1.0)",
+    "high": ">=1.0"
+  },
+  "price_buckets": [
+    "[0,0.04)",
+    "[0.04,0.20)",
+    "[0.20,0.80]",
+    "(0.80,0.96]",
+    "(0.96,1]"
+  ],
+  "event_equal": true,
+  "event_bootstrap_draws": 2000,
+  "crossing_markout_is_pnl": false,
+  "sample_selection": "three smallest distinct-city events in each clean/degraded cohort before factor results; activity classified at observation time",
+  "events": [
+    "highest-temperature-in-chicago-on-june-4-2026",
+    "highest-temperature-in-denver-on-june-4-2026",
+    "highest-temperature-in-seattle-on-june-5-2026",
+    "highest-temperature-in-buenos-aires-on-june-12-2026",
+    "highest-temperature-in-mexico-city-on-june-12-2026",
+    "highest-temperature-in-houston-on-june-12-2026"
+  ]
+}

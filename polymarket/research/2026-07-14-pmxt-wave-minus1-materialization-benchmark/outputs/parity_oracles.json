@@ -1,0 +1,345 @@
+{
+  "g002_o3_external_evidence": {
+    "artifact": "../2026-07-13-pmxt-wave-minus1-ordering-parity/outputs/real_curated_smoke_parity.json",
+    "artifact_sha256": "f771b45b99f1afb7f650676026bf3207f037d886207c3c0c15cb80251dfcdc6a",
+    "claim_boundary": "G002 O3 evidence is not a G004 O3 benchmark or parity claim",
+    "scope": "external_reference_only_not_rerun_not_claimed_by_g004"
+  },
+  "g004_ordering_scope": "O1_only",
+  "independent_source_scan": [
+    {
+      "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+      "event_type_counts": {
+        "book": 220,
+        "price_change": 74373,
+        "trade": 61
+      },
+      "method": "independent_pyarrow_row_group_scan_and_plain_dict_source_state_reducer",
+      "ordering_checkpoints": [
+        {
+          "event_type": "price_change",
+          "sequence": 1,
+          "source_row_index": 8536,
+          "timestamp": "2026-06-08T04:26:36.602000Z",
+          "timestamp_received": "2026-06-08T04:26:37.710000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 37328,
+          "source_row_index": 1219738,
+          "timestamp": "2026-06-08T22:09:48.281000Z",
+          "timestamp_received": "2026-06-08T22:09:48.411000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 74654,
+          "source_row_index": 5318242,
+          "timestamp": "2026-06-10T11:59:57.519000Z",
+          "timestamp_received": "2026-06-10T11:59:57.957000Z"
+        }
+      ],
+      "ordering_digest": "39e4604ca79e4d2d53784dd59e48a0a842810f44db6c5fde494a139722f55592",
+      "parity_digest": "64a8cc937b05f6f998c0d09247966d6a7546dda99fdc92a09f31d9e8c820b641",
+      "selected_rows": 74654,
+      "semantic_checkpoints": [
+        {
+          "best_ask": null,
+          "best_bid": null,
+          "event_type": "price_change",
+          "price": "0.5400",
+          "sequence": 1,
+          "side": "BUY",
+          "size": "0.000000",
+          "tick_size": null
+        },
+        {
+          "best_ask": "0.9990",
+          "best_bid": "0.998",
+          "event_type": "price_change",
+          "price": "0.9820",
+          "sequence": 37328,
+          "side": "BUY",
+          "size": "21.000000",
+          "tick_size": null
+        },
+        {
+          "best_ask": null,
+          "best_bid": "0.999",
+          "event_type": "price_change",
+          "price": "0.9990",
+          "sequence": 74654,
+          "side": "BUY",
+          "size": "6010.130000",
+          "tick_size": null
+        }
+      ],
+      "source_batches_scanned": 660,
+      "source_pass_count": 1,
+      "source_row_groups_scanned": 659,
+      "source_rows_scanned": 5323117
+    },
+    {
+      "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+      "event_type_counts": {
+        "book": 88,
+        "price_change": 28292,
+        "trade": 6
+      },
+      "method": "independent_pyarrow_row_group_scan_and_plain_dict_source_state_reducer",
+      "ordering_checkpoints": [
+        {
+          "event_type": "price_change",
+          "sequence": 1,
+          "source_row_index": 7011,
+          "timestamp": "2026-06-08T01:26:20.667000Z",
+          "timestamp_received": "2026-06-08T01:26:45.359000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 14194,
+          "source_row_index": 982631,
+          "timestamp": "2026-06-09T07:40:02.235000Z",
+          "timestamp_received": "2026-06-09T07:40:02.270000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 28386,
+          "source_row_index": 1463163,
+          "timestamp": "2026-06-09T11:59:59.605000Z",
+          "timestamp_received": "2026-06-09T11:59:59.752000Z"
+        }
+      ],
+      "ordering_digest": "dbb03e38b411465fd68a4d6a36096b34d6e30f6269d419248d99c46b7123f271",
+      "parity_digest": "7035c04a160441dd8b79c8d80bbf1f1b3110adc529f96667aefeef59ac9c95c4",
+      "selected_rows": 28386,
+      "semantic_checkpoints": [
+        {
+          "best_ask": null,
+          "best_bid": "0.0010",
+          "event_type": "price_change",
+          "price": "0.0010",
+          "sequence": 1,
+          "side": "BUY",
+          "size": "150.000000",
+          "tick_size": null
+        },
+        {
+          "best_ask": null,
+          "best_bid": "0.999",
+          "event_type": "price_change",
+          "price": "0.6010",
+          "sequence": 14194,
+          "side": "BUY",
+          "size": "0.000000",
+          "tick_size": null
+        },
+        {
+          "best_ask": null,
+          "best_bid": "0.999",
+          "event_type": "price_change",
+          "price": "0.6010",
+          "sequence": 28386,
+          "side": "BUY",
+          "size": "148.000000",
+          "tick_size": null
+        }
+      ],
+      "source_batches_scanned": 383,
+      "source_pass_count": 1,
+      "source_row_groups_scanned": 383,
+      "source_rows_scanned": 1495960
+    },
+    {
+      "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+      "event_type_counts": {
+        "book": 10,
+        "price_change": 900,
+        "trade": 2
+      },
+      "method": "independent_pyarrow_row_group_scan_and_plain_dict_source_state_reducer",
+      "ordering_checkpoints": [
+        {
+          "event_type": "price_change",
+          "sequence": 1,
+          "source_row_index": 11296,
+          "timestamp": "2026-06-05T04:24:07.264000Z",
+          "timestamp_received": "2026-06-05T04:24:08.896000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 457,
+          "source_row_index": 75160,
+          "timestamp": "2026-06-05T07:38:29.653000Z",
+          "timestamp_received": "2026-06-05T07:38:29.735000Z"
+        },
+        {
+          "event_type": "price_change",
+          "sequence": 912,
+          "source_row_index": 96821,
+          "timestamp": "2026-06-05T08:57:56.422000Z",
+          "timestamp_received": "2026-06-05T08:58:53.576000Z"
+        }
+      ],
+      "ordering_digest": "c855e6949aff933d1e62168d8e9f499d62e89aed1e35dc68564403705b9350e9",
+      "parity_digest": "2698710bca21d079938bd30c50357d2359bf2c42cd6dbb161e0c5a0946c1b2fc",
+      "selected_rows": 912,
+      "semantic_checkpoints": [
+        {
+          "best_ask": null,
+          "best_bid": "0.9900",
+          "event_type": "price_change",
+          "price": "0.9900",
+          "sequence": 1,
+          "side": "BUY",
+          "size": "290.200000",
+          "tick_size": null
+        },
+        {
+          "best_ask": null,
+          "best_bid": "0.9960",
+          "event_type": "price_change",
+          "price": "0.9650",
+          "sequence": 457,
+          "side": "BUY",
+          "size": "0.000000",
+          "tick_size": null
+        },
+        {
+          "best_ask": null,
+          "best_bid": "0.999",
+          "event_type": "price_change",
+          "price": "0.2000",
+          "sequence": 912,
+          "side": "BUY",
+          "size": "850.000000",
+          "tick_size": null
+        }
+      ],
+      "source_batches_scanned": 57,
+      "source_pass_count": 1,
+      "source_row_groups_scanned": 57,
+      "source_rows_scanned": 96822
+    }
+  ],
+  "m1_audit": [
+    {
+      "derived_semantics_match": true,
+      "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+      "event_type_semantics_match": true,
+      "ordering_checkpoints_match": true,
+      "ordering_digest_match": true,
+      "row_count_match": true,
+      "status": "pass"
+    },
+    {
+      "derived_semantics_match": true,
+      "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+      "event_type_semantics_match": true,
+      "ordering_checkpoints_match": true,
+      "ordering_digest_match": true,
+      "row_count_match": true,
+      "status": "pass"
+    },
+    {
+      "derived_semantics_match": true,
+      "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+      "event_type_semantics_match": true,
+      "ordering_checkpoints_match": true,
+      "ordering_digest_match": true,
+      "row_count_match": true,
+      "status": "pass"
+    }
+  ],
+  "mode_audits": [
+    {
+      "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+      "modes": {
+        "M1": {
+          "derived_semantics_match": true,
+          "event_type_semantics_match": true,
+          "ordering_checkpoints_match": true,
+          "ordering_digest_match": true,
+          "row_count_match": true,
+          "status": "pass"
+        },
+        "M2": {
+          "all_anchors_match": true,
+          "anchor_sequence_count": 76,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        },
+        "M3": {
+          "exact_trace_match": true,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+      "modes": {
+        "M1": {
+          "derived_semantics_match": true,
+          "event_type_semantics_match": true,
+          "ordering_checkpoints_match": true,
+          "ordering_digest_match": true,
+          "row_count_match": true,
+          "status": "pass"
+        },
+        "M2": {
+          "all_anchors_match": true,
+          "anchor_sequence_count": 30,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        },
+        "M3": {
+          "exact_trace_match": true,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+      "modes": {
+        "M1": {
+          "derived_semantics_match": true,
+          "event_type_semantics_match": true,
+          "ordering_checkpoints_match": true,
+          "ordering_digest_match": true,
+          "row_count_match": true,
+          "status": "pass"
+        },
+        "M2": {
+          "all_anchors_match": true,
+          "anchor_sequence_count": 2,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        },
+        "M3": {
+          "exact_trace_match": true,
+          "full_ordering_digest_match": true,
+          "full_parity_digest_match": true,
+          "ordering_checkpoints_match": true,
+          "semantic_checkpoints_match": true,
+          "status": "pass"
+        }
+      }
+    }
+  ]
+}

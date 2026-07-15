@@ -74,7 +74,8 @@ class PMXTEventV1Adapter:
         if orderbook.empty:
             raise ValueError(f"pmxt_event_v1 orderbook.parquet has no rows: {files['orderbook']}")
         orderbook = orderbook.copy()
-        orderbook["_original_row_index"] = range(len(orderbook))
+        if "_original_row_index" not in orderbook.columns:
+            orderbook["_original_row_index"] = range(len(orderbook))
         orderbook["_canonical_market"] = orderbook["market"].map(self._canonical_market)
         orderbook["_canonical_asset_id"] = orderbook["asset_id"].map(self._canonical_asset_id)
 
@@ -172,7 +173,28 @@ class PMXTEventV1Adapter:
                 filters=[("market", "==", market_filter_value), ("asset_id", "==", asset_id)],
             )
             if not frame.empty:
-                return frame
+                frame = frame.copy()
+                frame["_canonical_market"] = frame["market"].map(self._canonical_market)
+                frame["_canonical_asset_id"] = frame["asset_id"].map(self._canonical_asset_id)
+                frame_selection = frame[
+                    (frame["_canonical_market"] == condition_id)
+                    & (frame["_canonical_asset_id"] == asset_id)
+                ]
+                if len(frame_selection) != len(frame):
+                    # Some parquet engines ignore/decline filters and the helper
+                    # falls back to an unfiltered read.  In that case the frame's
+                    # current order is the physical parquet order, so assign global
+                    # ordinals before applying the in-memory selection.
+                    frame["_original_row_index"] = range(len(frame))
+                    return frame_selection.assign(
+                        _original_row_index=frame.loc[frame_selection.index, "_original_row_index"],
+                    ).drop(columns=["_canonical_market", "_canonical_asset_id"])
+                return self._with_original_row_indices(
+                    path,
+                    frame.drop(columns=["_canonical_market", "_canonical_asset_id"]),
+                    condition_id=condition_id,
+                    asset_id=asset_id,
+                )
             filtered_frames.append(frame)
 
         diagnostics = self._read_parquet_columns(path, columns=list(self._DIAGNOSTIC_COLUMNS))
@@ -197,12 +219,49 @@ class PMXTEventV1Adapter:
         # market predicate even though diagnostics prove the selection exists.
         unfiltered = self._read_parquet_columns(path, columns=columns)
         unfiltered = unfiltered.copy()
+        unfiltered["_original_row_index"] = range(len(unfiltered))
         unfiltered["_canonical_market"] = unfiltered["market"].map(self._canonical_market)
         unfiltered["_canonical_asset_id"] = unfiltered["asset_id"].map(self._canonical_asset_id)
         return unfiltered[
             (unfiltered["_canonical_market"] == condition_id)
             & (unfiltered["_canonical_asset_id"] == asset_id)
         ].drop(columns=["_canonical_market", "_canonical_asset_id"])
+
+
+    @classmethod
+    def _with_original_row_indices(
+        cls,
+        path: Path,
+        frame: pd.DataFrame,
+        *,
+        condition_id: str,
+        asset_id: str,
+    ) -> pd.DataFrame:
+        """Attach physical orderbook row ordinals after parquet predicate pushdown."""
+        diagnostics = cls._read_parquet_columns(path, columns=list(cls._DIAGNOSTIC_COLUMNS))
+        if diagnostics.empty:
+            raise ValueError(
+                "pmxt_event_v1 cannot prove physical original row ordinal after parquet "
+                f"predicate pushdown for {path}: diagnostics read returned no rows; "
+                "refusing to weaken _original_row_index to filtered-local ordinal",
+            )
+        diagnostics = diagnostics.copy()
+        diagnostics["_canonical_market"] = diagnostics["market"].map(cls._canonical_market)
+        diagnostics["_canonical_asset_id"] = diagnostics["asset_id"].map(cls._canonical_asset_id)
+        matching_mask = (diagnostics["_canonical_market"] == condition_id) & (
+            diagnostics["_canonical_asset_id"] == asset_id
+        )
+        matching_indices = [position for position, matches in enumerate(matching_mask) if bool(matches)]
+        annotated = frame.copy()
+        if len(matching_indices) != len(annotated):
+            raise ValueError(
+                "pmxt_event_v1 cannot prove physical original row ordinal after parquet "
+                f"predicate pushdown for {path}: diagnostics selected {len(matching_indices)} "
+                f"row(s) but filtered frame has {len(annotated)} row(s); refusing to weaken "
+                "_original_row_index to filtered-local ordinal",
+            )
+        annotated["_original_row_index"] = [int(index) for index in matching_indices]
+        return annotated
 
     @staticmethod
     def _read_parquet_columns(

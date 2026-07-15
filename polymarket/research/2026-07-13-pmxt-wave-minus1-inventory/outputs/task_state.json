@@ -1,0 +1,3971 @@
+[
+  {
+    "artifact_hash": "449881392919558a0aa39261f099bc87606b3a4ac3a072c63d38ffb97072df4d",
+    "completed_at": "2026-07-13T15:30:21.465264Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "18599fa997e2c70d1a274563ffe77b0fdba6a6a52e1d04616c0b4a67fbfa0607"
+  },
+  {
+    "artifact_hash": "778d3903659ce6dbc14a4c5de82a7f1ef8f3a5116a2b515e73df7a988a6738f4",
+    "completed_at": "2026-07-13T15:30:21.470070Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a8c6e532681fe59de5bb62f3aeef76648053e0851c41ee74dc5b128e90ee1f40"
+  },
+  {
+    "artifact_hash": "ae170c826ff068aca9c0570aeeac7e6a261ebf4d72f6a59d0772991bfd72009e",
+    "completed_at": "2026-07-13T15:30:21.476561Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6d0f1e2a40cc636c3f1b49892a957608c6190c5eefcc520f91c94e46efe829b5"
+  },
+  {
+    "artifact_hash": "d84cea369fec4da5fa0b92ab03ae98040f2dd853056a5d41791d3b60950f3c02",
+    "completed_at": "2026-07-13T15:30:21.481227Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "379c033d4afe9a0ed6bc779744aeaf98ce473167d00e451ad339cef505994f85"
+  },
+  {
+    "artifact_hash": "ee5e381debf5b620e4734b04eebbf692a3bfc9fe5a085c24f7af0a52bde144bf",
+    "completed_at": "2026-07-13T15:30:21.486088Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "207fe79985606bfc5aa7eb28763451fe6ac300256dc534b99f0e5d2dca738ea5"
+  },
+  {
+    "artifact_hash": "589b6d4befffb7b65b5a7c5f3a1b3a077fec63bad1bf7029054f913654106797",
+    "completed_at": "2026-07-13T15:30:21.491451Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "838b8d96f136b3628f9f14d6cc33dd774cef9e93fda76f35aa71ee4659a72874"
+  },
+  {
+    "artifact_hash": "3836a13f445ee8d0156f4314618f40ade76027a0e9bff4498751143be17ea2dc",
+    "completed_at": "2026-07-13T15:30:21.496600Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a95152ed76ebbd63b7adf2d4f0039df38af799235d0e9517be2eec32b7d86b61"
+  },
+  {
+    "artifact_hash": "006fdf517369b700e405483a1ee382d035c14282024c8b549de2582d74b08c4f",
+    "completed_at": "2026-07-13T15:30:21.501053Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "16e5584341b5976e8c184e6b555e0cab80eaa4e14c9d772dd7c1dc83720b6e13"
+  },
+  {
+    "artifact_hash": "b6c69c5e81a86e63061145629f3a99c0115fe2d8ee9f35c854c066cbc3affb36",
+    "completed_at": "2026-07-13T15:30:21.506851Z",
+    "event_slug": "highest-temperature-in-amsterdam-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "98d8bbf89e8f3300c86499228b2d8733d59bed4891980fc15d3cf0c1ea774088"
+  },
+  {
+    "artifact_hash": "7480c3773ec06bf0f3475aef537ab31d69d89e64efb6697d9d576903b761c484",
+    "completed_at": "2026-07-13T15:30:21.513373Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3a33748aebeb6ff3e806714a0cfc7092448bbdb32950db49bb7e270f15e69aa0"
+  },
+  {
+    "artifact_hash": "a643543692de52111dfd5a1a295f812c6a9ea67de9e47c7d8f3ba33719b697eb",
+    "completed_at": "2026-07-13T15:30:21.524381Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4cd48020e8ef65ed650a4c21c3453f33634854272db8594553948ef2b9e731ea"
+  },
+  {
+    "artifact_hash": "28f3c6cd6af65a97c22369e46c2e9258f73d97fc8ee9a3b1c28046860523868e",
+    "completed_at": "2026-07-13T15:30:21.529697Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a9186217205bfdbd2838e9dd6adfac3dfad3cfd686760d9078b1a73fd0290e87"
+  },
+  {
+    "artifact_hash": "9f12735be4d3bc4f18c577ce1c5d388c0a4e1011cd535fc1a80f3a5c143ccb19",
+    "completed_at": "2026-07-13T15:30:21.534272Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3c466937b85140d8ccac01c0bb9b0d052a4f503b9da3af4d4bc8c55753197a4a"
+  },
+  {
+    "artifact_hash": "c7b62c5dbc130f85e75929fb4b260f0ec923627b6583b8c17f0e0f5545d506b2",
+    "completed_at": "2026-07-13T15:30:21.538673Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2d81653ee84d2582cd29bf56ac2c70fe195883303f2ddaf421dd2b7bc40af484"
+  },
+  {
+    "artifact_hash": "8f3b56a73e3c66b048add4414372022ca1cc139322e1c737fa49e0deda134de0",
+    "completed_at": "2026-07-13T15:30:21.543624Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1fdcc1335c66a2e0d7d59c8ba030453761a4522ef156e99f334056a14c3269d7"
+  },
+  {
+    "artifact_hash": "e3389233e6ac34b2e00c3633e3b8d3912d563300f7a499f6009b6c4107fd0c20",
+    "completed_at": "2026-07-13T15:30:21.548346Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6e84d1ec7b16a0ca353ad8ba04baa5cc0c654c08af224c8ff2240e31a6bca807"
+  },
+  {
+    "artifact_hash": "b6885ce071064000e303c91dbe0ce55f6d4b56291bb55b95e6b1118d1810b2d1",
+    "completed_at": "2026-07-13T15:30:21.561998Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "792c7b80d4e6895fae43ff1b14f8a5f169017593de51ef2f830fc81c4b545be9"
+  },
+  {
+    "artifact_hash": "6637605e8d488eaeb78017f9ad354fdb18f452cb30dc0bc736d573f7b2251055",
+    "completed_at": "2026-07-13T15:30:21.566841Z",
+    "event_slug": "highest-temperature-in-ankara-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5766148f5ba6ee3d76441411ffd248f3806b895708fb21a65a76eafee3cbcf6e"
+  },
+  {
+    "artifact_hash": "1b71005a76b480741630596d7328136407c650ea991ef96c8043b23c915440e4",
+    "completed_at": "2026-07-13T15:30:21.571434Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "39f1345611d88ea8dbc5663f7e033e8d34cffe728e521bb1e0742027f67b0074"
+  },
+  {
+    "artifact_hash": "f01d95f72f0e0403e5d5c9be57bfd69b1d64759c9f061d9daaa9303e4dc74a13",
+    "completed_at": "2026-07-13T15:30:21.576136Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0cc7ea891aa6a8045433db9480908815c2621e43c2b762a0b48bf3ce3324f866"
+  },
+  {
+    "artifact_hash": "75be0c5afb2aae455e0c5946814553803f6f0ccf011e49ada65315a703ccaf16",
+    "completed_at": "2026-07-13T15:30:21.581311Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "164710eb8f08a31958cafe30d6675f7b9b1c5bb484dcd997e9dd4799235e6b45"
+  },
+  {
+    "artifact_hash": "a0381bdce0570bce575227fd81e96b2b5182ce61c12683454c79c59884969e17",
+    "completed_at": "2026-07-13T15:30:21.585709Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9cec8bb0f947a4350f96fc608f28a452841c06696c52e0d2a051514c3fa75f63"
+  },
+  {
+    "artifact_hash": "46d670ca028548eff68a249bac7a10803faa6c1b5e949a60023df212e68ceeb3",
+    "completed_at": "2026-07-13T15:30:21.590185Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6ff13ce48910b004ec7f63095a8726edbb27274f52244a041bc6bbf1f40c772e"
+  },
+  {
+    "artifact_hash": "8c84a7d5a0fdfffa3b386aea4e660f6ad024f797dc4c4d9fa5388cd6583f2e06",
+    "completed_at": "2026-07-13T15:30:21.595012Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bb43c82f0ab0de626bf70dedeb1c19e689e4d57723324d6608766ceaf23f0f5d"
+  },
+  {
+    "artifact_hash": "83dee5edfc77081171d19c0bf283d5d1f60ed0efb03b6ba544fd7dde2b3a4919",
+    "completed_at": "2026-07-13T15:30:21.600059Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "45da5b427ec85a5fca19d9f384615fbf4dd2d0ff8957696e59bcd58f71a473e0"
+  },
+  {
+    "artifact_hash": "1ab666f592b1bf197628a3906e7a0d102cedcb22cb868f22d1ac494d19eb0237",
+    "completed_at": "2026-07-13T15:30:21.604747Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6b6addd1a6f36aef8489b8b888b72c04500af866d8123e8c6dee94ad009c5146"
+  },
+  {
+    "artifact_hash": "bfc78ad6fdbddb37b49dd1d6b4666ccfbc13564dcd3b047b5b7ac40dda2224ac",
+    "completed_at": "2026-07-13T15:30:21.609099Z",
+    "event_slug": "highest-temperature-in-atlanta-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b1afb4aa3796a553a1616df7c68b0f0d9b7afa900c2d74e01b55165ee370a38b"
+  },
+  {
+    "artifact_hash": "23965ad4251108bace66b9e7262ff2634da94d3bfbb08d9de96bc836805e5b61",
+    "completed_at": "2026-07-13T15:30:21.624206Z",
+    "event_slug": "highest-temperature-in-austin-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1d5b5eedc37d8a5839efbba46ef36363dcde5e3a95fdc25939a409345a55eca6"
+  },
+  {
+    "artifact_hash": "ea64be778d7d3c25dce6891872c250201c8a9fac21c6d85c913580720c523b6a",
+    "completed_at": "2026-07-13T15:30:21.629172Z",
+    "event_slug": "highest-temperature-in-austin-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5db4cbe14572ac617807a40f235923b5f1f1552b4ea22a9b2c3d89379249d81c"
+  },
+  {
+    "artifact_hash": "ffa4b2650e509e64d6b10bffb870d70fbc1a2feb618f90a0ca91ebec3b339f93",
+    "completed_at": "2026-07-13T15:30:21.634112Z",
+    "event_slug": "highest-temperature-in-austin-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a73443aac15f8219b008dcd55f78d02cf5bc26a30e5ddd401b950a98bb9b74da"
+  },
+  {
+    "artifact_hash": "4d361e87ee53721c5d853ee3ce7d963a84a42c36594e3f7f9b6fd0a5460b8f9a",
+    "completed_at": "2026-07-13T15:30:21.638509Z",
+    "event_slug": "highest-temperature-in-austin-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1332812baada453f3c5ceac683515685d03e314dd07afba9061b09c8d5e1c476"
+  },
+  {
+    "artifact_hash": "72c919f27f99000c8d282878df80ca051829341c816d4d264b4ba759ca564234",
+    "completed_at": "2026-07-13T15:30:21.643835Z",
+    "event_slug": "highest-temperature-in-austin-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "851b8d8103253029454c999c3e6297e2113880aecb70e0c6df5b4a19d102a64e"
+  },
+  {
+    "artifact_hash": "3026bf6075445dfb5576a99835b00738966ee784aba9b683e16927187887ec93",
+    "completed_at": "2026-07-13T15:30:21.649217Z",
+    "event_slug": "highest-temperature-in-austin-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e2ec1ef49e600930e8bf0642e2f43b9f1c099bb33c235d2336b22641b051afd3"
+  },
+  {
+    "artifact_hash": "e4d8c115d381a5f097c2975473cb1415eb0109d8c1ca676f251f640d9c7ff4e9",
+    "completed_at": "2026-07-13T15:30:21.654267Z",
+    "event_slug": "highest-temperature-in-austin-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1f6072be160c77fba73793f0b25ff197d95b846d8d8ffe23488fb5a7119f67e6"
+  },
+  {
+    "artifact_hash": "6f977dff268e7acfa755d1c357dcd3750e2342500880281513875a04433783a0",
+    "completed_at": "2026-07-13T15:30:21.658744Z",
+    "event_slug": "highest-temperature-in-austin-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "aebe32182b98a72bbafff8321b95bc84f4251a1be732ec93071f1bc43aa15bd3"
+  },
+  {
+    "artifact_hash": "950dd9595205e9160bc5faafe861d293793659c86d3fdd5a7e51336cd8660294",
+    "completed_at": "2026-07-13T15:30:21.663038Z",
+    "event_slug": "highest-temperature-in-austin-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "747b65cef2521ff572511b52a0cde2cf2eaa7f84b4c8dd3b15da29281afa09f8"
+  },
+  {
+    "artifact_hash": "95a4ec877ebd37d87f1e376ebd79cc17fe534828bcb447b3321cb6606f663ed4",
+    "completed_at": "2026-07-13T15:30:21.667471Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "91a9097cd152ec3b306c990843bfe46bda8d4ef5b97ee627249daa4a505f5d11"
+  },
+  {
+    "artifact_hash": "3b67a2046a5c65b5bfad2576dd88d0b516458b5517033283a6c2b81dee381488",
+    "completed_at": "2026-07-13T15:30:21.672590Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f3f22215ada6bc1a5ac97e50932d158d3919dc4986f93bb376fdd04ee58a7d18"
+  },
+  {
+    "artifact_hash": "efc03539027f37baacc030deb59215c016cdc4e78baa5c4c7d29b59aa61435f6",
+    "completed_at": "2026-07-13T15:30:21.677792Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "26fe9b3858549d8895ed1b807951a5ee1b9f287450db3c183eedaa5c257098b3"
+  },
+  {
+    "artifact_hash": "2a663da5af1089ed166884df50c5f3243568fc4a337c2eb4dd631d504a69f3fe",
+    "completed_at": "2026-07-13T15:30:21.682258Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "41a9c9a97b512742d5e44155c4b2509c60a32f79c7061046658e557ec52abbb8"
+  },
+  {
+    "artifact_hash": "1f0372a691ee95dd97708866d25e6e0fda59eabbb20c46389b0a2ed280ea561c",
+    "completed_at": "2026-07-13T15:30:21.686910Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ec45c5315ec1eaad18f8585f93bb0b07d21f64d730cb89b6b709ac3d6a945cb4"
+  },
+  {
+    "artifact_hash": "dc28f94304c2e4f8bbfb19a48c29130fa09a1843db669205968506c522a5ced5",
+    "completed_at": "2026-07-13T15:30:21.692514Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6c50e5fa28ebb31e2a392cc180488dad8ad70f71db86cb31f8868e2d47eaa493"
+  },
+  {
+    "artifact_hash": "16ce72c5869d95a8e91503f34bdb14996b68efb22772142d0ef1fc6858de8bbc",
+    "completed_at": "2026-07-13T15:30:21.697509Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1270a1c497fa1583fc690ef8ea28f8562b5918db888fbf7dcb3f9df69f28719f"
+  },
+  {
+    "artifact_hash": "337be2c18fcab5f5adc289345d122b73f3d56d714b1c418c3994d80a9483996e",
+    "completed_at": "2026-07-13T15:30:21.702537Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0366f4cf37604338ffa64b0f564b3a762a85e6e83d4dec285ec2b22662bf1717"
+  },
+  {
+    "artifact_hash": "05a7c1386d6d0783b4a0de6c289fe6482fe2fae214d4332bddd6ce43c8002d03",
+    "completed_at": "2026-07-13T15:30:21.707189Z",
+    "event_slug": "highest-temperature-in-beijing-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ca372d8c9f17e2ee6a1218509227d7824d5e723ad04b7808c97d1a38e4f4f63a"
+  },
+  {
+    "artifact_hash": "32f82a1fe0561fdb35953874bfd7f1914e75fa4e11f6c8438daae9aea444fe15",
+    "completed_at": "2026-07-13T15:30:21.711885Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1b48b56584666ef87b12ac852a936d75cf872b53a6bda155d182dbaa029a0715"
+  },
+  {
+    "artifact_hash": "25dbca8ed8b00b0cbeec31a088979f245a53e14546fb473d35404be9ea4a315e",
+    "completed_at": "2026-07-13T15:30:21.716541Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d18d5a73e38349635bb459f358b69f1f227aed9ddf28eda50a5e989ac82a273b"
+  },
+  {
+    "artifact_hash": "774f301e25c905cbeaf3687136e41c95d1d1557692ef8c73f8afcd259410b53e",
+    "completed_at": "2026-07-13T15:30:21.721701Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d6fb7432a117b3ade005689f6929d4529e22d51b38a7822bc852ebb5c2f68d7e"
+  },
+  {
+    "artifact_hash": "f8d0b484b14f1b7c65222221f3308cfcade7ff047aa60552cc7f70fa2035329f",
+    "completed_at": "2026-07-13T15:30:21.726138Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "fb31ab12436421d65670c8b64d40e49cb708fe01c4e00c14242e28dd8be52513"
+  },
+  {
+    "artifact_hash": "ec0a379279ae89c5824faa196f299ce30a835bfbe212f48a999616dea65e57ef",
+    "completed_at": "2026-07-13T15:30:21.730491Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cea141da34349739547d65ac07986596872ea59f0e8bcdbaf55f2269d15f6d96"
+  },
+  {
+    "artifact_hash": "c9b85ef00595beeb16203aa8c0d68f307574992657dca4240743f323646125c3",
+    "completed_at": "2026-07-13T15:30:21.735548Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1db889c61fec798c9b618b3173f585852c80218e1f2864b894fc6090f6d5eff3"
+  },
+  {
+    "artifact_hash": "b6a4aa22a6db7f5207ac985b7b1cf1353b32c05226ea10b719e41a60dae2a297",
+    "completed_at": "2026-07-13T15:30:21.740642Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e2a4bfe369ff4a222e2f90a498c5e1a9a32f2e89d11ed42efd3bf07bf2d52d66"
+  },
+  {
+    "artifact_hash": "050e00172e9e0337a45d7520217e2da1d05e0c47b25d3f15225f8ae2e9ee2a24",
+    "completed_at": "2026-07-13T15:30:21.745380Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "72ff13eef2b7a4f515e3e8d1ba77442657a2d250cb17a3ea42896c60dc819ac3"
+  },
+  {
+    "artifact_hash": "db315592ae5fc1e8866027956fcb351dde373fee73fb2066a5462c0b95b7112b",
+    "completed_at": "2026-07-13T15:30:21.749880Z",
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "094f5d960b04615549e5da40cf7479879e955a98a7a0b4281c64e2e915741cb3"
+  },
+  {
+    "artifact_hash": "19b2a804f22c33bd58fccca77ead6f031fec3058bdce3fd18d39944915aa1ec3",
+    "completed_at": "2026-07-13T15:30:21.754259Z",
+    "event_slug": "highest-temperature-in-busan-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a022750745cd8e6902d1a5eb5c508126c03ccbda0c4f345968b5a3acdc27dee7"
+  },
+  {
+    "artifact_hash": "6f8a58eae2c26275218faed6684008a342a69e451038eb8031f29243e34817ff",
+    "completed_at": "2026-07-13T15:30:21.758802Z",
+    "event_slug": "highest-temperature-in-busan-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "01078985ce1ff87e958b64100d214e4f06a801425572fb6b2c0bb4f4aab054c3"
+  },
+  {
+    "artifact_hash": "570c5c0edf80a0ab2c6c29b031a305dc4f538d6d347dfb2c60259bf286814298",
+    "completed_at": "2026-07-13T15:30:21.763819Z",
+    "event_slug": "highest-temperature-in-busan-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e72446bd088bd357988f728394a0c8f8ea48a41f9ab1f0d940be8228c62a8f95"
+  },
+  {
+    "artifact_hash": "8b082d4fa00e07468cc67c78da90dd67c07fc556f091b621af5266b451c6915e",
+    "completed_at": "2026-07-13T15:30:21.768191Z",
+    "event_slug": "highest-temperature-in-busan-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5d84579b56ee05c10d365e704bc53d14db857d2c52ca017a71e94cc56d86e15e"
+  },
+  {
+    "artifact_hash": "f63ecc6b3edd728b716cd6a220a985557c16a0d02b6ed6d8295b7bbb26177f02",
+    "completed_at": "2026-07-13T15:30:21.772654Z",
+    "event_slug": "highest-temperature-in-busan-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9d8d0f3c2e45d3638d76dfbf899401e111a2f4856095314950480122a524628a"
+  },
+  {
+    "artifact_hash": "b27085bca738bda3bb38c0db2a5df556ef5ce846140bee252135780d3be76fda",
+    "completed_at": "2026-07-13T15:30:21.777589Z",
+    "event_slug": "highest-temperature-in-busan-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f283e7565779157c61a0a7c7b0759d410a4b666f9b724a628aa3008b140021bf"
+  },
+  {
+    "artifact_hash": "e1c1f9bd1af5541e4db61ce1f96c985c00c7dd7fa77000546aa2ad6e91168962",
+    "completed_at": "2026-07-13T15:30:21.782460Z",
+    "event_slug": "highest-temperature-in-busan-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f84c7a437ea383421d6edd68b548763189a582afef692f4f159a8b66bff33f85"
+  },
+  {
+    "artifact_hash": "2cefae05f7ffd1da3ae0600fedb10279f35098640b93131d4da0d14386e5ea6b",
+    "completed_at": "2026-07-13T15:30:21.787381Z",
+    "event_slug": "highest-temperature-in-busan-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a429623f188e0b50343c562755b75282aa1374c093a96737e7791a4760ad5157"
+  },
+  {
+    "artifact_hash": "1dd55388c8f8ec9bc66d2c7ee95b0545afc82711b5d2bbbf960a1a8c3abf6214",
+    "completed_at": "2026-07-13T15:30:21.792631Z",
+    "event_slug": "highest-temperature-in-busan-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a92ab65640a8567fae5ba8b50da74ca4cb15f8c59921e144293f352e55e86974"
+  },
+  {
+    "artifact_hash": "c8e7f7c016494444316340883f4f7b2ce16fc3e50356f62ece8485d78c9fea07",
+    "completed_at": "2026-07-13T15:30:21.797173Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d66513775149cb0e8d4a49ef6e975e01039fd77735f5adc0f730dfc3a256336e"
+  },
+  {
+    "artifact_hash": "3194016c0bbc0af025477835f1075acdf4207f528a767eadb35abab052e6af3a",
+    "completed_at": "2026-07-13T15:30:21.802018Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "782fa28dc8b9a270652b721d41a69f553078a27c3d24855c6254868849e35f7f"
+  },
+  {
+    "artifact_hash": "2fbd3fa8beab5e739aae4af5a6b8e8d2e45093b5719ef77b65e6e920b24d0c2d",
+    "completed_at": "2026-07-13T15:30:21.807006Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5e24617e071de26f8796e79c6c740d87a497b372f14785630903fe3c675bb575"
+  },
+  {
+    "artifact_hash": "82208e6c78e37d76b2d63fd7042a87d9d79c10d811de7193c7a6b6c4e693d8b5",
+    "completed_at": "2026-07-13T15:30:21.811442Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "90baf8c38996cf9ccfc3defd34093dd2a987a3636a6d70903120b38d4eb22540"
+  },
+  {
+    "artifact_hash": "46c0e0ebe2a66d127c6b6ad6ba520229934fc5dafd1c1ae32906a22208d6eb37",
+    "completed_at": "2026-07-13T15:30:21.815888Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "20efc329fcaba8a10f84bb22106b405ea6185d1c9a044822b780ea60187cfb2c"
+  },
+  {
+    "artifact_hash": "b77fab1e8e424d8ec11193c6316edf399b3baddb3fc64f4a877836ca83f6e28b",
+    "completed_at": "2026-07-13T15:30:21.820743Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d5934b1c3fb733d7a3e55cd1df97a08654824e7ee65061d47a6a05e5c88e3427"
+  },
+  {
+    "artifact_hash": "b0a41b1e352c6b6fcd36692be48ce3a9e8efc24d39ef1cbafea1aa21b45c9b6f",
+    "completed_at": "2026-07-13T15:30:21.825568Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "01dc6bb8e7a3e3a1c226bcc614a0147c03dde9ad25baaed28bbbac72ae74a484"
+  },
+  {
+    "artifact_hash": "e4488189684f2ec58170443ea253d5c36adde3893966811a170954148ad2fbaf",
+    "completed_at": "2026-07-13T15:30:21.830165Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "99728dacf4ba1efad34496b257108ab639d56e24b921ff2ae0be4097b87cce0f"
+  },
+  {
+    "artifact_hash": "b65be9a2e42024e8ef45bcc1f75b864f60bd851ce903ce64f066e637f38bef96",
+    "completed_at": "2026-07-13T15:30:21.834996Z",
+    "event_slug": "highest-temperature-in-cape-town-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a335f4be0df3a6bd9eb1c70fa098700bd8cd958aec14101c3b2d528ec3b237c4"
+  },
+  {
+    "artifact_hash": "34547436390daf25a19121744fb5525688973a2963ca790d04a2fe03d8b3034d",
+    "completed_at": "2026-07-13T15:30:21.839503Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3295c295fdce1867b0cc916821e3c445de51aef5c2b95d897f72b2e4f04a59f7"
+  },
+  {
+    "artifact_hash": "c847845e906bcccc9e6882c5efc08bcd1c47423e9c3ccce169b34dc3e527610c",
+    "completed_at": "2026-07-13T15:30:21.844127Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "33a696172d18249e2d1ef4d108726194fe5a07b7013c796beca79ae68325fd55"
+  },
+  {
+    "artifact_hash": "ddc8fb5d36ea51ecd76999eb7da05232654af3bcccbf9f859f13a21fbb44bac4",
+    "completed_at": "2026-07-13T15:30:21.849118Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4018dd80b5bb1978b22070c13b7f46157439ec8219f3cf0d5df32b388a5209ee"
+  },
+  {
+    "artifact_hash": "4133746b8c5fb4a0b1b17f3502fa1a5518bdc18bf5c0ed9cdf2574202dc8e734",
+    "completed_at": "2026-07-13T15:30:21.853602Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "61f29b1f056b2358278a5ec341b9e38ab4a8aac12d0e679d19667926d3a5cbeb"
+  },
+  {
+    "artifact_hash": "19ab150a1916507e26afbe99f0a77df5a7ecb9f1832c0a4c7d82515c0821c587",
+    "completed_at": "2026-07-13T15:30:21.858071Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ecc0c5c720ac0358de4f2858db92c12a4faf063f982e6f9f1a85a86f868b5e62"
+  },
+  {
+    "artifact_hash": "dd07bdbb12d606a22a35899afb9c9aa2beb0253d36445e97bfb06d776d31f697",
+    "completed_at": "2026-07-13T15:30:21.862923Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4783352b615cd3242a5750a2350852aadef0edb0f3fa6fb428556f893b8282a8"
+  },
+  {
+    "artifact_hash": "992abf5be5d8531742dba279fe09d560682aa4ca23ae420aed8c344b3c209ccf",
+    "completed_at": "2026-07-13T15:30:21.867748Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3dc483972ffe91175b3cba32955d4a850c6bf8d71df1d3d82b69268e4b14b86e"
+  },
+  {
+    "artifact_hash": "d083c506c4b993e2b7153b8a4a73919696a99612de5083c5bbfff0d021fb27f0",
+    "completed_at": "2026-07-13T15:30:21.872339Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f364c81f9e4247e13a1663808f166a14c6c192c77fa53b6c47aa53a1800be684"
+  },
+  {
+    "artifact_hash": "0142c83eae386c426c9f038de3cc4100ffe06bf336aaa42cb08182a7d7a55629",
+    "completed_at": "2026-07-13T15:30:21.876985Z",
+    "event_slug": "highest-temperature-in-chengdu-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "803822faf61d44a0b4c974f4f614fd0d787cc8684263a37b754b1c6ba74e6c0f"
+  },
+  {
+    "artifact_hash": "5a5e039bf90a3a71a34deffd2915c434d120a89e88900fc00cb7743c53db5fc7",
+    "completed_at": "2026-07-13T15:30:21.881822Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "58d3e01494b67f50e57ad21a5b6631b116edbcdbf25a9a2881f6e87e6ad6bfda"
+  },
+  {
+    "artifact_hash": "a55bc56b5e76fc129617c92f25d4fddd9ee3edba054d28acea5759d5df31ebcd",
+    "completed_at": "2026-07-13T15:30:21.889312Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "587328f7b9f3d3e19cf9a776dfcc555ec02c0de93620a8d3cdf5d4a8e42ccb9b"
+  },
+  {
+    "artifact_hash": "56518aee363248f1357d3cdd8bd581196d302d9a72398c59c241b1ff457d53c5",
+    "completed_at": "2026-07-13T15:30:21.894558Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8500f602b6731e547d3d4f8dc345a6ec38d15cf78a2f4cebfb4b5313368da918"
+  },
+  {
+    "artifact_hash": "f7a08044c5aa1ada7651d191a3f8e1da0ab7110637105682361957fc36471a86",
+    "completed_at": "2026-07-13T15:30:21.899068Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "12a3b314ef900f47e0c60c2585a25d8be3c106d258d8b60b2b4839080562ae3d"
+  },
+  {
+    "artifact_hash": "1ae79645847c1bac1bac44ea2a12ffa6065c7df403e3a71be7532e663d66b842",
+    "completed_at": "2026-07-13T15:30:21.903601Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "92aed0f193a746ffb2169b34bd3b19e9e999327b804bc9eecef7b44f6815082d"
+  },
+  {
+    "artifact_hash": "c72c71bfd119d673f634cca5ea42d768bcfac0c4cc3e146fe334d0f4631f0ed9",
+    "completed_at": "2026-07-13T15:30:21.910684Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8050e34fec66b8955b4ea95772c9cbeec9cb5f354d4db4c77221db8449eec1ff"
+  },
+  {
+    "artifact_hash": "47678de2af44891bf7baeaa36b322e5ddaea71f2180dc01f50e06d0ca17f781e",
+    "completed_at": "2026-07-13T15:30:21.915581Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e284db518ffb3a21d221d35ac28aa6dcf40d78669290e3064674f7454cd449a0"
+  },
+  {
+    "artifact_hash": "7d0d7a7f52694d384aff1c590eb1db839be9da7f554d9c2cd157d4908066f2e8",
+    "completed_at": "2026-07-13T15:30:21.920124Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c65dc6ecd2cfd47fd120540677469a6af8386d2a967ffbb5874d943b8ea7873c"
+  },
+  {
+    "artifact_hash": "fc915a35af7e34d2af5affa1a2e6ba2c6f314457f2fac66e903c5bf29501b9db",
+    "completed_at": "2026-07-13T15:30:21.924749Z",
+    "event_slug": "highest-temperature-in-chicago-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8ed149a0a83e3a677925a42640a05e2dcd5031d85bd925e2bf9350d6b4ceeaa0"
+  },
+  {
+    "artifact_hash": "90ca5855a12742520a48ef895f9436440403fb9d873181ba67d6179884a527e6",
+    "completed_at": "2026-07-13T15:30:21.929196Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bd9cf28d79285d6803d7a92afc4cc0640874e85b9e36c9e8fb21a5c1f31a4279"
+  },
+  {
+    "artifact_hash": "e754ef7979912f2fbbad629325638c5a950a37b02f33cbbc7e2ee08a2879311d",
+    "completed_at": "2026-07-13T15:30:21.934265Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "732c4738281f3f4fb901cb3909d42211f4157d704ddab85569a286deea66edf8"
+  },
+  {
+    "artifact_hash": "846af09045090c92681ba41dd82767ea58a2d17aa71d56b78a053096afd50622",
+    "completed_at": "2026-07-13T15:30:21.939613Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "15878113918a8a7b0274d82ccd727d4001a24e204b32c3fe1c9bdc3d742be28e"
+  },
+  {
+    "artifact_hash": "6add3ec790295caaffda97da40ccf18ab015df5ad2a4665e91d3d144ba14fb70",
+    "completed_at": "2026-07-13T15:30:21.944035Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "970e6dcddcbee9347a5cb5d58801dac66780ebfeff5b7913cacea2a2eb381630"
+  },
+  {
+    "artifact_hash": "470fa28206e39912ed629b6208b3e62cc4b3524077dabbf56999ffcc4c048b3a",
+    "completed_at": "2026-07-13T15:30:21.948535Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d3854c4ad60def21cd14695df2f3eefde924409c62fec0764657a0e3d5f06ef0"
+  },
+  {
+    "artifact_hash": "edc6547c6ebbd2f6c8a21f80f10b027c455498c11ee1a640e202abe00de2aa62",
+    "completed_at": "2026-07-13T15:30:21.953355Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5284e82e77fb8279b3c8ed5157e57614969a70b5e112768f5147ec76abeb30f9"
+  },
+  {
+    "artifact_hash": "9550c614e7284728f9831ddcf5093cfaad9489707e0fdd9903e2ed8bd6bb6be4",
+    "completed_at": "2026-07-13T15:30:21.958170Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "643cf945874abc7bc113a644a3104570a9a69eb2d942344ba09c6ac76d3c52ca"
+  },
+  {
+    "artifact_hash": "e5d0ea1928892e329d40ce52553b7f69dd1770183c4fb8432bbdbb78ad3d8c0b",
+    "completed_at": "2026-07-13T15:30:21.962861Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4babbf07cd8794e47a85406170e6ab5cc3eab10bf0bd671f6cef604b5504060a"
+  },
+  {
+    "artifact_hash": "daa1e418efc1ba14660106df33d13f7bf890e5634ca06efeb7d7ac01ceaf3c81",
+    "completed_at": "2026-07-13T15:30:21.967700Z",
+    "event_slug": "highest-temperature-in-chongqing-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e057db1b496aa9e28e7a1289cd877c31ca6c0ee2d78a2e9375eef85f9feb6858"
+  },
+  {
+    "artifact_hash": "032a8daf3949d15d58a304b6f55f741f6f2f1655d391200e51c076696c6a43f9",
+    "completed_at": "2026-07-13T15:30:21.972762Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0f07dc8a6b20cab3237c17d19bddced25c40cf13bc2ea1a911e8d68107d308f2"
+  },
+  {
+    "artifact_hash": "849209a560f0f0172ad68f36d63c05f5cfb72f35ce7c43925f187c530bc234cf",
+    "completed_at": "2026-07-13T15:30:21.977481Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "46c163b2c97b6cf7a9c8c5ee4eee54e6b0a4b40423f8ac6fe6fd7aeb7ce9646b"
+  },
+  {
+    "artifact_hash": "d037b4451ae5770ad16045a9120371dbc384dda660fbd694a38282a8a3e2950d",
+    "completed_at": "2026-07-13T15:30:21.982658Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "583cfd2f0b7b3f13f592926f413dfb6e700bfa97f7495df340bc7d5871325c4f"
+  },
+  {
+    "artifact_hash": "fc94f4c0ab07709eba86de1376518af2f4337b867dbd9a33ce405b39efb50488",
+    "completed_at": "2026-07-13T15:30:21.987154Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bb0e861e73ec6b3e424144feace1f709353cd3a1a414b37fb8032524eb346619"
+  },
+  {
+    "artifact_hash": "baadd2bdd82bb025e015bcf89139a15b526d5008b9ad6461f4bca591a692b1aa",
+    "completed_at": "2026-07-13T15:30:21.991626Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a076fff0dddc58f593843a42d24718aea23a9a3d5ae4e74de01914c385d3a9f3"
+  },
+  {
+    "artifact_hash": "df2911171727b5ebd8e65556a243d0260d719b7632a85825f931dda75802ad67",
+    "completed_at": "2026-07-13T15:30:21.996798Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "db84093b4a9e061cc17717ba38e20c6b32f419002b624ffb31e43d003feef181"
+  },
+  {
+    "artifact_hash": "c0752c02fbdc10973ed8d818283da268b2a8a3179b93b4ccfd940d916ead9c1f",
+    "completed_at": "2026-07-13T15:30:22.001610Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6cd5efe1c14be33e1e324148422d7d73d00b86afe4460af3b6427cfaa1640209"
+  },
+  {
+    "artifact_hash": "a934b8d62323ef281248a9ee5a2828364b2d67d1c29b69aca3b0bee6ffaac2f7",
+    "completed_at": "2026-07-13T15:30:22.005985Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a05996fb53ee402db522794f64c85f814d38030ad2e6af4efb6dbbefb4f4708b"
+  },
+  {
+    "artifact_hash": "164d923257975050d55c40d2f3a85005afaa478e178f68e74a818188745414f4",
+    "completed_at": "2026-07-13T15:30:22.010430Z",
+    "event_slug": "highest-temperature-in-dallas-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c3c4541686472a08acceaae0cdff4270ad3bf7df6d7d2b17f3616f475de8b1eb"
+  },
+  {
+    "artifact_hash": "14593d525a6dbadbc638b2addab26b2b8f6d10d80ee4307d4565c133b06c84e9",
+    "completed_at": "2026-07-13T15:30:22.015395Z",
+    "event_slug": "highest-temperature-in-denver-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5df6f9746fe7e2c3d3ed4ddcdd641f242c66850030c624a1b6f431f0aea056ce"
+  },
+  {
+    "artifact_hash": "1fd55b517079ee76fff1fe44c04878bfcef19b4fe1ed5f51a466f4a4ccf94faa",
+    "completed_at": "2026-07-13T15:30:22.020025Z",
+    "event_slug": "highest-temperature-in-denver-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "85ff8a511328ac9b20b4f6e2cc83309e0492265d245dcdfb6793e669355f1301"
+  },
+  {
+    "artifact_hash": "de6b5bda6489827e820f86ece643cbd60b775c53a6f1f0507edb974d069e4d9f",
+    "completed_at": "2026-07-13T15:30:22.025120Z",
+    "event_slug": "highest-temperature-in-denver-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "27b31a9ae352c9747c301ad7cb68c995195e0ec3df503dab8510585dc232f65e"
+  },
+  {
+    "artifact_hash": "62ba08506e676acd2b521962cde3e0c41cca353a7bf29867fae8a298a53e1bad",
+    "completed_at": "2026-07-13T15:30:22.029557Z",
+    "event_slug": "highest-temperature-in-denver-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c630c8a3b2d1c975dacfa72e0539946d74c3eb52430ab39d9cdae7b68ad37d45"
+  },
+  {
+    "artifact_hash": "6d8b9e91a53370eb822c197c9921a108417919da87ca6e909d8787fc84db2c1a",
+    "completed_at": "2026-07-13T15:30:22.033963Z",
+    "event_slug": "highest-temperature-in-denver-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "10638138942274fc77f7a1d67bbfc58098c3d92ddc35c6c8a8d4494e561f6403"
+  },
+  {
+    "artifact_hash": "b116d7b3b76f293c49a1b414743357549bfa46332a3cace58170fafae1860ddb",
+    "completed_at": "2026-07-13T15:30:22.038776Z",
+    "event_slug": "highest-temperature-in-denver-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "494aedb0686967d0d4587dda556f41b43c86ab68ef53a3ef62ae2f3869a8c52d"
+  },
+  {
+    "artifact_hash": "a58003dfff07cf54ffce0a1dddfee4cc81fc53bac600cac2e3522b95c66c015f",
+    "completed_at": "2026-07-13T15:30:22.043568Z",
+    "event_slug": "highest-temperature-in-denver-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a527d35a067c4a9b9f1be228ad37092e9ecc29e1b7e46841bd9cd57308fde239"
+  },
+  {
+    "artifact_hash": "1d6c9a0cb32c8ae08c4f31595450b02050d5acc58f53b26ab0a86974e6bc323f",
+    "completed_at": "2026-07-13T15:30:22.048042Z",
+    "event_slug": "highest-temperature-in-denver-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2d037a9fb0243bf07ef5947536ce5ec44300eaab53b62f3186676b9ef8abe166"
+  },
+  {
+    "artifact_hash": "a496b08d952ad49a3a13c5927d985915b781039ca1976bac2cde5aa2c5501264",
+    "completed_at": "2026-07-13T15:30:22.052590Z",
+    "event_slug": "highest-temperature-in-denver-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2580c52de67ab1f8838625263adeae660ebd1ab667a8d38cab4b6698425146c4"
+  },
+  {
+    "artifact_hash": "18723918955eb2b8596d4837a5b9f1af7801b74858e92edcc7c52e8186c39cfe",
+    "completed_at": "2026-07-13T15:30:22.057093Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "65a3c8dd8ae538d13191a0f1d571ebb555003b204375baeb98ba904acebd8a2e"
+  },
+  {
+    "artifact_hash": "b97f6fd674d55e9b6ed3f204172e68dee9d0db70b8598b5843dfa90c490526f1",
+    "completed_at": "2026-07-13T15:30:22.063383Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "dbc17e12afa494a08c1400c45ccf2cde1dfeef7f5306664b58d15f317fe1afe1"
+  },
+  {
+    "artifact_hash": "55dbc2c1ba59f78377b678adfa16cdd301d0d99aa3d0c82f4c9b6d32ba61e2fc",
+    "completed_at": "2026-07-13T15:30:22.068868Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "51e151f567a9c67a388e780f88e6ad86a62995608bfc229213630d25222958e6"
+  },
+  {
+    "artifact_hash": "30478f1eee446f77e48d7e9280637afcea776b0dfdd407487dd2aa6356977e8a",
+    "completed_at": "2026-07-13T15:30:22.073938Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b9d46661f7ff8258d0ca06050bb0af6d0a42fbd939dc74e58cff3f8254cec24b"
+  },
+  {
+    "artifact_hash": "278017c6c088281438b0c9d060831699d1122adab213bc86fb67fc220205a2b3",
+    "completed_at": "2026-07-13T15:30:22.078720Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5705244611a0fd502376b1bb7d7797d1dbb7984a43c8c19e2aa2a16421963a5d"
+  },
+  {
+    "artifact_hash": "344a16123c4a0964d66d4cce53ab6eb5e5307f6c2f2f11cf19deb8562436e11f",
+    "completed_at": "2026-07-13T15:30:22.083744Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "125202b6845ca44ed0c0708abd051a8497222ce28141eb3b08567783af97c105"
+  },
+  {
+    "artifact_hash": "115ca983f84238ef2926693ff124eda9d18d00a4f3c816008ff604d5aa14dd89",
+    "completed_at": "2026-07-13T15:30:22.088669Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5f313d25471ab88c537bf2fbf57f1456ae9feaf176d6fd1598b6028ac0b0ef63"
+  },
+  {
+    "artifact_hash": "9386db46df2f27dbd1223399e10556d918e4922f81566841d6c3fcf753530934",
+    "completed_at": "2026-07-13T15:30:22.093313Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c1cc36bad898bc6612ef8945c7c71f0a9c806ca9d1720bee84f734b7e17f6d6a"
+  },
+  {
+    "artifact_hash": "ce87ce62f08f4b02af541eb16560d591761aff85c8d3c88142c317339ce2713d",
+    "completed_at": "2026-07-13T15:30:22.097837Z",
+    "event_slug": "highest-temperature-in-guangzhou-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e70985e7ec9a5c0cc1c9dfbcdb286c42596a81798a6da53e40cb79ddfa55660d"
+  },
+  {
+    "artifact_hash": "ba8780c94bf8e5b99698a348f9400a9799485056a602c8b1478002df8fd5180f",
+    "completed_at": "2026-07-13T15:30:22.102698Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bb8501941e87b3438e8a99ac1037c72ef6e2f563c76d9f9cc7564f248c860bed"
+  },
+  {
+    "artifact_hash": "265a6233cafcf9e40190c0f9e9b7cef824f84bbf98e4fd66495f600b72f28763",
+    "completed_at": "2026-07-13T15:30:22.108083Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d32126f7c39e5cc30369b7345e53059539be2173bb0610e20583b0596ab1dba6"
+  },
+  {
+    "artifact_hash": "840bcde08a4d82d451e215ff2f992ed7d21500adcfa35166f35c212ffe7e1a1c",
+    "completed_at": "2026-07-13T15:30:22.113936Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e505a1f2506efb397bb5ce2bdf5c91258e812741b17d537351d76408ac267176"
+  },
+  {
+    "artifact_hash": "59050828afb4230f3fe10fedbef1f8cc4cfef62fd96c6d54c01ec387d69c98c9",
+    "completed_at": "2026-07-13T15:30:22.123879Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c99eae8923ef648d3fd35bf80fd98ec0d3125795767ba9bcb5d72ead43e22f5c"
+  },
+  {
+    "artifact_hash": "c0c24599c352dddfdbc1a2a28892a76bbd83bf035c3a832c43e60952d07f87f6",
+    "completed_at": "2026-07-13T15:30:22.128733Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "99cea6df07757f1734bef3de79f1b32c583890bb79c5e3debd983532a3cfab29"
+  },
+  {
+    "artifact_hash": "018c1c3e3d8fd1ed75eb4b48e66efceeebed91c60139697369d37ab89bfeff5e",
+    "completed_at": "2026-07-13T15:30:22.134481Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f348989bb69853e33da326066cc12e2b2da92ed2ad4d218c03a0a5f624969fbd"
+  },
+  {
+    "artifact_hash": "a395d9b3852a4db870555bda26d37e2d35507047a10b4a5a152ef06c73e9f18a",
+    "completed_at": "2026-07-13T15:30:22.139199Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bf281adf3cb965a92bb78f38010e7e8ab76f8f495db1d4680b75b3c0638e7066"
+  },
+  {
+    "artifact_hash": "3ae8d4bfc32a6127141d43e917bdfe706c41abf14d8083c5e7c67aaca4e41769",
+    "completed_at": "2026-07-13T15:30:22.143739Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "db0bac28c46a26ada8bddbf743492f382bfa5a334623c9adac7330085a707cce"
+  },
+  {
+    "artifact_hash": "5a44b07f6cf108b931c159e2ab9d4f7995bddb942918ad6f27c56e79671e6bb3",
+    "completed_at": "2026-07-13T15:30:22.155376Z",
+    "event_slug": "highest-temperature-in-helsinki-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2239d5ee83cdf12eaea52bc31ed1dd02599eba68b55698d64d0883dbdfacd2a7"
+  },
+  {
+    "artifact_hash": "b34eb133e9aa16371f9e225f72dbdc807714b8d5b785ec7fd56afdec893f6ffe",
+    "completed_at": "2026-07-13T15:30:22.159834Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "00b501399411cff3070bea6e932e8d379870981eccb10e271021ef3a20c15cd1"
+  },
+  {
+    "artifact_hash": "8f267ce874bf20046a706c9055cf9eebde47c8f2e2c3955469c8c0f9940df5f3",
+    "completed_at": "2026-07-13T15:30:22.164595Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e6cd52785f40da8926282089a5c2ecc238dbe846d3d0986e21a2e3169403079b"
+  },
+  {
+    "artifact_hash": "e8786e36d93fd2db12f9498ed189d94055aa62f28aa227735b44261924256a8b",
+    "completed_at": "2026-07-13T15:30:22.169762Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "785455f707d8011df8030f774cb887ac52c55e0b5b96c0b5705c62c1c4657083"
+  },
+  {
+    "artifact_hash": "e966a9b18cd33181f9784dd14ae00831595a35e79a2b8818f9665c908eecee89",
+    "completed_at": "2026-07-13T15:30:22.174080Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b9ce1a3958b48517623f96b559998608e7a8e5b50d734e15571c6d475e89e46a"
+  },
+  {
+    "artifact_hash": "ba808bd717d061e02c8993ba77e5bac0b93eff63f016b5c38439ccc3f236d4bd",
+    "completed_at": "2026-07-13T15:30:22.178768Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4d6fcb220075449bf7ea1be6fae195d2939ab8695d518850ddc48b18bd0e30e2"
+  },
+  {
+    "artifact_hash": "127dafb41e290c079d75bc31435faf429784171b840ab16b0b62dd3be9d78b91",
+    "completed_at": "2026-07-13T15:30:22.183748Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d65955843d773836fdf3d65f8c882724b282aee228a41c36f92a7e225d18fbd6"
+  },
+  {
+    "artifact_hash": "a783ef6c0332ad728f77c80e6c2ec88feebb23a15031739ed6b20ad178f52367",
+    "completed_at": "2026-07-13T15:30:22.188310Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "259f9202dc0c2f3476c57fc32740a0f834c52216d4e0e99ed0b7096b80dbd91a"
+  },
+  {
+    "artifact_hash": "d06e54b60672b570956ef4c3551b55b7d14f34b6629c2ead39dfb7dabf98e0de",
+    "completed_at": "2026-07-13T15:30:22.192862Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7235ce56b4d4ea09e51adfc95f4d68e9fc40296fc762e6c4ff8565470f7b17bb"
+  },
+  {
+    "artifact_hash": "fd6b7bcd052f7618fa974846a47aad7f4801fe9cf5f45344e2a119c7aea695de",
+    "completed_at": "2026-07-13T15:30:22.197399Z",
+    "event_slug": "highest-temperature-in-hong-kong-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "005093e4eedea1d27b2a39897666a724dd852f885179143b0ab1de6fcad43650"
+  },
+  {
+    "artifact_hash": "e52d43d9acac8fc1be25c44151531124e13d5c968743a733528aff5efaf7f8e5",
+    "completed_at": "2026-07-13T15:30:22.202258Z",
+    "event_slug": "highest-temperature-in-houston-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7cfa4b9d1fbca5b223acb1c9a809e08847994d93fa760f5f819e2de3ac9a5d13"
+  },
+  {
+    "artifact_hash": "4db6405adb7ed541c54f80a1d5103b22b4c8f6a31e77e531086e2f6875ff0c52",
+    "completed_at": "2026-07-13T15:30:22.207042Z",
+    "event_slug": "highest-temperature-in-houston-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8b6b0ea8b946f8ef16e4cb53bbe0b303a86dfab2fa25ace989765428f29ff9e3"
+  },
+  {
+    "artifact_hash": "6008f87514e016e16a9b112cd8c6b81687b3c92c9bbfee80190d0fb52837aacb",
+    "completed_at": "2026-07-13T15:30:22.212164Z",
+    "event_slug": "highest-temperature-in-houston-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8c2273d5f785bb224352a3740630ca4072bb26688729c1995c9269f3573ff610"
+  },
+  {
+    "artifact_hash": "b707e6b2f9dc3392adfb3a6bf0efee284a6b2b167ea42329e365641123b9e7d3",
+    "completed_at": "2026-07-13T15:30:22.216535Z",
+    "event_slug": "highest-temperature-in-houston-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e96739e751de03df9051c2b238f232f5c0d97d5a529a44ef491642ce6cfa293d"
+  },
+  {
+    "artifact_hash": "5ebd7a368c56ab67a786165eff95a13fefebe562a1b04ec5a96380770419b20d",
+    "completed_at": "2026-07-13T15:30:22.221108Z",
+    "event_slug": "highest-temperature-in-houston-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "86c035d7e87600f662dc03bf21cfaeb75a4e67c8b652d3803ad4f486fb55d98e"
+  },
+  {
+    "artifact_hash": "bba6238349275e87be4a36ce057bb0c60f5fa5597d3008cebf8dc99d2e0e979c",
+    "completed_at": "2026-07-13T15:30:22.225958Z",
+    "event_slug": "highest-temperature-in-houston-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4a08d3944cf743e54583ffbc4e24a3577b14b13e62e3014e60c4195b484ba374"
+  },
+  {
+    "artifact_hash": "89c7c08b265994385e3858bb4eca0e4c7ee01f179b241f887445de3f9d9b7b90",
+    "completed_at": "2026-07-13T15:30:22.230788Z",
+    "event_slug": "highest-temperature-in-houston-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f269c8356fa1c2d0da4f44c0a9f3a0212315f2083c02479f9dc370b61836d9f5"
+  },
+  {
+    "artifact_hash": "038135cebe441abf1bfa5441e731c2c8a7e1ef9f079ce1c8166f0ec9c084eef5",
+    "completed_at": "2026-07-13T15:30:22.235258Z",
+    "event_slug": "highest-temperature-in-houston-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d7f2684b38312b2806cfad5a9636b5e2973e3ac12d5c719f07c39c9fc2a694b8"
+  },
+  {
+    "artifact_hash": "7dbd8c22ec37dfdd1a9853297181b1d19f555af5be820bda33a162d0d0e08d7d",
+    "completed_at": "2026-07-13T15:30:22.239876Z",
+    "event_slug": "highest-temperature-in-houston-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "789cacd02c0443199bfeebc6c8ce52afb4104a760431ae34546466d8524c1d7b"
+  },
+  {
+    "artifact_hash": "a863031aa3955fd4c19866b9f9e1b546cb54b0621fd4d998f6f88a324940d05e",
+    "completed_at": "2026-07-13T15:30:22.244558Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "98c98b450bcbae662999675f97f51abb9298efaefd15e359d373dc73563c5072"
+  },
+  {
+    "artifact_hash": "1568d25676eeeed36d6f523bd5afde2becda0740df2fea1116b7b883d13974fe",
+    "completed_at": "2026-07-13T15:30:22.249254Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7e57f344f918bf0c27c226faca1dd9a90acba0ac80b692cc6f765482a7f113d9"
+  },
+  {
+    "artifact_hash": "fffa5afb949ac132db67a8f2046c7068d26edfc2538e841819b1dc204a6ff157",
+    "completed_at": "2026-07-13T15:30:22.254331Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7b4b8fe08f6fcbd62839071f61773af50c15c6443bef9744d3ab5785e723a55e"
+  },
+  {
+    "artifact_hash": "eb87626e53e82fbf47723d0f3c4a31265a784cb1e40e1b2f5dc3392309b39a81",
+    "completed_at": "2026-07-13T15:30:22.258926Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "41651c3feac7bdb4535b68712b46bb8e72a61f7c229f1fb5c67e086a04353119"
+  },
+  {
+    "artifact_hash": "2350ad3fa888c716beedacc3605cdc72ad4b1956adc0d96eb76dba6e36d4873f",
+    "completed_at": "2026-07-13T15:30:22.263512Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8c5e3c9048ff6023aca5f5a724b0b8f1303f871a0cc1375cf3a74af139dfe07a"
+  },
+  {
+    "artifact_hash": "38a9cafb227ec429d06023100453411e2a132457fa35150f6a5d67c0edcafd71",
+    "completed_at": "2026-07-13T15:30:22.268401Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "dc76d6e9cbeefe68091f2d2236e7b9ae1b97f832a8ef72e79b50084d74d41916"
+  },
+  {
+    "artifact_hash": "3831db0ce6e5c150c25501b7cc672affbf392b8cb9c25efd7d8cb58ebe8e69bb",
+    "completed_at": "2026-07-13T15:30:22.273273Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "dd3a3436b2dc5498d12c20b881a9f0ee18eecfe11b174108c507b0f21d17087e"
+  },
+  {
+    "artifact_hash": "3479add47f4d06feb3f089593d61f81557e6d35f2bc756311c649c65bf775965",
+    "completed_at": "2026-07-13T15:30:22.277741Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ccf413011c5dd0271291bc3981465d6284ee710a4911d3fcb5bc4ce9c26356fe"
+  },
+  {
+    "artifact_hash": "bea783edcf7ccf24b5563c94fc0c09c586d8368993f63c495da5013557c5c273",
+    "completed_at": "2026-07-13T15:30:22.282061Z",
+    "event_slug": "highest-temperature-in-istanbul-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "fd04ce67d3475018ee35e0d62c679c69aa23842616294fb1c851114300986ce5"
+  },
+  {
+    "artifact_hash": "f6e102ea221060fda103585d5c87c852dd52219297d7e30cedbcac113eb8cdc7",
+    "completed_at": "2026-07-13T15:30:22.286600Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "839b0c1c6ad17b0e57659b1dbfe701be2d1c47f24ec3bbd879cb976ff9af8b7a"
+  },
+  {
+    "artifact_hash": "b1cdb7ddf1948168be0edafeacfa86d300540d4acdc42db00601593b05ff10b4",
+    "completed_at": "2026-07-13T15:30:22.291197Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6402757398eb866b0404f12821ac9dc01c5b2d94fa76fba9622e8887047f752c"
+  },
+  {
+    "artifact_hash": "5aaf94dd5206a99a819aa490907e894f90dfba1385f71aee6cac4660ced880b4",
+    "completed_at": "2026-07-13T15:30:22.296514Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a7d767766418cf9a32531a12afed3b66830f63975fbd468433bfe70e8e060096"
+  },
+  {
+    "artifact_hash": "66f555d125d4a7f8e877f8321040f66571cfa6d267e5ee970e1241f98504c63b",
+    "completed_at": "2026-07-13T15:30:22.301250Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8dcaed692827fbbc38b2c6bbb7c3af8a9bb22c5c63ae623e8f1bca08b8381222"
+  },
+  {
+    "artifact_hash": "f8423d0968cf993b5376f711dc9bab770746a979b1e45cd9aa14033fb2ab1fb5",
+    "completed_at": "2026-07-13T15:30:22.305992Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4c03af468699ee4619d98286f17de92260a9569592b1e456990aef859e7288e6"
+  },
+  {
+    "artifact_hash": "88210e93c473fa6167b4545decd5287570c6a356297e6127f3fdc8bef47f819e",
+    "completed_at": "2026-07-13T15:30:22.310979Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "12a28cbc9ba139019792d99510e69aa30c9c9da30206b376da5968921d9c61e5"
+  },
+  {
+    "artifact_hash": "d01a8daa3e9e7f047af725c58c33a5bb79da5812847fe13d5e0170d4838fae17",
+    "completed_at": "2026-07-13T15:30:22.315762Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c30905ca0552ed0dbfa5b926d9b8e0648c399ae4e41970249bedee1ef86003ea"
+  },
+  {
+    "artifact_hash": "3d48cf36f63a38f0c37b9ae36855ed6b3c14b2d380003f4702d75bf2d2346e65",
+    "completed_at": "2026-07-13T15:30:22.320345Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8bed3ac7a9de9b9a086a106d0ff3f4b31f8b5e9bd59374740436ee0284273018"
+  },
+  {
+    "artifact_hash": "8141896fa9c7cf9adb3635792ad16bad40946d8806422bed5b0005c86ab55f00",
+    "completed_at": "2026-07-13T15:30:22.324718Z",
+    "event_slug": "highest-temperature-in-jeddah-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b776f56d449bbe340641629f689d257589d902729c2d5ce34c8ead9f4cd16792"
+  },
+  {
+    "artifact_hash": "5cd5320692472f0ad6d04388d242e435e6296f55c046bbc2eaacf7481467bab3",
+    "completed_at": "2026-07-13T15:30:22.329057Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a6cd44120c6dfc415545168f6dcf83d791a35a5edc56afea44d5d014dde7c99c"
+  },
+  {
+    "artifact_hash": "4fd24b0f7e42ae17defaabce12f2b7c1ff3e6ce4130e9c262b65f93aefe55129",
+    "completed_at": "2026-07-13T15:30:22.333671Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d5b93b00298ab237afcf02ea5b4fb31d8f655fc5b4bc95dafef5a95e6c4a6044"
+  },
+  {
+    "artifact_hash": "7642eed430fde291e0d2e01ade006a3aff63ff1a9b065bf3cf46ea851bdc93e4",
+    "completed_at": "2026-07-13T15:30:22.338996Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ec2ad4516c4b5c985bda63304a43e4b19162e88ae63092731f5fed33afd86418"
+  },
+  {
+    "artifact_hash": "27fe4a3b9fc8ab55c17e915116c10777401cd1f6e2a9ceb07602237a8181f282",
+    "completed_at": "2026-07-13T15:30:22.343643Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "080c2fda0d4d7fccd8baba92935537aac382c85d525a7697d0ec716712bf77aa"
+  },
+  {
+    "artifact_hash": "edc2b8946636e630240a07f92cab31c81814b98a2a12a6192ec1c72c5fce72b2",
+    "completed_at": "2026-07-13T15:30:22.348206Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6e796bd50162b55c76e68105a015768a8fd1723dfa776bea4fc64afb12e7a10a"
+  },
+  {
+    "artifact_hash": "307ac13db87abaae67f0269d15ebffcdcaddfd838f0157e64a61d2758b4670f3",
+    "completed_at": "2026-07-13T15:30:22.353098Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2bd74525e0d091eeae02b01f24a34a3fb3d8d726791e170b266e4a4226b45a0d"
+  },
+  {
+    "artifact_hash": "8581c8ca0e50481b34ea845af04b2b23f5b58813fe56e6f74f0e7300a0bf5a29",
+    "completed_at": "2026-07-13T15:30:22.357824Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "403ec2564c2b43845b2e945d10b097050f99a32f05e3e65953b440e8c73bf134"
+  },
+  {
+    "artifact_hash": "3e36437268156ef38ac3068f61dcbede6521a72bedddeebd88cf3925491a53f5",
+    "completed_at": "2026-07-13T15:30:22.362260Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3ba4d5edba7368399204db4ca99fd510eab80c3fe97da0a3fa88e40cb2584beb"
+  },
+  {
+    "artifact_hash": "18cbce7b6ae754a931ca272bd923d306f7280899e4c15c4f254d9070fa33a221",
+    "completed_at": "2026-07-13T15:30:22.366763Z",
+    "event_slug": "highest-temperature-in-karachi-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8200bec04bde48cd86a9e00b8404d8b0f226285bbd620af4e07bd7f6bf98e25c"
+  },
+  {
+    "artifact_hash": "627d46b4278393456350b8807e7a086cc6b1a7554a3ea15359483db3cb29bba2",
+    "completed_at": "2026-07-13T15:30:22.371077Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4f32bdb6f29a9afa291e4e3cfd53ea81c3239e73c4861fbf5baaf1444a7fbe71"
+  },
+  {
+    "artifact_hash": "f33bf1a3d37e4ba265e4b533b732fd0681d8326081dbb4ff1c076de03f1bbb09",
+    "completed_at": "2026-07-13T15:30:22.375565Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "15f6f4a607df84f91f9805b7b4e454e20671406606d65c0b0f39fd9fe5b3ba54"
+  },
+  {
+    "artifact_hash": "ff2e01828639a25682c4a928dcaaed6164a18e92d064fdedcbc05d05593a363f",
+    "completed_at": "2026-07-13T15:30:22.380642Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2703e529ddf5193949558f4b00e6482ac9b457d95da9dec1887cee8ee955e348"
+  },
+  {
+    "artifact_hash": "029d4bb632ee80ae297b4594955b4f9baeda700b467ed73b691c1185b50ee985",
+    "completed_at": "2026-07-13T15:30:22.385321Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1abd30efce192b986fd62199894544165252333e87edb9d0b982c9fee2c01e38"
+  },
+  {
+    "artifact_hash": "08279c7d353957885f37b0b3b8159a8684cf3daa1ca3ca6ed73dbab32b22ed93",
+    "completed_at": "2026-07-13T15:30:22.389876Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b5ab0c6e876c8519af82ad5d55b17d93a606a676c9e0fa557197c1046a1d1d60"
+  },
+  {
+    "artifact_hash": "ccddc51c32d471b2ec9aeeca4c894be5c177c206bdaf4a492ed1e26c9008e839",
+    "completed_at": "2026-07-13T15:30:22.395705Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ecf96e258c11744ba4ae06ee2e2ba538d156fbfa43da06f36138830ce5e9077c"
+  },
+  {
+    "artifact_hash": "9847cc5af74cc026f19ed4b1aeb3ae4177b6fe0c8c38710d61e4bce6d4c662f2",
+    "completed_at": "2026-07-13T15:30:22.400879Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "16f24614cdc6b0e42e4725bdecdd8c46978cbc5b355dd394ff82154ea6f83305"
+  },
+  {
+    "artifact_hash": "a74bf2bbeeacc7abfdf82d127ad86aaa7bc8ad185754917c22cb2fa5755329b7",
+    "completed_at": "2026-07-13T15:30:22.405940Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c74777dfd96a6db64d00d1b934532daf7e6100fd4a800735bc662a29f3a52060"
+  },
+  {
+    "artifact_hash": "e0cd92e1e7753b0386bdd5c02c2fdaf66727f8813885a11972f923e5222b82ac",
+    "completed_at": "2026-07-13T15:30:22.410546Z",
+    "event_slug": "highest-temperature-in-kuala-lumpur-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f81b082f0c527dfc6999b9bb88d5c8de09501fd2fdc51d3ebfb786840350c815"
+  },
+  {
+    "artifact_hash": "57bec740310c8c5752db5d7cb38fd39397eab0934b7d944d05ba4500a9e7fbc1",
+    "completed_at": "2026-07-13T15:30:22.415096Z",
+    "event_slug": "highest-temperature-in-london-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0742fb894ea87533d5946e8f834bf0145270f905c860d5a761533ce51c9dafa8"
+  },
+  {
+    "artifact_hash": "1db1ad352cf51081f922295ce437f4ad408ca568763d60504e765d0368d6d606",
+    "completed_at": "2026-07-13T15:30:22.419761Z",
+    "event_slug": "highest-temperature-in-london-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2358452c93a03259801f73400697fb75cac0bfb5608c3419522542979766e211"
+  },
+  {
+    "artifact_hash": "e466c48ba97f043af61483397d4a82ce6211dfabeeea52de2dec68c477ccf443",
+    "completed_at": "2026-07-13T15:30:22.428557Z",
+    "event_slug": "highest-temperature-in-london-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9fd0d93de1c9ae2344a35bf89776345f12eb003635d2c4858cb99d1684d56aac"
+  },
+  {
+    "artifact_hash": "9032839fe17912086cce232f478ea587ca5ea7cfa88c393c6685f50e4d9885cc",
+    "completed_at": "2026-07-13T15:30:22.433781Z",
+    "event_slug": "highest-temperature-in-london-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8d04f7f6c406946fde897edab6372a9116893b2047822b47be81e7dc5385bbee"
+  },
+  {
+    "artifact_hash": "8f64276ca404d29563572231725c070e58f383aec2b2551ed87e75dcf88f00ab",
+    "completed_at": "2026-07-13T15:30:22.438484Z",
+    "event_slug": "highest-temperature-in-london-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "db35bac851444755764518ef63db731c1a122ab274786c937e4cfdf50b26197d"
+  },
+  {
+    "artifact_hash": "04aab8c4ad5345bce85d0bb785af0f29e0dc0212e5fe3f978f53baaccd21cd2d",
+    "completed_at": "2026-07-13T15:30:22.446092Z",
+    "event_slug": "highest-temperature-in-london-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d7e25171b2f54a4ffdd8d2655bc5db8d018021514908f7dd03892ed8c00a919e"
+  },
+  {
+    "artifact_hash": "3388a7f8b21cbe4507da89fa5d5cacc2ae763db32e58b82a88bd0ba3e1216490",
+    "completed_at": "2026-07-13T15:30:22.451360Z",
+    "event_slug": "highest-temperature-in-london-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7b2a3c0bf3a69e72216065efa22587ff02f78f0622b7185c0e72994dedfb265f"
+  },
+  {
+    "artifact_hash": "5a522a04c1c0f988affc7aebd0709960d5979c1bd8e9ac05f69f100cb01152a1",
+    "completed_at": "2026-07-13T15:30:22.456321Z",
+    "event_slug": "highest-temperature-in-london-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3692de7e7bedc23191968edfcfdae8f25e5d90bbdac166b2b39929b721d3e6e3"
+  },
+  {
+    "artifact_hash": "7195b1bdfef9915559c1885991a6c0300d5fe3c5e2dfd495078d91c3dcc0c6ad",
+    "completed_at": "2026-07-13T15:30:22.460963Z",
+    "event_slug": "highest-temperature-in-london-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "458e08bfaa31625cfd748f63e0c2f454838889cca6ab1c2b9287ad9400696c7f"
+  },
+  {
+    "artifact_hash": "77a643c593b67d359d38a9986b830e23831122b59d43dfb74cd54d27a35ab313",
+    "completed_at": "2026-07-13T15:30:22.465437Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b839de9e782786b0063806901f2505b4b4d284b0ee3798ad157d2dcda448ff3d"
+  },
+  {
+    "artifact_hash": "330e1ac541e476268a328c8587ac5689100dc29043b90a3838b9ee6f81ca2650",
+    "completed_at": "2026-07-13T15:30:22.470124Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5e9d9befb4ba038642fca8d07d86e70dec2561d631f696d4fa28b63fcf26aa6d"
+  },
+  {
+    "artifact_hash": "3b7b37752a5dbca1b5a731037826e9f86c67bb5faaec09844ccccc848fb13a98",
+    "completed_at": "2026-07-13T15:30:22.486505Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d2a74b3e2a5b454670c2e0e9727972cdde627c4f71fc7bd9c67c52876154e0e5"
+  },
+  {
+    "artifact_hash": "7edbd27276004d8557f484d6280d6ec58e3352d8922c8c8ff5db1f6af913bbe3",
+    "completed_at": "2026-07-13T15:30:22.491207Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b6d493c21a6f8e51f7d97168c681586696b9228fc102c88b24f49871a7325f36"
+  },
+  {
+    "artifact_hash": "acf2e509f4cb6f8b406e008b176dfe84f6af7f3611330f2e07919c36a211f4ae",
+    "completed_at": "2026-07-13T15:30:22.495885Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b2e68ec9a0b9688c5894e86b59eb9dccb17638d225827086f6c193d41fafe367"
+  },
+  {
+    "artifact_hash": "a4613e45e4d04ee5e088a5846b8c8d27b27aade16d31cc0d5b09d2d7e7e73939",
+    "completed_at": "2026-07-13T15:30:22.500930Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "202145c41f87d4aa5ba92aa2186d2abbab7fe1749acf64e059d85b57b60727d4"
+  },
+  {
+    "artifact_hash": "1a561b0a914cf5b236b78a9e9f9231e932746c53c8c4e25f70ea6e1bc4443260",
+    "completed_at": "2026-07-13T15:30:22.506690Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4a6ded81ff65afb0186a937ac9d8145f4fa74a879293640d15e74451307d1c7c"
+  },
+  {
+    "artifact_hash": "92b65d2a51db928bdabf592557ad51d621caa5d0da3ee5a472ade7cc23657193",
+    "completed_at": "2026-07-13T15:30:22.511397Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a957791f935e974da78031106b0ab859e972e85e364a33c096d81a79c5b49b8d"
+  },
+  {
+    "artifact_hash": "07bb4112f175240029490de81a19b7194ef2ecf57d7fdd3201f996d01ac1598f",
+    "completed_at": "2026-07-13T15:30:22.516051Z",
+    "event_slug": "highest-temperature-in-los-angeles-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6b42896891e9faa3f966a6b9ccffb64b62725060efd6b1def64f3c2dffa25fe8"
+  },
+  {
+    "artifact_hash": "8dbf4d9e395d6f645c172de2c523faa5776749033e11358e2236bacae6b9b752",
+    "completed_at": "2026-07-13T15:30:22.524772Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3c1c8dcdf4b2c3f7bf4636661a1cf1ec4c0ac48035f652385764b00c55763721"
+  },
+  {
+    "artifact_hash": "b7204a085de3ed614e157273e632d0d2534d70aafcead4f654f83f4fb98f9708",
+    "completed_at": "2026-07-13T15:30:22.530140Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a1efb5b78245c61799565102966a44ba85335b544f54fc55fd8649169ed21c69"
+  },
+  {
+    "artifact_hash": "83ccafda6d0f8bf177a080b731240ec484dfac18d0682e845f9c659db93a4b52",
+    "completed_at": "2026-07-13T15:30:22.536808Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "33a601ee258accae26f92aa8ea14e9c25ee97772c407ae99f58185ebe5934bdc"
+  },
+  {
+    "artifact_hash": "7db6440aea749b7a48fc25ff38663b1b680339cfe101d7ef94ac33fe7983d2b3",
+    "completed_at": "2026-07-13T15:30:22.543846Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9087f374af4d8eb44ea594bd31f34336e844825a3f123535ce0ff9011ca49e9d"
+  },
+  {
+    "artifact_hash": "cca87c0deaa1e0cca5d69b21180e019b865815740aceaba383f47e70e8d82284",
+    "completed_at": "2026-07-13T15:30:22.548845Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9f2f438249a0668aace5fd4999b3e43e45c78fb34446da0bfe7df3b6d42b4458"
+  },
+  {
+    "artifact_hash": "c71cbac9c73b6689d5d9bcd5b3799c2a51128bce30e58abcf5b4251d20c88b7d",
+    "completed_at": "2026-07-13T15:30:22.553816Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e2f1941dae9d9a9ebd62a96757818331f9f88172ae9a2c40626cfc0b591c06b3"
+  },
+  {
+    "artifact_hash": "f37c3ca0fcef1ca2b0c0909044ad91fce13ab5e9d275dc567d3fc4dd5d21e8e9",
+    "completed_at": "2026-07-13T15:30:22.558695Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a4c60dfc4d05ef28fdb16301018260bc84b41af89c301b4133709f26532f5575"
+  },
+  {
+    "artifact_hash": "80cf0794c8f51e2a345728c65439afd07ebb7eb2304fbc4c24005fdc09cc7316",
+    "completed_at": "2026-07-13T15:30:22.563294Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1bfb06ba796390bbaae63eef8780c1e2b353429d179bf1d9c4ebfd2adce27df6"
+  },
+  {
+    "artifact_hash": "0567f8aad9f9b1e36be7401b7d0445384b43cc55c04c788abd202ab27ed608fe",
+    "completed_at": "2026-07-13T15:30:22.567995Z",
+    "event_slug": "highest-temperature-in-lucknow-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b8b0862d5d08549201a2099bed31a8cf33db8b2f30263056dc91497910f1910a"
+  },
+  {
+    "artifact_hash": "3ee97c945f15ea1fdb8f155eb61288ccd9cad5f723a7cd6fcc4e77b4a7e6d60e",
+    "completed_at": "2026-07-13T15:30:22.572886Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "15c4d4493c73ad9b3553606fc74d7812beef5564a4ed20463f99344ae70db3a4"
+  },
+  {
+    "artifact_hash": "09bb6ea540c9db8598bdfb4836641ef82e72a6f4ea43a8c51dba35cea3c86507",
+    "completed_at": "2026-07-13T15:30:22.577589Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "faeb6c22c661731c3b097bdaa8968934d8633632d531ab1076ee42fe49497b14"
+  },
+  {
+    "artifact_hash": "637500874e3bb1cf8468f56b835e12b3106c0640889452d931805f8c5596b67d",
+    "completed_at": "2026-07-13T15:30:22.582697Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "36f65f6003f934ea1d3d9b015c1eb13a068836edef7538f167706af2410639db"
+  },
+  {
+    "artifact_hash": "ccbe0162a9e6fe8cd32b9c6bbe595296591a3f3c437f7f129a154096e939da9b",
+    "completed_at": "2026-07-13T15:30:22.587068Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "734e0e7152a316648d8d3c1f0de447ca26e0c2d0f4a4394358d60e6a98313aa6"
+  },
+  {
+    "artifact_hash": "7ba6c0110fc8d44fef380082909f6e5eb508e05c92f7114f7295ff77f2a47b59",
+    "completed_at": "2026-07-13T15:30:22.591718Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "36a5ca8570c8c975b247aa390df5da509d816a6fdf1fb8268caaa092b8f88a48"
+  },
+  {
+    "artifact_hash": "f295dc0b0743518ec2ff444e65f60c98dfc724aa7a7b4d2c95e96dd806ef9e7d",
+    "completed_at": "2026-07-13T15:30:22.596661Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "baf89c57432e0da075505ebf331c1025ed04f4d5c361c94cb50f0054937baf3e"
+  },
+  {
+    "artifact_hash": "d52435d5647094d6b827c67df8943a853b71f536b42ac5833c01552bef275acb",
+    "completed_at": "2026-07-13T15:30:22.601388Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a60bd87872239a6cbf1ac7049793f4b7485a9d4c5e52a6b4e05b6cdcfdb32fef"
+  },
+  {
+    "artifact_hash": "fcf960022477cfdecbdf2b6351d26a38e18d0cfb094846f1d5689b19242f1772",
+    "completed_at": "2026-07-13T15:30:22.605813Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "89d85fdbf5d2a8bbb0b6c4999adb6e0d42100d11c584c90e5ca49ecdd30a949a"
+  },
+  {
+    "artifact_hash": "6e8a32f96a05a8d3e6b2bf0c8fee13dc1f376baabc78e0727d06cdf4cf07b228",
+    "completed_at": "2026-07-13T15:30:22.610318Z",
+    "event_slug": "highest-temperature-in-madrid-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f2d7e3c8dc325677efb5cff26ca5ffa05bab42e08dd894154aefbd358293793f"
+  },
+  {
+    "artifact_hash": "35daba27bc3c70ce25c9300b19a00aa02c94b8c766b2c79c1bf61c044150bb36",
+    "completed_at": "2026-07-13T15:30:22.615218Z",
+    "event_slug": "highest-temperature-in-manila-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6c9198beed9cb879e96e7190012a445487a2960e037de49dfdde37c6a3ec868d"
+  },
+  {
+    "artifact_hash": "777e931f6b9b9ef35116d9fc1774fb7c60601e1a00ae50b2c68bbaac10e24c49",
+    "completed_at": "2026-07-13T15:30:22.620203Z",
+    "event_slug": "highest-temperature-in-manila-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "98180902da1891b0a744f9b2eb4f37e61b024b0408e82347ffc66f46108f6e74"
+  },
+  {
+    "artifact_hash": "5766c0d45a1d3e17d62bdd88250a58356bcc385dc03d22f267323fc8036e75f4",
+    "completed_at": "2026-07-13T15:30:22.625403Z",
+    "event_slug": "highest-temperature-in-manila-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6d59c54e9b9c7bb2f6d8c83a2d1dc09babe2ddb417264b9f1847ae58b0a74ef1"
+  },
+  {
+    "artifact_hash": "134380b98ba7b9b90de51492c443baa41b9ec98a705e535684e543d0a6374bbd",
+    "completed_at": "2026-07-13T15:30:22.629891Z",
+    "event_slug": "highest-temperature-in-manila-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1c30a1219d6b6d95dbf861ba61de50fbd9fa601b9696aebc7d69512d9a56eb15"
+  },
+  {
+    "artifact_hash": "c4bba5b3d10e6182b1374d9894b8cdb07f7451081561030e6efae7643cbb2f5e",
+    "completed_at": "2026-07-13T15:30:22.634356Z",
+    "event_slug": "highest-temperature-in-manila-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5579cefcb67c345ef367b93a4850023bf8f71590ef254dc2a9afa2eb42da8c06"
+  },
+  {
+    "artifact_hash": "535211f594c9512eb3372e12af259dc3b721ddecf3534e32ae7ef003c9224217",
+    "completed_at": "2026-07-13T15:30:22.639187Z",
+    "event_slug": "highest-temperature-in-manila-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3272e9ecc2421b68bf681968eee124db121012f4422d7c6ab77d2dc075828643"
+  },
+  {
+    "artifact_hash": "9f509b42bb11b1aab3baa1590c7f75989f0606655496bfc6136f78a3f17a1330",
+    "completed_at": "2026-07-13T15:30:22.644536Z",
+    "event_slug": "highest-temperature-in-manila-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ffae06597516296bf53f1ec9eccdc46ae5b86282d72d31d690699ed28336e75b"
+  },
+  {
+    "artifact_hash": "5398fb6c1695f894de2e0dde0cdfe6d0201d572048aaffd11d585883c419d2f8",
+    "completed_at": "2026-07-13T15:30:22.648955Z",
+    "event_slug": "highest-temperature-in-manila-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c7bbba2ea1fb5f2c21ef095572e735d591a22c22888d2209896820065d58dcd5"
+  },
+  {
+    "artifact_hash": "6c0e2d19445203c18762cec038fa5a0f34bb0b1f7d13105a43a45cd951d7eb12",
+    "completed_at": "2026-07-13T15:30:22.653281Z",
+    "event_slug": "highest-temperature-in-manila-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "770d190b2d39b72f26f59ce9cb1d723266859ab612fbc1d01084bfbcc55f291b"
+  },
+  {
+    "artifact_hash": "6aedbf9bee0e3dca4f8ec88c3541c427f27fd95c2424391cc975556622abfe77",
+    "completed_at": "2026-07-13T15:30:22.657726Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "fd9f24956b1ec107dc3cdede87b8b396d3a0a14bf5f72de7f67a0dcfa2bc7599"
+  },
+  {
+    "artifact_hash": "531d1d7426d92ad3e5bd9d7b866c3262d50361391d458752695bb0d03b69aabc",
+    "completed_at": "2026-07-13T15:30:22.663052Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ec9e0579555db31984903cbaceacec42339ce67a67e245de32df3ffc5c5148b0"
+  },
+  {
+    "artifact_hash": "e7851b48b326fa6c748cb52b64975c915c2f1763b7b53740ca06509420f8b715",
+    "completed_at": "2026-07-13T15:30:22.668150Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0229b7e24a4616e21064d2b9a8f53f8925a296d80bacf8256aa074df07f08800"
+  },
+  {
+    "artifact_hash": "3c4f77f2776e58419e651158fa53574596304c7139f067b090364f7ad02b5f2e",
+    "completed_at": "2026-07-13T15:30:22.672954Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "22e0fbde1aa77a7ffd66d77627f5faa9893e1967d88ded04946060ce2ac3219c"
+  },
+  {
+    "artifact_hash": "63822bee50083d34475599480ff83f239e969bfe0dac2023c5a766374bdbc482",
+    "completed_at": "2026-07-13T15:30:22.677454Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "42987235658c5772bb4f77c39b364420216f2821fbc0a573ba0a675d15ee99d0"
+  },
+  {
+    "artifact_hash": "988a5c05d732dfe1f79089e800ba4f0c75607309be7f4d0944b0d19bde575a6b",
+    "completed_at": "2026-07-13T15:30:22.682435Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "63c9770ce3a7c1a556ad70fd355c91002e27f4ae3c2b4f9bc2c260ca2a90bd62"
+  },
+  {
+    "artifact_hash": "d3cbc86041e0b393baa72d4ea547b9fc63b6e2cfb412e694e2cde52e1d3a26e2",
+    "completed_at": "2026-07-13T15:30:22.687249Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e14e753da3b830f28e13d380626a81007ad65921fb9051f92f5b193d79039836"
+  },
+  {
+    "artifact_hash": "995eebbeda864614f1079d5acdc2b3e90fd028cb6b1e73d43bba184eddcb668c",
+    "completed_at": "2026-07-13T15:30:22.691672Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ad0f0b80d85366a803ebb48aaf930324531d87dbe6349a2bfa6940924b8c2c76"
+  },
+  {
+    "artifact_hash": "3979aa6dd4fe6614db2aab6bf295557887f367a31e4e4624e55e6aecc1ba70a4",
+    "completed_at": "2026-07-13T15:30:22.696149Z",
+    "event_slug": "highest-temperature-in-mexico-city-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "15b75294f8bae9e608bfac4668296d811863cb074e7ffc5c817880603419a788"
+  },
+  {
+    "artifact_hash": "f181b90d9dcbb959bebe222d6c1119befe734d258fb1004d5975747b4a5951e6",
+    "completed_at": "2026-07-13T15:30:22.700663Z",
+    "event_slug": "highest-temperature-in-miami-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5627408f17d079630b8f2f8de8b2880f9e12edf12c0ed13faaed60e8d29cf5d6"
+  },
+  {
+    "artifact_hash": "2d928371ddedaad6f392e31e3e6653f2d4e3d4e37279add6815f71f9ab69ca09",
+    "completed_at": "2026-07-13T15:30:22.705437Z",
+    "event_slug": "highest-temperature-in-miami-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b84384dc38242ed5d7117d2a6f6ad05b88a0af52a13cdbf117b286b1251181c9"
+  },
+  {
+    "artifact_hash": "f5edf3566d8ed61a977b04acb75914fa44aedb5444cb7755e7e58522495b8b21",
+    "completed_at": "2026-07-13T15:30:22.710552Z",
+    "event_slug": "highest-temperature-in-miami-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "17cf6229b29acc52dcff8ca53962692e4c29bcee639214b05c59cc91e81c5efd"
+  },
+  {
+    "artifact_hash": "c2aae53f218249feab819cccda90ae712046c064faa89bdc7cfcb26eab8c3d3c",
+    "completed_at": "2026-07-13T15:30:22.715130Z",
+    "event_slug": "highest-temperature-in-miami-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7d40515065add41b7b987ae5f4a129ef8f6bc5f41db015e2a3ef13c0bff736d6"
+  },
+  {
+    "artifact_hash": "44ce6d43e431af18ed0680273f854f7656d559afde9197be9428d8fd8382885f",
+    "completed_at": "2026-07-13T15:30:22.719624Z",
+    "event_slug": "highest-temperature-in-miami-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2143f552e3ca79735397f59af41c52a5e2d5949ddb0b2e20aa3b7e129176e2ac"
+  },
+  {
+    "artifact_hash": "8b3a0b6703e4eccbf7e7019dbc1635e207e557e17cf73ad3f701a37753c9fc0f",
+    "completed_at": "2026-07-13T15:30:22.724456Z",
+    "event_slug": "highest-temperature-in-miami-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5c0b3ece1f986c94525847194fff29209037103361c52d35bd1fb467035e34b5"
+  },
+  {
+    "artifact_hash": "3251935f5eb74321f95909e6f975844968d58f43c77b21d056aca9dc21e2b14c",
+    "completed_at": "2026-07-13T15:30:22.729309Z",
+    "event_slug": "highest-temperature-in-miami-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bc8b2bc23bcfa17369ce2dfec69d69a106d7c885225915f6388151cffda7e999"
+  },
+  {
+    "artifact_hash": "717702964701f836f985ddf788c8f07aa7a8aed7bab94b777cf0c65d6d1563dc",
+    "completed_at": "2026-07-13T15:30:22.734009Z",
+    "event_slug": "highest-temperature-in-miami-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5e4e52ff5831b334ed01989e195f965c8a1d8f0b3967f1587e30b29d085c7244"
+  },
+  {
+    "artifact_hash": "0e27c8cc81b85ff4b8a4addceed2d8de079da2fa04aaffe9a02441d4f804d923",
+    "completed_at": "2026-07-13T15:30:22.738432Z",
+    "event_slug": "highest-temperature-in-miami-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9b57bb898b3240b58f3b70ab8e3d887e75ce6bc5d1f9aa019380c86cfb38f002"
+  },
+  {
+    "artifact_hash": "c1a8262ef135f1f994b3473e4bd6ccf6b6fd59997ba0ba7649299f5432460503",
+    "completed_at": "2026-07-13T15:30:22.742929Z",
+    "event_slug": "highest-temperature-in-milan-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "27f4e71ce8ccfb12cd62b19a9178073a168fcbbc1be68fdd06f01ecee148f3ee"
+  },
+  {
+    "artifact_hash": "2dbc5805de0ade1d1f7763852bc0cdb16beb8c2be058b948e556edbd9a9fc480",
+    "completed_at": "2026-07-13T15:30:22.748222Z",
+    "event_slug": "highest-temperature-in-milan-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cf5caf3d2f9eeaa157abb699326ad2aa82abdcac9ff6b38e1a38673b664fd938"
+  },
+  {
+    "artifact_hash": "8f2f6951fdf7bd336d9f324c166e4cddebc45a39949fd8e068bd1a0de39e5ad0",
+    "completed_at": "2026-07-13T15:30:22.756376Z",
+    "event_slug": "highest-temperature-in-milan-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b4ec6edc07f99e2e9b05853d9dc93d6f5274ca92a59aa9832728bdffb60eb382"
+  },
+  {
+    "artifact_hash": "7ea6bfa211616acb5c3ecd3d8993e6d9df47e8859ec52b13f2182d2d1ae209e8",
+    "completed_at": "2026-07-13T15:30:22.764734Z",
+    "event_slug": "highest-temperature-in-milan-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c8e427f881ea85aa3c18c9a96b13105ee7eaf4b10f6298768a36d1fcb72a2203"
+  },
+  {
+    "artifact_hash": "ecfdf9f1d74b15ec0ef2add951c28bea1ea632cce5f598077ada83ea720281aa",
+    "completed_at": "2026-07-13T15:30:22.769384Z",
+    "event_slug": "highest-temperature-in-milan-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a13d40bb6c7032d7f9ebd63e73335f9eef9862ee3c30a9cdbabde23db4ac9e42"
+  },
+  {
+    "artifact_hash": "5d7db48f07a859374dbfe6c6e6e17f7d8ec29080e2365ace76ef9bd8a0627014",
+    "completed_at": "2026-07-13T15:30:22.774464Z",
+    "event_slug": "highest-temperature-in-milan-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0b569db81deb215e609417bab283bec2f52181d0ef10f7656f3659c978e02b84"
+  },
+  {
+    "artifact_hash": "540858a5ec9e63b2776495e5f1ee11456f7bc442d4cb4571bd47ce39954a4a2b",
+    "completed_at": "2026-07-13T15:30:22.780447Z",
+    "event_slug": "highest-temperature-in-milan-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d85d0ce1510e70efd7c03a57184bd870dd6dcc8af689e64e70881692b0aacc57"
+  },
+  {
+    "artifact_hash": "bf0e42b1ae106b6a46e8f81e1b406b1229c53f4eb6a6cd6f12d81dddd443cf04",
+    "completed_at": "2026-07-13T15:30:22.785427Z",
+    "event_slug": "highest-temperature-in-milan-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "44341461bdb955002847b393475242551472a4a31a6db5a399363dc4fb6f7690"
+  },
+  {
+    "artifact_hash": "ce9677434a4256fb0213ca7ef65833c55fe3ab1920b801dc12ff597a994553fe",
+    "completed_at": "2026-07-13T15:30:22.789905Z",
+    "event_slug": "highest-temperature-in-milan-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9642eba6132b4d028d829b2c82e48711f62d4188fdff122be902d97e8e6b9ef6"
+  },
+  {
+    "artifact_hash": "78dd68147fb7fe6f970287e098cdd088135e8fb617b43ac57c1d26e390bc97e4",
+    "completed_at": "2026-07-13T15:30:22.794544Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "00c56338044854e5da8e8b223f5ec40d02f32656d68d9aa1b4e9323a74cf5ae3"
+  },
+  {
+    "artifact_hash": "f6c128b469f3329b0a3e9d1ac21c9d76fd188b0ee65879df562a3cede097075c",
+    "completed_at": "2026-07-13T15:30:22.799065Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e765dc476cecd9ba392cb49cac89e60b075fae738a42536f812bd91ef5774b8e"
+  },
+  {
+    "artifact_hash": "bf3d53992ddd98849ab7dd944570c13afcb0be3ad5b4942eefe2c5060b9ac50e",
+    "completed_at": "2026-07-13T15:30:22.804013Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8cbb23589211fa5959a69ba6c8b7c8ca8aeecbc7dcf7cf682f69b92167e0ce39"
+  },
+  {
+    "artifact_hash": "6fdbe213c3681b441af72ad124d394181dd253d7e0685e5c37a6ca3c630fca2c",
+    "completed_at": "2026-07-13T15:30:22.810808Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ce18291e9e95f0c5e37ba65e67486344c60a59834721e55049103461226b14bd"
+  },
+  {
+    "artifact_hash": "bdde58668ee1dc70955d13b6eb998168151cf3d2759363db19c3340d9873e163",
+    "completed_at": "2026-07-13T15:30:22.815190Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f84f8e66b11ee28ca286d1fc96ca107133951a5ce4104d34fff8bec09b477587"
+  },
+  {
+    "artifact_hash": "1d57d4ac65d5a6a7c66631c2330df77271d8885db64c3a079269778a7c041cd3",
+    "completed_at": "2026-07-13T15:30:22.819987Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "dc27fb7879ba67457621b0670f937e3386e4482e0f1876f2184ffd2f2c9eb504"
+  },
+  {
+    "artifact_hash": "067b3048444d9d79c013774fe24361627d22fa141130eaa80c61b84dc9eea563",
+    "completed_at": "2026-07-13T15:30:22.826533Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8974b7b7dd7f457dc5dd58e2cff51c32f64c00d35e9c412a9039388d871c621f"
+  },
+  {
+    "artifact_hash": "aad42b74710976fee3bb7ba4c3fdddd9eab81ec8bf7674e0dcfea1ebf2a369c9",
+    "completed_at": "2026-07-13T15:30:22.831393Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "de5f028d35cd8ef29c93801f8b28771f5e72a9e940e924528fdae15c0032df1f"
+  },
+  {
+    "artifact_hash": "0bc53322003fabacfdf21f0f6895ed72578128bb9c798e6fea49eac0963b3a1c",
+    "completed_at": "2026-07-13T15:30:22.836035Z",
+    "event_slug": "highest-temperature-in-moscow-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "08f08985ff0e7592ac048559af1aa6f7209f7e21df59f532f406e18ba9f210c1"
+  },
+  {
+    "artifact_hash": "c941b47d7458661b5407636520c1e211ed64bfaf14af38e79d5934685480e67c",
+    "completed_at": "2026-07-13T15:30:22.840449Z",
+    "event_slug": "highest-temperature-in-munich-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "282d1e0b1c3142b123771234dce96b4cdcccdc3e0e703d5482d568ff6a9dc76f"
+  },
+  {
+    "artifact_hash": "ed6d1b23982aec6672492e1f63f86990bd934df03b49048fb70416885be210e6",
+    "completed_at": "2026-07-13T15:30:22.844969Z",
+    "event_slug": "highest-temperature-in-munich-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "033702ebdd9f146e38a90b6ef809567d84bdeaa07bf408618f1ab42166d2df00"
+  },
+  {
+    "artifact_hash": "379954eaf42173c09aec2c1815b2ca4ad0fb2d1208d4bdf9f56671798e9c1128",
+    "completed_at": "2026-07-13T15:30:22.849987Z",
+    "event_slug": "highest-temperature-in-munich-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "6924e1add72953584b5acb533e86bdc2733b332bfcdccbcb2715b5383ff5033a"
+  },
+  {
+    "artifact_hash": "97b1bcaf5e74da7c5711611cbd9eab4ed5bfa73c1181cb6a55c2c75aaf425cb4",
+    "completed_at": "2026-07-13T15:30:22.854477Z",
+    "event_slug": "highest-temperature-in-munich-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1e791594f2af65f44df48e61eb390f66c334c0f0f457d1a95e8aa004d406b434"
+  },
+  {
+    "artifact_hash": "af7d6ca49b1d33e763f96cef10d276673db2691d49b76e55b533da138cfcf08f",
+    "completed_at": "2026-07-13T15:30:22.858901Z",
+    "event_slug": "highest-temperature-in-munich-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b7422f2169265780a2a49e9c8f5b5c3050c943705e7d3fde30e092284ab1ff02"
+  },
+  {
+    "artifact_hash": "3b549646604505c7a1d60d26b8a172acbbdcf5d0bf4207883cf8bd1643b1cf9f",
+    "completed_at": "2026-07-13T15:30:22.863718Z",
+    "event_slug": "highest-temperature-in-munich-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3dd923e266c33621392311282ef3094d0289809f33d80b250600584d65493f23"
+  },
+  {
+    "artifact_hash": "1aa73aaedebda3f689250f7266a3d14ce239ae3a648df5643ae374e4ddd84a58",
+    "completed_at": "2026-07-13T15:30:22.869993Z",
+    "event_slug": "highest-temperature-in-munich-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f38e98a26472eef64121a5b476599f74d863d9dfd6ffa992b74188e56ef60397"
+  },
+  {
+    "artifact_hash": "96a3ad9c104899f4f383a043e7abf71b8df400a2b56f751369a7dcd8780a242e",
+    "completed_at": "2026-07-13T15:30:22.874792Z",
+    "event_slug": "highest-temperature-in-munich-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1d9a21d6f3d4e928293644a500f490103e379ba79d5d2734d7c618ff8583954d"
+  },
+  {
+    "artifact_hash": "d79cc315d8bcab418457b49ea551b7f5daff69519eacea71579373c5f9fab4da",
+    "completed_at": "2026-07-13T15:30:22.879203Z",
+    "event_slug": "highest-temperature-in-munich-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "15e18a4ef42c9a1d7c2994bfa3e744843987ad5aa8d04c717364ed818fd68253"
+  },
+  {
+    "artifact_hash": "8ab8f0b27c58c8ae467b658fb46b24861f107790c737bbc97d3c1cf143445687",
+    "completed_at": "2026-07-13T15:30:22.883797Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "939b8f89923bf9d71434167e583c4a01e98d0741117b2fa909a913043760a8e8"
+  },
+  {
+    "artifact_hash": "ac6806654dc4a9ff62985167d98543798d34d536d9869a45c0dfde0e52c4112b",
+    "completed_at": "2026-07-13T15:30:22.888414Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bd939b7ee56dbd944587093975f0f2996151f6989ec8caf4b66208f8c403c08e"
+  },
+  {
+    "artifact_hash": "fc2ca1297a14fe68c9f96ef91e04c4800d5f5a03547b10d7618284d9b4031cd7",
+    "completed_at": "2026-07-13T15:30:22.893332Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "fe764b8ef2a9cb9b2151bf5ca76d223fa5378e16390f9a4b5dd7cdfe15a82574"
+  },
+  {
+    "artifact_hash": "2b96560ad72a3a13b65dd3906e92c8a95fe27077b75e6abcf0c82b517e0a46c7",
+    "completed_at": "2026-07-13T15:30:22.897787Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "85b5af729a0fb3aa6330a1faa11f8e518d7eac51403f093f4b3d29e79c3b7b50"
+  },
+  {
+    "artifact_hash": "d0553e47ee3696e969d750022673c4dab83f0d05ce07debb6f40eff620b5488a",
+    "completed_at": "2026-07-13T15:30:22.902984Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2eb3f35efdf57e08cfb9409e0e852266c527393d118cb73f5f2a0f0365a93b69"
+  },
+  {
+    "artifact_hash": "b5153683c63d8e8672814a41c556953a5be00fc7ba4b80e5ebac5b3a7f76f6b4",
+    "completed_at": "2026-07-13T15:30:22.908672Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0061f5a1898690954e1fc0dc26cc3c40714d24ba100b31afc48c569be4440fd2"
+  },
+  {
+    "artifact_hash": "d70b1db9ed5dbd23f8ff694bf67c51c93488ff96b53bf3deecc1a9acf987eebf",
+    "completed_at": "2026-07-13T15:30:22.915447Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2545e7ab5a1f1b795d3e1a90be47460a92e4c7a6b94c321cf71bfea449e3df68"
+  },
+  {
+    "artifact_hash": "0e4e3239518e8f05cbf28037d6e6f820db08aaa70a11287dbb420c70a89b5661",
+    "completed_at": "2026-07-13T15:30:22.920111Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5c4f56d912ee033f0544c64e1dd78fe12cdb1d48332215461a83daf1e716e708"
+  },
+  {
+    "artifact_hash": "91df32963426647996c6c219b106328c4d645d8cc11f26bff099f3e6ae467670",
+    "completed_at": "2026-07-13T15:30:22.924934Z",
+    "event_slug": "highest-temperature-in-nyc-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f22dc74afee567d5ce147a99fb78802c20ad9e62a1ecbb67fa6e31fb53d7dbcb"
+  },
+  {
+    "artifact_hash": "573cee23ab2a02492975b2e29b2c6671e4d0c967bbd08b7a99de20e1220d3210",
+    "completed_at": "2026-07-13T15:30:22.929386Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d16af34df18f3ba8704292f5dbd978e91bccb294c39a3ad0dc6a41943afd7bc5"
+  },
+  {
+    "artifact_hash": "43b772864dcf3646519f58fe9569289719a9c2713a6e7cbfc03de9e1d7b276eb",
+    "completed_at": "2026-07-13T15:30:22.934348Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "07edfc49d331c7eded904555913164f5d50ff575c0c7a1e66a26c4a0bd708667"
+  },
+  {
+    "artifact_hash": "e7c1c63815c6f3aa3a2b246e2dc979367fdac303f3692c8d3831d68dd434e9c7",
+    "completed_at": "2026-07-13T15:30:22.939474Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1e86f2821ea7954a2ebf0d4aee4507507d76241f61b1ffee2074859d60cdbe84"
+  },
+  {
+    "artifact_hash": "866c416a29f524f9e4925717ec8410ff1b55afb480262c7be39caa531bc399b0",
+    "completed_at": "2026-07-13T15:30:22.943926Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3565401a9304850e5f6d40cc39b413b0837478338227b71bbe1e1ab60e57f77f"
+  },
+  {
+    "artifact_hash": "b615c02057cf5e1cf768ce975d6f719f29167c06dcc5e3098f6abc92de2fd353",
+    "completed_at": "2026-07-13T15:30:22.948801Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5091de78b5ee41fd34c3b91412ca121b83ffde3fee53c3d7988cb9a841e33767"
+  },
+  {
+    "artifact_hash": "dd79013864982188e768f60ef57e056425eeb5657fa5e6eb053d51a121477e7b",
+    "completed_at": "2026-07-13T15:30:22.953799Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "fdff33addb85a81e25cd926cd5ccf8eef85885b9b3d81757bb9ccf8cdb974d50"
+  },
+  {
+    "artifact_hash": "076b153d72ba6b9532816a901ad4fdd1b0122d025850f255865473a5b826c92a",
+    "completed_at": "2026-07-13T15:30:22.958623Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1db7165ee80901ab94e0d67f3685e16ff67687fe4ed3e1ddf73a007ee1c73531"
+  },
+  {
+    "artifact_hash": "125cb448d4f7d62b8621f3fa59307c78b3f298cbb40e32928b28177bb3a0c081",
+    "completed_at": "2026-07-13T15:30:22.963165Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0f81084458d69c78902174ea0bf44dc06c622259a421b9622513e86a240ba59a"
+  },
+  {
+    "artifact_hash": "753780fb9a87a13a7ec97ba3fecc969fe6ae75d193305f90b16af9f606f5e209",
+    "completed_at": "2026-07-13T15:30:22.967864Z",
+    "event_slug": "highest-temperature-in-panama-city-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "aede74224f0aad79897d1d52da714668e0cc376a36093e6e72612cdfe56b2d1b"
+  },
+  {
+    "artifact_hash": "6dd3b1e9df34d5454eba2a1b5a4bbb976a4c17c44514e1c81589a73d4f4459d3",
+    "completed_at": "2026-07-13T15:30:22.972759Z",
+    "event_slug": "highest-temperature-in-paris-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d74eabb58cb3b6464f46b62a3e986a5157ae79a228d8185d72a38d1d3e7854e7"
+  },
+  {
+    "artifact_hash": "71db9e0028c582756e928057c5f39ebd0991fa0b08b53c83c62eb04b9a6a37e4",
+    "completed_at": "2026-07-13T15:30:22.977410Z",
+    "event_slug": "highest-temperature-in-paris-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "006e20adef7743b27572f71328a85bc497e3dde59ae6f1ded34b9710aa63b53e"
+  },
+  {
+    "artifact_hash": "01514e82ed53f6f399926aec68900f29c1d840bbb035c71b3f7b0939082d6a57",
+    "completed_at": "2026-07-13T15:30:22.982468Z",
+    "event_slug": "highest-temperature-in-paris-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ff4bcbcbe1690a822fdf451aa8938cc1b697235e92c17a56e1b7235589d7b1c8"
+  },
+  {
+    "artifact_hash": "d894039be44352ba9b840e2485a5ebc7230b06f9d00d22f62f53d31a5cd0a869",
+    "completed_at": "2026-07-13T15:30:22.986813Z",
+    "event_slug": "highest-temperature-in-paris-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "656f75a834d64003f69d66946a7417e00c682f407127ea0eb2c1c294d23be590"
+  },
+  {
+    "artifact_hash": "b3a8bb4b148e78a41ebc580cef0e48c6717d56032892948775030b564a1c4022",
+    "completed_at": "2026-07-13T15:30:22.991367Z",
+    "event_slug": "highest-temperature-in-paris-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1dcc372496e685e2e97dec0ad523517d3e9aeb21af01f9062fb903b1f5ab052a"
+  },
+  {
+    "artifact_hash": "4751e7f3e1baa4134e6cec00cf81b47cf30d3d40b9b3ce8c675a02c64d436ec0",
+    "completed_at": "2026-07-13T15:30:22.996251Z",
+    "event_slug": "highest-temperature-in-paris-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a621a572bfe69d34fe5895861b486090b168b8e3e28388979a504329e74ea23a"
+  },
+  {
+    "artifact_hash": "835fc443968d4647290eb5dcbbdd651f0737c8e9fcd7658abaf9070848bd6cb2",
+    "completed_at": "2026-07-13T15:30:23.001054Z",
+    "event_slug": "highest-temperature-in-paris-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "26debed53da12bc75024c1bc1c9b127a02a9789e70274728a6f9caf614962cb7"
+  },
+  {
+    "artifact_hash": "2ee23fa735cec09aa0fb4cde1c838444f3feebbf0bcc26138a152893f450ac2e",
+    "completed_at": "2026-07-13T15:30:23.005621Z",
+    "event_slug": "highest-temperature-in-paris-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2861ae3509f8320efee2b0f4f6aae080eedf2661308717d1fa1eaa639d5f513c"
+  },
+  {
+    "artifact_hash": "ebbc06c9a216ce034349f67294e6b53eb4bea590def0b7566f86c1c2b5d9e2d6",
+    "completed_at": "2026-07-13T15:30:23.014900Z",
+    "event_slug": "highest-temperature-in-paris-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "140cd22474fd8098f0c01c2befecc7531500ba931971c7a79dfb4cbcb4fbafe0"
+  },
+  {
+    "artifact_hash": "0642a056dfff4563d53911b202a6a5ecace34a1f2281b58a297f47c1473637c1",
+    "completed_at": "2026-07-13T15:30:23.019421Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8a22aab2b33ef9999aa49315d98cd136e366e9cbd49abc1664f062f442f1a704"
+  },
+  {
+    "artifact_hash": "843e30a3d4b1d614c4d4d25079e93b7563caf58975bff70bd76a1512a9019279",
+    "completed_at": "2026-07-13T15:30:23.024423Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "12979c68fa4ed80f59be4ac0f98dce1999d403d9d1d0142bda94b628de0f7ee3"
+  },
+  {
+    "artifact_hash": "5292ef8fa417fb85afdf51a0680b8538df105f5dd021a02dda7594511abc01d6",
+    "completed_at": "2026-07-13T15:30:23.029500Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7cb7f9840b24871ae836e9570eb6ba63b7044f2d85faf77478c40f3d4543d6e9"
+  },
+  {
+    "artifact_hash": "a2e1ead90fb680118b11f668b3f73c0146b8035a466ec1d7a6da23a90a7ab0b0",
+    "completed_at": "2026-07-13T15:30:23.033954Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8ce3a406d1a9cb720bf3fa04684a675cf00234e78ef72656c5f1d89131eb1195"
+  },
+  {
+    "artifact_hash": "2c5a1dc1506f94b51eb0ac62a6f407d0cb691145bcd4603208a58dfb68aeb386",
+    "completed_at": "2026-07-13T15:30:23.038419Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b1353c4e958e3a2e8aff3e705e75f293be57fb8575ed5ba63f7f0dd80b796a4b"
+  },
+  {
+    "artifact_hash": "a59394f87584df7c241b37fe1e5d2f4f949977db6a1a4565cd6b1da71a01fbb5",
+    "completed_at": "2026-07-13T15:30:23.043235Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "af5b17555c6ae67c02d3b49727e777cec5ac07141ac677b447c3840f05a402cc"
+  },
+  {
+    "artifact_hash": "a1f8f2777f40d189e0d3b1eddd5f967576bc42495e0bddd82a1e2b0970b9ebdc",
+    "completed_at": "2026-07-13T15:30:23.047971Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5ae67549e8ec8dad06c3fecf0a073edb5ae2ccc0b40e90f6d6a1abba0e29b955"
+  },
+  {
+    "artifact_hash": "e3a009c0e64ca1ba62af75913267c47d4087920eeab0cc79d06db2dec671b4d3",
+    "completed_at": "2026-07-13T15:30:23.052612Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "87d8a908b3101edf7ec13e298f0fb305bb585521d31698f2b21b405bd66aec63"
+  },
+  {
+    "artifact_hash": "b84128150342b63c8fdfbc6f1b1792d5c43ec1391429ce9e6f62d3987a449d61",
+    "completed_at": "2026-07-13T15:30:23.057497Z",
+    "event_slug": "highest-temperature-in-qingdao-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b288080fee8e23690502eef0cbdec9bdd71d609a96a43a8c08925e444c4fc3ff"
+  },
+  {
+    "artifact_hash": "6f5492a5dc5086e702216580c7be45a23acf4c15c91490b80a567790d05a5c2f",
+    "completed_at": "2026-07-13T15:30:23.064584Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f23d757878aee962f79a157e87e1114d17db933f5466014bd27250ee36419b3c"
+  },
+  {
+    "artifact_hash": "95b9bcd4a2bb0c13e806e0a08d4cfc0338fc5a47648a6512c5079c7011700dba",
+    "completed_at": "2026-07-13T15:30:23.073589Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e5feab79344513a84c7f5d738ef1364f9252fb8e67ea730eba59da362309ddfe"
+  },
+  {
+    "artifact_hash": "63be7c1916ae77d4f0cb6962490265a19cd4d22a9d91f4abcb375b0567833269",
+    "completed_at": "2026-07-13T15:30:23.079250Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "040d50c2fa38b06a2e4d7124276f7f55c818807acc3d15e3621587ecf2507e79"
+  },
+  {
+    "artifact_hash": "ae93c3097c3f4dade47aea612ac9f63e12000db1e6bbda48982e5f113a7d3905",
+    "completed_at": "2026-07-13T15:30:23.084941Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "86dd100187311d2b374db94cd8b85387b2b98c5ba4480d66acf597468163ccc3"
+  },
+  {
+    "artifact_hash": "ae44e9467a505b349f66d4f8eb860f70d0b9661edb082fcc3819c7b958fe7ea0",
+    "completed_at": "2026-07-13T15:30:23.090925Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8dbfe7830f7bfaa900493c8d3ce61d7ef151cf97388dbf42c4a8ff1374a715c7"
+  },
+  {
+    "artifact_hash": "d57d96a00d1dde24b311d33f157754bc97535ea35af3b90ea8ff421b08f26c7f",
+    "completed_at": "2026-07-13T15:30:23.097416Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3f206013a6ebd6f9ac8c31d3f6fd37f1dca068b08c657fe507420cd0480cb807"
+  },
+  {
+    "artifact_hash": "0d716d0e02b9ff61ac80515a4c65020d9e3a83fdf9ffc6f3993bc5ea96408cbf",
+    "completed_at": "2026-07-13T15:30:23.105122Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "13201c14c798eeebb88aa6b979fa33851a46d0b14eabfed920e9afb2ad7fe810"
+  },
+  {
+    "artifact_hash": "38ef1a85681ce4cf55375206dbadfe6357cdbfae18c6c914d4d45893b4615b13",
+    "completed_at": "2026-07-13T15:30:23.110086Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "eb6d746805900e837b097818837514c9d00b6a29b205fcbb923e8998e75b54cd"
+  },
+  {
+    "artifact_hash": "14ee8ab99baebd79e087e19cf7365cb7deab1f805c068cd877cac9acead03fa1",
+    "completed_at": "2026-07-13T15:30:23.115259Z",
+    "event_slug": "highest-temperature-in-san-francisco-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "684e04a2afcfe403a5e64e02f9fe8195d4fca8e47b67d58a738c82974850a775"
+  },
+  {
+    "artifact_hash": "0fb8a3a41ecc562614f9be50ebfa18297560c087b14f758806a1acc2bb81d9e9",
+    "completed_at": "2026-07-13T15:30:23.119966Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "25ec184642069c98c06b71c784b0fc16eaee6a55250315fba41ccd2531d878ec"
+  },
+  {
+    "artifact_hash": "4a4d00fc2a978adb6cd99942023a231c6c6560adca554daa1143940f56a1f8b3",
+    "completed_at": "2026-07-13T15:30:23.124828Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "30492f9a9ccbfa7b648d3045483f6dd9f8d6a52b935255f9363b920aa18d6f5a"
+  },
+  {
+    "artifact_hash": "67ce62707cc8186fab92cb32c5fd4eac15580ba5dac8f7c725f78bff13a33e79",
+    "completed_at": "2026-07-13T15:30:23.130569Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a7b73c9f639d2699c8565e7dbff2d33726a5ee8acda33bf198dbf5dfb52b8696"
+  },
+  {
+    "artifact_hash": "f680252b21b951a95d45e1ba25601e9b67169e409fcca85c3fe37b8b8843a13e",
+    "completed_at": "2026-07-13T15:30:23.136073Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "88cdbc1290df849fce9584464241e5627256a6decaf639fd4ceac047a42924e3"
+  },
+  {
+    "artifact_hash": "4dcccf1c4ca202c953b7a868f9f88cfadd935553041c67744514878629c343d4",
+    "completed_at": "2026-07-13T15:30:23.141949Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ba1883fb7da619c36e97b9ed5dde976b85b84059c0c45b6d55872897ada844ff"
+  },
+  {
+    "artifact_hash": "943619899b5f17892420d5000ed1161d9fa3d052207dcd66ede1ca7d6b61c005",
+    "completed_at": "2026-07-13T15:30:23.152507Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "af3cd762d46d599d200baee3790d3c847bef31c582cec710570534ef96bb6536"
+  },
+  {
+    "artifact_hash": "8ee7738d2e37de950e63fd128a765703c7edcb07d65c5256aaa9bcb59419c43d",
+    "completed_at": "2026-07-13T15:30:23.161870Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ac5e885555046bdbf8ba5542b4fa091cb4c1cbd15c9d9d070fcb41b2d42cbb61"
+  },
+  {
+    "artifact_hash": "5675374494699f49be2c3eb38acd780a97a5f90ba3896051ee838dcc88182213",
+    "completed_at": "2026-07-13T15:30:23.169091Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1ff8fed054e47ffed3514cee84ec4acd86b617d0e646c4abc96814f40ea37064"
+  },
+  {
+    "artifact_hash": "6ce83a65db23d16aefe85b23ece2012a83310795d4e4f737f25323063f73c964",
+    "completed_at": "2026-07-13T15:30:23.175705Z",
+    "event_slug": "highest-temperature-in-sao-paulo-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8a87aad01ef9607b9e6b17e2618489955808660507fe9960fe46295f22c37496"
+  },
+  {
+    "artifact_hash": "c735bd8584b71432469500f5dc8cd4ffbbfc566495987b419c7d630da6e84424",
+    "completed_at": "2026-07-13T15:30:23.184123Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7ed5d86024fd3ebbea532d1fc1fb1eba6402326ba430c98d1c5d4fd5085d3405"
+  },
+  {
+    "artifact_hash": "c979ac48d49c00f218e527a2bea34ca9b093bfd5c7a2d42e25f0c866eb7c4d15",
+    "completed_at": "2026-07-13T15:30:23.188897Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "83c554ce7db50c34c469e8201d23922be99b93f43527559a552ee3eee5d7c9ca"
+  },
+  {
+    "artifact_hash": "4d6d127516de3f7319916a3251aa862c1e0bf9dcf2b088b9580a71dd66a6d5e9",
+    "completed_at": "2026-07-13T15:30:23.194080Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0fd273577a3532ced7531f30c73682f95168fbc60c4892edac26f8e7a2564601"
+  },
+  {
+    "artifact_hash": "f5155cf5fe374b9f5a7d91d0a8021e5b646d4491caea4977ab3ae5e4bbecf3cf",
+    "completed_at": "2026-07-13T15:30:23.198420Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c15ad117f45d1f933935835bbe8a69eaa1d97358905405cb41f2702d40813a0a"
+  },
+  {
+    "artifact_hash": "ceb5a0725c1d8c6cc4bf3522435108d62a0d78a960daf7a2091caab6cff6aadc",
+    "completed_at": "2026-07-13T15:30:23.203158Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "40a70d4102a86b144b34eb93d329e238c0c7350d07a684732433bea6f55b084f"
+  },
+  {
+    "artifact_hash": "27fafe89bf7e123de14f57070dfc2d7ad6a12c405eb9519c5ea2c0a42e406b83",
+    "completed_at": "2026-07-13T15:30:23.216000Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "42212a475c6f396d7675983d4372695dda358daa178dcd51d18e9fd36c92c9f7"
+  },
+  {
+    "artifact_hash": "605c03183e85b60f0422a377127b66c937fe3c2726666288c0b3dab1772035ec",
+    "completed_at": "2026-07-13T15:30:23.221178Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9a56791d430ea707830604c190005c456c703ad081b7f9f238fc41c40a5fde82"
+  },
+  {
+    "artifact_hash": "274d3ac704077a7bb6d3a10dee14a7c0ed4ec287982150878e1e5cf9e02555cd",
+    "completed_at": "2026-07-13T15:30:23.226125Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b77b23b93dbcc963777923aec7fda5ffc6fefd7f23b5e731c58f6d4d9f0ab4be"
+  },
+  {
+    "artifact_hash": "0c0838224e23ab3acfdbc8bee2abb26951dc1c0301d4c1006204d286614aa160",
+    "completed_at": "2026-07-13T15:30:23.230898Z",
+    "event_slug": "highest-temperature-in-seattle-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8b229c5dc2ac065522873c52a1aa49986736326a04d7f9f50b3b80dfba13b255"
+  },
+  {
+    "artifact_hash": "32f742477ea53044bb7f459f86bd2a5d48cfa4a9f63265829c4c16e93b504ff0",
+    "completed_at": "2026-07-13T15:30:23.235963Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b6011845527d4a667bf9ba2b74dc4452f0787bff51b8ce10be99b0992d26c443"
+  },
+  {
+    "artifact_hash": "80a6e3d87ce2fe788568bc0d80d49634bd20bcfab8e91b0cf8b56a615275f8bf",
+    "completed_at": "2026-07-13T15:30:23.240639Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "7ad6b9c447b0ffdd31d29edec32985237065b6509775b5bb651ba9f1f0d9b2d4"
+  },
+  {
+    "artifact_hash": "65b682571aaead527ce537caedc1bc5a8900f2231779bc5cf7c300a6f8038804",
+    "completed_at": "2026-07-13T15:30:23.245585Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "157cf8c76cb64b4ff82aae217043f3fd26fe6707e747a19efb06874f7621c6c5"
+  },
+  {
+    "artifact_hash": "408780998b93b9468a54d30e25c6459d1f46c1edac42a2bc4cf6b059c2721711",
+    "completed_at": "2026-07-13T15:30:23.250152Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "23f5f9a9d01c4a541469e48e47b6548b38ae973951a7a832a2f0a788d55309cc"
+  },
+  {
+    "artifact_hash": "8a1d996900f63fbee45136f2e994079f08a3750a0e9473b52ef5659a493847ca",
+    "completed_at": "2026-07-13T15:30:23.255920Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0174ef17549f3564b67dd5073a117ea3f0cffa0616197a2035ff389f882307a2"
+  },
+  {
+    "artifact_hash": "a8989d39aa2372372385ceb51e1a2ff0f52f230571c98f9c7169635ac3b97030",
+    "completed_at": "2026-07-13T15:30:23.260912Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "426959b9d86d7c77838cdf0bda90f5898ccdc7fe172a5a40f3d20daa5a5ac70f"
+  },
+  {
+    "artifact_hash": "d5756f55416d6937c11dc2211b01be464e40d1ae254cb8d9564403d4e364e52a",
+    "completed_at": "2026-07-13T15:30:23.266005Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "528ad933708c102b52e557f1b0ce3d7930a6da892f0df07d35bf4832d5b919de"
+  },
+  {
+    "artifact_hash": "17194b2a44d5cffafb1466e2457a74da4cf52dc564dad2494bd0f44daae5e2a2",
+    "completed_at": "2026-07-13T15:30:23.270522Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d4817bc364685ae02c7643bc67572585ac58c269d1862bdff632e84550118dfe"
+  },
+  {
+    "artifact_hash": "1eae15a5de9c2bf6fb94d03e6fecd69b9606cb1fb8597bef6c505a6c4d311eff",
+    "completed_at": "2026-07-13T15:30:23.274886Z",
+    "event_slug": "highest-temperature-in-seoul-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1a64b5c8927ff74496fef2592d6c0fd88a3964f4e3e4a74968d09fb2ca7f3db1"
+  },
+  {
+    "artifact_hash": "11d65c3eed56852849a43830c4b042c5592849aa548c850cd977165d3e5d43b9",
+    "completed_at": "2026-07-13T15:30:23.279242Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "293bb7e1032309c7c94d9bd040cb29f539905c2676457bdf6ad673bc7c9886f8"
+  },
+  {
+    "artifact_hash": "1225b5725cbc8f4e2b9a2f5183f529d5900bb7c099c93744267e10203a805c44",
+    "completed_at": "2026-07-13T15:30:23.283874Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "91a64d6bdd1245df88108a4a784ade716bffccd816758da07408d7751c7ed639"
+  },
+  {
+    "artifact_hash": "44165cb1aad32598e75db461859258e8ebcd2e6ab0255ac7654ecd2af2728434",
+    "completed_at": "2026-07-13T15:30:23.288795Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8ef960465c8cec08f8ce71b20afe05f033318805234aa9c5e3dedcb3d1a77f1e"
+  },
+  {
+    "artifact_hash": "1e2dd52c59dd354a384bc3bc7315bc221aa0bae7f2c2ed9c3521422c6f509ffd",
+    "completed_at": "2026-07-13T15:30:23.293293Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "62e0daa1863343dba25c426dfc96fe1d087d98e9b611d29f0c371c713f2a621c"
+  },
+  {
+    "artifact_hash": "8ca039170856575f8206988e10259fdeac321bf9cab7cb6aaafd3fc9722611a4",
+    "completed_at": "2026-07-13T15:30:23.297925Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "14f7e8543100a084e2911bfeb0e68b6730882fa6464de4f2dbac06f057950cd4"
+  },
+  {
+    "artifact_hash": "0cd9b5f04b230a96e51f9adc08ce7d044cfc91c63342229309465120326c119f",
+    "completed_at": "2026-07-13T15:30:23.303698Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "14378a64942fa8bc48eac69f8eb44514748c3749b3079548a3ef2e1817b41299"
+  },
+  {
+    "artifact_hash": "58b9853170d1609d13e2e55def933d8d0f555db20e49fc9b22b0163ac5e03f68",
+    "completed_at": "2026-07-13T15:30:23.308662Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2cca01f3b7cb25522b51b57a7d729532c3720ecbb0cf89ac8e62adc17d722918"
+  },
+  {
+    "artifact_hash": "6d3acf99ea0d12ff6b98055be2dc8b39bb7f2ab0cbf0e1de868715627475d541",
+    "completed_at": "2026-07-13T15:30:23.318474Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0c46e6d5794516ff87dc4b1781899d06584ddf9b4c0f2107381a8aa45f6ebd15"
+  },
+  {
+    "artifact_hash": "c1cd770cebcb528ecc410a0936a6cd6ad774e6c62584f7a0f0293d0885527ddb",
+    "completed_at": "2026-07-13T15:30:23.322795Z",
+    "event_slug": "highest-temperature-in-shanghai-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "755b4e6dfb7ee868266feb03490c905956e92eeb40fffc90cd539ce7c40704c8"
+  },
+  {
+    "artifact_hash": "7eaae80645367eb2336995bdc94627256775dbb78f296361b63aa79234f5167f",
+    "completed_at": "2026-07-13T15:30:23.327346Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b7222573f24f0e4c710b19848207e1e4da0070fef077b1c87b96a5fa820c5283"
+  },
+  {
+    "artifact_hash": "4879f3345ae649ff15d9256fd43b8afc5d953f0471df35851a058bd28abc48ba",
+    "completed_at": "2026-07-13T15:30:23.331805Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e93cea06e43d58c7ca069334386110ce80c2e29256ec52150881a7f4418e825c"
+  },
+  {
+    "artifact_hash": "3259ff18634fddc32b01c0ca27a11398d5b157fb2c5979517816d947886331d0",
+    "completed_at": "2026-07-13T15:30:23.336786Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4c8e8158e0c6a0b81a832f7d7ec9534f42aa71bd370e04e95ba61084b16c8787"
+  },
+  {
+    "artifact_hash": "203d7e67839cfb78231840ad11d9fee6540068144a7cc48da6c3b908cf48b165",
+    "completed_at": "2026-07-13T15:30:23.341141Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c2edc35e6b95c02f630092d7bb35644d5928ed665a293faea619cfa113338254"
+  },
+  {
+    "artifact_hash": "d3f271701f9092bff333950071a61f37dbd8bd528c40a0f2eec1e5d806eeacec",
+    "completed_at": "2026-07-13T15:30:23.350431Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b5a9a691f6ee10512256db456c57726dd638379f3dfce7b9c7e5685b0772afa9"
+  },
+  {
+    "artifact_hash": "a80f468d7fa1392e85a6825ed5147a801d9f0dc95be1dc6b3110d9262184f8b1",
+    "completed_at": "2026-07-13T15:30:23.355839Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "831f6db57f4de8f1f52d405b32ddfb928d550023b1fea9b7224e8b45a0e752fa"
+  },
+  {
+    "artifact_hash": "e2799f23dfbe18c177c4c33d9397e8ac28f0bf0ffbdb384b565c4b170f99be6d",
+    "completed_at": "2026-07-13T15:30:23.360984Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cf273982261187b0707da0d48d0d2c9511ae93ec86d316cb7c1ce7a689744cfd"
+  },
+  {
+    "artifact_hash": "d56b558f258655dd7c9124adc85552ef69dcbd73190ea8e380f31b6adbbdc376",
+    "completed_at": "2026-07-13T15:30:23.365614Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1e3fe2a220f250f44cca94d3e4c4e4635a2a0f335ec3586e0aa36d652a943925"
+  },
+  {
+    "artifact_hash": "ff86e23b407e5832cfcb5f0014a9fd88e24c38f3c87793645e5362a3d94ccf21",
+    "completed_at": "2026-07-13T15:30:23.370060Z",
+    "event_slug": "highest-temperature-in-shenzhen-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "668b3665838a550006b8921576f9c28103be8259d74a5607ae053cc090b7ca35"
+  },
+  {
+    "artifact_hash": "3187ae23cd59dfea2a74d4797c63bf7759c997f79b53e4777996a8fc3bf5635d",
+    "completed_at": "2026-07-13T15:30:23.374486Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "aca23b821ff931bc0e940cb30670ddf69f41045150c43555d57e7cdaa8683327"
+  },
+  {
+    "artifact_hash": "63ec8244beda5e90639c594030477bb38fed0b6051c20100bbe3f596faa26d59",
+    "completed_at": "2026-07-13T15:30:23.379106Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "eb143561b259a9d6d6864632b697fbb28cfddc7feb53738ae575a8a58544295e"
+  },
+  {
+    "artifact_hash": "f0d47b0c90f9ad234be36bc2dc9ca1f30a41866e2bb570d28fb124349a3c9d92",
+    "completed_at": "2026-07-13T15:30:23.384242Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0f08ee502e364f8175de645c5e74a716462bb2cc524b96abef88b757a43aef25"
+  },
+  {
+    "artifact_hash": "1398d91ea17d972359b060009ac3b8095273c7c01e124a4420d3496aea6d564d",
+    "completed_at": "2026-07-13T15:30:23.388899Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3769f23c8d6480fb65c0f4d1763dffecb641919b20e82b0abf0af0a825493ff3"
+  },
+  {
+    "artifact_hash": "2d1640bdbbe4fd7506df028056eae7d0c7e07d00d58bb63e16dece30aae3730d",
+    "completed_at": "2026-07-13T15:30:23.393591Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "14f12519ce6ac002f93819a0be96c03683ae7b2c94d95d0e22eaafb5b0d41e68"
+  },
+  {
+    "artifact_hash": "ae1faba4571853420de27308f5cf5bde60c1b8c9d8d05df9f18c2acf606ba783",
+    "completed_at": "2026-07-13T15:30:23.398867Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bc8cf580a5fb3a41a31aadeb4bc30fd84963ff1a7f3d4dff72802b746eac0ed6"
+  },
+  {
+    "artifact_hash": "c46f321ebc5ae8aadf2ff847a50bc63c90dd388529504c99c0b70ef069404bb3",
+    "completed_at": "2026-07-13T15:30:23.404138Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "687bfee6756cc6d4dd2545c0416543a5953209e396c69b9d6218c507534f949f"
+  },
+  {
+    "artifact_hash": "9fb7d3302fa9e017fa169e89af6f841240689268bba4afdfb1c4db86ad44a39f",
+    "completed_at": "2026-07-13T15:30:23.408885Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4b15aaa7b699faec7dce05ea74c5f99b768588c789d07adb3ad4acc23277bcc0"
+  },
+  {
+    "artifact_hash": "52e5d2082b3bd0fb225f09b236c3c8a17e5e5905a790356f86b516f52ed78aab",
+    "completed_at": "2026-07-13T15:30:23.413844Z",
+    "event_slug": "highest-temperature-in-singapore-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "51e2a32fa9cc93e380526fe8c3ecd41656de015ac4daf15953ea79eef8e1c8ca"
+  },
+  {
+    "artifact_hash": "80377fa40ee63656b93f4ed47bbfc132b0c9cb2abf5d58ef9027e12bb292d136",
+    "completed_at": "2026-07-13T15:30:23.418387Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "260818ea88a129df8f7375928237600a9fd90a90a73b939eabfb1b4e446d3aa9"
+  },
+  {
+    "artifact_hash": "90caa2ea3ea4d52497c89e6e3d61d681cf3dbf0276b48b813386c5fa24700f78",
+    "completed_at": "2026-07-13T15:30:23.423139Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8db6652cb975ecbac332b1015040aa61de5464b4e23c0f4be1203261110df7db"
+  },
+  {
+    "artifact_hash": "ef91a70d76f7d11f30528ee04594390f31edc330d057341b4a33107ed80e9829",
+    "completed_at": "2026-07-13T15:30:23.428194Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3816a4936572f4c3352b87cda826e6b8114bbfc11a0e7422e6f2ccd4bb9a26cb"
+  },
+  {
+    "artifact_hash": "2a6e4d28a6415fd3e8848e17c1dd9a00de3d28391e28cf9037c38acfd62957f4",
+    "completed_at": "2026-07-13T15:30:23.432605Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5c4b27ad8e1e2c6faedbc22a0023aab50df48a6ce5f2edc66aaefd1210633599"
+  },
+  {
+    "artifact_hash": "d3f5e5e064b6df7be8a665fae43922e673b4c861e26075685b97be958b41abf6",
+    "completed_at": "2026-07-13T15:30:23.437394Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "dd73567353188f0ebf693db9c5a4bd2d393fc5fd6f05c02541942f0771895735"
+  },
+  {
+    "artifact_hash": "cd80108417cf82a5a8c2d12679d822541ece72f7b5b28c6fe86a4bba3ebe6582",
+    "completed_at": "2026-07-13T15:30:23.442924Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ea138b53ee34e0c012a56ded8763d52fe5aa58810f2fa751ecb93c50a31760c0"
+  },
+  {
+    "artifact_hash": "db8c938d2517c6b73e28d44ebbcbdbf9d4e24c4fb4aec67f415ac652fdf21bcc",
+    "completed_at": "2026-07-13T15:30:23.447836Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2eda5026007ebc1f06a372758b0fe93e51050bf8230aacf4002fde6310dbb5fd"
+  },
+  {
+    "artifact_hash": "a0843e6ac38333293f27ef3ac46939e585a185485983a124fdd4830a02f27916",
+    "completed_at": "2026-07-13T15:30:23.452958Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "56f6279e09a15d58391f96bb927cc2501b53484da3f2fb1086f4b257c5a249e9"
+  },
+  {
+    "artifact_hash": "6d44a7c9c571dc9a2ca91f0f3a829143c0252b4416a2234ada277d51a70dd01f",
+    "completed_at": "2026-07-13T15:30:23.458522Z",
+    "event_slug": "highest-temperature-in-taipei-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "97a32ffeb7b1ad48186bc938a9940f4bdc2bbbfe363d263248c2c7cb7aa6f637"
+  },
+  {
+    "artifact_hash": "ef87f38d2e27987f8d50dd7c1e29e465e239bca4a5a2163210fbe72afdd305ab",
+    "completed_at": "2026-07-13T15:30:23.463047Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "9c241bcbb8a08eae3bd43748bb12fd90fb1db19af4310e749e43d94462d781f9"
+  },
+  {
+    "artifact_hash": "050ba7e7b4f0435e0c4ed489b7b6f18cead45a84220f7900292fba27d5af0cb9",
+    "completed_at": "2026-07-13T15:30:23.467920Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "5f31bf51c54ca30d7da21e3feb61e5972e3215b603b3c0a234e6fb5be444c1b0"
+  },
+  {
+    "artifact_hash": "a3918790264f856e03d9ddc64b9d728b448827362b0e1a9ea3904b4ae1fd75ad",
+    "completed_at": "2026-07-13T15:30:23.473180Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cf35013693ccc7cd3797f9846c1fee5796114ba4a81da11df636c7ae9bd1b943"
+  },
+  {
+    "artifact_hash": "3d6721b682acb32126a92b12bdd81358ae3a556d0c6c8c8fb97b6ef7e44c1c55",
+    "completed_at": "2026-07-13T15:30:23.477603Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "17c400227755b82d396d81049f1024973d3c083877dffc02b629d55548752a82"
+  },
+  {
+    "artifact_hash": "ba2390d48dcc5a2a5ba27d80dca48362a5fd9c981bde67dab74eb91697947abc",
+    "completed_at": "2026-07-13T15:30:23.482253Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a47606cd35b6038480185b3f3547a47c447da22091393ddc036799d2a16db2ce"
+  },
+  {
+    "artifact_hash": "f85e587449f966e4d3e3cd4dd5e347557d96c92f0088964136038d974abcccd2",
+    "completed_at": "2026-07-13T15:30:23.487500Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ce404a15a115864e4d7fafff556cea0c2373f648603ce5f0cdfa14975285ad57"
+  },
+  {
+    "artifact_hash": "93ee967d1b13c4e1ccf8527180a7784d7855da11d6266c7c86f5772513f03ddc",
+    "completed_at": "2026-07-13T15:30:23.492776Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "caee462aca24bf9f36b5b305f64bf2cc64caf7edc4b67363fb86469e464dd4a7"
+  },
+  {
+    "artifact_hash": "e8738a1a4e7f14c7ec6b1290fc62a53fc54bcb2b77283cf7e8c4dbf77451285d",
+    "completed_at": "2026-07-13T15:30:23.497452Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "32d1e30ac6b88bf6b22713611e1ad6c10dd22442c9666f1810d838033f0ebf1d"
+  },
+  {
+    "artifact_hash": "4eb31b1f7bca595344dd1e150e23fc4360558af9c89a169260e5d0fd14aecca6",
+    "completed_at": "2026-07-13T15:30:23.502048Z",
+    "event_slug": "highest-temperature-in-tel-aviv-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "3d7fcd6b642953687c58d2e099046c5145f9712d642a0942ce7c9b3bc7607ee5"
+  },
+  {
+    "artifact_hash": "22560e8c8232c9a7e038ead3a59c94870f2b66bcba4a2b8b626ab229c575bd47",
+    "completed_at": "2026-07-13T15:30:23.506423Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f042db7323a41202fe7cff8b32d5520fab18bfcc4ac0ff2ee8571e13a61b5d4c"
+  },
+  {
+    "artifact_hash": "576659c8bf9194c5f0dec1ea4061010c5bc667d5b81c99f53bd6a219e875128f",
+    "completed_at": "2026-07-13T15:30:23.511204Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f9a3dd95da19bf2bf7c159510eeb6c9bbf3ceb6806a96583e486bd09e276e183"
+  },
+  {
+    "artifact_hash": "9214bd5ce5a6c01fd46ebf78a69ce359206e3409c722e3ddfbe3ae931517125b",
+    "completed_at": "2026-07-13T15:30:23.516354Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "19fad3ac945b1c7734b5a8e3a98c0fd93021790b9a60aa26af0358eed55fc640"
+  },
+  {
+    "artifact_hash": "d86597169970715cd600be39a6c3e75edf18cf0dd07121b02ae153ba9a5e656d",
+    "completed_at": "2026-07-13T15:30:23.520783Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "415341e43f89749dd41aaef2bb888ecd1b5482e7f896465e5cd4981e3022d75d"
+  },
+  {
+    "artifact_hash": "e08b47f2864769084e1c2ccab145f28abe0a4dffde0d8453ffe9625fa9f45805",
+    "completed_at": "2026-07-13T15:30:23.525223Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "47cfb217f360facb629086d8b048abc544caf937e212fb597e9de07c61708ea7"
+  },
+  {
+    "artifact_hash": "8e9c5047657a51b3b9eb6b128b96a70351daeba95cd8f67d828f7e0fe10f69f1",
+    "completed_at": "2026-07-13T15:30:23.530224Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "afbed185ced5552183d1a4f5062b05bbe9aaf6b7bf061f1d2abad145b3dc9def"
+  },
+  {
+    "artifact_hash": "c9bbd48c5d03cdf1e0d7664365dea81710e4c65c15a05d9fc3a1481c5687489d",
+    "completed_at": "2026-07-13T15:30:23.535546Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "527fca4e20c2645eda30f175adce59d8692ff74178671670053e5d9088072615"
+  },
+  {
+    "artifact_hash": "425d7f13d1a487a9eb7c5c45118144ef6394a36af30942895d99af24be744c90",
+    "completed_at": "2026-07-13T15:30:23.540099Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8480320d43dc4c1000c45a4ea94d12259ade20a97f7955c2bed21c1badf4c415"
+  },
+  {
+    "artifact_hash": "318b4bbd60ebd98c257c6bcadf1ff734444172298db152f4b6d39cf7340654e1",
+    "completed_at": "2026-07-13T15:30:23.544862Z",
+    "event_slug": "highest-temperature-in-tokyo-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a8346606d2b6f6485ef196f14e5cefc75e9a17ba8eb5bbebabfe9bec5954c8aa"
+  },
+  {
+    "artifact_hash": "5c9d275cde9f42d479159c771de49b5e1c39f80e8e0ce03596ae117b89041858",
+    "completed_at": "2026-07-13T15:30:23.549289Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "98667619dab0f85544387718c79a4c6336ea19018585dac7802c82defdad0d56"
+  },
+  {
+    "artifact_hash": "6ee1f21da685e9b16b25f1f28f20145c05cd8de98a17349d6381ce6c2ab2b1f2",
+    "completed_at": "2026-07-13T15:30:23.553849Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "80d3ef3f57807058f41b38c7b22f8a9db96470c7a9a274043abe8aa2e075fd0c"
+  },
+  {
+    "artifact_hash": "bf1ead5a55ec441ad2b6dd1c24fd2affb03dae83dc402dd7ca3c1007bf38ba95",
+    "completed_at": "2026-07-13T15:30:23.558977Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "951f2f1c0ae9bc8124a9ff5f30db44d55b75de7e490dd7c3a11220c8c7735f58"
+  },
+  {
+    "artifact_hash": "28d19ed483080d9a9174b6efeb6a97939aa439a2dbe6788f66c45230e8ae1fe5",
+    "completed_at": "2026-07-13T15:30:23.563508Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c0c9fe275ffa28b4d5a65d9acb00a24c10496fdc397e6199c152e3e7fd81cb3e"
+  },
+  {
+    "artifact_hash": "f5d3abbfb8251e330d2ded975f26a2ca19535e45c11e9dcb342f62dbcec22d89",
+    "completed_at": "2026-07-13T15:30:23.567951Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0c7b756496b4f132eccd25b226ed5bb6d67c74a1e42aa51ad6811e4487d2d594"
+  },
+  {
+    "artifact_hash": "8c9ced56209b87375cd0d28bb9cb942d6130dff15eb6eb1fa3ef7d1fd2e85d04",
+    "completed_at": "2026-07-13T15:30:23.572766Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "f5f48ff940a9793f147a715ef2f75f5f60e7e679db1d488d0dde3e1e47266ceb"
+  },
+  {
+    "artifact_hash": "a436b5fcba6910fa8271618d7aed0fb6820f44b5dc2598210882387ae93aa654",
+    "completed_at": "2026-07-13T15:30:23.578046Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "c0abb59ce697bcbcab415e8ca6d16224aa9853c37621a4bac6293f01dfff5ae3"
+  },
+  {
+    "artifact_hash": "55d6a5877018a40494f916cac2ddb03473b3b48de6106a19a62624495ac928fc",
+    "completed_at": "2026-07-13T15:30:23.583212Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "4aacf05ac2e2fccb9205caf2012835d3c1f9d1da0d6577418415d034969111fd"
+  },
+  {
+    "artifact_hash": "e3959fffb4b8cb6e0bfff53fd8a13ba4ba86a396f866697f5408203a17e763e0",
+    "completed_at": "2026-07-13T15:30:23.587777Z",
+    "event_slug": "highest-temperature-in-toronto-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bd97fbc9257163c3e30fff345e42aab8a1306f6451bad5c7fa82cfd98cc0c8bf"
+  },
+  {
+    "artifact_hash": "e51b1ec74710600da9a97d92fd5eb16be18de9ea93fca44a1020c7252706a5a7",
+    "completed_at": "2026-07-13T15:30:23.594153Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "ef114abe44d6fbedf7bf08a55eaa08f3fb0c6ba12750edf784ea90d284712909"
+  },
+  {
+    "artifact_hash": "a22555a4c38c5297dd9dcfb769cfd6578b3fc0d67587c1908833bf041693c7d6",
+    "completed_at": "2026-07-13T15:30:23.601394Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8baecba8beae7309cbce2c3a5f6f62a9b43b1cd7cccc629bfce8906a7f15849a"
+  },
+  {
+    "artifact_hash": "8112314c6bc4529cb18993af2184faa906c2c2958c729940464ebfb2bd302a08",
+    "completed_at": "2026-07-13T15:30:23.607086Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8df43a27161d78928ca248dfd6aff3897b481d5a1386882792355cf5e0466f64"
+  },
+  {
+    "artifact_hash": "280bc9111ce251049f7a3cd726512df22ed9f05ad2070f5639e7629a58ae5b52",
+    "completed_at": "2026-07-13T15:30:23.611519Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b5ce09367297db677b073b59466b8842074d7d16f88fe05e591a71412bb85883"
+  },
+  {
+    "artifact_hash": "2b6f0eae4d03278551b2e5d47d2bcd1040afb00bfb22eb7a5675de2bab3c0f1d",
+    "completed_at": "2026-07-13T15:30:23.615966Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cc7b1fbbc2c2170172226b0b036d1df22e13f4b5a71bcea16695f84316746cb7"
+  },
+  {
+    "artifact_hash": "1e6319e9291d255c266508647c943ed998948ab5feb32a10d8ec60def016731b",
+    "completed_at": "2026-07-13T15:30:23.622942Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b4cbbdd5508d6310bccf368b4bf62e70e9961bdf25bb557b44ef1941a6adb7cd"
+  },
+  {
+    "artifact_hash": "e0a42fb188da211ddb61020e51013246140362dd2b5d0479ab4e7057d98b4f57",
+    "completed_at": "2026-07-13T15:30:23.627954Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1c573383cadd87c34f6ab4fe018f55272b578bc37c3e4f39ead593c5516a7547"
+  },
+  {
+    "artifact_hash": "738aeefbd6d6254431e6f5de11b0f504246ce97aac608c2cd917c0660eb99ebc",
+    "completed_at": "2026-07-13T15:30:23.632765Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "b4b7adfcf2d66fc2831f393cc6eaafa7aac967b2c26b8caf3103bc82d992ddc5"
+  },
+  {
+    "artifact_hash": "1e4502f5ab1e70b7d23b6c3ff2e159353d6e7f2d3274393dcf42d10c22c5177f",
+    "completed_at": "2026-07-13T15:30:23.637553Z",
+    "event_slug": "highest-temperature-in-warsaw-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a992a2b258d345aab0910f0967dcf33f9639ec949928bf92a6f94e849971cbce"
+  },
+  {
+    "artifact_hash": "9c90ed46ea16fb6eeaae9b5d8ebbd5bdac4fe88830822c9be522c5fb148774a5",
+    "completed_at": "2026-07-13T15:30:23.642305Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "a3841b2ddf13eff16decaf4239381c691b2eb08da995955bdf413757cb660d13"
+  },
+  {
+    "artifact_hash": "a66d250d0bac1de59769721bb729d4705775b1ea98e24935062a49fc82272132",
+    "completed_at": "2026-07-13T15:30:23.647126Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "edaf653353bebf0c75ec8a924fae50c1b342bc3a1afeeb512aa045dbfe32bc7b"
+  },
+  {
+    "artifact_hash": "d92225df17ec54f9de18fb17afd69e46b3c6222e02e8ba7948ba6e64235b4add",
+    "completed_at": "2026-07-13T15:30:23.652368Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8ecbaa39265cc29ab804585a3e5bb08802b52d25d79b97c1654597f3ca1cec4f"
+  },
+  {
+    "artifact_hash": "36241abde28769e44c85e3c0dd157e1f16d186bd7df6701821025113586de720",
+    "completed_at": "2026-07-13T15:30:23.656777Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "272c702a0260ebf848b19b736859aa45fa49efd49bb8a9423947169d52462d24"
+  },
+  {
+    "artifact_hash": "be58e2756e90c99e2c094e9cdcdc0c084fb1f2812766c5a46ddbc3bb6a56725c",
+    "completed_at": "2026-07-13T15:30:23.661222Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bfc468108665bbe07cffccbe84d3faa93a794c63744d339ccd06a113208c7401"
+  },
+  {
+    "artifact_hash": "c624dc2e18ada9ed41a4296dab3d318e140e026a07e2687bda797953555b2ac8",
+    "completed_at": "2026-07-13T15:30:23.666391Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "67b1e2048e8cf9d2c4b1ec78a4e34d24ec7a368b71979d31eb8ba1995ba1a346"
+  },
+  {
+    "artifact_hash": "977bcff4a2d50412097af5670b4930d31b7f54be260fc41327ca61b0b095357f",
+    "completed_at": "2026-07-13T15:30:23.671217Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "e61482644f6fa5af703262736b679c7640777c188f39c86849404a6a802e7213"
+  },
+  {
+    "artifact_hash": "f6a2519f72ea99e08673d7c525186a585b9400e0ed47d511b7c22f1c5a36704a",
+    "completed_at": "2026-07-13T15:30:23.676220Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "2a484d5fdf18c302f6ecf96b4185d6d9802a3164115cc0d80fc3f615b0d2b0b9"
+  },
+  {
+    "artifact_hash": "1a8b2526b8baaba67ee63d7a4ee7985f311bda97035f790c1b73bec6fbe6c7bb",
+    "completed_at": "2026-07-13T15:30:23.680860Z",
+    "event_slug": "highest-temperature-in-wellington-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "80f57170239f8111fba023d0b0913e228a90b27d707b9196cce587633502c2cd"
+  },
+  {
+    "artifact_hash": "d50ee674c66d68636ede37303bb9b0c9af36358728e3640270a39b573289f884",
+    "completed_at": "2026-07-13T15:30:23.686369Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-10-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8bbc96e688e70b8e02af555141c45d6102cafedbad5e48e486058575bbdcc57a"
+  },
+  {
+    "artifact_hash": "bd334aee973395c859bc37fbf78c2ab5f0506f5b384ecbe8b139fa0673d6a666",
+    "completed_at": "2026-07-13T15:30:23.691086Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-11-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "8a4615162850ca7bfd33d9460e2324e5d6a980869f1d030656fb3a807a330b40"
+  },
+  {
+    "artifact_hash": "e6b12fa8c2e86ab83b937006505a16262d29c847260610ec090730c9a98a2b53",
+    "completed_at": "2026-07-13T15:30:23.696112Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-12-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "1bc52fba71043dfc434be6c06fc68fade1f9adcb31d5a8c5d6da6e86f35b9a28"
+  },
+  {
+    "artifact_hash": "438b9cec1b0dae25e53f37c380e0b5e80b762515c234e375651f914950161e52",
+    "completed_at": "2026-07-13T15:30:23.700887Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-4-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "bf600919dadd56fd1e1a2d813203b239bfac6c0240e74ce7a306d0c62bb24675"
+  },
+  {
+    "artifact_hash": "05e0cc94959c82e4da737384218d21e90b05388309c7a7f8bd7a46c372ad2ac0",
+    "completed_at": "2026-07-13T15:30:23.705467Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-5-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "90d19231b6d74de652e3e117af3247418b7e169882289447764d8f081b9098df"
+  },
+  {
+    "artifact_hash": "a31052a31cfdb5cc51366b92f28fd444f7ee88f4629059a0efea350fb917bb5c",
+    "completed_at": "2026-07-13T15:30:23.710370Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-6-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "0cf94b5b203e922e41a0c6de972bb9c4085090a83b74811a17c4da9b028a7117"
+  },
+  {
+    "artifact_hash": "18ea289cf264a3c2404126e0b64d821eb5022325b54c2605a8018f778882b768",
+    "completed_at": "2026-07-13T15:30:23.715184Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-7-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "d9808f92be7bc0b5d42124257903f54f6d4dd7101177e40a08b2689d471635f5"
+  },
+  {
+    "artifact_hash": "1404385eae7f6f60fadd2d9416956427c8ee4ded3feb08438e0f2cb7dc015ca2",
+    "completed_at": "2026-07-13T15:30:23.720106Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-8-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "cfbb50f7b2e2378317790f113538199f3e851a7a1f2479c7ad99426eb615e51f"
+  },
+  {
+    "artifact_hash": "fdaab59c211e5c8c7d8278ac6e62a7a5cf467c17e54606de427b229a20379612",
+    "completed_at": "2026-07-13T15:30:23.724717Z",
+    "event_slug": "highest-temperature-in-wuhan-on-june-9-2026",
+    "stage": "inventory",
+    "started_at": "2026-07-13T15:30:21.450414Z",
+    "status": "succeeded",
+    "task_id": "91742aaab3a6161eeb10f7735422b5ff141d07ed128af8d5c94207afb320014b"
+  }
+]
