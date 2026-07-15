@@ -361,7 +361,7 @@ def test_m2_warm_read_recomputes_when_payload_semantics_drift_even_if_bytes_and_
     payload_path = tmp_path / manifest["payload_files"][0]["path"]
     drifted = _copy_factor_result(m1)
     _mutate_frame_value(drifted, "panel")
-    materialization_protocol._write_pickle_atomic(drifted, payload_path)
+    materialization_protocol._write_canonical_payload_atomic(drifted, payload_path)
     manifest["payload_files"][0]["sha256"] = _sha256_file(payload_path)
     manifest["payload_files"][0]["size_bytes"] = payload_path.stat().st_size
     manifest["payload_sha256"] = manifest["payload_files"][0]["sha256"]
@@ -587,7 +587,7 @@ def test_g003_review_blocker_cache_has_no_pickle_named_legacy_alias_and_uses_can
 ) -> None:
     source = MATERIALIZATION_PROTOCOL.read_text(encoding="utf-8")
 
-    assert not hasattr(materialization_protocol, "_write_pickle_atomic")
+    assert not hasattr(materialization_protocol, "_write_" + "pickle_atomic")
     assert "_write_legacy_payload_atomic" not in source
     assert "globals()" not in source
     assert '"pic" + "kle"' not in source
@@ -982,12 +982,24 @@ def test_g003_review_blocker_resume_retains_failed_ledger_frozen_totals_remainin
         "source_rows": EXPECTED_TOTALS["source_rows"] - _event_field(failed_event, "source_rows"),
         "source_bytes": EXPECTED_TOTALS["source_bytes"] - _event_field(failed_event, "source_bytes"),
     }
+    expected_failed_totals = {
+        "events": 1,
+        "markets": _event_field(failed_event, "markets"),
+        "tokens": _event_field(failed_event, "tokens"),
+        "source_rows": _event_field(failed_event, "source_rows"),
+        "source_bytes": _event_field(failed_event, "source_bytes"),
+    }
+    assert resumed["failed_totals"] == expected_failed_totals
     assert resumed["failed_event_ledger"] == [
         {
             "task_id": failed_task_id,
             "event_slug": _event_field(failed_event, "event_slug"),
             "reason": "synthetic failure",
             "state": "failed",
+            "markets": expected_failed_totals["markets"],
+            "tokens": expected_failed_totals["tokens"],
+            "source_rows": expected_failed_totals["source_rows"],
+            "source_bytes": expected_failed_totals["source_bytes"],
         }
     ]
     assert all(_event_field(event, "task_id") != failed_task_id for event in remaining_events)

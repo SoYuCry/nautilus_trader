@@ -103,6 +103,16 @@ materialization:
     cache_budget_bytes: 8589934592
     failure_isolation_unit: event
     event_state_on_start: pending
+    resume_contract:
+      ledger: cumulative_failed_event_ledger
+      frozen_totals: immutable_original_universe
+      failed_totals: explicit_five_dimension_totals
+      remaining_totals: explicit_five_dimension_totals
+      conservation_dimensions: [events, markets, tokens, source_rows, source_bytes]
+    resource_evidence:
+      representative_peak_rss_source: tracked_wave1_benchmark_report_path_hash_value
+      runtime_per_event_memory_cap_enforced_in_g003: false
+      source_bytes_are_memory_cap: false
   cli:
     dry_run_subcommand: dry-run
     validate_subcommand: validate-manifest

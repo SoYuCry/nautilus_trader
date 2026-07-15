@@ -11997,15 +11997,23 @@
     "compact_canonical_inventory_path": "polymarket\\research\\2026-07-14-pmxt-weather-factor-wave0\\outputs\\compact_canonical_inventory.json",
     "compact_canonical_inventory_sha256": "78d5e4d9249a10773ce1186759ca3e5b697bcbbb787aa343ef1f33f1f5868e43",
     "compact_canonical_inventory_source": "local_wave_minus1_inventory_parquet",
-    "materialization_decision_sha256": "aa2b52f3a2573edbe1d7b1e4bf8c4560203e42702ba39ea62633b293f277fb81"
+    "materialization_decision_sha256": "aa2b52f3a2573edbe1d7b1e4bf8c4560203e42702ba39ea62633b293f277fb81",
+    "wave1_benchmark_manifest_sha256": "9ec128d64005cc30ebd92649f7abcd825260296d39a7918dd6ee3f8c71edc3bb",
+    "wave1_benchmark_report_sha256": "7a0e84bfe978176a402bd5c70c6e44f257cc39a52a9c780d23f20cc994938fd0"
   },
   "resource_evidence": {
     "benchmark_worker_count": 1,
     "peak_rss_method": "Windows_PSAPI_GetProcessMemoryInfo_WorkingSetSize_sampled_every_10ms",
-    "per_event_memory_cap_bytes": 43448603,
-    "per_event_memory_cap_enforced": true,
-    "per_event_memory_cap_source": "canonical_inventory_max_event_source_bytes",
-    "representative_peak_rss_bytes": null
+    "per_event_memory_cap_bytes": null,
+    "per_event_memory_cap_enforced": false,
+    "per_event_memory_cap_source": "not_source_bytes_no_runtime_cap_enforced_in_g003",
+    "representative_peak_rss_bytes": 574627840,
+    "representative_peak_rss_provenance": {
+      "field": "max observed peak_rss_bytes/warm_peak_rss_bytes across Wave-1 benchmark rows",
+      "path": "polymarket\\research\\2026-07-14-pmxt-wave-minus1-materialization-benchmark\\outputs\\benchmark_report.json",
+      "sha256": "7a0e84bfe978176a402bd5c70c6e44f257cc39a52a9c780d23f20cc994938fd0"
+    },
+    "runtime_guard": "not_enforced_in_g003"
   },
   "shards": [
     {

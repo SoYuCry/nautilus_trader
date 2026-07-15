@@ -358,14 +358,19 @@ def build_g003_dry_run_manifest(
     provenance = {
         "benchmark_manifest_sha256": _sha256_file(Path(benchmark_manifest_path)),
         "benchmark_report_sha256": _sha256_file(Path(benchmark_report_path)),
+        "wave1_benchmark_manifest_sha256": _sha256_file(Path(benchmark_manifest_path)),
+        "wave1_benchmark_report_sha256": _sha256_file(Path(benchmark_report_path)),
         "cache_resume_tests_sha256": _sha256_file(Path(cache_resume_tests_path)),
         "materialization_decision_sha256": _sha256_file(Path(materialization_decision_path)),
         **inventory_provenance,
     }
     benchmark_manifest = _read_json(benchmark_manifest_path)
+    benchmark_report_path = Path(benchmark_report_path)
+    benchmark_manifest_path = Path(benchmark_manifest_path)
     benchmark_report = _read_json(benchmark_report_path)
     cache_resume_tests = _read_json(cache_resume_tests_path)
     materialization_decision = _read_json(materialization_decision_path)
+    representative_peak_rss_bytes = _max_benchmark_peak_rss_bytes(benchmark_report)
     if int(token_inventory["asset_id"].nunique()) != EXPECTED_TOTALS["tokens"]:
         raise AssertionError("token inventory unique token count mismatch")
 
@@ -424,10 +429,16 @@ def build_g003_dry_run_manifest(
         "resource_evidence": {
             "benchmark_worker_count": benchmark_manifest.get("worker_count"),
             "peak_rss_method": benchmark_manifest.get("peak_rss_method"),
-            "representative_peak_rss_bytes": benchmark_report.get("max_peak_rss_bytes"),
-            "per_event_memory_cap_bytes": max(event["source_bytes"] for event in events),
-            "per_event_memory_cap_enforced": True,
-            "per_event_memory_cap_source": "canonical_inventory_max_event_source_bytes",
+            "representative_peak_rss_bytes": representative_peak_rss_bytes,
+            "representative_peak_rss_provenance": {
+                "path": _repo_relative(benchmark_report_path),
+                "sha256": _sha256_file(benchmark_report_path),
+                "field": "max observed peak_rss_bytes/warm_peak_rss_bytes across Wave-1 benchmark rows",
+            },
+            "per_event_memory_cap_bytes": None,
+            "per_event_memory_cap_enforced": False,
+            "per_event_memory_cap_source": "not_source_bytes_no_runtime_cap_enforced_in_g003",
+            "runtime_guard": "not_enforced_in_g003",
         },
         "shards": shard_records,
         "totals": _totals(events),
@@ -444,17 +455,17 @@ def validate_g003_dry_run_manifest(manifest: dict[str, Any]) -> None:  # noqa: C
         raise AssertionError(f"totals mismatch: {manifest['totals']}")
     if manifest["cohort_totals"] != EXPECTED_COHORT_TOTALS:
         raise AssertionError("cohort totals mismatch")
+    if manifest["mode_policy"].get("M2") != M2_STATUS:
+        raise AssertionError("M2 mode policy must be eligible_not_selected")
+
     is_resume = "remaining_totals" in manifest
     expected_event_count = (
         int(manifest["remaining_totals"]["events"]) if is_resume else EXPECTED_TOTALS["events"]
     )
     if len(manifest["events"]) != expected_event_count:
-        raise AssertionError("event count mismatch")
+        raise AssertionError("remaining event count totals mismatch" if is_resume else "event count mismatch")
     if is_resume:
-        if manifest.get("frozen_totals") != EXPECTED_TOTALS:
-            raise AssertionError("frozen totals mismatch")
-        if _totals(manifest["events"]) != manifest["remaining_totals"]:
-            raise AssertionError("remaining totals mismatch")
+        _validate_resume_totals(manifest)
     if len(manifest["shards"]) != EXPECTED_SHARDS:
         raise AssertionError("shard count mismatch")
     task_ids = [event["task_id"] for event in manifest["events"]]
@@ -467,16 +478,43 @@ def validate_g003_dry_run_manifest(manifest: dict[str, Any]) -> None:  # noqa: C
         raise AssertionError("worker_cap mismatch")
     if manifest["cache_budget_bytes"] != EXPECTED_CACHE_BUDGET_BYTES:
         raise AssertionError("cache budget mismatch")
-    if manifest["mode_policy"]["M1"] != "oracle" or manifest["mode_policy"]["M3"] != "audit_only":
+    if manifest["mode_policy"].get("M1") != "oracle" or manifest["mode_policy"].get("M3") != "audit_only":
         raise AssertionError("mode policy mismatch")
-    if manifest["mode_policy"]["M2"] not in {"disabled_pending_parity", "eligible_not_selected"}:
-        raise AssertionError("M2 policy mismatch")
     if manifest["event_level_single_read"] != {
         "enabled": False,
         "status": "deferred_pending_exact_parity",
     }:
         raise AssertionError("single-read deferral mismatch")
 
+
+def _validate_resume_totals(manifest: dict[str, Any]) -> None:  # noqa: C901
+    ledger = manifest.get("failed_event_ledger")
+    if not isinstance(ledger, list) or not ledger:
+        raise AssertionError("failed ledger missing or empty")
+    if manifest.get("frozen_totals") != EXPECTED_TOTALS:
+        raise AssertionError("frozen totals mismatch")
+    remaining_totals = _totals(manifest["events"])
+    if remaining_totals != manifest.get("remaining_totals"):
+        raise AssertionError("remaining totals mismatch")
+    failed_totals = _totals_from_failed_ledger(ledger)
+    if failed_totals != manifest.get("failed_totals"):
+        raise AssertionError("failed totals mismatch")
+    if len({entry.get("task_id") for entry in ledger}) != len(ledger):
+        raise AssertionError("failed ledger task IDs must be unique")
+    if sorted(ledger, key=lambda entry: entry["task_id"]) != ledger:
+        raise AssertionError("failed ledger must be sorted by task_id")
+    remaining_ids = {event["task_id"] for event in manifest["events"]}
+    if any(entry.get("task_id") in remaining_ids for entry in ledger):
+        raise AssertionError("failed ledger overlaps remaining events")
+    for entry in ledger:
+        if entry.get("state") != "failed" or not entry.get("reason") or not entry.get("event_slug"):
+            raise AssertionError("failed ledger entry incomplete")
+        task_id = entry.get("task_id")
+        if not isinstance(task_id, str) or not task_id.startswith("g003-event-") or len(task_id) != 35:
+            raise AssertionError("failed ledger task_id invalid")
+    for key in ("events", "markets", "tokens", "source_rows", "source_bytes"):
+        if manifest["frozen_totals"][key] != manifest["remaining_totals"][key] + manifest["failed_totals"][key]:
+            raise AssertionError(f"resume conservation totals mismatch for {key}")
 
 def record_event_failure(manifest: dict[str, Any], *, task_id: str, reason: str) -> dict[str, Any]:
     updated = json.loads(json.dumps(manifest, sort_keys=True))
@@ -497,21 +535,17 @@ def record_event_failure(manifest: dict[str, Any], *, task_id: str, reason: str)
 
 
 def build_resume_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
-    failed_ledger = [
-        {
-            "event_slug": event["event_slug"],
-            "reason": event.get("failure_reason"),
-            "state": "failed",
-            "task_id": event["task_id"],
-        }
+    existing_ledger = list(manifest.get("failed_event_ledger", []))
+    existing_ids = {entry["task_id"] for entry in existing_ledger}
+    newly_failed = [
+        _failed_ledger_entry(event)
         for event in manifest["events"]
         if event.get("state", event.get("initial_state")) == "failed"
+        and event["task_id"] not in existing_ids
     ]
-    remaining = [
-        event
-        for event in manifest["events"]
-        if event.get("state", event.get("initial_state")) != "failed"
-    ]
+    failed_ledger = sorted(existing_ledger + newly_failed, key=lambda event: event["task_id"])
+    failed_ids = {entry["task_id"] for entry in failed_ledger}
+    remaining = [event for event in manifest["events"] if event["task_id"] not in failed_ids]
     resumed = json.loads(json.dumps(manifest, sort_keys=True))
     resumed["events"] = remaining
     remaining_ids = {event["task_id"] for event in remaining}
@@ -528,13 +562,36 @@ def build_resume_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             },
         )
     resumed["shards"] = shards
-    resumed["failed_event_ledger"] = sorted(failed_ledger, key=lambda event: event["task_id"])
+    resumed["failed_event_ledger"] = failed_ledger
     resumed["frozen_totals"] = manifest.get("frozen_totals", manifest["totals"])
+    resumed["failed_totals"] = _totals_from_failed_ledger(failed_ledger)
     resumed["remaining_totals"] = _totals(remaining)
     resumed["resume_policy"] = "skip_failed_event_level_units"
     validate_g003_dry_run_manifest(resumed)
     return resumed
 
+
+def _failed_ledger_entry(event: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "task_id": event["task_id"],
+        "event_slug": event["event_slug"],
+        "reason": event.get("failure_reason"),
+        "state": "failed",
+        "markets": int(event["markets"]),
+        "tokens": int(event["tokens"]),
+        "source_rows": int(event["source_rows"]),
+        "source_bytes": int(event["source_bytes"]),
+    }
+
+
+def _totals_from_failed_ledger(ledger: list[dict[str, Any]]) -> dict[str, int]:
+    return {
+        "events": len(ledger),
+        "markets": sum(int(entry["markets"]) for entry in ledger),
+        "tokens": sum(int(entry["tokens"]) for entry in ledger),
+        "source_rows": sum(int(entry["source_rows"]) for entry in ledger),
+        "source_bytes": sum(int(entry["source_bytes"]) for entry in ledger),
+    }
 
 def large_derivative_tracking_policy() -> str:
     return "untracked"
@@ -997,24 +1054,6 @@ def _write_canonical_payload_atomic(payload: dict[str, Any], path: Path) -> None
     os.replace(tmp, path)
 
 
-def __getattr__(name: str) -> Any:
-    # Backward compatibility for the pre-G003 unit test helper only: production
-    # code no longer exposes a pickle/legacy writer, and general introspection
-    # must observe that the legacy alias is absent.
-    if name == "_write_" + "pickle_atomic":
-        caller = sys._getframe(1)
-        for _ in range(4):
-            if caller.f_code.co_name == (
-                "test_m2_warm_read_recomputes_when_payload_semantics_drift_"
-                "even_if_bytes_and_manifest_are_self_consistent"
-            ):
-                return _write_canonical_payload_atomic
-            if caller.f_back is None:
-                break
-            caller = caller.f_back
-    raise AttributeError(name)
-
-
 def _read_canonical_payload(path: Path) -> dict[str, Any]:
     encoded = json.loads(path.read_text(encoding="utf-8"))
     if encoded.get("format") != "pmxt_factor_result_canonical_json_v1":
@@ -1257,10 +1296,13 @@ def _load_valid_committed_real_parity_rows(
 def _committed_real_row_is_valid(row: dict[str, Any], spec: dict[str, Any]) -> bool:
     attestation = row.get("parity_attestation", {})
     sources = attestation.get("sources", {})
-    expected_sources = _parity_source_hashes(_real_source_hashes(spec))
+    expected_source_hashes = _real_source_hashes(spec)
+    expected_sources = _parity_source_hashes(expected_source_hashes)
     if attestation.get("oracle") != "factor_protocol.run_factor_protocol":
         return False
     if attestation.get("horizons_seconds") != list(PRIMARY_HORIZONS_SECONDS):
+        return False
+    if sources.get("source_hashes") != expected_source_hashes:
         return False
     if any(sources.get(key) != value for key, value in expected_sources.items()):
         return False
@@ -1662,6 +1704,26 @@ def _source_benchmark_evidence(
         "cache_resume_tests_sha256": _sha256_file(cache_resume_tests_path),
         "status": "frozen_representative_real_evidence_reused_without_overwrite",
     }
+
+
+def _max_benchmark_peak_rss_bytes(value: Any) -> int:
+    peaks: list[int] = []
+
+    def visit(item: Any) -> None:
+        if isinstance(item, dict):
+            for key, nested in item.items():
+                if key in {"peak_rss_bytes", "warm_peak_rss_bytes", "max_peak_rss_bytes"} and isinstance(nested, int):
+                    peaks.append(nested)
+                else:
+                    visit(nested)
+        elif isinstance(item, list):
+            for nested in item:
+                visit(nested)
+
+    visit(value)
+    if not peaks:
+        raise AssertionError("Wave-1 benchmark report contains no representative peak RSS evidence")
+    return max(peaks)
 
 
 def _repo_relative(path: str | Path) -> str:

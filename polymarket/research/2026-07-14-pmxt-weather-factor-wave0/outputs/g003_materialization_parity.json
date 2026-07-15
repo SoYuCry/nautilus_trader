@@ -11,16 +11,16 @@
       "modes": {
         "M1": {
           "cache_status": "direct_no_persistent_derivative",
-          "cold_elapsed_seconds": 0.00014670000382466242
+          "cold_elapsed_seconds": 0.00016360000154236332
         },
         "M2": {
           "cache_status": "warm_validated",
-          "cold_elapsed_seconds": 0.0365103999938583,
+          "cold_elapsed_seconds": 0.035659300003317185,
           "resume_behavior": {
             "invalid_cache_reason": "payload_hash_mismatch_recomputed_via_m1",
             "removed_partial_artifacts": 0
           },
-          "warm_elapsed_seconds": 0.023494499997468665
+          "warm_elapsed_seconds": 0.026075499998114537
         },
         "M3": {
           "mode": "M3",
@@ -44,12 +44,12 @@
       "modes": {
         "M1": {
           "cache_status": "direct_no_persistent_derivative",
-          "cold_elapsed_seconds": 184.11102040000696,
+          "cold_elapsed_seconds": 212.7145412000027,
           "mode": "M1"
         },
         "M2": {
           "cache_status": "warm_validated",
-          "cold_elapsed_seconds": 37.50437979999697,
+          "cold_elapsed_seconds": 30.49132180000015,
           "mode": "M2",
           "resume_behavior": {
             "invalid_cache_reason": "payload_hash_mismatch_recomputed_via_m1",
@@ -57,7 +57,7 @@
             "recovery_mode": "M1",
             "removed_partial_artifacts": 0
           },
-          "warm_elapsed_seconds": 31.00519639999402
+          "warm_elapsed_seconds": 30.358198100002483
         },
         "M3": {
           "cache_resume_audit_status": "available",
@@ -80,7 +80,7 @@
         "sources": {
           "adapter": "PMXTEventV1Adapter/O1",
           "factor_protocol_sha256": "d464165d34e91fe251e112bf400681f30e3786359ac252002b352ea5c7348cea",
-          "materialization_protocol_sha256": "b7e69464580627f4c36479c0f2ff4f2769f027fa96b777ae09b21b1f6cac9fba",
+          "materialization_protocol_sha256": "5e840331d26e567aacc58e2f762b0c7c6c0dd179dec093fd6487e5c68f9a27ff",
           "pmxt_event_adapter_sha256": "090d79f13e9552bcfe78da56290460e7b598fb1dd4aa11a326c6c5579e2c834a",
           "protocol_json_sha256": "5316e568c6c0ac9ce44812be112802001a54eb50a396f4dc518ba20f8242c836",
           "replay_contract_sha256": "5ae9e4e37437770f12c6d04e0776662b58ae96b91355237b148b48348d452b0a",
@@ -1567,12 +1567,12 @@
       "modes": {
         "M1": {
           "cache_status": "direct_no_persistent_derivative",
-          "cold_elapsed_seconds": 22.453036399994744,
+          "cold_elapsed_seconds": 21.26909510000405,
           "mode": "M1"
         },
         "M2": {
           "cache_status": "warm_validated",
-          "cold_elapsed_seconds": 10.191110100000515,
+          "cold_elapsed_seconds": 10.532249500000034,
           "mode": "M2",
           "resume_behavior": {
             "invalid_cache_reason": "payload_hash_mismatch_recomputed_via_m1",
@@ -1580,7 +1580,7 @@
             "recovery_mode": "M1",
             "removed_partial_artifacts": 0
           },
-          "warm_elapsed_seconds": 10.795006200001808
+          "warm_elapsed_seconds": 9.89668079999683
         },
         "M3": {
           "cache_resume_audit_status": "available",
@@ -1603,7 +1603,7 @@
         "sources": {
           "adapter": "PMXTEventV1Adapter/O1",
           "factor_protocol_sha256": "d464165d34e91fe251e112bf400681f30e3786359ac252002b352ea5c7348cea",
-          "materialization_protocol_sha256": "b7e69464580627f4c36479c0f2ff4f2769f027fa96b777ae09b21b1f6cac9fba",
+          "materialization_protocol_sha256": "5e840331d26e567aacc58e2f762b0c7c6c0dd179dec093fd6487e5c68f9a27ff",
           "pmxt_event_adapter_sha256": "090d79f13e9552bcfe78da56290460e7b598fb1dd4aa11a326c6c5579e2c834a",
           "protocol_json_sha256": "5316e568c6c0ac9ce44812be112802001a54eb50a396f4dc518ba20f8242c836",
           "replay_contract_sha256": "5ae9e4e37437770f12c6d04e0776662b58ae96b91355237b148b48348d452b0a",
@@ -3090,12 +3090,12 @@
       "modes": {
         "M1": {
           "cache_status": "direct_no_persistent_derivative",
-          "cold_elapsed_seconds": 2.4735348999965936,
+          "cold_elapsed_seconds": 2.131663899999694,
           "mode": "M1"
         },
         "M2": {
           "cache_status": "warm_validated",
-          "cold_elapsed_seconds": 0.5123014999990119,
+          "cold_elapsed_seconds": 0.35989180000615306,
           "mode": "M2",
           "resume_behavior": {
             "invalid_cache_reason": "payload_hash_mismatch_recomputed_via_m1",
@@ -3103,7 +3103,7 @@
             "recovery_mode": "M1",
             "removed_partial_artifacts": 0
           },
-          "warm_elapsed_seconds": 0.4237922999964212
+          "warm_elapsed_seconds": 0.315875699998287
         },
         "M3": {
           "cache_resume_audit_status": "available",
@@ -3126,7 +3126,7 @@
         "sources": {
           "adapter": "PMXTEventV1Adapter/O1",
           "factor_protocol_sha256": "d464165d34e91fe251e112bf400681f30e3786359ac252002b352ea5c7348cea",
-          "materialization_protocol_sha256": "b7e69464580627f4c36479c0f2ff4f2769f027fa96b777ae09b21b1f6cac9fba",
+          "materialization_protocol_sha256": "5e840331d26e567aacc58e2f762b0c7c6c0dd179dec093fd6487e5c68f9a27ff",
           "pmxt_event_adapter_sha256": "090d79f13e9552bcfe78da56290460e7b598fb1dd4aa11a326c6c5579e2c834a",
           "protocol_json_sha256": "5316e568c6c0ac9ce44812be112802001a54eb50a396f4dc518ba20f8242c836",
           "replay_contract_sha256": "5ae9e4e37437770f12c6d04e0776662b58ae96b91355237b148b48348d452b0a",
