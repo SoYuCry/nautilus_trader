@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-07-15T05:31:04.903463+00:00",
+  "stage": "pilot_6_event",
+  "events": 6,
+  "event_failures": 0,
+  "token_failures": 0,
+  "skipped_tokens": 22,
+  "direct_native_parity_pass": false,
+  "wall_elapsed_seconds": 226.24416249999194,
+  "report": "C:\\Projects\\nautilus_trader\\polymarket\\research\\2026-07-15-pmxt-weather-next-stage-experiments\\report\\pilot_report.md"
+}

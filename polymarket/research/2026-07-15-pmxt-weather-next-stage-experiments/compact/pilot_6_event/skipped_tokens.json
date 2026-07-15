@@ -1,0 +1,121 @@
+{
+  "highest-temperature-in-chicago-on-june-4-2026": [
+    {
+      "market_label": "48-49°F",
+      "token_id": "4877609936425713822930097153010993333233601026535604151368910250100675228935",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "50-51°F",
+      "token_id": "17554745367701016628065620828272696006720481989896397006850503788642798144353",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "52-53°F",
+      "token_id": "12738821075901198025772292753201692095531770473287869188854006082644067178718",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "54-55°F",
+      "token_id": "17730986904744483119203608344014674290790580519740887310514669372175030364425",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "56-57°F",
+      "token_id": "78247903714633128829461995988104844650572528143123308247754936492821768522473",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "58-59°F",
+      "token_id": "114156668586710007473879367692997387568439607159453395447031994568895883234908",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "60-61°F",
+      "token_id": "23722718602475245947500368713659219961003286363625560647207172138511101007079",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "62-63°F",
+      "token_id": "63044105540633836862156792410035100962681360438969365312412104565919167601367",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "64-65°F",
+      "token_id": "2294956154852470500756010884118231075253045769641303858862693590486269407877",
+      "reason": "no ranking observations"
+    }
+  ],
+  "highest-temperature-in-denver-on-june-4-2026": [
+    {
+      "market_label": "55°F or below",
+      "token_id": "52471060122779847657819606601047158770876649853474075692475678704417666251815",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "56-57°F",
+      "token_id": "37586914945595317398107321072041028325532456108948668295727300000828436037648",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "58-59°F",
+      "token_id": "104169018744549296252849991248764756945027197044217450322025818558935521221813",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "60-61°F",
+      "token_id": "83983425234136365092644035981572152078961669425361618058543212764372244169684",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "62-63°F",
+      "token_id": "92967436409374632255014102595489238712067336077773128823043291588930476995043",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "64-65°F",
+      "token_id": "80580316999955079104861661762276174747883922249282767397159978829548015898058",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "66-67°F",
+      "token_id": "108490177558359600172282351898229663602342658149320724485056967465216784862265",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "68-69°F",
+      "token_id": "81951112064689684457941387134844855126497490357489025762580903862354902470039",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "70-71°F",
+      "token_id": "10457726199119293482767218326685640416398450220490084907714118724956506860936",
+      "reason": "no ranking observations"
+    }
+  ],
+  "highest-temperature-in-seattle-on-june-5-2026": [
+    {
+      "market_label": "78-79°F",
+      "token_id": "32578065900914392056445487107057385022928582918521137513543801284451709817728",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "82-83°F",
+      "token_id": "68877846913302315880368379585980748096438079127354622116212040198910498201436",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "84-85°F",
+      "token_id": "83771765322118494967282883866220132703192953231368065180897619480953120649306",
+      "reason": "no ranking observations"
+    },
+    {
+      "market_label": "86-87°F",
+      "token_id": "21061505651850115505700848504682183463814186660946920762375995505566357783139",
+      "reason": "no ranking observations"
+    }
+  ],
+  "highest-temperature-in-buenos-aires-on-june-12-2026": [],
+  "highest-temperature-in-mexico-city-on-june-12-2026": [],
+  "highest-temperature-in-houston-on-june-12-2026": []
+}

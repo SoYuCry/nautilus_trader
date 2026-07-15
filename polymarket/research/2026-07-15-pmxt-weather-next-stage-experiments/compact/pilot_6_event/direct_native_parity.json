@@ -1,0 +1,66 @@
+[
+  {
+    "event_slug": "highest-temperature-in-chicago-on-june-4-2026",
+    "leg": "YES",
+    "condition_id": "0x11f4ca905ef076c53bd5b3da6442508d06a238a285abce2fdf125623b42547ff",
+    "asset_id": "90126329302086190846098290501947516698603202176436371691446950377026992913400",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=1, asset_id='90126329302086190846098290501947516698603202176436371691446950377026992913400', price=0.0170, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-chicago-on-june-4-2026",
+    "leg": "NO",
+    "condition_id": "0x11f4ca905ef076c53bd5b3da6442508d06a238a285abce2fdf125623b42547ff",
+    "asset_id": "49330949977993908230502901022798730169169814669623830777909402367006226411358",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=1, asset_id='49330949977993908230502901022798730169169814669623830777909402367006226411358', price=0.9830, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-12-2026",
+    "leg": "YES",
+    "condition_id": "0x65d68e7f956b36006c2ed851ca72fb975dd8a1cab898b1a2722a6bde08c77e78",
+    "asset_id": "67662657750444698263731840109065678711002643777447548809641229695721103475506",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=6, asset_id='67662657750444698263731840109065678711002643777447548809641229695721103475506', price=0.0090, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-buenos-aires-on-june-12-2026",
+    "leg": "NO",
+    "condition_id": "0x65d68e7f956b36006c2ed851ca72fb975dd8a1cab898b1a2722a6bde08c77e78",
+    "asset_id": "65259375081270103651608360661668176660383457964316274701329910400877785805706",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=6, asset_id='65259375081270103651608360661668176660383457964316274701329910400877785805706', price=0.9910, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-mexico-city-on-june-12-2026",
+    "leg": "YES",
+    "condition_id": "0xb546f21431971dc2f0856a409bd108026dfeda232166f02c9c01554e7f55d716",
+    "asset_id": "5755911422204087848210823103345316846068606546258616757056814489745862338711",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=1, asset_id='5755911422204087848210823103345316846068606546258616757056814489745862338711', price=0.8460, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-mexico-city-on-june-12-2026",
+    "leg": "NO",
+    "condition_id": "0xb546f21431971dc2f0856a409bd108026dfeda232166f02c9c01554e7f55d716",
+    "asset_id": "81183560587869077889921883831566817332098622459976006371462027185469916120897",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=1, asset_id='81183560587869077889921883831566817332098622459976006371462027185469916120897', price=0.1540, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-houston-on-june-12-2026",
+    "leg": "YES",
+    "condition_id": "0xfd8f4fe9001b8b533a44524d16a0a64f516e9aa58ea8ae2fb37a7432413b5819",
+    "asset_id": "61406671860408319876112088291124268817622450216106181837689511617153445368858",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=1, asset_id='61406671860408319876112088291124268817622450216106181837689511617153445368858', price=0.001, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-houston-on-june-12-2026",
+    "leg": "NO",
+    "condition_id": "0xfd8f4fe9001b8b533a44524d16a0a64f516e9aa58ea8ae2fb37a7432413b5819",
+    "asset_id": "65448051118858129999000033013705327241952204477159036555097894692777448080695",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=3, asset_id='65448051118858129999000033013705327241952204477159036555097894692777448080695', price=0.1440, effective_tick_size=0.01\")"
+  }
+]
