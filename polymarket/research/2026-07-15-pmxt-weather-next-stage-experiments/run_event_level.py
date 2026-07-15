@@ -225,7 +225,16 @@ def event_grid(event: dict[str, Any]) -> pd.DataFrame:
         state = token[token.ranking_observation].drop_duplicates("timestamp", keep="last")
         if state.empty:
             continue
-        merged = pd.merge_asof(grid_times, state, on="timestamp", direction="backward", allow_exact_matches=True)
+        state = state.rename(columns={"timestamp": "state_timestamp"})
+        merged = pd.merge_asof(
+            grid_times,
+            state,
+            left_on="timestamp",
+            right_on="state_timestamp",
+            direction="backward",
+            allow_exact_matches=True,
+        )
+        merged["state_age_seconds"] = (merged.timestamp - merged.state_timestamp).dt.total_seconds()
         merged["token_id"] = token_id
         minute_mutations = token[token.actual_mutation].set_index("timestamp").resample(GRID_FREQUENCY).size().reindex(grid_times.timestamp, fill_value=0)
         minute_trades = token[token.event_type.astype(str).str.contains("trade", case=False, na=False)].set_index("timestamp").resample(GRID_FREQUENCY).size().reindex(grid_times.timestamp, fill_value=0)
