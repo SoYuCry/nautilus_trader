@@ -842,37 +842,76 @@ def _add_labels(panel: pd.DataFrame, horizons: tuple[int, ...], barrier_index: _
         barriers = barrier_index.for_token((market, token_id))
         anchors = token[token["ranking_observation"]]
         mutations = token[token["actual_mutation"]]
-        target_indexes = list(mutations.index)
-        target_timestamps = list(mutations["timestamp"])
-
-        for index in anchors.index:
-            current_ts = panel.loc[index, "timestamp"]
-            current_mid = float(panel.loc[index, "mid"])
-            for horizon in horizons:
-                target = current_ts + pd.Timedelta(seconds=horizon)
-                match_index = _fixed_horizon_match(target_indexes, target_timestamps, target)
-                if match_index is None:
-                    barrier = _first_barrier_between(barriers, current_ts, target)
-                    panel.loc[index, f"label_censor_reason_{horizon}s"] = (
-                        _barrier_reason(barrier) if barrier is not None else "missing_future_mid"
-                    )
-                    continue
-                barrier = _first_barrier_between(barriers, current_ts, panel.loc[match_index, "timestamp"])
-                if barrier is not None:
-                    panel.loc[index, f"label_censor_reason_{horizon}s"] = _barrier_reason(barrier)
-                    continue
-                future_mid = float(panel.loc[match_index, "mid"])
-                future_validity = panel.loc[match_index, "book_validity"]
-                panel.loc[index, f"label_matched_timestamp_{horizon}s"] = panel.loc[match_index, "timestamp"]
-                panel.loc[index, f"future_book_validity_{horizon}s"] = future_validity
-                if future_validity == "valid" and math.isfinite(current_mid) and math.isfinite(future_mid):
-                    panel.loc[index, f"future_mid_{horizon}s"] = future_mid
-                    panel.loc[index, f"future_mid_return_{horizon}s"] = future_mid - current_mid
-                else:
-                    panel.loc[index, f"label_censor_reason_{horizon}s"] = "invalid_future_book"
-
+        _add_fixed_horizon_group_labels(panel, anchors, mutations, barriers, horizons)
         _add_next_nonzero_group_labels(panel, mutations, barriers)
     return panel
+
+
+def _add_fixed_horizon_group_labels(  # noqa: C901
+    panel: pd.DataFrame,
+    anchors: pd.DataFrame,
+    mutations: pd.DataFrame,
+    barriers: list[_LabelBarrier],
+    horizons: tuple[int, ...],
+) -> None:
+    mutation_rows = list(mutations.itertuples())
+    mutation_timestamps = [row.timestamp for row in mutation_rows]
+    if not mutation_rows:
+        for horizon in horizons:
+            indexes = list(anchors.index)
+            if indexes:
+                panel.loc[indexes, f"label_censor_reason_{horizon}s"] = ["missing_future_mid"] * len(indexes)
+        return
+
+    for horizon in horizons:
+        matched_indexes: list[Any] = []
+        matched_timestamps: list[pd.Timestamp] = []
+        matched_validities: list[str] = []
+        valid_indexes: list[Any] = []
+        future_mids: list[float] = []
+        future_returns: list[float] = []
+        censor_indexes: list[Any] = []
+        censor_reasons: list[str] = []
+        delta = pd.Timedelta(seconds=horizon)
+
+        for anchor in anchors.itertuples():
+            current_ts = anchor.timestamp
+            current_mid = float(anchor.mid)
+            target = current_ts + delta
+            position = bisect_left(mutation_timestamps, target)
+            if position == len(mutation_rows):
+                barrier = _first_barrier_between(barriers, current_ts, target)
+                censor_indexes.append(anchor.Index)
+                censor_reasons.append(_barrier_reason(barrier) if barrier is not None else "missing_future_mid")
+                continue
+            position = bisect_right(mutation_timestamps, mutation_timestamps[position]) - 1
+            future = mutation_rows[position]
+            barrier = _first_barrier_between(barriers, current_ts, future.timestamp)
+            if barrier is not None:
+                censor_indexes.append(anchor.Index)
+                censor_reasons.append(_barrier_reason(barrier))
+                continue
+
+            future_mid = float(future.mid)
+            matched_indexes.append(anchor.Index)
+            matched_timestamps.append(future.timestamp)
+            matched_validities.append(future.book_validity)
+            if future.book_validity == "valid" and math.isfinite(current_mid) and math.isfinite(future_mid):
+                valid_indexes.append(anchor.Index)
+                future_mids.append(future_mid)
+                future_returns.append(future_mid - current_mid)
+            else:
+                censor_indexes.append(anchor.Index)
+                censor_reasons.append("invalid_future_book")
+
+        if matched_indexes:
+            panel.loc[matched_indexes, f"label_matched_timestamp_{horizon}s"] = matched_timestamps
+            panel.loc[matched_indexes, f"future_book_validity_{horizon}s"] = matched_validities
+        if valid_indexes:
+            panel.loc[valid_indexes, f"future_mid_{horizon}s"] = future_mids
+            panel.loc[valid_indexes, f"future_mid_return_{horizon}s"] = future_returns
+        if censor_indexes:
+            panel.loc[censor_indexes, f"label_censor_reason_{horizon}s"] = censor_reasons
 
 
 def _fixed_horizon_match(

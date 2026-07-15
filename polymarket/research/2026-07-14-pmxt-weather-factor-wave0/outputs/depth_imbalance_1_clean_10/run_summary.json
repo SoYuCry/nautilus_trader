@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-07-15T03:01:01.904895+00:00",
+  "factor": "depth_imbalance_1",
+  "horizons_seconds": [
+    30,
+    120,
+    600
+  ],
+  "event_count": 10,
+  "yes_token_count": 110,
+  "failure_count": 0,
+  "wall_elapsed_seconds": 438.56092380000337,
+  "report": "polymarket\\research\\2026-07-14-pmxt-weather-factor-wave0\\outputs\\depth_imbalance_1_clean_10\\report.md"
+}
