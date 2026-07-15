@@ -533,6 +533,22 @@ def test_g003_review_blocker_post_parity_m2_state_is_consistently_eligible_not_s
     assert decision["mode_policy"] == parity["mode_policy"]
 
 
+def test_g003_second_review_blocker_post_g003_dry_run_validator_accepts_only_m2_eligible_not_selected(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
+
+    assert manifest["mode_policy"]["M2"] == "eligible_not_selected"
+    materialization_protocol.validate_g003_dry_run_manifest(manifest)
+
+    for stale_status in ("disabled_pending_parity", "selected", "audit_only"):
+        stale = copy.deepcopy(manifest)
+        stale["mode_policy"]["M2"] = stale_status
+        with pytest.raises(AssertionError, match=r"(?i)M2|eligible_not_selected|mode policy"):
+            materialization_protocol.validate_g003_dry_run_manifest(stale)
+
+
 def test_g003_review_blocker_m2_budget_uses_final_payload_and_final_manifest_bytes(
     materialization_protocol: Any,
     factor_protocol: Any,
@@ -580,6 +596,27 @@ def test_g003_review_blocker_cache_has_no_pickle_named_legacy_alias_and_uses_can
     assert "_read_canonical_payload" in source
 
 
+def test_g003_second_review_blocker_has_no_module_getattr_escape_hatch_and_semantic_drift_test_uses_canonical_json_helper() -> None:
+    """Legacy pickle-named compatibility must be deleted from code and tests, not hidden behind __getattr__."""
+    production_source = MATERIALIZATION_PROTOCOL.read_text(encoding="utf-8")
+    test_source = Path(__file__).read_text(encoding="utf-8")
+    forbidden_pickle_writer_name = "_write_" + "pickle_atomic"
+    forbidden_pickle_token = "pic" + "kle"
+
+    assert "def __getattr__(" not in production_source
+    assert "__getattr__" not in production_source
+    assert forbidden_pickle_writer_name not in production_source
+    assert forbidden_pickle_writer_name not in test_source
+    assert forbidden_pickle_token not in production_source.lower()
+    assert ".pkl" not in production_source
+
+    semantic_drift_source = inspect.getsource(
+        test_m2_warm_read_recomputes_when_payload_semantics_drift_even_if_bytes_and_manifest_are_self_consistent,
+    )
+    assert "_write_canonical_payload_atomic" in semantic_drift_source
+    assert forbidden_pickle_writer_name not in semantic_drift_source
+
+
 def test_g003_review_blocker_real_reuse_attestation_is_hash_bound_and_fail_closed(
     materialization_protocol: Any,
 ) -> None:
@@ -603,6 +640,26 @@ def test_g003_review_blocker_real_reuse_attestation_is_hash_bound_and_fail_close
         tampered = copy.deepcopy(row)
         tampered["parity_attestation"]["sources"][key] = "0" * 64
         assert materialization_protocol._committed_real_row_is_valid(tampered, reusable_spec) is False
+
+
+def test_g003_second_review_blocker_real_reuse_attestation_rejects_nested_source_hash_drift_without_derived_field_updates(
+    materialization_protocol: Any,
+) -> None:
+    """The committed real row must be invalid when nested source hashes drift, even if derived digest fields stay stale."""
+    row = _real_parity_rows(_read_json(G003_PARITY_PATH))[0]
+    sources = row["parity_attestation"]["sources"]
+    source_hashes = sources["source_hashes"]
+    mutated_hash_key = next(iter(source_hashes))
+    reusable_spec = {"event_slug": row["event_slug"], "hashes": source_hashes, "paths": {}}
+
+    assert materialization_protocol._committed_real_row_is_valid(row, reusable_spec) is True
+
+    tampered = copy.deepcopy(row)
+    tampered["parity_attestation"]["sources"]["source_hashes"][mutated_hash_key] = "0" * 64
+
+    assert tampered["parity_attestation"]["sources"]["source_hashes_sha256"] == sources["source_hashes_sha256"]
+    assert tampered["parity_attestation"]["sources"]["source_artifact_sha256"] == sources["source_artifact_sha256"]
+    assert materialization_protocol._committed_real_row_is_valid(tampered, reusable_spec) is False
 
 
 def test_m3_is_rejected_as_execution_mode_and_allowed_only_for_audit(
@@ -937,6 +994,44 @@ def test_g003_review_blocker_resume_retains_failed_ledger_frozen_totals_remainin
     materialization_protocol.validate_g003_dry_run_manifest(resumed)
 
 
+def test_g003_second_review_blocker_resume_of_resume_preserves_failed_ledger_frozen_totals_and_conservation(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
+    failed_event = _manifest_events(manifest)[len(_manifest_events(manifest)) // 2]
+    failed_task_id = _event_field(failed_event, "task_id")
+
+    failed = materialization_protocol.record_event_failure(
+        manifest,
+        task_id=failed_task_id,
+        reason="synthetic failure",
+    )
+    resumed_once = materialization_protocol.build_resume_manifest(failed)
+    resumed_twice = materialization_protocol.build_resume_manifest(resumed_once)
+
+    assert resumed_twice["failed_event_ledger"] == resumed_once["failed_event_ledger"]
+    assert resumed_twice["frozen_totals"] == resumed_once["frozen_totals"] == EXPECTED_TOTALS
+    assert resumed_twice["totals"] == resumed_once["totals"] == EXPECTED_TOTALS
+    assert resumed_twice["remaining_totals"] == resumed_once["remaining_totals"]
+    assert resumed_twice["failed_totals"] == _sum_failed_ledger_totals(resumed_twice)
+    _assert_resume_conserves_totals(resumed_twice)
+    materialization_protocol.validate_g003_dry_run_manifest(resumed_twice)
+
+    for mutate in (
+        lambda candidate: candidate.pop("failed_event_ledger"),
+        lambda candidate: candidate["failed_event_ledger"].clear(),
+        lambda candidate: candidate["failed_event_ledger"][0].__setitem__("task_id", "tampered-task"),
+        lambda candidate: candidate["frozen_totals"].__setitem__("events", EXPECTED_TOTALS["events"] + 1),
+        lambda candidate: candidate["remaining_totals"].__setitem__("events", candidate["remaining_totals"]["events"] + 1),
+        lambda candidate: candidate["failed_totals"].__setitem__("events", candidate["failed_totals"]["events"] + 1),
+    ):
+        tampered = copy.deepcopy(resumed_twice)
+        mutate(tampered)
+        with pytest.raises(AssertionError, match=r"(?i)ledger|frozen|remaining|failed|conservation|totals"):
+            materialization_protocol.validate_g003_dry_run_manifest(tampered)
+
+
 def test_g003_review_blocker_dry_run_resource_evidence_has_peak_rss_or_enforceable_memory_cap(
     materialization_protocol: Any,
     tmp_path: Path,
@@ -953,6 +1048,36 @@ def test_g003_review_blocker_dry_run_resource_evidence_has_peak_rss_or_enforceab
         isinstance(per_event_cap, int)
         and per_event_cap > 0
         and evidence.get("per_event_memory_cap_enforced") is True
+    )
+
+
+def test_g003_second_review_blocker_dry_run_resource_evidence_uses_real_wave1_peak_rss_and_does_not_call_source_bytes_memory_cap(
+    materialization_protocol: Any,
+    tmp_path: Path,
+) -> None:
+    manifest = _build_dry_run_manifest(materialization_protocol, tmp_path / "dry-run.json")
+    evidence = _result_get(manifest, "resource_evidence")
+    provenance = _result_get(manifest, "provenance")
+    expected_peak_rss = _max_peak_rss_bytes(_read_json(BENCHMARK_DIR / "benchmark_report.json"))
+
+    assert evidence["representative_peak_rss_bytes"] == expected_peak_rss
+    assert isinstance(evidence["representative_peak_rss_bytes"], int)
+    assert evidence["representative_peak_rss_bytes"] > 0
+    assert evidence["representative_peak_rss_provenance"] == {
+        "path": str((BENCHMARK_DIR / "benchmark_report.json").relative_to(REPO_ROOT)),
+        "sha256": _sha256_file(BENCHMARK_DIR / "benchmark_report.json"),
+        "field": "max observed peak_rss_bytes/warm_peak_rss_bytes across Wave-1 benchmark rows",
+    }
+    assert provenance["wave1_benchmark_report_sha256"] == _sha256_file(BENCHMARK_DIR / "benchmark_report.json")
+    assert provenance["wave1_benchmark_manifest_sha256"] == _sha256_file(BENCHMARK_DIR / "benchmark_manifest.json")
+
+    if evidence.get("per_event_memory_cap_enforced") is True:
+        assert evidence.get("runtime_guard") == "executable_per_event_memory_cap"
+        assert evidence.get("runtime_guard_path")
+    assert evidence.get("per_event_memory_cap_source") != "canonical_inventory_max_event_source_bytes"
+    assert evidence.get("per_event_memory_cap_bytes") != max(
+        _event_field(event, "source_bytes")
+        for event in _manifest_events(manifest)
     )
 
 
@@ -1112,6 +1237,41 @@ def _sum_event_totals(events: list[Any]) -> dict[str, int]:
         "source_rows": sum(int(_event_field(event, "source_rows")) for event in events),
         "source_bytes": sum(int(_event_field(event, "source_bytes")) for event in events),
     }
+
+
+def _sum_failed_ledger_totals(manifest: Any) -> dict[str, int]:
+    ledger = manifest["failed_event_ledger"]
+    return {
+        "events": len(ledger),
+        "markets": sum(int(entry["markets"]) for entry in ledger),
+        "tokens": sum(int(entry["tokens"]) for entry in ledger),
+        "source_rows": sum(int(entry["source_rows"]) for entry in ledger),
+        "source_bytes": sum(int(entry["source_bytes"]) for entry in ledger),
+    }
+
+
+def _assert_resume_conserves_totals(manifest: Any) -> None:
+    for key in ("events", "markets", "tokens", "source_rows", "source_bytes"):
+        assert manifest["frozen_totals"][key] == manifest["remaining_totals"][key] + manifest["failed_totals"][key]
+
+
+def _max_peak_rss_bytes(value: Any) -> int:
+    peaks: list[int] = []
+
+    def visit(item: Any) -> None:
+        if isinstance(item, dict):
+            for key, nested in item.items():
+                if key in {"peak_rss_bytes", "warm_peak_rss_bytes", "max_peak_rss_bytes"} and isinstance(nested, int):
+                    peaks.append(nested)
+                else:
+                    visit(nested)
+        elif isinstance(item, list):
+            for nested in item:
+                visit(nested)
+
+    visit(value)
+    assert peaks
+    return max(peaks)
 
 
 def _result_get(result: Any, key: str) -> Any:
