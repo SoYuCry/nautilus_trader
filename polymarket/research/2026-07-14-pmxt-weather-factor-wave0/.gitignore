@@ -1,20 +1,16 @@
 # Wave0 keeps only compact, reproducible artifacts in git.
 # Tracked outputs currently include:
 # - outputs/compact_canonical_inventory.json
-# - outputs/g003_dry_run_manifest.json
-# - outputs/g003_materialization_parity.json
-# - outputs/g003_materialization_decision.json
 
 __pycache__/
 *.py[cod]
 
-# Disposable M2/M3 caches and atomic-write leftovers.
+# Disposable caches and atomic-write leftovers.
 outputs/cache*/
 outputs/**/cache*/
 outputs/**/*.partial
 outputs/**/partial*/
 outputs/**/partials*/
-outputs/**/.m2-write-*/
 outputs/**/_quarantine/
 
 # Large derived panels, shards, traces, and columnar/intermediate files.

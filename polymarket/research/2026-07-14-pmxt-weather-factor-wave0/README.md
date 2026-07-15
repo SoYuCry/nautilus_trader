@@ -180,26 +180,12 @@ clean 与 degraded 必须分开报告。degraded 可以降低、隔离或拒绝�
 
 通过上述门槛只表示“可后续注册确认的探索性候选”，不是 alpha、PnL、策略或生产声明。
 
-## 确定性、哈希与失败隔离
+## 可复现性与失败隔离
 
 - 所有输入、协议、代码版本、source byte hash、replay contract、factor schema、label schema、聚合 schema 和输出 summary 都必须记录 SHA-256 或等价内容地址。
 - 重跑必须在允许的 run identity / timestamp 字段之外给出相同的 canonical summaries 和 hashes。
 - 每个 event 是失败隔离单元；失败、跳过、censor、degraded 和 partial 状态必须显式记录，不能默认为 0 或 silent pass。
-- M1 direct replay 是 oracle。M2 只能在 synthetic 与代表性 real event 上证明 factor/label/summary exact parity 后作为加速。M3 只用于 audit。
-- 缓存和大 panel 派生产物是 disposable derivatives，不进入版本控制；可由 source hash、protocol hash 和 replay contract 重新生成。
-
-
-## G003 materialization closeout
-
-- Wave0 execution selected `M1_direct_replay` (`selected_mode: M1`). M1 is the oracle; this closeout does not report PnL, strategy results, execution quality, production readiness, or capital-allocation claims.
-- M2 is disposable `safe_json`. M2 is only `eligible_not_selected` after exact factor/label/summary parity on synthetic fixtures and the frozen real-event parity set; M2 is not selected for Wave0 execution.
-- M3 is primitive audit-only. M3 cannot be used as the execution mode, ranking input, label input, or candidate-gate input.
-- The 3 frozen real parity events must be force-run once with `parity --force`: `highest-temperature-in-hong-kong-on-june-10-2026`, `highest-temperature-in-chicago-on-june-9-2026`, and `highest-temperature-in-amsterdam-on-june-6-2026`. After that forced run, hash-validated reuse (`reuse_hash_validated_committed_rows`) is allowed; mismatched hashes must fail closed rather than silently reusing rows.
-- Dry-run manifest totals are fixed at 441 events / 4,851 markets / 9,702 tokens / 747,185,591 source rows / 6,008,295,014 source bytes, with 18 shards, worker cap 1, and 8GiB cache budget. Resource evidence cites the tracked Wave-1 benchmark representative peak RSS by path/hash/value; G003 does not enforce a runtime per-event memory cap, and source bytes are not treated as a memory cap.
-- Failure isolation is event-level. Failed, skipped, censored, degraded, or partial events must be explicit and cannot silently pass candidate gates or be filled as zero.
-- CLI closeout surface is `dry-run`, `validate-manifest`, `parity --force`, and hash-validated `parity` reuse.
-- Git tracks compact artifacts only, including `outputs/compact_canonical_inventory.json`, `outputs/g003_dry_run_manifest.json`, `outputs/g003_materialization_parity.json`, and `outputs/g003_materialization_decision.json`. Cache, panel, partial, shard, trace, parquet, and pickle derivatives are not tracked.
-- G003 did not change factors, labels, aggregation, candidate gate, claim scope, or the M1/M2/M3 materialization decision boundaries.
+- 大 panel、缓存和逐行派生产物不进入版本控制；需要时从 source、protocol 和 factor implementation 重建。
 
 ## 本目录文件与测试文件
 
