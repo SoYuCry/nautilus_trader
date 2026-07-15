@@ -1,7 +1,7 @@
 {
   "mode_policy": {
     "M1": "oracle",
-    "M2": "disabled_pending_parity",
+    "M2": "eligible_not_selected",
     "M3": "audit_only"
   },
   "non_selected_modes": {

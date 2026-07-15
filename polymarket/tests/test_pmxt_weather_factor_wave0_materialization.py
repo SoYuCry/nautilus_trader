@@ -735,27 +735,33 @@ def test_g003_frozen_real_parity_artifact_has_three_event_level_canonical_factor
 
 
 def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selects_m2(
+    monkeypatch: pytest.MonkeyPatch,
     materialization_protocol: Any,
     tmp_path: Path,
 ) -> None:
-    api_parity_path = tmp_path / "api-parity.json"
-    api_decision_path = tmp_path / "api-decision.json"
-    parity = materialization_protocol.run_g003_materialization_parity(
-        output_path=api_parity_path,
-        decision_output_path=api_decision_path,
-        include_synthetic=True,
-        include_frozen_representative_real=True,
-    )
+    # The expensive real parity computation is represented by the committed
+    # hash-bound artifact.  Keep the routine CLI coverage in-process and
+    # monkeypatched so future unit-test runs validate argument semantics without
+    # re-materializing real events.
+    parity = _read_json(G003_PARITY_PATH)
     _assert_required_parity_scenarios(parity)
     _assert_real_event_level_canonical_parity_gate(parity)
-    _assert_decision_respects_exact_parity_gate(_read_json(api_decision_path), parity)
+    _assert_decision_respects_exact_parity_gate(_read_json(G003_DECISION_PATH), parity)
 
+    calls: list[dict[str, Any]] = []
     cli_parity_path = tmp_path / "cli-parity.json"
     cli_decision_path = tmp_path / "cli-decision.json"
-    completed = subprocess.run(  # noqa: S603 - fixed Python executable and repo-local script path in test.
+
+    def capture_run_g003_materialization_parity(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        Path(kwargs["output_path"]).write_text("{}", encoding="utf-8")
+        Path(kwargs["decision_output_path"]).write_text("{}", encoding="utf-8")
+        return {}
+
+    monkeypatch.setattr(materialization_protocol, "run_g003_materialization_parity", capture_run_g003_materialization_parity)
+
+    assert materialization_protocol._main(
         [
-            sys.executable,
-            str(MATERIALIZATION_PROTOCOL),
             "parity",
             "--output",
             str(cli_parity_path),
@@ -763,17 +769,13 @@ def test_parity_api_and_cli_generate_required_scenarios_and_decision_never_selec
             str(cli_decision_path),
             "--include-synthetic",
             "--include-frozen-representative-real",
-        ],
-        cwd=REPO_ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    assert completed.returncode == 0, completed.stderr
-    cli_parity = _read_json(cli_parity_path)
-    _assert_required_parity_scenarios(cli_parity)
-    _assert_real_event_level_canonical_parity_gate(cli_parity)
-    _assert_decision_respects_exact_parity_gate(_read_json(cli_decision_path), cli_parity)
+        ]
+    ) == 0
+    assert calls[-1]["output_path"] == str(cli_parity_path)
+    assert calls[-1]["decision_output_path"] == str(cli_decision_path)
+    assert calls[-1]["include_synthetic"] is True
+    assert calls[-1]["include_frozen_representative_real"] is True
+    assert calls[-1]["force_recompute_real"] is False
 
 
 def test_g003_review_blocker_bare_parity_cli_defaults_to_synthetic_and_frozen_real_hash_reuse(

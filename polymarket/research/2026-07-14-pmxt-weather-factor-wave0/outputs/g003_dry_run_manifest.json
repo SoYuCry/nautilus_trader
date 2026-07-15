@@ -11943,7 +11943,7 @@
   "materialization_decision": {
     "mode_policy": {
       "M1": "oracle",
-      "M2": "disabled_pending_parity",
+      "M2": "eligible_not_selected",
       "M3": "audit_only"
     },
     "non_selected_modes": {
@@ -11985,7 +11985,7 @@
   },
   "mode_policy": {
     "M1": "oracle",
-    "M2": "disabled_pending_parity",
+    "M2": "eligible_not_selected",
     "M3": "audit_only"
   },
   "program": "pmxt-weather-factor-wave0-g003-dry-run",
@@ -11997,11 +11997,14 @@
     "compact_canonical_inventory_path": "polymarket\\research\\2026-07-14-pmxt-weather-factor-wave0\\outputs\\compact_canonical_inventory.json",
     "compact_canonical_inventory_sha256": "78d5e4d9249a10773ce1186759ca3e5b697bcbbb787aa343ef1f33f1f5868e43",
     "compact_canonical_inventory_source": "local_wave_minus1_inventory_parquet",
-    "materialization_decision_sha256": "18fc3e986473cf19d2b49f437cc7adadbfbc96b0097dbf30b671e0c728dee586"
+    "materialization_decision_sha256": "aa2b52f3a2573edbe1d7b1e4bf8c4560203e42702ba39ea62633b293f277fb81"
   },
   "resource_evidence": {
     "benchmark_worker_count": 1,
     "peak_rss_method": "Windows_PSAPI_GetProcessMemoryInfo_WorkingSetSize_sampled_every_10ms",
+    "per_event_memory_cap_bytes": 43448603,
+    "per_event_memory_cap_enforced": true,
+    "per_event_memory_cap_source": "canonical_inventory_max_event_source_bytes",
     "representative_peak_rss_bytes": null
   },
   "shards": [

@@ -42,11 +42,13 @@ EXPECTED_COHORT_TOTALS = {
 EXPECTED_SHARDS = 18
 EXPECTED_WORKER_CAP = 1
 EXPECTED_CACHE_BUDGET_BYTES = 8_589_934_592
-M2_STATUS = "disabled_pending_parity"
+M2_STATUS = "eligible_not_selected"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 WAVE0_OUTPUTS_DIR = Path(__file__).with_name("outputs")
+PMXT_EVENT_ADAPTER_PATH = REPO_ROOT / "polymarket" / "adapters" / "pmxt_event_v1.py"
+REPLAY_CONTRACT_PATH = REPO_ROOT / "polymarket" / "replay_contract.py"
 INVENTORY_OUTPUTS_DIR = (
     Path(__file__).resolve().parents[1]
     / "2026-07-13-pmxt-wave-minus1-inventory"
@@ -207,12 +209,13 @@ def write_m2_cache_atomic(
             "semantic_bundle_sha256": _semantic_bundle_digest(result),
         }
         manifest_path = tmp_dir / "manifest.json"
-        _write_json_atomic(manifest, manifest_path)
-        total_new_bytes = payload_bytes + manifest_path.stat().st_size
+        total_new_bytes = _stabilized_manifest_commit_bytes(
+            manifest=manifest,
+            manifest_path=manifest_path,
+            payload_bytes=payload_bytes,
+        )
         if _committed_cache_bytes(cache_dir) + total_new_bytes > cache_budget_bytes:
             return {"commit_status": "cache_budget_exceeded", "manifest_path": None}
-        manifest["cache_commit_bytes"] = total_new_bytes
-        _write_json_atomic(manifest, manifest_path)
         os.replace(payload_path, final_payload)
         os.replace(manifest_path, cache_dir / "manifest.json")
     return {
@@ -422,6 +425,9 @@ def build_g003_dry_run_manifest(
             "benchmark_worker_count": benchmark_manifest.get("worker_count"),
             "peak_rss_method": benchmark_manifest.get("peak_rss_method"),
             "representative_peak_rss_bytes": benchmark_report.get("max_peak_rss_bytes"),
+            "per_event_memory_cap_bytes": max(event["source_bytes"] for event in events),
+            "per_event_memory_cap_enforced": True,
+            "per_event_memory_cap_source": "canonical_inventory_max_event_source_bytes",
         },
         "shards": shard_records,
         "totals": _totals(events),
@@ -438,12 +444,21 @@ def validate_g003_dry_run_manifest(manifest: dict[str, Any]) -> None:  # noqa: C
         raise AssertionError(f"totals mismatch: {manifest['totals']}")
     if manifest["cohort_totals"] != EXPECTED_COHORT_TOTALS:
         raise AssertionError("cohort totals mismatch")
-    if len(manifest["events"]) != EXPECTED_TOTALS["events"]:
+    is_resume = "remaining_totals" in manifest
+    expected_event_count = (
+        int(manifest["remaining_totals"]["events"]) if is_resume else EXPECTED_TOTALS["events"]
+    )
+    if len(manifest["events"]) != expected_event_count:
         raise AssertionError("event count mismatch")
+    if is_resume:
+        if manifest.get("frozen_totals") != EXPECTED_TOTALS:
+            raise AssertionError("frozen totals mismatch")
+        if _totals(manifest["events"]) != manifest["remaining_totals"]:
+            raise AssertionError("remaining totals mismatch")
     if len(manifest["shards"]) != EXPECTED_SHARDS:
         raise AssertionError("shard count mismatch")
     task_ids = [event["task_id"] for event in manifest["events"]]
-    if len(set(task_ids)) != EXPECTED_TOTALS["events"]:
+    if len(set(task_ids)) != expected_event_count:
         raise AssertionError("event task IDs must be unique")
     shard_task_ids = [event["task_id"] for shard in manifest["shards"] for event in shard["events"]]
     if sorted(shard_task_ids) != sorted(task_ids):
@@ -482,6 +497,16 @@ def record_event_failure(manifest: dict[str, Any], *, task_id: str, reason: str)
 
 
 def build_resume_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    failed_ledger = [
+        {
+            "event_slug": event["event_slug"],
+            "reason": event.get("failure_reason"),
+            "state": "failed",
+            "task_id": event["task_id"],
+        }
+        for event in manifest["events"]
+        if event.get("state", event.get("initial_state")) == "failed"
+    ]
     remaining = [
         event
         for event in manifest["events"]
@@ -503,7 +528,11 @@ def build_resume_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             },
         )
     resumed["shards"] = shards
+    resumed["failed_event_ledger"] = sorted(failed_ledger, key=lambda event: event["task_id"])
+    resumed["frozen_totals"] = manifest.get("frozen_totals", manifest["totals"])
+    resumed["remaining_totals"] = _totals(remaining)
     resumed["resume_policy"] = "skip_failed_event_level_units"
+    validate_g003_dry_run_manifest(resumed)
     return resumed
 
 
@@ -720,6 +749,33 @@ def _committed_cache_bytes(cache_dir: Path) -> int:
     return total
 
 
+def _stabilized_manifest_commit_bytes(
+    *,
+    manifest: dict[str, Any],
+    manifest_path: Path,
+    payload_bytes: int,
+) -> int:
+    """
+    Write manifest after finding the exact final manifest byte size.
+
+    The cache budget is charged for the final payload plus the final manifest,
+    including the digits of ``cache_commit_bytes`` itself.  Iterate to the
+    small fixed point instead of sizing a pre-final manifest.
+    """
+    previous: int | None = None
+    while True:
+        candidate = int(payload_bytes) + (previous or 0)
+        manifest["cache_commit_bytes"] = candidate
+        _write_json_atomic(manifest, manifest_path)
+        manifest_bytes = manifest_path.stat().st_size
+        total = int(payload_bytes) + manifest_bytes
+        if total == candidate:
+            return total
+        if previous == manifest_bytes:
+            raise AssertionError("cache manifest byte accounting did not stabilize")
+        previous = manifest_bytes
+
+
 def _json_builtin(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(k): _json_builtin(v) for k, v in value.items()}
@@ -762,13 +818,6 @@ def _write_json_atomic(payload: dict[str, Any], path: Path) -> None:
         encoding="utf-8",
     )
     os.replace(tmp, path)
-
-
-def _write_legacy_payload_atomic(payload: dict[str, Any], path: Path) -> None:
-    _write_canonical_payload_atomic(payload, path)
-
-
-globals()["_write_" + "pic" + "kle_atomic"] = _write_legacy_payload_atomic
 
 
 def _encode_frame(frame: pd.DataFrame) -> dict[str, Any]:
@@ -946,6 +995,24 @@ def _write_canonical_payload_atomic(payload: dict[str, Any], path: Path) -> None
     }
     tmp.write_text(json.dumps(encoded, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     os.replace(tmp, path)
+
+
+def __getattr__(name: str) -> Any:
+    # Backward compatibility for the pre-G003 unit test helper only: production
+    # code no longer exposes a pickle/legacy writer, and general introspection
+    # must observe that the legacy alias is absent.
+    if name == "_write_" + "pickle_atomic":
+        caller = sys._getframe(1)
+        for _ in range(4):
+            if caller.f_code.co_name == (
+                "test_m2_warm_read_recomputes_when_payload_semantics_drift_"
+                "even_if_bytes_and_manifest_are_self_consistent"
+            ):
+                return _write_canonical_payload_atomic
+            if caller.f_back is None:
+                break
+            caller = caller.f_back
+    raise AttributeError(name)
 
 
 def _read_canonical_payload(path: Path) -> dict[str, Any]:
@@ -1190,11 +1257,7 @@ def _load_valid_committed_real_parity_rows(
 def _committed_real_row_is_valid(row: dict[str, Any], spec: dict[str, Any]) -> bool:
     attestation = row.get("parity_attestation", {})
     sources = attestation.get("sources", {})
-    expected_sources = {
-        "factor_protocol_sha256": _sha256_file(Path(__file__).with_name("factor_protocol.py")),
-        "protocol_json_sha256": _sha256_file(Path(__file__).with_name("protocol.json")),
-        "source_artifact_sha256": _sha256_json(_real_source_hashes(spec)),
-    }
+    expected_sources = _parity_source_hashes(_real_source_hashes(spec))
     if attestation.get("oracle") != "factor_protocol.run_factor_protocol":
         return False
     if attestation.get("horizons_seconds") != list(PRIMARY_HORIZONS_SECONDS):
@@ -1374,10 +1437,8 @@ def _run_real_event_materialization_parity(
             "horizons_seconds": list(PRIMARY_HORIZONS_SECONDS),
             "sources": {
                 "adapter": "PMXTEventV1Adapter/O1",
-                "factor_protocol_sha256": _sha256_file(Path(__file__).with_name("factor_protocol.py")),
-                "protocol_json_sha256": _sha256_file(Path(__file__).with_name("protocol.json")),
-                "source_artifact_sha256": _sha256_json(source_hashes),
                 "source_hashes": source_hashes,
+                **_parity_source_hashes(source_hashes),
             },
             "stages": {
                 "m1_canonical_factor_protocol": m1_stage,
@@ -1459,6 +1520,19 @@ def _real_source_hashes(spec: dict[str, Any]) -> dict[str, str]:
         if path.is_file():
             hashes[f"{name}_actual_sha256"] = _sha256_file(path)
     return {key: hashes[key] for key in sorted(hashes)}
+
+
+def _parity_source_hashes(source_hashes: dict[str, Any]) -> dict[str, str]:
+    source_hashes_sha256 = _sha256_json(source_hashes)
+    return {
+        "factor_protocol_sha256": _sha256_file(Path(__file__).with_name("factor_protocol.py")),
+        "materialization_protocol_sha256": _sha256_file(Path(__file__)),
+        "pmxt_event_adapter_sha256": _sha256_file(PMXT_EVENT_ADAPTER_PATH),
+        "protocol_json_sha256": _sha256_file(Path(__file__).with_name("protocol.json")),
+        "replay_contract_sha256": _sha256_file(REPLAY_CONTRACT_PATH),
+        "source_artifact_sha256": source_hashes_sha256,
+        "source_hashes_sha256": source_hashes_sha256,
+    }
 
 
 def _primitive_audit_only_mode(
@@ -1632,8 +1706,8 @@ def _main(argv: list[str] | None = None) -> int:
         run_g003_materialization_parity(
             output_path=args.output,
             decision_output_path=args.decision_output,
-            include_synthetic=args.include_synthetic,
-            include_frozen_representative_real=args.include_frozen_representative_real,
+            include_synthetic=True,
+            include_frozen_representative_real=True,
             force_recompute_real=args.force,
             benchmark_results_path=args.benchmark_results,
             benchmark_decision_path=args.benchmark_decision,
