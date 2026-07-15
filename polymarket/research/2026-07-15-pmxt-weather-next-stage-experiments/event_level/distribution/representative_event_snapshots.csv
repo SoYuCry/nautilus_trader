@@ -1,0 +1,1141 @@
+event_slug,city,event_date,timestamp,snapshot,market_index,market_label,temperature_bin,raw_mid,normalized_probability
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,0.0,39°C or below,39.0,0.9015,0.894789081885856
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,1.0,40°C,40.0,0.10400000000000001,0.1032258064516129
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,2.0,41°C,41.0,0.002,0.0019851116625310174
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,0.0,39°C or below,39.0,0.9955,0.9925224327018942
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,1.0,40°C,40.0,0.004,0.003988035892323031
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,2.0,41°C,41.0,0.0035,0.0034895314057826515
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,2.0,58-59°F,58.0,0.0025,0.0023629489603024575
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,3.0,60-61°F,60.0,0.004,0.003780718336483932
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,6.0,66-67°F,66.0,0.014499999999999999,0.013705103969754252
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,7.0,68-69°F,68.0,0.1205,0.11389413988657844
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,8.0,70-71°F,70.0,0.55,0.5198487712665406
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,9.0,72-73°F,72.0,0.325,0.30718336483931946
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 06:00:00+00:00,T-6,10.0,74°F or higher,74.0,0.0415,0.039224952741020794
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,2.0,58-59°F,58.0,0.0025,0.00244140625
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,3.0,60-61°F,60.0,0.004,0.00390625
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,5.0,64-65°F,64.0,0.0015,0.00146484375
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,6.0,66-67°F,66.0,0.002,0.001953125
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,7.0,68-69°F,68.0,0.1515,0.14794921875
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,8.0,70-71°F,70.0,0.55,0.537109375
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,9.0,72-73°F,72.0,0.25,0.244140625
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,2026-06-04 11:00:00+00:00,T-1,10.0,74°F or higher,74.0,0.0625,0.06103515625
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,2.0,15°C,15.0,0.0035,0.0033751205400192868
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,3.0,16°C,16.0,0.013,0.012536162005785922
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,4.0,17°C,17.0,0.215,0.20732883317261333
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,5.0,18°C,18.0,0.415,0.40019286403085824
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,6.0,19°C,19.0,0.325,0.31340405014464806
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,7.0,20°C,20.0,0.054000000000000006,0.05207328833172614
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,8.0,21°C,21.0,0.0075,0.007232401157184185
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,9.0,22°C,22.0,0.0025,0.0024108003857280617
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 06:00:00+00:00,T-6,10.0,23°C or higher,23.0,0.0015,0.0014464802314368371
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,2.0,15°C,15.0,0.002,0.00196174595389897
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,3.0,16°C,16.0,0.0015,0.0014713094654242279
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,4.0,17°C,17.0,0.0015,0.0014713094654242279
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,5.0,18°C,18.0,0.53,0.5198626777832271
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,6.0,19°C,19.0,0.385,0.3776360961255518
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,7.0,20°C,20.0,0.08099999999999999,0.07945071113290829
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,8.0,21°C,21.0,0.015,0.014713094654242278
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,9.0,22°C,22.0,0.002,0.00196174595389897
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,2026-06-04 11:00:00+00:00,T-1,10.0,23°C or higher,23.0,0.0015,0.0014713094654242279
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,0.0,16°C or below,16.0,0.002,0.0019970044932601095
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,1.0,17°C,17.0,0.0015,0.0014977533699450823
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,2.0,18°C,18.0,0.002,0.0019970044932601095
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,3.0,19°C,19.0,0.0015,0.0014977533699450823
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,4.0,20°C,20.0,0.0015,0.0014977533699450823
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,5.0,21°C,21.0,0.006500000000000001,0.0064902646030953574
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,6.0,22°C,22.0,0.0365,0.036445332001997
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,7.0,23°C,23.0,0.245,0.24463305042436342
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,8.0,24°C,24.0,0.525,0.5242136794807788
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,9.0,25°C,25.0,0.136,0.13579630554168748
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 06:00:00+00:00,T-6,10.0,26°C or higher,26.0,0.044,0.04393409885172241
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,0.0,16°C or below,16.0,0.002,0.0015987210231814548
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,1.0,17°C,17.0,0.0015,0.001199040767386091
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,2.0,18°C,18.0,0.002,0.0015987210231814548
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,3.0,19°C,19.0,0.0015,0.001199040767386091
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,4.0,20°C,20.0,0.0015,0.001199040767386091
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,5.0,21°C,21.0,0.002,0.0015987210231814548
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,6.0,22°C,22.0,0.0015,0.001199040767386091
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,7.0,23°C,23.0,0.2,0.15987210231814547
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,8.0,24°C,24.0,0.745,0.5955235811350919
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,9.0,25°C,25.0,0.2375,0.18984812150279773
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,2026-06-04 11:00:00+00:00,T-1,10.0,26°C or higher,26.0,0.056499999999999995,0.045163868904876094
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-04 12:00:00+00:00,T-24,0.0,53°F or below,53.0,0.002,0.001988071570576541
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-04 12:00:00+00:00,T-24,1.0,54-55°F,54.0,0.003,0.002982107355864811
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-04 12:00:00+00:00,T-24,5.0,62-63°F,62.0,0.0015,0.0014910536779324055
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-04 12:00:00+00:00,T-24,9.0,70-71°F,70.0,0.0015,0.0014910536779324055
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-04 12:00:00+00:00,T-24,10.0,72°F or higher,72.0,0.998,0.9920477137176938
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,0.0,53°F or below,53.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,1.0,54-55°F,54.0,0.003,0.0029571217348447515
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,2.0,56-57°F,56.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,3.0,58-59°F,58.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,5.0,62-63°F,62.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,6.0,64-65°F,64.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,7.0,66-67°F,66.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,8.0,68-69°F,68.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,9.0,70-71°F,70.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 06:00:00+00:00,T-6,10.0,72°F or higher,72.0,0.998,0.9837358304583539
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,0.0,53°F or below,53.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,1.0,54-55°F,54.0,0.003,0.0029571217348447515
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,2.0,56-57°F,56.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,3.0,58-59°F,58.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,5.0,62-63°F,62.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,6.0,64-65°F,64.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,7.0,66-67°F,66.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,8.0,68-69°F,68.0,0.0015,0.0014785608674223758
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,9.0,70-71°F,70.0,0.002,0.001971414489896501
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,2026-06-05 08:01:00+00:00,T-1,10.0,72°F or higher,72.0,0.998,0.9837358304583539
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,0.0,16°C or below,16.0,0.002,0.0020080321285140565
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,1.0,17°C,17.0,0.0065,0.006526104417670682
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,2.0,18°C,18.0,0.024,0.024096385542168676
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,3.0,19°C,19.0,0.14500000000000002,0.14558232931726908
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,4.0,20°C,20.0,0.22499999999999998,0.2259036144578313
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,5.0,21°C,21.0,0.36,0.3614457831325301
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,6.0,22°C,22.0,0.16999999999999998,0.17068273092369476
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,7.0,23°C,23.0,0.0435,0.04367469879518072
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,8.0,24°C,24.0,0.015,0.015060240963855422
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,9.0,25°C,25.0,0.003,0.0030120481927710845
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-04 12:00:00+00:00,T-24,10.0,26°C or higher,26.0,0.002,0.0020080321285140565
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,0.0,16°C or below,16.0,0.0015,0.001401869158878505
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,1.0,17°C,17.0,0.003,0.00280373831775701
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,2.0,18°C,18.0,0.005,0.004672897196261683
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,3.0,19°C,19.0,0.05500000000000001,0.05140186915887852
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,4.0,20°C,20.0,0.21000000000000002,0.1962616822429907
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,5.0,21°C,21.0,0.5,0.4672897196261683
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,6.0,22°C,22.0,0.24,0.22429906542056077
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,7.0,23°C,23.0,0.0445,0.04158878504672898
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,8.0,24°C,24.0,0.006500000000000001,0.006074766355140189
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,9.0,25°C,25.0,0.002,0.0018691588785046732
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 06:00:00+00:00,T-6,10.0,26°C or higher,26.0,0.0025,0.0023364485981308414
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,0.0,16°C or below,16.0,0.0015,0.001425855513307985
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,1.0,17°C,17.0,0.003,0.00285171102661597
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,2.0,18°C,18.0,0.0035,0.003326996197718632
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,3.0,19°C,19.0,0.0305,0.028992395437262362
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,4.0,20°C,20.0,0.245,0.23288973384030423
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,5.0,21°C,21.0,0.515,0.48954372623574155
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,6.0,22°C,22.0,0.2,0.19011406844106468
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,7.0,23°C,23.0,0.045,0.04277566539923955
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,8.0,24°C,24.0,0.005,0.004752851711026617
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,9.0,25°C,25.0,0.0015,0.001425855513307985
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,2026-06-05 08:58:00+00:00,T-1,10.0,26°C or higher,26.0,0.002,0.0019011406844106468
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,0.0,26°C or below,26.0,0.0015,0.001515151515151515
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,1.0,27°C,27.0,0.0015,0.001515151515151515
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,2.0,28°C,28.0,0.0015,0.001515151515151515
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,3.0,29°C,29.0,0.004,0.00404040404040404
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,4.0,30°C,30.0,0.004,0.00404040404040404
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,5.0,31°C,31.0,0.02,0.0202020202020202
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,6.0,32°C,32.0,0.0475,0.047979797979797977
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,7.0,33°C,33.0,0.31,0.3131313131313131
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,8.0,34°C,34.0,0.44,0.4444444444444444
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,9.0,35°C,35.0,0.13,0.1313131313131313
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-04 12:00:00+00:00,T-24,10.0,36°C or higher,36.0,0.030000000000000002,0.030303030303030304
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,0.0,26°C or below,26.0,0.0025,0.0020929259104227713
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,1.0,27°C,27.0,0.0015,0.0012557555462536629
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,2.0,28°C,28.0,0.0015,0.0012557555462536629
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,3.0,29°C,29.0,0.0015,0.0012557555462536629
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,4.0,30°C,30.0,0.0015,0.0012557555462536629
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,5.0,31°C,31.0,0.0015,0.0012557555462536629
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,6.0,32°C,32.0,0.2375,0.19882796149016327
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,7.0,33°C,33.0,0.6,0.5023022185014651
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,8.0,34°C,34.0,0.24000000000000002,0.20092088740058606
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,9.0,35°C,35.0,0.1,0.08371703641691085
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 06:00:00+00:00,T-6,10.0,36°C or higher,36.0,0.007,0.005860192549183759
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,0.0,26°C or below,26.0,0.0025,0.0024449877750611256
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,1.0,27°C,27.0,0.0015,0.0014669926650366751
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,2.0,28°C,28.0,0.0015,0.0014669926650366751
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,3.0,29°C,29.0,0.0015,0.0014669926650366751
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,4.0,30°C,30.0,0.0015,0.0014669926650366751
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,5.0,31°C,31.0,0.0015,0.0014669926650366751
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,6.0,32°C,32.0,0.9410000000000001,0.9202933985330076
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,7.0,33°C,33.0,0.065,0.06356968215158926
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,8.0,34°C,34.0,0.0025,0.0024449877750611256
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,9.0,35°C,35.0,0.0025,0.0024449877750611256
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,2026-06-05 08:58:00+00:00,T-1,10.0,36°C or higher,36.0,0.0015,0.0014669926650366751
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,4.0,30°C,30.0,0.003,0.00390625
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,5.0,31°C,31.0,0.0085,0.011067708333333334
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,6.0,32°C,32.0,0.0415,0.054036458333333336
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,7.0,33°C,33.0,0.16999999999999998,0.22135416666666663
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,8.0,34°C,34.0,0.44,0.5729166666666666
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-04 12:00:00+00:00,T-24,10.0,36°C or higher,36.0,0.105,0.13671875
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,3.0,29°C,29.0,0.0015,0.0032537960954446858
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,4.0,30°C,30.0,0.002,0.004338394793926247
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,5.0,31°C,31.0,0.0015,0.0032537960954446858
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,6.0,32°C,32.0,0.0015,0.0032537960954446858
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,7.0,33°C,33.0,0.0015,0.0032537960954446858
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,8.0,34°C,34.0,0.33499999999999996,0.7266811279826464
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 06:00:00+00:00,T-6,10.0,36°C or higher,36.0,0.11800000000000001,0.25596529284164865
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,3.0,29°C,29.0,0.0015,0.001488095238095238
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,4.0,30°C,30.0,0.002,0.001984126984126984
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,5.0,31°C,31.0,0.0015,0.001488095238095238
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,6.0,32°C,32.0,0.0015,0.001488095238095238
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,7.0,33°C,33.0,0.0015,0.001488095238095238
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,8.0,34°C,34.0,0.9984999999999999,0.9905753968253967
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,2026-06-05 08:58:00+00:00,T-1,10.0,36°C or higher,36.0,0.0015,0.001488095238095238
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,0.0,28°C or below,28.0,0.0025,0.0023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,1.0,29°C,29.0,0.0045000000000000005,0.004223369310183013
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,2.0,30°C,30.0,0.0055,0.005161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,3.0,31°C,31.0,0.055,0.05161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,4.0,32°C,32.0,0.27,0.2534021586109808
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,5.0,33°C,33.0,0.47,0.4411074612857813
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,6.0,34°C,34.0,0.21500000000000002,0.20178320037541064
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,7.0,35°C,35.0,0.025,0.023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,8.0,36°C,36.0,0.006500000000000001,0.00610042233693102
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,9.0,37°C,37.0,0.006,0.005631159080244017
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-24,10.0,38°C or higher,38.0,0.0055,0.005161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,0.0,28°C or below,28.0,0.0025,0.0023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,1.0,29°C,29.0,0.0045000000000000005,0.004223369310183013
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,2.0,30°C,30.0,0.0055,0.005161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,3.0,31°C,31.0,0.055,0.05161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,4.0,32°C,32.0,0.27,0.2534021586109808
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,5.0,33°C,33.0,0.47,0.4411074612857813
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,6.0,34°C,34.0,0.21500000000000002,0.20178320037541064
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,7.0,35°C,35.0,0.025,0.023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,8.0,36°C,36.0,0.006500000000000001,0.00610042233693102
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,9.0,37°C,37.0,0.006,0.005631159080244017
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-6,10.0,38°C or higher,38.0,0.0055,0.005161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,0.0,28°C or below,28.0,0.0025,0.0023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,1.0,29°C,29.0,0.0045000000000000005,0.004223369310183013
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,2.0,30°C,30.0,0.0055,0.005161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,3.0,31°C,31.0,0.055,0.05161895823557016
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,4.0,32°C,32.0,0.27,0.2534021586109808
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,5.0,33°C,33.0,0.47,0.4411074612857813
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,6.0,34°C,34.0,0.21500000000000002,0.20178320037541064
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,7.0,35°C,35.0,0.025,0.023463162834350074
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,8.0,36°C,36.0,0.006500000000000001,0.00610042233693102
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,9.0,37°C,37.0,0.006,0.005631159080244017
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,2026-06-05 08:58:00+00:00,T-1,10.0,38°C or higher,38.0,0.0055,0.005161895823557016
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,0.0,25°C or below,25.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,1.0,26°C,26.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,2.0,27°C,27.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,3.0,28°C,28.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,4.0,29°C,29.0,0.007,0.007063572149344097
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,5.0,30°C,30.0,0.0075,0.007568113017154389
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,6.0,31°C,31.0,0.0215,0.02169525731584258
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,7.0,32°C,32.0,0.09,0.09081735620585266
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,8.0,33°C,33.0,0.21500000000000002,0.21695257315842584
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,9.0,34°C,34.0,0.335,0.33804238143289606
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-24,10.0,35°C or higher,35.0,0.30000000000000004,0.3027245206861756
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,0.0,25°C or below,25.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,1.0,26°C,26.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,2.0,27°C,27.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,3.0,28°C,28.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,4.0,29°C,29.0,0.007,0.007063572149344097
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,5.0,30°C,30.0,0.0075,0.007568113017154389
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,6.0,31°C,31.0,0.0215,0.02169525731584258
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,7.0,32°C,32.0,0.09,0.09081735620585266
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,8.0,33°C,33.0,0.21500000000000002,0.21695257315842584
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,9.0,34°C,34.0,0.335,0.33804238143289606
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-6,10.0,35°C or higher,35.0,0.30000000000000004,0.3027245206861756
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,0.0,25°C or below,25.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,1.0,26°C,26.0,0.0015,0.0015136226034308778
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,2.0,27°C,27.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,3.0,28°C,28.0,0.006,0.006054490413723511
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,4.0,29°C,29.0,0.007,0.007063572149344097
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,5.0,30°C,30.0,0.0075,0.007568113017154389
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,6.0,31°C,31.0,0.0215,0.02169525731584258
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,7.0,32°C,32.0,0.09,0.09081735620585266
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,8.0,33°C,33.0,0.21500000000000002,0.21695257315842584
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,9.0,34°C,34.0,0.335,0.33804238143289606
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,2026-06-05 08:58:00+00:00,T-1,10.0,35°C or higher,35.0,0.30000000000000004,0.3027245206861756
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,0.0,16°C or below,16.0,0.003,0.0028089887640449437
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,1.0,17°C,17.0,0.006,0.0056179775280898875
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,2.0,18°C,18.0,0.0055,0.005149812734082397
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,3.0,19°C,19.0,0.0075,0.0070224719101123585
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,4.0,20°C,20.0,0.0155,0.014513108614232209
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,5.0,21°C,21.0,0.065,0.06086142322097378
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,6.0,22°C,22.0,0.245,0.2294007490636704
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,7.0,23°C,23.0,0.345,0.3230337078651685
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,8.0,24°C,24.0,0.24,0.22471910112359547
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,9.0,25°C,25.0,0.097,0.09082397003745318
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-24,10.0,26°C or higher,26.0,0.0385,0.03604868913857678
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,0.0,16°C or below,16.0,0.003,0.0028089887640449437
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,1.0,17°C,17.0,0.006,0.0056179775280898875
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,2.0,18°C,18.0,0.0055,0.005149812734082397
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,3.0,19°C,19.0,0.0075,0.0070224719101123585
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,4.0,20°C,20.0,0.0155,0.014513108614232209
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,5.0,21°C,21.0,0.065,0.06086142322097378
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,6.0,22°C,22.0,0.245,0.2294007490636704
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,7.0,23°C,23.0,0.345,0.3230337078651685
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,8.0,24°C,24.0,0.24,0.22471910112359547
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,9.0,25°C,25.0,0.097,0.09082397003745318
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-6,10.0,26°C or higher,26.0,0.0385,0.03604868913857678
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,0.0,16°C or below,16.0,0.003,0.0028089887640449437
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,1.0,17°C,17.0,0.006,0.0056179775280898875
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,2.0,18°C,18.0,0.0055,0.005149812734082397
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,3.0,19°C,19.0,0.0075,0.0070224719101123585
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,4.0,20°C,20.0,0.0155,0.014513108614232209
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,5.0,21°C,21.0,0.065,0.06086142322097378
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,6.0,22°C,22.0,0.245,0.2294007490636704
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,7.0,23°C,23.0,0.345,0.3230337078651685
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,8.0,24°C,24.0,0.24,0.22471910112359547
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,9.0,25°C,25.0,0.097,0.09082397003745318
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,2026-06-05 08:58:00+00:00,T-1,10.0,26°C or higher,26.0,0.0385,0.03604868913857678
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,0.0,14°C or below,14.0,0.003,0.002785515320334262
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,1.0,15°C,15.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,2.0,16°C,16.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,3.0,17°C,17.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,4.0,18°C,18.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,5.0,19°C,19.0,0.006500000000000001,0.006035283194057568
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,6.0,20°C,20.0,0.025,0.023212627669452184
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,7.0,21°C,21.0,0.215,0.19962859795728877
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,8.0,22°C,22.0,0.425,0.3946146703806871
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,9.0,23°C,23.0,0.265,0.24605385329619314
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-24,10.0,24°C or higher,24.0,0.1315,0.12209842154131849
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,0.0,14°C or below,14.0,0.003,0.002785515320334262
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,1.0,15°C,15.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,2.0,16°C,16.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,3.0,17°C,17.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,4.0,18°C,18.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,5.0,19°C,19.0,0.006500000000000001,0.006035283194057568
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,6.0,20°C,20.0,0.025,0.023212627669452184
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,7.0,21°C,21.0,0.215,0.19962859795728877
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,8.0,22°C,22.0,0.425,0.3946146703806871
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,9.0,23°C,23.0,0.265,0.24605385329619314
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-6,10.0,24°C or higher,24.0,0.1315,0.12209842154131849
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,0.0,14°C or below,14.0,0.003,0.002785515320334262
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,1.0,15°C,15.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,2.0,16°C,16.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,3.0,17°C,17.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,4.0,18°C,18.0,0.0015,0.001392757660167131
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,5.0,19°C,19.0,0.006500000000000001,0.006035283194057568
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,6.0,20°C,20.0,0.025,0.023212627669452184
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,7.0,21°C,21.0,0.215,0.19962859795728877
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,8.0,22°C,22.0,0.425,0.3946146703806871
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,9.0,23°C,23.0,0.265,0.24605385329619314
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,2026-06-05 08:58:00+00:00,T-1,10.0,24°C or higher,24.0,0.1315,0.12209842154131849
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,0.0,20°C or below,20.0,0.0015,0.001550387596899225
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,1.0,21°C,21.0,0.0025,0.002583979328165375
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,2.0,22°C,22.0,0.0075,0.007751937984496125
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,3.0,23°C,23.0,0.0415,0.04289405684754523
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,4.0,24°C,24.0,0.14500000000000002,0.14987080103359177
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,5.0,25°C,25.0,0.345,0.35658914728682173
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,6.0,26°C,26.0,0.315,0.32558139534883723
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,7.0,27°C,27.0,0.07500000000000001,0.07751937984496125
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,8.0,28°C,28.0,0.0245,0.025322997416020676
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,9.0,29°C,29.0,0.0085,0.008785529715762276
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 06:00:00+00:00,T-6,10.0,30°C or higher,30.0,0.0015,0.001550387596899225
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,0.0,20°C or below,20.0,0.0015,0.001440230436869899
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,1.0,21°C,21.0,0.0025,0.002400384061449832
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,2.0,22°C,22.0,0.0035,0.0033605376860297645
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,3.0,23°C,23.0,0.05,0.04800768122899664
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,4.0,24°C,24.0,0.21500000000000002,0.20643302928468554
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,5.0,25°C,25.0,0.385,0.3696591454632741
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,6.0,26°C,26.0,0.3,0.2880460873739798
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,7.0,27°C,27.0,0.05500000000000001,0.052808449351896304
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,8.0,28°C,28.0,0.0205,0.01968314930388862
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,9.0,29°C,29.0,0.007,0.006721075372059529
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,2026-06-07 11:00:00+00:00,T-1,10.0,30°C or higher,30.0,0.0015,0.001440230436869899
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,0.0,21°C or below,21.0,0.0015,0.001480750246791708
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,4.0,25°C,25.0,0.9755,0.9629812438302074
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,5.0,26°C,26.0,0.0155,0.015301085883514315
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,6.0,27°C,27.0,0.0115,0.011352418558736428
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,7.0,28°C,28.0,0.0025,0.00246791707798618
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,8.0,29°C,29.0,0.002,0.001974333662388944
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,9.0,30°C,30.0,0.003,0.002961500493583416
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 06:00:00+00:00,T-6,10.0,31°C or higher,31.0,0.0015,0.001480750246791708
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,0.0,21°C or below,21.0,0.0015,0.001484413656605641
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,4.0,25°C,25.0,0.9975,0.9871350816427512
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,5.0,26°C,26.0,0.002,0.0019792182088075212
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,6.0,27°C,27.0,0.0015,0.001484413656605641
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,7.0,28°C,28.0,0.0015,0.001484413656605641
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,8.0,29°C,29.0,0.002,0.0019792182088075212
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,9.0,30°C,30.0,0.003,0.002968827313211282
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,2026-06-07 09:23:00+00:00,T-1,10.0,31°C or higher,31.0,0.0015,0.001484413656605641
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,0.0,79°F or below,79.0,0.006,0.0060728744939271264
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,1.0,80-81°F,80.0,0.015,0.015182186234817815
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,2.0,82-83°F,82.0,0.33,0.33400809716599195
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,3.0,84-85°F,84.0,0.475,0.4807692307692308
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,4.0,86-87°F,86.0,0.11499999999999999,0.11639676113360324
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,5.0,88-89°F,88.0,0.0295,0.0298582995951417
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,6.0,90-91°F,90.0,0.010499999999999999,0.01062753036437247
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,7.0,92-93°F,92.0,0.0045000000000000005,0.0045546558704453455
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 06:00:00+00:00,T-6,8.0,94-95°F,94.0,0.0025,0.002530364372469636
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,0.0,79°F or below,79.0,0.0085,0.008220502901353966
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,1.0,80-81°F,80.0,0.0545,0.052707930367504846
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,2.0,82-83°F,82.0,0.345,0.3336557059961316
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,3.0,84-85°F,84.0,0.51,0.49323017408123804
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,4.0,86-87°F,86.0,0.095,0.09187620889748552
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,5.0,88-89°F,88.0,0.0125,0.012088974854932304
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,6.0,90-91°F,90.0,0.0045000000000000005,0.00435203094777563
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,7.0,92-93°F,92.0,0.0015,0.0014506769825918765
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,2026-06-07 11:00:00+00:00,T-1,8.0,94-95°F,94.0,0.0025,0.002417794970986461
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,2.0,74-75°F,74.0,0.0025,0.002474022761009401
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,3.0,76-77°F,76.0,0.038,0.03760514596734289
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,4.0,78-79°F,78.0,0.07500000000000001,0.07422068283028203
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,5.0,80-81°F,80.0,0.22499999999999998,0.22266204849084606
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,6.0,82-83°F,82.0,0.395,0.39089559623948533
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,7.0,84-85°F,84.0,0.20500000000000002,0.20286986640277088
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,8.0,86-87°F,86.0,0.0595,0.05888174171202374
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,9.0,88-89°F,88.0,0.006999999999999999,0.006927263730826322
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 06:00:00+00:00,T-6,10.0,90°F or higher,90.0,0.0035,0.0034636318654131613
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,2.0,74-75°F,74.0,0.0015,0.0014285714285714286
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,3.0,76-77°F,76.0,0.035,0.03333333333333333
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,4.0,78-79°F,78.0,0.085,0.08095238095238096
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,5.0,80-81°F,80.0,0.315,0.3
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,6.0,82-83°F,82.0,0.41000000000000003,0.3904761904761905
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,7.0,84-85°F,84.0,0.16999999999999998,0.16190476190476188
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,8.0,86-87°F,86.0,0.025,0.023809523809523808
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,9.0,88-89°F,88.0,0.006,0.005714285714285714
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,2026-06-07 11:00:00+00:00,T-1,10.0,90°F or higher,90.0,0.0025,0.0023809523809523807
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,0.0,9°C or below,9.0,0.003,0.0028957528957528956
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,1.0,10°C,10.0,0.0055,0.005308880308880309
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,3.0,12°C,12.0,0.075,0.07239382239382239
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,4.0,13°C,13.0,0.335,0.3233590733590734
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,5.0,14°C,14.0,0.405,0.3909266409266409
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,6.0,15°C,15.0,0.14500000000000002,0.13996138996139
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,7.0,16°C,16.0,0.0545,0.052606177606177605
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,8.0,17°C,17.0,0.0055,0.005308880308880309
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,9.0,18°C,18.0,0.003,0.0028957528957528956
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-07 12:00:00+00:00,T-24,10.0,19°C or higher,19.0,0.0045000000000000005,0.004343629343629344
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,0.0,9°C or below,9.0,0.0015,0.001487357461576599
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,1.0,10°C,10.0,0.0025,0.002478929102627665
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,3.0,12°C,12.0,0.0055,0.005453644025780862
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,4.0,13°C,13.0,0.515,0.510659395141299
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,5.0,14°C,14.0,0.39,0.38671294000991574
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,6.0,15°C,15.0,0.075,0.07436787307882994
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,7.0,16°C,16.0,0.009000000000000001,0.008924144769459595
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,8.0,17°C,17.0,0.0045000000000000005,0.004462072384729798
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,9.0,18°C,18.0,0.003,0.002974714923153198
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 06:00:00+00:00,T-6,10.0,19°C or higher,19.0,0.0025,0.002478929102627665
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,0.0,9°C or below,9.0,0.0015,0.0015290519877675841
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,1.0,10°C,10.0,0.0025,0.0025484199796126403
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,3.0,12°C,12.0,0.0015,0.0015290519877675841
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,4.0,13°C,13.0,0.52,0.5300713557594292
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,5.0,14°C,14.0,0.385,0.3924566768603466
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,6.0,15°C,15.0,0.055,0.05606523955147809
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,7.0,16°C,16.0,0.008,0.00815494393476045
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,8.0,17°C,17.0,0.004,0.004077471967380225
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,9.0,18°C,18.0,0.0015,0.0015290519877675841
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,2026-06-08 11:00:00+00:00,T-1,10.0,19°C or higher,19.0,0.002,0.0020387359836901123
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,0.0,27°C or below,27.0,0.004,0.0036546368204659653
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,1.0,28°C,28.0,0.020999999999999998,0.019186843307446317
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,2.0,29°C,29.0,0.10800000000000001,0.09867519415258108
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,3.0,30°C,30.0,0.16999999999999998,0.15532206486980352
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,4.0,31°C,31.0,0.265,0.24211968935587022
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,5.0,32°C,32.0,0.27,0.24668798538145267
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,6.0,33°C,33.0,0.18,0.16445865692096842
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,7.0,34°C,34.0,0.065,0.05938784833257194
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,8.0,35°C,35.0,0.0075,0.0068524440383736845
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,9.0,36°C,36.0,0.0025,0.0022841480127912283
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-07 12:00:00+00:00,T-24,10.0,37°C or higher,37.0,0.0015,0.001370488807674737
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,0.0,27°C or below,27.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,1.0,28°C,28.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,2.0,29°C,29.0,0.002,0.0019646365422396855
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,3.0,30°C,30.0,0.004999999999999999,0.004911591355599213
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,4.0,31°C,31.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,5.0,32°C,32.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,6.0,33°C,33.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,7.0,34°C,34.0,0.9984999999999999,0.980844793713163
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,8.0,35°C,35.0,0.002,0.0019646365422396855
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,9.0,36°C,36.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 06:00:00+00:00,T-6,10.0,37°C or higher,37.0,0.0015,0.0014734774066797642
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,0.0,27°C or below,27.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,1.0,28°C,28.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,2.0,29°C,29.0,0.002,0.0019656019656019656
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,3.0,30°C,30.0,0.004999999999999999,0.004914004914004913
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,4.0,31°C,31.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,5.0,32°C,32.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,6.0,33°C,33.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,7.0,34°C,34.0,0.9984999999999999,0.9813267813267812
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,8.0,35°C,35.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,9.0,36°C,36.0,0.0015,0.0014742014742014742
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,2026-06-08 11:00:00+00:00,T-1,10.0,37°C or higher,37.0,0.0015,0.0014742014742014742
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,0.0,15°C or below,15.0,0.0015,0.001465559355153884
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,1.0,16°C,16.0,0.003,0.002931118710307768
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,2.0,17°C,17.0,0.006,0.005862237420615536
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,3.0,18°C,18.0,0.022,0.021494870542256964
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,4.0,19°C,19.0,0.163,0.15925744992672206
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,5.0,20°C,20.0,0.375,0.366389838788471
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,6.0,21°C,21.0,0.375,0.366389838788471
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,7.0,22°C,22.0,0.065,0.06350757205666831
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,8.0,23°C,23.0,0.0055,0.005373717635564241
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,9.0,24°C,24.0,0.0045000000000000005,0.004396678065461652
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-07 12:00:00+00:00,T-24,10.0,25°C or higher,25.0,0.003,0.002931118710307768
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,0.0,15°C or below,15.0,0.0015,0.0014880952380952384
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,1.0,16°C,16.0,0.003,0.002976190476190477
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,2.0,17°C,17.0,0.0025,0.002480158730158731
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,3.0,18°C,18.0,0.0305,0.030257936507936515
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,4.0,19°C,19.0,0.16399999999999998,0.1626984126984127
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,5.0,20°C,20.0,0.43999999999999995,0.43650793650793657
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,6.0,21°C,21.0,0.29500000000000004,0.2926587301587303
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,7.0,22°C,22.0,0.060000000000000005,0.05952380952380954
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,8.0,23°C,23.0,0.006,0.005952380952380954
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,9.0,24°C,24.0,0.0035,0.003472222222222223
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 06:00:00+00:00,T-6,10.0,25°C or higher,25.0,0.002,0.0019841269841269845
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,0.0,15°C or below,15.0,0.0015,0.001402524544179523
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,1.0,16°C,16.0,0.003,0.002805049088359046
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,2.0,17°C,17.0,0.0015,0.001402524544179523
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,3.0,18°C,18.0,0.002,0.0018700327255726974
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,4.0,19°C,19.0,0.40049999999999997,0.3744740532959326
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,5.0,20°C,20.0,0.475,0.4441327723235156
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,6.0,21°C,21.0,0.14,0.13090229079008883
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,7.0,22°C,22.0,0.029500000000000002,0.02758298270219729
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,8.0,23°C,23.0,0.0135,0.012622720897615706
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,9.0,24°C,24.0,0.0015,0.001402524544179523
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,2026-06-08 11:00:00+00:00,T-1,10.0,25°C or higher,25.0,0.0015,0.001402524544179523
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,0.0,25°C or below,25.0,0.0035,0.003289473684210526
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,1.0,26°C,26.0,0.013500000000000002,0.012687969924812031
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,2.0,27°C,27.0,0.0615,0.05780075187969924
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,3.0,28°C,28.0,0.16499999999999998,0.15507518796992478
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,4.0,29°C,29.0,0.255,0.23966165413533833
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,5.0,30°C,30.0,0.29000000000000004,0.2725563909774436
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,6.0,31°C,31.0,0.16999999999999998,0.15977443609022554
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,7.0,32°C,32.0,0.095,0.08928571428571429
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,8.0,33°C,33.0,0.006,0.005639097744360902
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,9.0,34°C,34.0,0.003,0.002819548872180451
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-07 12:00:00+00:00,T-24,10.0,35°C or higher,35.0,0.0015,0.0014097744360902255
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,0.0,25°C or below,25.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,1.0,26°C,26.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,2.0,27°C,27.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,3.0,28°C,28.0,0.65,0.6024096385542169
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,4.0,29°C,29.0,0.38,0.35217794253938833
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,5.0,30°C,30.0,0.028499999999999998,0.026413345690454122
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,6.0,31°C,31.0,0.0095,0.008804448563484708
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,7.0,32°C,32.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,8.0,33°C,33.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,9.0,34°C,34.0,0.002,0.0018535681186283596
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 06:00:00+00:00,T-6,10.0,35°C or higher,35.0,0.0015,0.0013901760889712697
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,0.0,25°C or below,25.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,1.0,26°C,26.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,2.0,27°C,27.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,3.0,28°C,28.0,0.0025,0.0024618414574101434
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,4.0,29°C,29.0,0.998,0.9827671097981292
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,5.0,30°C,30.0,0.0025,0.0024618414574101434
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,6.0,31°C,31.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,7.0,32°C,32.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,8.0,33°C,33.0,0.0015,0.001477104874446086
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,9.0,34°C,34.0,0.002,0.0019694731659281144
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,2026-06-08 11:00:00+00:00,T-1,10.0,35°C or higher,35.0,0.0015,0.001477104874446086
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,0.0,75°F or below,75.0,0.0015,0.0014962593516209476
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,1.0,76-77°F,76.0,0.002,0.0019950124688279305
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,2.0,78-79°F,78.0,0.0035,0.003491271820448878
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,3.0,80-81°F,80.0,0.0045000000000000005,0.004488778054862844
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,4.0,82-83°F,82.0,0.075,0.07481296758104738
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,5.0,84-85°F,84.0,0.255,0.25436408977556113
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,6.0,86-87°F,86.0,0.36,0.35910224438902744
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,7.0,88-89°F,88.0,0.175,0.1745635910224439
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,8.0,90-91°F,90.0,0.08,0.07980049875311722
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,9.0,92-93°F,92.0,0.039,0.03890274314214464
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-08 12:00:00+00:00,T-24,10.0,94°F or higher,94.0,0.007,0.006982543640897756
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,0.0,75°F or below,75.0,0.0015,0.0014258555133079848
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,1.0,76-77°F,76.0,0.0015,0.0014258555133079848
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,2.0,78-79°F,78.0,0.0055,0.005228136882129277
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,3.0,80-81°F,80.0,0.006,0.005703422053231939
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,4.0,82-83°F,82.0,0.065,0.06178707224334601
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,5.0,84-85°F,84.0,0.125,0.11882129277566539
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,6.0,86-87°F,86.0,0.41500000000000004,0.39448669201520914
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,7.0,88-89°F,88.0,0.325,0.30893536121673004
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,8.0,90-91°F,90.0,0.1,0.09505703422053233
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,9.0,92-93°F,92.0,0.0055,0.005228136882129277
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 06:00:00+00:00,T-6,10.0,94°F or higher,94.0,0.002,0.0019011406844106464
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,0.0,75°F or below,75.0,0.0015,0.001476377952755906
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,1.0,76-77°F,76.0,0.0015,0.001476377952755906
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,2.0,78-79°F,78.0,0.0025,0.002460629921259843
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,3.0,80-81°F,80.0,0.004,0.003937007874015749
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,4.0,82-83°F,82.0,0.0345,0.033956692913385836
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,5.0,84-85°F,84.0,0.185,0.18208661417322838
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,6.0,86-87°F,86.0,0.375,0.36909448818897644
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,7.0,88-89°F,88.0,0.335,0.329724409448819
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,8.0,90-91°F,90.0,0.07,0.06889763779527561
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,9.0,92-93°F,92.0,0.005,0.004921259842519686
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,2026-06-09 11:00:00+00:00,T-1,10.0,94°F or higher,94.0,0.002,0.0019685039370078744
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,0.0,24°C or below,24.0,0.0025,0.0024449877750611247
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,1.0,25°C,25.0,0.0015,0.001466992665036675
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,2.0,26°C,26.0,0.002,0.0019559902200489
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,3.0,27°C,27.0,0.002,0.0019559902200489
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,4.0,28°C,28.0,0.003,0.00293398533007335
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,5.0,29°C,29.0,0.09,0.08801955990220049
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,6.0,30°C,30.0,0.19,0.18581907090464547
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,7.0,31°C,31.0,0.385,0.3765281173594132
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,8.0,32°C,32.0,0.25,0.24449877750611249
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,9.0,33°C,33.0,0.085,0.08312958435207825
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-08 12:00:00+00:00,T-24,10.0,34°C or higher,34.0,0.0115,0.011246943765281174
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,0.0,24°C or below,24.0,0.0015,0.0013876040703052726
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,1.0,25°C,25.0,0.0015,0.0013876040703052726
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,2.0,26°C,26.0,0.0015,0.0013876040703052726
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,3.0,27°C,27.0,0.002,0.0018501387604070302
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,4.0,28°C,28.0,0.002,0.0018501387604070302
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,5.0,29°C,29.0,0.05500000000000001,0.05087881591119334
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,6.0,30°C,30.0,0.27,0.2497687326549491
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,7.0,31°C,31.0,0.41500000000000004,0.3839037927844588
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,8.0,32°C,32.0,0.275,0.25439407955596666
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,9.0,33°C,33.0,0.05,0.046253469010175755
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 06:00:00+00:00,T-6,10.0,34°C or higher,34.0,0.0075,0.006938020351526363
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,0.0,24°C or below,24.0,0.0015,0.0014395393474088294
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,1.0,25°C,25.0,0.0015,0.0014395393474088294
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,2.0,26°C,26.0,0.0015,0.0014395393474088294
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,3.0,27°C,27.0,0.0015,0.0014395393474088294
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,4.0,28°C,28.0,0.002,0.001919385796545106
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,5.0,29°C,29.0,0.062,0.05950095969289828
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,6.0,30°C,30.0,0.185,0.1775431861804223
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,7.0,31°C,31.0,0.495,0.4750479846449137
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,8.0,32°C,32.0,0.25,0.23992322456813825
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,9.0,33°C,33.0,0.035,0.03358925143953936
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,2026-06-09 11:00:00+00:00,T-1,10.0,34°C or higher,34.0,0.007,0.006717850287907871
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,0.0,22°C or below,22.0,0.0015,0.0014520813165537268
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,1.0,23°C,23.0,0.0015,0.0014520813165537268
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,2.0,24°C,24.0,0.004,0.0038722168441432717
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,3.0,25°C,25.0,0.05,0.0484027105517909
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,4.0,26°C,26.0,0.09,0.0871248789932236
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,5.0,27°C,27.0,0.215,0.20813165537270084
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,6.0,28°C,28.0,0.28500000000000003,0.2758954501452081
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,7.0,29°C,29.0,0.21500000000000002,0.20813165537270087
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,8.0,30°C,30.0,0.12,0.11616650532429815
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,9.0,31°C,31.0,0.0395,0.038238141335914806
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-07 12:00:00+00:00,T-48,10.0,32°C or higher,32.0,0.0115,0.011132623426911905
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,0.0,22°C or below,22.0,0.0015,0.0014299332697807437
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,1.0,23°C,23.0,0.0015,0.0014299332697807437
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,2.0,24°C,24.0,0.0015,0.0014299332697807437
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,3.0,25°C,25.0,0.0015,0.0014299332697807437
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,4.0,26°C,26.0,0.045,0.04289799809342231
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,5.0,27°C,27.0,0.125,0.11916110581506197
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,6.0,28°C,28.0,0.345,0.328884652049571
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,7.0,29°C,29.0,0.325,0.3098188751191611
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,8.0,30°C,30.0,0.14500000000000002,0.1382268827454719
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,9.0,31°C,31.0,0.042499999999999996,0.04051477597712107
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-08 12:00:00+00:00,T-24,10.0,32°C or higher,32.0,0.0155,0.014775977121067685
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,0.0,22°C or below,22.0,0.0015,0.0013934045517882026
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,1.0,23°C,23.0,0.0015,0.0013934045517882026
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,2.0,24°C,24.0,0.0025,0.0023223409196470044
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,3.0,25°C,25.0,0.0015,0.0013934045517882026
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,4.0,26°C,26.0,0.067,0.062238736646539713
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,5.0,27°C,27.0,0.46499999999999997,0.43195541105434276
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,6.0,28°C,28.0,0.28,0.2601021830004645
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,7.0,29°C,29.0,0.185,0.17185322805387832
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,8.0,30°C,30.0,0.065,0.06038086391082211
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,9.0,31°C,31.0,0.0055,0.005109150023223409
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 06:00:00+00:00,T-6,10.0,32°C or higher,32.0,0.002,0.0018578727357176034
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,0.0,22°C or below,22.0,0.0015,0.0014742014742014744
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,1.0,23°C,23.0,0.0015,0.0014742014742014744
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,2.0,24°C,24.0,0.0025,0.0024570024570024574
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,3.0,25°C,25.0,0.0015,0.0014742014742014744
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,4.0,26°C,26.0,0.0025,0.0024570024570024574
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,5.0,27°C,27.0,0.995,0.977886977886978
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,6.0,28°C,28.0,0.0055,0.005405405405405406
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,7.0,29°C,29.0,0.0025,0.0024570024570024574
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,8.0,30°C,30.0,0.0015,0.0014742014742014744
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,9.0,31°C,31.0,0.0015,0.0014742014742014744
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,2026-06-09 11:00:00+00:00,T-1,10.0,32°C or higher,32.0,0.002,0.001965601965601966
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,0.0,17°C or below,17.0,0.0015,0.0014312977099236643
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,1.0,18°C,18.0,0.0015,0.0014312977099236643
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,2.0,19°C,19.0,0.0025,0.0023854961832061074
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,4.0,21°C,21.0,0.0025,0.0023854961832061074
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,5.0,22°C,22.0,0.009999999999999998,0.009541984732824428
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,6.0,23°C,23.0,0.13,0.12404580152671758
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,7.0,24°C,24.0,0.20500000000000002,0.19561068702290083
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,8.0,25°C,25.0,0.32999999999999996,0.3148854961832061
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,9.0,26°C,26.0,0.195,0.18606870229007638
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-07 12:00:00+00:00,T-48,10.0,27°C or higher,27.0,0.16999999999999998,0.1622137404580153
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,0.0,17°C or below,17.0,0.0015,0.0014157621519584709
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,1.0,18°C,18.0,0.0015,0.0014157621519584709
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,2.0,19°C,19.0,0.0015,0.0014157621519584709
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,4.0,21°C,21.0,0.0055,0.0051911278905143925
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,5.0,22°C,22.0,0.0195,0.01840490797546012
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,6.0,23°C,23.0,0.15000000000000002,0.1415762151958471
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,7.0,24°C,24.0,0.265,0.25011798017932985
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,8.0,25°C,25.0,0.335,0.31618688060405853
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,9.0,26°C,26.0,0.22499999999999998,0.2123643227937706
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-08 12:00:00+00:00,T-24,10.0,27°C or higher,27.0,0.05500000000000001,0.05191127890514394
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,0.0,17°C or below,17.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,1.0,18°C,18.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,2.0,19°C,19.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,4.0,21°C,21.0,0.0025,0.0024813895781637717
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,5.0,22°C,22.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,6.0,23°C,23.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,7.0,24°C,24.0,0.0015,0.001488833746898263
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,8.0,25°C,25.0,0.9755,0.9682382133995037
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,9.0,26°C,26.0,0.0145,0.014392059553349875
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 06:00:00+00:00,T-6,10.0,27°C or higher,27.0,0.006,0.005955334987593052
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,0.0,17°C or below,17.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,1.0,18°C,18.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,2.0,19°C,19.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,4.0,21°C,21.0,0.0025,0.0024691358024691358
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,5.0,22°C,22.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,6.0,23°C,23.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,7.0,24°C,24.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,8.0,25°C,25.0,0.998,0.985679012345679
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,9.0,26°C,26.0,0.0015,0.0014814814814814816
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,2026-06-09 11:00:00+00:00,T-1,10.0,27°C or higher,27.0,0.0015,0.0014814814814814816
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,0.0,55°F or below,55.0,0.0015,0.0015228426395939088
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,1.0,56-57°F,56.0,0.003,0.0030456852791878176
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,2.0,58-59°F,58.0,0.009,0.009137055837563452
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,3.0,60-61°F,60.0,0.0545,0.05532994923857869
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,4.0,62-63°F,62.0,0.215,0.21827411167512692
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,5.0,64-65°F,64.0,0.385,0.3908629441624366
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,6.0,66-67°F,66.0,0.23500000000000001,0.23857868020304573
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,7.0,68-69°F,68.0,0.065,0.06598984771573606
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,8.0,70-71°F,70.0,0.0125,0.01269035532994924
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,9.0,72-73°F,72.0,0.003,0.0030456852791878176
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-09 12:00:00+00:00,T-24,10.0,74°F or higher,74.0,0.0015,0.0015228426395939088
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,0.0,55°F or below,55.0,0.0025,0.002669514148424987
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,1.0,56-57°F,56.0,0.0015,0.0016017084890549921
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,2.0,58-59°F,58.0,0.0065,0.0069407367859049655
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,3.0,60-61°F,60.0,0.045,0.048051254671649765
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,4.0,62-63°F,62.0,0.115,0.12279765082754941
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,5.0,64-65°F,64.0,0.415,0.4431393486385478
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,6.0,66-67°F,66.0,0.26,0.27762947143619865
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,7.0,68-69°F,68.0,0.07500000000000001,0.08008542445274962
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,8.0,70-71°F,70.0,0.0115,0.01227976508275494
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,9.0,72-73°F,72.0,0.003,0.0032034169781099842
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 06:00:00+00:00,T-6,10.0,74°F or higher,74.0,0.0015,0.0016017084890549921
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,0.0,55°F or below,55.0,0.0025,0.00241196333815726
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,1.0,56-57°F,56.0,0.0015,0.0014471780028943561
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,2.0,58-59°F,58.0,0.003,0.0028943560057887122
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,3.0,60-61°F,60.0,0.015,0.01447178002894356
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,4.0,62-63°F,62.0,0.14,0.13506994693680657
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,5.0,64-65°F,64.0,0.435,0.4196816208393632
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,6.0,66-67°F,66.0,0.385,0.37144235407621806
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,7.0,68-69°F,68.0,0.034499999999999996,0.03328509406657019
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,8.0,70-71°F,70.0,0.0115,0.011095031355523395
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,9.0,72-73°F,72.0,0.0055,0.005306319343945972
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,2026-06-10 11:00:00+00:00,T-1,10.0,74°F or higher,74.0,0.003,0.0028943560057887122
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,0.0,22°C or below,22.0,0.0045000000000000005,0.004603580562659847
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,1.0,23°C,23.0,0.007,0.007161125319693095
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,2.0,24°C,24.0,0.0485,0.049616368286445015
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,4.0,26°C,26.0,0.175,0.17902813299232734
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,5.0,27°C,27.0,0.325,0.33248081841432225
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,6.0,28°C,28.0,0.265,0.2710997442455243
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,7.0,29°C,29.0,0.06,0.06138107416879795
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,8.0,30°C,30.0,0.035500000000000004,0.03631713554987213
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,9.0,31°C,31.0,0.0455,0.046547314578005115
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-08 12:00:00+00:00,T-48,10.0,32°C or higher,32.0,0.0115,0.011764705882352941
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,0.0,22°C or below,22.0,0.0015,0.0014734774066797642
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,1.0,23°C,23.0,0.003,0.0029469548133595285
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,2.0,24°C,24.0,0.007,0.0068762278978389
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,4.0,26°C,26.0,0.05500000000000001,0.05402750491159136
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,5.0,27°C,27.0,0.305,0.29960707269155207
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,6.0,28°C,28.0,0.33499999999999996,0.3290766208251473
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,7.0,29°C,29.0,0.225,0.22102161100196463
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,8.0,30°C,30.0,0.064,0.06286836935166994
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,9.0,31°C,31.0,0.015,0.014734774066797641
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-09 12:00:00+00:00,T-24,10.0,32°C or higher,32.0,0.0075,0.007367387033398821
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,0.0,22°C or below,22.0,0.0015,0.0014888337468982632
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,1.0,23°C,23.0,0.002,0.001985111662531018
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,2.0,24°C,24.0,0.002,0.001985111662531018
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,4.0,26°C,26.0,0.0015,0.0014888337468982632
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,5.0,27°C,27.0,0.0015,0.0014888337468982632
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,6.0,28°C,28.0,0.75,0.7444168734491317
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,7.0,29°C,29.0,0.21,0.20843672456575685
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,8.0,30°C,30.0,0.03,0.029776674937965264
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,9.0,31°C,31.0,0.006500000000000001,0.006451612903225808
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 06:00:00+00:00,T-6,10.0,32°C or higher,32.0,0.0025,0.002481389578163772
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,0.0,22°C or below,22.0,0.0015,0.0014778325123152715
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,1.0,23°C,23.0,0.002,0.0019704433497536953
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,2.0,24°C,24.0,0.002,0.0019704433497536953
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,4.0,26°C,26.0,0.0015,0.0014778325123152715
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,5.0,27°C,27.0,0.0015,0.0014778325123152715
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,6.0,28°C,28.0,0.9984999999999999,0.9837438423645323
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,7.0,29°C,29.0,0.0015,0.0014778325123152715
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,8.0,30°C,30.0,0.0015,0.0014778325123152715
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,9.0,31°C,31.0,0.0025,0.002463054187192119
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,2026-06-10 11:00:00+00:00,T-1,10.0,32°C or higher,32.0,0.0025,0.002463054187192119
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,0.0,25°C or below,25.0,0.0035,0.003981797497155859
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,1.0,26°C,26.0,0.0055,0.006257110352673493
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,2.0,27°C,27.0,0.004,0.004550625711035267
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,3.0,28°C,28.0,0.0405,0.04607508532423208
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,5.0,30°C,30.0,0.265,0.3014789533560865
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,6.0,31°C,31.0,0.28,0.3185437997724687
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,7.0,32°C,32.0,0.2,0.22753128555176338
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,8.0,33°C,33.0,0.04,0.04550625711035267
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,9.0,34°C,34.0,0.036,0.040955631399317405
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-08 12:00:00+00:00,T-48,10.0,35°C or higher,35.0,0.0045000000000000005,0.0051194539249146765
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,0.0,25°C or below,25.0,0.0015,0.0016844469399213927
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,1.0,26°C,26.0,0.0035,0.003930376193149916
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,2.0,27°C,27.0,0.0035,0.003930376193149916
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,3.0,28°C,28.0,0.012,0.013475575519371142
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,5.0,30°C,30.0,0.245,0.27512633352049415
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,6.0,31°C,31.0,0.35,0.3930376193149916
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,7.0,32°C,32.0,0.235,0.2638966872543515
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,8.0,33°C,33.0,0.0275,0.030881527231892202
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,9.0,34°C,34.0,0.009000000000000001,0.010106681639528358
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-09 12:00:00+00:00,T-24,10.0,35°C or higher,35.0,0.0035,0.003930376193149916
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,0.0,25°C or below,25.0,0.0015,0.001487357461576599
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,1.0,26°C,26.0,0.0035,0.003470500743678731
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,2.0,27°C,27.0,0.0015,0.001487357461576599
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,3.0,28°C,28.0,0.0015,0.001487357461576599
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,5.0,30°C,30.0,0.265,0.2627664848785325
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,6.0,31°C,31.0,0.42000000000000004,0.41646008924144773
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,7.0,32°C,32.0,0.27,0.26772434308378784
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,8.0,33°C,33.0,0.0395,0.039167079821517105
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,9.0,34°C,34.0,0.0035,0.003470500743678731
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 06:00:00+00:00,T-6,10.0,35°C or higher,35.0,0.0025,0.002478929102627665
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,0.0,25°C or below,25.0,0.0015,0.0014785608674223758
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,1.0,26°C,26.0,0.0035,0.0034499753573188764
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,2.0,27°C,27.0,0.0015,0.0014785608674223758
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,3.0,28°C,28.0,0.0015,0.0014785608674223758
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,5.0,30°C,30.0,0.997,0.9827501232134056
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,6.0,31°C,31.0,0.0025,0.002464268112370626
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,7.0,32°C,32.0,0.0015,0.0014785608674223758
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,8.0,33°C,33.0,0.0015,0.0014785608674223758
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,9.0,34°C,34.0,0.0025,0.002464268112370626
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,2026-06-10 11:00:00+00:00,T-1,10.0,35°C or higher,35.0,0.0015,0.0014785608674223758
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,0.0,23°C or below,23.0,0.005,0.005022601707684581
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,1.0,24°C,24.0,0.0035,0.0035158211953792064
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,2.0,25°C,25.0,0.005,0.005022601707684581
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,3.0,26°C,26.0,0.055,0.055248618784530384
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,4.0,27°C,27.0,0.19,0.19085886489201406
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,5.0,28°C,28.0,0.30500000000000005,0.30637870416875945
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,6.0,29°C,29.0,0.28,0.28126569563033654
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,7.0,30°C,30.0,0.11000000000000001,0.11049723756906078
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,8.0,31°C,31.0,0.028999999999999998,0.029131089904570563
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,9.0,32°C,32.0,0.008,0.008036162732295328
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-08 12:00:00+00:00,T-48,10.0,33°C or higher,33.0,0.005,0.005022601707684581
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,0.0,23°C or below,23.0,0.0015,0.0014130946773433818
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,1.0,24°C,24.0,0.0015,0.0014130946773433818
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,2.0,25°C,25.0,0.0055,0.005181347150259067
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,3.0,26°C,26.0,0.065,0.06123410268487988
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,4.0,27°C,27.0,0.28500000000000003,0.2684879886952426
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,5.0,28°C,28.0,0.41000000000000003,0.3862458784738577
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,6.0,29°C,29.0,0.175,0.16486104569006121
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,7.0,30°C,30.0,0.08,0.0753650494583137
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,8.0,31°C,31.0,0.0215,0.020254357041921803
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,9.0,32°C,32.0,0.013000000000000001,0.012246820536975978
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-09 12:00:00+00:00,T-24,10.0,33°C or higher,33.0,0.0035,0.0032972209138012244
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,0.0,23°C or below,23.0,0.0015,0.0015113350125944588
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,1.0,24°C,24.0,0.0015,0.0015113350125944588
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,2.0,25°C,25.0,0.0015,0.0015113350125944588
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,3.0,26°C,26.0,0.003,0.0030226700251889177
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,4.0,27°C,27.0,0.002,0.002015113350125945
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,5.0,28°C,28.0,0.825,0.8312342569269522
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,6.0,29°C,29.0,0.14,0.14105793450881615
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,7.0,30°C,30.0,0.0125,0.012594458438287156
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,8.0,31°C,31.0,0.0025,0.002518891687657431
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,9.0,32°C,32.0,0.0015,0.0015113350125944588
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 06:00:00+00:00,T-6,10.0,33°C or higher,33.0,0.0015,0.0015113350125944588
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,0.0,23°C or below,23.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,1.0,24°C,24.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,2.0,25°C,25.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,3.0,26°C,26.0,0.003,0.0029513034923757987
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,4.0,27°C,27.0,0.002,0.001967535661583866
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,5.0,28°C,28.0,0.9984999999999999,0.982292179045745
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,6.0,29°C,29.0,0.0025,0.0024594195769798324
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,7.0,30°C,30.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,8.0,31°C,31.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,9.0,32°C,32.0,0.0015,0.0014756517461878994
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,2026-06-10 11:00:00+00:00,T-1,10.0,33°C or higher,33.0,0.0015,0.0014756517461878994
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,0.0,85°F or below,85.0,0.003,0.0029354207436399224
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,1.0,86-87°F,86.0,0.003,0.0029354207436399224
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,2.0,88-89°F,88.0,0.024,0.02348336594911938
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,3.0,90-91°F,90.0,0.14,0.13698630136986306
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,4.0,92-93°F,92.0,0.41500000000000004,0.4060665362035226
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,5.0,94-95°F,94.0,0.32,0.3131115459882584
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,6.0,96-97°F,96.0,0.08,0.0782778864970646
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,7.0,98-99°F,98.0,0.025,0.024461839530332687
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,8.0,100-101°F,100.0,0.006,0.005870841487279845
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,9.0,102-103°F,102.0,0.003,0.0029354207436399224
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-10 12:00:00+00:00,T-24,10.0,104°F or higher,104.0,0.003,0.0029354207436399224
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,0.0,85°F or below,85.0,0.0025,0.0023685457129322593
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,1.0,86-87°F,86.0,0.0035,0.003315963998105163
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,2.0,88-89°F,88.0,0.027999999999999997,0.0265277119848413
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,3.0,90-91°F,90.0,0.165,0.15632401705352914
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,4.0,92-93°F,92.0,0.475,0.45002368545712923
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,5.0,94-95°F,94.0,0.305,0.28896257697773564
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,6.0,96-97°F,96.0,0.060000000000000005,0.05684509711037423
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,7.0,98-99°F,98.0,0.010499999999999999,0.009947891994315488
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,8.0,100-101°F,100.0,0.003,0.002842254855518711
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,9.0,102-103°F,102.0,0.0015,0.0014211274277593556
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-6,10.0,104°F or higher,104.0,0.0015,0.0014211274277593556
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,0.0,85°F or below,85.0,0.0025,0.0023685457129322593
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,1.0,86-87°F,86.0,0.0035,0.003315963998105163
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,2.0,88-89°F,88.0,0.027999999999999997,0.0265277119848413
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,3.0,90-91°F,90.0,0.165,0.15632401705352914
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,4.0,92-93°F,92.0,0.475,0.45002368545712923
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,5.0,94-95°F,94.0,0.305,0.28896257697773564
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,6.0,96-97°F,96.0,0.060000000000000005,0.05684509711037423
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,7.0,98-99°F,98.0,0.010499999999999999,0.009947891994315488
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,8.0,100-101°F,100.0,0.003,0.002842254855518711
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,9.0,102-103°F,102.0,0.0015,0.0014211274277593556
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,2026-06-11 03:35:00+00:00,T-1,10.0,104°F or higher,104.0,0.0015,0.0014211274277593556
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,0.0,23°C or below,23.0,0.006,0.005663048607833884
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,1.0,24°C,24.0,0.031,0.029259084473808403
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,2.0,25°C,25.0,0.11000000000000001,0.1038225578102879
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,3.0,26°C,26.0,0.325,0.3067484662576688
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,4.0,27°C,27.0,0.375,0.3539405379896178
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,5.0,28°C,28.0,0.175,0.16517225106182162
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,6.0,29°C,29.0,0.0245,0.02312411514865503
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,7.0,30°C,30.0,0.006,0.005663048607833884
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,8.0,31°C,31.0,0.003,0.002831524303916942
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,9.0,32°C,32.0,0.002,0.0018876828692779616
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-09 12:00:00+00:00,T-48,10.0,33°C or higher,33.0,0.002,0.0018876828692779616
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,0.0,23°C or below,23.0,0.0025,0.0025627883136852894
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,1.0,24°C,24.0,0.0235,0.02409021014864172
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,2.0,25°C,25.0,0.081,0.08303434136340339
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,3.0,26°C,26.0,0.405,0.41517170681701693
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,4.0,27°C,27.0,0.375,0.3844182470527934
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,5.0,28°C,28.0,0.055,0.05638134290107637
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,6.0,29°C,29.0,0.024,0.02460276781137878
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,7.0,30°C,30.0,0.003,0.0030753459764223477
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,8.0,31°C,31.0,0.003,0.0030753459764223477
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,9.0,32°C,32.0,0.002,0.0020502306509482316
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-10 12:00:00+00:00,T-24,10.0,33°C or higher,33.0,0.0015,0.0015376729882111738
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,0.0,23°C or below,23.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,1.0,24°C,24.0,0.008,0.00803616273229533
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,2.0,25°C,25.0,0.066,0.06629834254143648
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,3.0,26°C,26.0,0.365,0.36664992466097446
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,4.0,27°C,27.0,0.475,0.4771471622300352
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,5.0,28°C,28.0,0.065,0.06529382219989956
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,6.0,29°C,29.0,0.0075,0.007533902561526872
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,7.0,30°C,30.0,0.003,0.003013561024610749
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,8.0,31°C,31.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,9.0,32°C,32.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-6,10.0,33°C or higher,33.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,0.0,23°C or below,23.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,1.0,24°C,24.0,0.008,0.00803616273229533
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,2.0,25°C,25.0,0.066,0.06629834254143648
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,3.0,26°C,26.0,0.365,0.36664992466097446
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,4.0,27°C,27.0,0.475,0.4771471622300352
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,5.0,28°C,28.0,0.065,0.06529382219989956
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,6.0,29°C,29.0,0.0075,0.007533902561526872
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,7.0,30°C,30.0,0.003,0.003013561024610749
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,8.0,31°C,31.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,9.0,32°C,32.0,0.0015,0.0015067805123053744
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,2026-06-11 03:35:00+00:00,T-1,10.0,33°C or higher,33.0,0.0015,0.0015067805123053744
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,0.0,28°C or below,28.0,0.0015,0.0014319809069212415
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,1.0,29°C,29.0,0.004,0.0038186157517899775
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,2.0,30°C,30.0,0.003,0.002863961813842483
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,3.0,31°C,31.0,0.026000000000000002,0.024821002386634854
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,4.0,32°C,32.0,0.21000000000000002,0.20047732696897383
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,5.0,33°C,33.0,0.395,0.3770883054892603
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,6.0,34°C,34.0,0.305,0.2911694510739858
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,7.0,35°C,35.0,0.055,0.052505966587112186
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,8.0,36°C,36.0,0.04,0.03818615751789978
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,9.0,37°C,37.0,0.005,0.004773269689737472
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-09 12:00:00+00:00,T-48,10.0,38°C or higher,38.0,0.003,0.002863961813842483
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,0.0,28°C or below,28.0,0.0015,0.0015822784810126584
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,1.0,29°C,29.0,0.0015,0.0015822784810126584
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,2.0,30°C,30.0,0.0055,0.0058016877637130804
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,3.0,31°C,31.0,0.008,0.008438818565400845
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,4.0,32°C,32.0,0.036000000000000004,0.037974683544303806
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,5.0,33°C,33.0,0.22999999999999998,0.2426160337552743
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,6.0,34°C,34.0,0.395,0.41666666666666674
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,7.0,35°C,35.0,0.215,0.2267932489451477
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,8.0,36°C,36.0,0.0475,0.050105485232067516
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,9.0,37°C,37.0,0.0065,0.006856540084388186
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-10 12:00:00+00:00,T-24,10.0,38°C or higher,38.0,0.0015,0.0015822784810126584
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,0.0,28°C or below,28.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,1.0,29°C,29.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,2.0,30°C,30.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,3.0,31°C,31.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,4.0,32°C,32.0,0.002,0.0020325203252032522
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,5.0,33°C,33.0,0.345,0.350609756097561
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,6.0,34°C,34.0,0.425,0.4319105691056911
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,7.0,35°C,35.0,0.16499999999999998,0.1676829268292683
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,8.0,36°C,36.0,0.0355,0.036077235772357726
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,9.0,37°C,37.0,0.004,0.0040650406504065045
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-6,10.0,38°C or higher,38.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,0.0,28°C or below,28.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,1.0,29°C,29.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,2.0,30°C,30.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,3.0,31°C,31.0,0.0015,0.0015243902439024393
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,4.0,32°C,32.0,0.002,0.0020325203252032522
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,5.0,33°C,33.0,0.345,0.350609756097561
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,6.0,34°C,34.0,0.425,0.4319105691056911
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,7.0,35°C,35.0,0.16499999999999998,0.1676829268292683
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,8.0,36°C,36.0,0.0355,0.036077235772357726
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,9.0,37°C,37.0,0.004,0.0040650406504065045
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,2026-06-11 03:35:00+00:00,T-1,10.0,38°C or higher,38.0,0.0015,0.0015243902439024393
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,0.0,34°C or below,34.0,0.003,0.002752293577981652
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,1.0,35°C,35.0,0.005,0.004587155963302753
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,2.0,36°C,36.0,0.0035,0.0032110091743119272
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,3.0,37°C,37.0,0.007,0.0064220183486238544
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,4.0,38°C,38.0,0.0325,0.029816513761467895
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,5.0,39°C,39.0,0.195,0.17889908256880738
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,6.0,40°C,40.0,0.28,0.2568807339449542
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,7.0,41°C,41.0,0.315,0.28899082568807344
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,8.0,42°C,42.0,0.16,0.1467889908256881
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,9.0,43°C,43.0,0.085,0.07798165137614681
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-09 12:00:00+00:00,T-48,10.0,44°C or higher,44.0,0.004,0.0036697247706422025
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,0.0,34°C or below,34.0,0.003,0.0029629629629629632
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,1.0,35°C,35.0,0.005,0.0049382716049382715
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,2.0,36°C,36.0,0.0035,0.0034567901234567903
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,3.0,37°C,37.0,0.0095,0.009382716049382716
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,4.0,38°C,38.0,0.123,0.12148148148148148
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,5.0,39°C,39.0,0.425,0.4197530864197531
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,6.0,40°C,40.0,0.295,0.291358024691358
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,7.0,41°C,41.0,0.095,0.09382716049382717
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,8.0,42°C,42.0,0.0465,0.045925925925925926
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,9.0,43°C,43.0,0.005,0.0049382716049382715
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-10 12:00:00+00:00,T-24,10.0,44°C or higher,44.0,0.002,0.0019753086419753087
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,0.0,34°C or below,34.0,0.003,0.002861230329041488
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,1.0,35°C,35.0,0.003,0.002861230329041488
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,2.0,36°C,36.0,0.0055,0.0052455889365760604
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,3.0,37°C,37.0,0.0055,0.0052455889365760604
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,4.0,38°C,38.0,0.0315,0.030042918454935622
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,5.0,39°C,39.0,0.065,0.061993323795898905
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,6.0,40°C,40.0,0.395,0.37672865999046257
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,7.0,41°C,41.0,0.355,0.3385789222699094
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,8.0,42°C,42.0,0.1505,0.1435383881735813
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,9.0,43°C,43.0,0.028999999999999998,0.027658559847401048
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-6,10.0,44°C or higher,44.0,0.0055,0.0052455889365760604
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,0.0,34°C or below,34.0,0.003,0.002861230329041488
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,1.0,35°C,35.0,0.003,0.002861230329041488
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,2.0,36°C,36.0,0.0055,0.0052455889365760604
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,3.0,37°C,37.0,0.0055,0.0052455889365760604
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,4.0,38°C,38.0,0.0315,0.030042918454935622
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,5.0,39°C,39.0,0.065,0.061993323795898905
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,6.0,40°C,40.0,0.395,0.37672865999046257
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,7.0,41°C,41.0,0.355,0.3385789222699094
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,8.0,42°C,42.0,0.1505,0.1435383881735813
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,9.0,43°C,43.0,0.028999999999999998,0.027658559847401048
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,2026-06-11 03:35:00+00:00,T-1,10.0,44°C or higher,44.0,0.0055,0.0052455889365760604
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,0.0,85°F or below,85.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,1.0,86-87°F,86.0,0.05,0.045850527281063744
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,2.0,88-89°F,88.0,0.14,0.1283814763869785
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,3.0,90-91°F,90.0,0.37,0.3392939018798717
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,4.0,92-93°F,92.0,0.325,0.2980284273269143
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,5.0,94-95°F,94.0,0.14500000000000002,0.13296652911508486
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,6.0,96-97°F,96.0,0.0405,0.03713892709766163
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,7.0,98-99°F,98.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,8.0,100-101°F,100.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,9.0,102-103°F,102.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-24,10.0,104°F or higher,104.0,0.003,0.0027510316368638244
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,0.0,85°F or below,85.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,1.0,86-87°F,86.0,0.05,0.045850527281063744
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,2.0,88-89°F,88.0,0.14,0.1283814763869785
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,3.0,90-91°F,90.0,0.37,0.3392939018798717
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,4.0,92-93°F,92.0,0.325,0.2980284273269143
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,5.0,94-95°F,94.0,0.14500000000000002,0.13296652911508486
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,6.0,96-97°F,96.0,0.0405,0.03713892709766163
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,7.0,98-99°F,98.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,8.0,100-101°F,100.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,9.0,102-103°F,102.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-6,10.0,104°F or higher,104.0,0.003,0.0027510316368638244
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,0.0,85°F or below,85.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,1.0,86-87°F,86.0,0.05,0.045850527281063744
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,2.0,88-89°F,88.0,0.14,0.1283814763869785
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,3.0,90-91°F,90.0,0.37,0.3392939018798717
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,4.0,92-93°F,92.0,0.325,0.2980284273269143
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,5.0,94-95°F,94.0,0.14500000000000002,0.13296652911508486
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,6.0,96-97°F,96.0,0.0405,0.03713892709766163
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,7.0,98-99°F,98.0,0.006,0.005502063273727649
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,8.0,100-101°F,100.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,9.0,102-103°F,102.0,0.0025,0.002292526364053187
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,2026-06-11 03:35:00+00:00,T-1,10.0,104°F or higher,104.0,0.003,0.0027510316368638244
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,0.0,18°C or below,18.0,0.003,0.0028735632183908046
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,1.0,19°C,19.0,0.003,0.0028735632183908046
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,2.0,20°C,20.0,0.006,0.005747126436781609
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,3.0,21°C,21.0,0.0265,0.025383141762452106
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,4.0,22°C,22.0,0.045000000000000005,0.04310344827586207
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,5.0,23°C,23.0,0.19,0.18199233716475097
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,6.0,24°C,24.0,0.385,0.36877394636015326
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,7.0,25°C,25.0,0.24,0.22988505747126434
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,8.0,26°C,26.0,0.09,0.08620689655172413
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,9.0,27°C,27.0,0.044000000000000004,0.0421455938697318
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-10 12:00:00+00:00,T-48,10.0,28°C or higher,28.0,0.0115,0.011015325670498084
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,0.0,18°C or below,18.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,1.0,19°C,19.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,2.0,20°C,20.0,0.0035,0.003463631865413162
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,3.0,21°C,21.0,0.010499999999999999,0.010390895596239486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,4.0,22°C,22.0,0.027000000000000003,0.026719445818901538
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,5.0,23°C,23.0,0.14500000000000002,0.1434933201385453
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,6.0,24°C,24.0,0.46499999999999997,0.4601682335477486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,7.0,25°C,25.0,0.24,0.23750618505690252
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,8.0,26°C,26.0,0.085,0.08411677387431965
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,9.0,27°C,27.0,0.0235,0.023255813953488372
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-24,10.0,28°C or higher,28.0,0.008,0.007916872835230085
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,0.0,18°C or below,18.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,1.0,19°C,19.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,2.0,20°C,20.0,0.0035,0.003463631865413162
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,3.0,21°C,21.0,0.010499999999999999,0.010390895596239486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,4.0,22°C,22.0,0.027000000000000003,0.026719445818901538
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,5.0,23°C,23.0,0.14500000000000002,0.1434933201385453
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,6.0,24°C,24.0,0.46499999999999997,0.4601682335477486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,7.0,25°C,25.0,0.24,0.23750618505690252
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,8.0,26°C,26.0,0.085,0.08411677387431965
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,9.0,27°C,27.0,0.0235,0.023255813953488372
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-6,10.0,28°C or higher,28.0,0.008,0.007916872835230085
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,0.0,18°C or below,18.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,1.0,19°C,19.0,0.0015,0.001484413656605641
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,2.0,20°C,20.0,0.0035,0.003463631865413162
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,3.0,21°C,21.0,0.010499999999999999,0.010390895596239486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,4.0,22°C,22.0,0.027000000000000003,0.026719445818901538
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,5.0,23°C,23.0,0.14500000000000002,0.1434933201385453
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,6.0,24°C,24.0,0.46499999999999997,0.4601682335477486
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,7.0,25°C,25.0,0.24,0.23750618505690252
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,8.0,26°C,26.0,0.085,0.08411677387431965
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,9.0,27°C,27.0,0.0235,0.023255813953488372
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,2026-06-11 03:35:00+00:00,T-1,10.0,28°C or higher,28.0,0.008,0.007916872835230085
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,0.0,19°C or below,19.0,0.002,0.0019342359767891683
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,1.0,20°C,20.0,0.0025,0.0024177949709864605
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,2.0,21°C,21.0,0.0085,0.008220502901353965
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,3.0,22°C,22.0,0.026,0.025145067698259187
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,4.0,23°C,23.0,0.1,0.09671179883945842
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,5.0,24°C,24.0,0.22999999999999998,0.22243713733075432
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,6.0,25°C,25.0,0.30000000000000004,0.2901353965183753
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,7.0,26°C,26.0,0.255,0.24661508704061896
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,8.0,27°C,27.0,0.1,0.09671179883945842
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,9.0,28°C,28.0,0.0075,0.007253384912959381
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-10 12:00:00+00:00,T-48,10.0,29°C or higher,29.0,0.0025,0.0024177949709864605
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,0.0,19°C or below,19.0,0.0015,0.0014381591562799617
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,1.0,20°C,20.0,0.002,0.0019175455417066156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,2.0,21°C,21.0,0.0035,0.0033557046979865775
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,3.0,22°C,22.0,0.014,0.01342281879194631
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,4.0,23°C,23.0,0.095,0.09108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,5.0,24°C,24.0,0.26,0.24928092042186004
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,6.0,25°C,25.0,0.37,0.3547459252157239
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,7.0,26°C,26.0,0.215,0.20613614573346117
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,8.0,27°C,27.0,0.07,0.06711409395973156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,9.0,28°C,28.0,0.0095,0.009108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-24,10.0,29°C or higher,29.0,0.0025,0.0023969319271332696
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,0.0,19°C or below,19.0,0.0015,0.0014381591562799617
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,1.0,20°C,20.0,0.002,0.0019175455417066156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,2.0,21°C,21.0,0.0035,0.0033557046979865775
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,3.0,22°C,22.0,0.014,0.01342281879194631
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,4.0,23°C,23.0,0.095,0.09108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,5.0,24°C,24.0,0.26,0.24928092042186004
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,6.0,25°C,25.0,0.37,0.3547459252157239
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,7.0,26°C,26.0,0.215,0.20613614573346117
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,8.0,27°C,27.0,0.07,0.06711409395973156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,9.0,28°C,28.0,0.0095,0.009108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-6,10.0,29°C or higher,29.0,0.0025,0.0023969319271332696
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,0.0,19°C or below,19.0,0.0015,0.0014381591562799617
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,1.0,20°C,20.0,0.002,0.0019175455417066156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,2.0,21°C,21.0,0.0035,0.0033557046979865775
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,3.0,22°C,22.0,0.014,0.01342281879194631
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,4.0,23°C,23.0,0.095,0.09108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,5.0,24°C,24.0,0.26,0.24928092042186004
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,6.0,25°C,25.0,0.37,0.3547459252157239
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,7.0,26°C,26.0,0.215,0.20613614573346117
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,8.0,27°C,27.0,0.07,0.06711409395973156
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,9.0,28°C,28.0,0.0095,0.009108341323106424
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,2026-06-11 03:35:00+00:00,T-1,10.0,29°C or higher,29.0,0.0025,0.0023969319271332696
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,0.0,23°C or below,23.0,0.003,0.0029225523623964936
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,1.0,24°C,24.0,0.0045000000000000005,0.004383828543594741
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,2.0,25°C,25.0,0.009,0.00876765708718948
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,4.0,27°C,27.0,0.065,0.06332196785192404
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,5.0,28°C,28.0,0.33499999999999996,0.32635168046760843
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,6.0,29°C,29.0,0.32499999999999996,0.3166098392596201
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,7.0,30°C,30.0,0.195,0.1899659035557721
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,8.0,31°C,31.0,0.05,0.04870920603994156
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,9.0,32°C,32.0,0.037,0.03604481246955675
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-10 12:00:00+00:00,T-48,10.0,33°C or higher,33.0,0.003,0.0029225523623964936
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,0.0,23°C or below,23.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,1.0,24°C,24.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,2.0,25°C,25.0,0.003,0.002873563218390805
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,4.0,27°C,27.0,0.11000000000000001,0.10536398467432953
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,5.0,28°C,28.0,0.35,0.3352490421455939
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,6.0,29°C,29.0,0.39,0.3735632183908047
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,7.0,30°C,30.0,0.14,0.1340996168582376
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,8.0,31°C,31.0,0.0375,0.03591954022988506
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,9.0,32°C,32.0,0.006500000000000001,0.006226053639846745
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-24,10.0,33°C or higher,33.0,0.003,0.002873563218390805
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,0.0,23°C or below,23.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,1.0,24°C,24.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,2.0,25°C,25.0,0.003,0.002873563218390805
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,4.0,27°C,27.0,0.11000000000000001,0.10536398467432953
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,5.0,28°C,28.0,0.35,0.3352490421455939
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,6.0,29°C,29.0,0.39,0.3735632183908047
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,7.0,30°C,30.0,0.14,0.1340996168582376
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,8.0,31°C,31.0,0.0375,0.03591954022988506
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,9.0,32°C,32.0,0.006500000000000001,0.006226053639846745
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-6,10.0,33°C or higher,33.0,0.003,0.002873563218390805
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,0.0,23°C or below,23.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,1.0,24°C,24.0,0.002,0.0019157088122605367
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,2.0,25°C,25.0,0.003,0.002873563218390805
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,4.0,27°C,27.0,0.11000000000000001,0.10536398467432953
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,5.0,28°C,28.0,0.35,0.3352490421455939
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,6.0,29°C,29.0,0.39,0.3735632183908047
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,7.0,30°C,30.0,0.14,0.1340996168582376
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,8.0,31°C,31.0,0.0375,0.03591954022988506
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,9.0,32°C,32.0,0.006500000000000001,0.006226053639846745
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,2026-06-11 03:35:00+00:00,T-1,10.0,33°C or higher,33.0,0.003,0.002873563218390805
