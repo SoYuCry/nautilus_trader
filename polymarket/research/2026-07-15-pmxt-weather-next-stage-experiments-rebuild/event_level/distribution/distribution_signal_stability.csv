@@ -1,0 +1,49 @@
+record_type,scope,excluded_date,event_date,event_slug,city,cohort,events,estimate,ci90_low,ci90_high,positive_event_share
+bootstrap_90ci,raw,,,,,,36,0.07439460950286497,0.06997860960878208,0.078835951509455,1.0
+bootstrap_90ci,abs_sum_deviation_le_0.10,,,,,,36,0.07192294478457553,0.06638936847509697,0.07934279864806495,1.0
+leave_one_date_out,raw,2026-06-06,,,,,28,0.07680488457805343,,,1.0
+leave_one_date_out,raw,2026-06-07,,,,,29,0.07257867857574693,,,1.0
+leave_one_date_out,raw,2026-06-08,,,,,29,0.07347325231989292,,,1.0
+leave_one_date_out,raw,2026-06-09,,,,,29,0.07655392046677657,,,1.0
+leave_one_date_out,raw,2026-06-10,,,,,29,0.07347325231989292,,,1.0
+date_event_equal,raw,,2026-06-06,,,,8,0.06094233324741122,,,1.0
+date_event_equal,raw,,2026-06-07,,,,7,0.08927662358080178,,,1.0
+date_event_equal,raw,,2026-06-08,,,,7,0.07128467817507048,,,1.0
+date_event_equal,raw,,2026-06-09,,,,7,0.06303034349069643,,,1.0
+date_event_equal,raw,,2026-06-10,,,,7,0.08218997193479095,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,clean,1,0.07257867857574693,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-ankara-on-june-10-2026,Ankara,clean,1,0.0916175557754082,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-beijing-on-june-8-2026,Beijing,clean,1,0.07988559285825061,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-buenos-aires-on-june-9-2026,Buenos Aires,clean,1,0.044365057535032976,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-busan-on-june-6-2026,Busan,clean,1,0.017874210424676743,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-cape-town-on-june-8-2026,Cape Town,clean,1,0.09025233176342455,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-chengdu-on-june-10-2026,Chengdu,clean,1,0.07531596668583702,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-chongqing-on-june-6-2026,Chongqing,clean,1,0.11709802834918569,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-dallas-on-june-8-2026,Dallas,clean,1,0.049001447600074285,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-denver-on-june-6-2026,Denver,clean,1,0.04454278346588682,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-helsinki-on-june-7-2026,Helsinki,degraded,1,0.09413020466002874,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-hong-kong-on-june-6-2026,Hong Kong,clean,1,0.05015314560342996,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-houston-on-june-8-2026,Houston,clean,1,0.07760868445506769,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-istanbul-on-june-7-2026,Istanbul,degraded,1,0.07778631016065936,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-jeddah-on-june-6-2026,Jeddah,degraded,1,0.03142614702305837,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-karachi-on-june-9-2026,Karachi,clean,1,0.06619463427056357,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-kuala-lumpur-on-june-9-2026,Kuala Lumpur,clean,1,0.07328353149562135,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-lucknow-on-june-6-2026,Lucknow,degraded,1,0.08474183248549086,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-manila-on-june-8-2026,Manila,clean,1,0.05261016328359905,,,1.0
+event_ic,raw,,2026-06-08,highest-temperature-in-mexico-city-on-june-8-2026,Mexico City,clean,1,0.07705584868933027,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-moscow-on-june-7-2026,Moscow,degraded,1,0.08191198721681538,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-munich-on-june-9-2026,Munich,clean,1,0.06262435243055355,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-nyc-on-june-6-2026,NYC,clean,1,0.06822926630766836,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-paris-on-june-10-2026,Paris,clean,1,0.06895966338912297,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-qingdao-on-june-9-2026,Qingdao,clean,1,0.02027866900952839,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-san-francisco-on-june-7-2026,San Francisco,clean,1,0.08042082321448808,,,1.0
+event_ic,raw,,2026-06-06,highest-temperature-in-seattle-on-june-6-2026,Seattle,clean,1,0.07347325231989292,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-seoul-on-june-10-2026,Seoul,clean,1,0.1193018892753331,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-shanghai-on-june-9-2026,Shanghai,clean,1,0.09326727165549652,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-singapore-on-june-10-2026,Singapore,clean,1,0.09584093506572515,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-taipei-on-june-7-2026,Taipei,degraded,1,0.07655392046677657,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-tel-aviv-on-june-7-2026,Tel Aviv,degraded,1,0.0729975772735073,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-tokyo-on-june-10-2026,Tokyo,clean,1,0.06997860960878208,,,1.0
+event_ic,raw,,2026-06-07,highest-temperature-in-warsaw-on-june-7-2026,Warsaw,clean,1,0.14113554207333703,,,1.0
+event_ic,raw,,2026-06-09,highest-temperature-in-wellington-on-june-9-2026,Wellington,clean,1,0.08119888803807862,,,1.0
+event_ic,raw,,2026-06-10,highest-temperature-in-wuhan-on-june-10-2026,Wuhan,clean,1,0.054315183743328194,,,1.0

@@ -1,0 +1,2 @@
+event_slug,city,event_date,cohort,market_index,token_id,error
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,clean,4,112387319519732256544494761266076963189527450145666741886561346558446116619212,"ValueError(""sequence=136128, event_type='tick_size_change', market='0x0c29e888a3315afa1fe3957dc31d53bc98ae0d8ae420d34e522ab8f2174f6b17', asset_id='112387319519732256544494761266076963189527450145666741886561346558446116619212', field=old_tick_size: must equal current token tick size 0.001"")"

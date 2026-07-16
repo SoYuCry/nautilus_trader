@@ -1,0 +1,113 @@
+[
+  {
+    "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
+    "leg": "YES",
+    "condition_id": "0x69c95a3df17e241c57240548c28210e0659166220973f884dc8bd101aa7f22be",
+    "asset_id": "62627295587472152931851736943375875103849292447805082671578463541905186507048",
+    "status": "pass",
+    "direct_steps": 22658,
+    "native_counts": {
+      "OrderBookDeltas": 22651,
+      "TradeTick": 6,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  },
+  {
+    "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
+    "leg": "NO",
+    "condition_id": "0x69c95a3df17e241c57240548c28210e0659166220973f884dc8bd101aa7f22be",
+    "asset_id": "70532977780931597527398382719862352628602830404986026345783453187080634108998",
+    "status": "pass",
+    "direct_steps": 22667,
+    "native_counts": {
+      "OrderBookDeltas": 22659,
+      "TradeTick": 7,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  },
+  {
+    "event_slug": "highest-temperature-in-beijing-on-june-6-2026",
+    "leg": "YES",
+    "condition_id": "0x7533f09cc0855c57941a1003d3541138e970bbe93e4a0d74f51f147e46476118",
+    "asset_id": "89524461528590554782747259006243974052252971996311732811400735351023642710974",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=53253, asset_id='89524461528590554782747259006243974052252971996311732811400735351023642710974', price=0.001, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-beijing-on-june-6-2026",
+    "leg": "NO",
+    "condition_id": "0x7533f09cc0855c57941a1003d3541138e970bbe93e4a0d74f51f147e46476118",
+    "asset_id": "59283210530855211916924872037306161528399991005462181827966043145784641588695",
+    "status": "fail",
+    "error": "ValueError(\"price violates effective tick size: sequence=53198, asset_id='59283210530855211916924872037306161528399991005462181827966043145784641588695', price=0.001, effective_tick_size=0.01\")"
+  },
+  {
+    "event_slug": "highest-temperature-in-busan-on-june-6-2026",
+    "leg": "YES",
+    "condition_id": "0xf23093d2c98a00802c4ac6e8698c750ddb7ec059baf69c111effd8432561e42f",
+    "asset_id": "9240623362032232402210121631897629934803161391074671828803872173952662674475",
+    "status": "pass",
+    "direct_steps": 24471,
+    "native_counts": {
+      "OrderBookDeltas": 24468,
+      "TradeTick": 2,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  },
+  {
+    "event_slug": "highest-temperature-in-busan-on-june-6-2026",
+    "leg": "NO",
+    "condition_id": "0xf23093d2c98a00802c4ac6e8698c750ddb7ec059baf69c111effd8432561e42f",
+    "asset_id": "83816465611947607441085846775945053644827135316074238009167982577109551142355",
+    "status": "pass",
+    "direct_steps": 24491,
+    "native_counts": {
+      "OrderBookDeltas": 24472,
+      "TradeTick": 18,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  },
+  {
+    "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
+    "leg": "YES",
+    "condition_id": "0x2914a90f3e2fa588018bdcfdf4652fbf621ffa5e13e6edbe0188a329353787c6",
+    "asset_id": "18625209804774066314040140378438972135402420472856224885082747857601360370601",
+    "status": "pass",
+    "direct_steps": 16550,
+    "native_counts": {
+      "OrderBookDeltas": 16548,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  },
+  {
+    "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
+    "leg": "NO",
+    "condition_id": "0x2914a90f3e2fa588018bdcfdf4652fbf621ffa5e13e6edbe0188a329353787c6",
+    "asset_id": "4032994999974569817739424984258325058991165133404005438519077228137994234865",
+    "status": "pass",
+    "direct_steps": 16549,
+    "native_counts": {
+      "OrderBookDeltas": 16538,
+      "TradeTick": 9,
+      "InstrumentClose": 1
+    },
+    "direct_replay_order_monotonic": true,
+    "native_ts_init_monotonic": true,
+    "skipped_native_updates": 1
+  }
+]

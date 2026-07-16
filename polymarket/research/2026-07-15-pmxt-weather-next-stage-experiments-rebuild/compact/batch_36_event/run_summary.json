@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-07-16T16:26:06.581783+00:00",
+  "stage": "batch_36_event",
+  "events": 36,
+  "cities": 36,
+  "clean": 29,
+  "degraded": 7,
+  "tokens_total": 396,
+  "tokens_skipped": 1,
+  "token_failures": 1,
+  "sum_deviation_abs_p90": 0.07150000000000001,
+  "event_elapsed_sum_seconds": 9407.001782200037,
+  "aggregation_elapsed_seconds": 750.3499769000045
+}
