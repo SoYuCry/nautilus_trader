@@ -2,6 +2,14 @@
 
 ## TLDR
 
+1. 解决历史数据回测问题，用上了 PXMT （之前是因为时间不准，没用，本来打算直接丢掉，上次开会之后发现还是要用。然后还兼容了 nautilus的回放，保证因子研究和回测引擎的一致性）
+2. 发现因子研究和回测有点独立，又搭了一下因子研究
+3. 本来想做盘口单 token 的因子，后来感觉这样不是正确的
+4. 发现了一些关键的问题：时间和活跃度哪些
+5. 
+
+
+
 1. PMXT 已进入统一 pipeline，441 Event inventory 已经可作为天气研究样本池；这解决的是数据合同、回放和复现问题，不是 441 Event 全量 alpha 结论。
 2. 最初从单 Market / 单 Token 盘口因子开始是合理的：`depth_imbalance`、`microprice_minus_mid` 加固定 30/120/600/900s label，可以最快验证 replay、因子、标签和 markout 链路。
 3. 36 Event 实验把问题从“某个盘口因子有没有 IC”推进到“研究单位是否应该升级”：不同 lifecycle、不同 outcome 活跃度、固定时间 label 的信息量差异，都会扭曲单 token 结论。
@@ -21,6 +29,8 @@ PMXT event data
   -> BacktestEngine
 ```
 
+从历史数据中提取了更多天气的 Event 做测试。（接下来是这些数据展示，441 啊 9 date 啊这些）
+
 当前天气 inventory：
 
 | 项目 | 数量 |
@@ -32,15 +42,19 @@ PMXT event data
 | tokens | 9,702 |
 | rows_written_total | 747,185,591 |
 
-这组数字的含义要说清楚：它是 inventory / 可用样本池，说明我们已经有一个统一合同下的天气事件面板，可以抽样、分层、复现和扩展实验。它不表示 441 events 已经全部完成全量因子 materialization，也不表示已经有 441-event 的确认性因子结论。
+（这里要不要描述数据的缺失和可用性，或者说 evalatuion 的指标，然后大概描述一下数据的质量）
 
-Nautilus 侧已经能跑通 research backtest，但目前意义是 plumbing / research 验证，不是收益证明。PMXT replay 是可复现 research replay，不是撮合级 truth，也不是 L3 queue / 真实交易所消息顺序。
+（如果提数据质量，那么这句话就可以省了）这组数字的含义要说清楚：它是 inventory / 可用样本池，说明我们已经有一个统一合同下的天气事件面板，可以抽样、分层、复现和扩展实验。它不表示 441 events 已经全部完成全量因子 materialization，也不表示已经有 441-event 的确认性因子结论。
+
+（删掉，傻逼啊，早就说过了，强调不能干的事干鸡毛）Nautilus 侧已经能跑通 research backtest，但目前意义是 plumbing / research 验证，不是收益证明。PMXT replay 是可复现 research replay，不是撮合级 truth，也不是 L3 queue / 真实交易所消息顺序。
 
 ## 2. 为什么先从单 Token 盘口因子开始
+（不需要讲为什么，标题直接写但盘口因子结果，然后列计算了哪些因子，什么结果。然后最后抛出来一个问题，这样不太对劲啊，不同时间，不同 token 完全含义不一样。而且越接近 settle，越一致，又是另一种市场状态）
 
 一开始从单 Market / 单 Token 盘口因子切入是合理的。原因很简单：这是最小闭环。
 
 `depth_imbalance`、`microprice_minus_mid` 这类 L2 因子，配合固定 30/120/600/900s label，可以最快回答几个基础问题：
+（不用说这几个基础问题，或者简单说，我给老板汇报 老板都是老行家了，这里简单带过）
 
 - PMXT replay 后的盘口状态是否可稳定复现；
 - 因子、标签、聚合、报告链路是否跑通；
@@ -48,6 +62,8 @@ Nautilus 侧已经能跑通 research backtest，但目前意义是 plumbing / re
 - 固定时间 label 在天气市场里会遇到什么样的 zero-return 问题。
 
 36 Event 结果显示，单 token baseline 有方向信息，但不能转成可交易结论。`depth_imbalance_1` 在 120s 的 median IC 为 0.085，900s 为 0.106；但所有 horizon 的 crossing 中位数都是负数，120s 为 -0.0090，900s 为 -0.0087。方向信息不等于可执行收益。
+
+（这里可以，但是交代清楚一下，这个实验的数据范围是？全部的 441 个的结果融合起来？以及说，我记得不是还有一个什么300s之后没找到就会有什么问题的那个吗，还有什么 0 的问题，也修过一次。可以体现一下工作量）
 
 | factor | horizon | median IC | zero | crossing |
 | --- | ---: | ---: | ---: | ---: |
@@ -59,6 +75,8 @@ Nautilus 侧已经能跑通 research backtest，但目前意义是 plumbing / re
 这不是坏结果。它说明单 token 因子适合作为局部盘口特征和 fixed-horizon baseline，但不应继续把主线押在“单 token 固定时间 + 直接 taker”上。
 
 ## 3. 实验暴露的三项结构问题
+
+（对这里没问题，是应该在单 token 的讨论之后，开始聊这个问题）
 
 第一，约 3 天生命周期里的不同阶段不是同一种市场。
 
@@ -152,6 +170,8 @@ Event probability distribution 的结果比单 token 更接近真实问题。pre
 
 ## 8. 发现 - 证据 - 决策
 
+（可以的，这里做一个简单的总结）
+
 | 发现 | 证据 | 决策 |
 | --- | --- | --- |
 | PMXT 工程链路已统一 | 同一 adapter / replay contract 可服务因子研究和 Nautilus research backtest；441 Event inventory 已建立 | 保留统一 pipeline，441 Event 作为样本池，不宣称全量因子完成 |
@@ -162,6 +182,8 @@ Event probability distribution 的结果比单 token 更接近真实问题。pre
 | 概率和异常尾部已完成缓存归因，但残余需逐 Event 核验 | Raw 为 60,281 / 36，P95 0.135，>0.10 占 7.2%，max 3.935；Complete outcomes 后为 38,105 / 23，P95 0.085，>0.10 占 2.9%；Complete + fresh + spread + sync 后为 14,616 / 22，P95 0.077，>0.10 占 1.4%，max 0.180；严格过滤后仍有 205 snapshots / 11 Events >0.10 | Phase1 做残余 Event 报价语义核验与 native parity，再谈回测；不能把尾部解释为套利 |
 
 ## 9. 数据与信任边界
+
+（可以引出一个问题，就是我们的 alpha 是什么，到底干嘛的。我们到底考不考虑赚外生的 alpha 比如从天气的数据源下手，答案是暂时不考虑。然后可以给出 roadmap）
 
 本批结果有几个边界必须写在前面。
 
@@ -194,6 +216,8 @@ Event probability distribution 的结果比单 token 更接近真实问题。pre
 | Phase 5 | 跨 Event | 跨城市、跨日期、跨主题 leader-lag 和相关 Event 网络，等 Event 内能力稳定后再做 |
 
 天气在这里的角色是多结果 Event 试验田，不是最终业务边界。核心能力应通用于政治、宏观、体育等 Polymarket Event。`implied temperature` 只是 weather domain 插件，可用于解释 ordered weather outcomes，不应成为通用 Event 框架的核心定义。
+
+（这里还要加一个，就是 跟 IT 那边对的数据的进度，本来说张琦说上周能给的，结果这周一交接给了一个实习生，刚对完需求）
 
 ## 12. 会议讨论点
 
