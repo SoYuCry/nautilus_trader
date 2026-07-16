@@ -305,6 +305,7 @@ def convert_dataset_to_nautilus(
         condition_id=selected_condition_id,
         token_id=selected_asset_id,
     )
+    last_effective_tick_change_source_time: datetime | None = None
     last_ts_init: int | None = None
     last_replay_clock_ns: int | None = None
     terminal_bid_levels: dict[Decimal, Decimal] = {}
@@ -399,20 +400,27 @@ def convert_dataset_to_nautilus(
                 old_tick = str(update.old_tick_size)
                 new_tick = str(update.new_tick_size)
                 tick_size_changes.append((old_tick, new_tick))
-                # Duplicate 0.001 target events have been observed milliseconds
-                # apart in PMXT/Polymarket data. The first event already changed
-                # the effective instrument precision, so later identical targets
-                # are idempotent jitter: retain the raw audit entry, emit a warning,
-                # and do not create a second effective instrument transition.
+                source_delay = (
+                    step.timestamp - last_effective_tick_change_source_time
+                    if step.timestamp is not None and last_effective_tick_change_source_time is not None
+                    else None
+                )
+                # Twenty-three observed PMXT duplicates repeat the same target
+                # within 0-8 ms of source time. Only a <=10 ms repeat is treated
+                # as idempotent jitter. Long-gap repeats remain strict failures,
+                # preserving the Wuhan ~325 s anomaly for investigation.
                 if (
                     current_tick_size == POLYMARKET_FINE_PRICE_INCREMENT
                     and update.new_tick_size == POLYMARKET_FINE_PRICE_INCREMENT
                     and update.old_tick_size in {POLYMARKET_INITIAL_EFFECTIVE_TICK_SIZE, POLYMARKET_FINE_PRICE_INCREMENT}
+                    and source_delay is not None
+                    and timedelta(0) <= source_delay <= timedelta(milliseconds=10)
                 ):
                     warnings.warn(
                         "ignoring duplicate tick_size_change already effective at 0.001 "
                         f"(sequence={step.sequence}, asset_id={update.asset_id!r}, "
-                        f"old_tick_size={update.old_tick_size}, new_tick_size={update.new_tick_size})",
+                        f"old_tick_size={update.old_tick_size}, new_tick_size={update.new_tick_size}, "
+                        f"source_delay_ms={source_delay / timedelta(milliseconds=1):.3f})",
                         RuntimeWarning,
                         stacklevel=2,
                     )
@@ -439,6 +447,7 @@ def convert_dataset_to_nautilus(
                     ),
                 )
                 current_tick_size = update.new_tick_size
+                last_effective_tick_change_source_time = step.timestamp
                 skipped.append(f"tick_size_change {old_tick}->{new_tick} (timeline_applied)")
             elif update.event_type not in {"book", "price_change"}:
                 append_book_updates(step, pending_book_updates)
