@@ -294,7 +294,94 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 11. 天气结构稳定后再扩到其他 Event 类型；
 12. 跨 Event 因子继续后置。
 
-## 11. Roadmap
+## 11. 研究方向讨论
+
+### 11.1 先研究市场内部，而不是先做天气基本面
+
+天气数据源、预报模型和城市气象差异当然可能提供信息，但如果现在直接从这些外部数据入手，研究很容易收窄成一个天气专项。我们的目标是寻找能够迁移到更多 Polymarket Event 的方法，因此下一阶段优先研究 **endogenous market alpha**：只使用市场自身产生的价格、盘口、成交和不同 outcome 之间的关系，判断市场内部的信息如何传播和重新定价。
+
+这不等于永远不做基本面。更合理的顺序是：
+
+```text
+先确认市场内部存在稳定、可执行的结构
+  -> 再引入外部信息判断它是否提供增量
+  -> 最后比较纯市场模型与市场+基本面模型
+```
+
+天气 Event 适合作为第一个研究载体，因为它同时具备多个互斥 outcome、明确生命周期和最终结算。但最终方法不应该依赖“这是天气市场”才能成立。
+
+### 11.2 方向一：Event 内概率质量迁移
+
+当前最有证据支持的方向是 Event probability distribution。单个 outcome 的盘口压力不仅可能推动自身价格，也可能意味着概率质量正在向相邻温度区间迁移。
+
+下一步可以研究：
+
+- implied-temperature mean、variance、entropy 的变化；
+- 概率质量从低温 outcome 向高温 outcome，或反方向的迁移速度；
+- 某个 outcome 出现压力后，相邻 outcome 是否按固定次序响应；
+- 分布收窄、扩宽和整体平移是否对应不同市场状态；
+- distribution pressure 在6—24h 主窗口是否显著强于其他窗口。
+
+这一方向比继续堆单 token 因子更重要，因为它直接利用了 Polymarket 多 outcome Event 的结构，也是当前 median Event IC 0.076 最自然的延伸。
+
+### 11.3 方向二：Event 内相对价值和 stale outcome
+
+同一个天气 Event 的 outcome 应组成一条相对连续、近似单峰的概率分布。如果某个 outcome 更新较慢，而相邻 outcome 已经发生变化，它可能成为短暂的 stale leg。
+
+可以重点检查：
+
+- outcome A 的盘口或成交是否领先相邻 outcome B；
+- 相邻 outcome 之间的价格变化是否存在稳定 lead-lag；
+- 某个 outcome 的报价是否偏离相邻 outcome 隐含的局部曲线；
+- 概率中心移动时，哪些 outcome 通常先动、哪些通常后动；
+- 严格同步后仍存在的概率和偏离，是否来自可识别的 stale outcome。
+
+这里的目标不是看到 `sum(mid) != 1` 就做多腿套利，而是先确定偏离来自真实的异步定价，还是缺腿、陈旧报价和宽 spread。
+
+### 11.4 方向三：盘口信号如何转成被动执行
+
+`depth_imbalance_1` 的方向稳定，但 crossing 全负，说明“看对方向”并不等于“可以直接跨价成交”。因此执行研究应该从 taker 转向 passive / maker：
+
+- 信号出现后挂在 best bid / best ask，观察后续 adverse selection；
+- 比较挂单等待时间、成交概率和信号衰减速度；
+- 引入 BBO size、queue proxy、partial fill、cancel-before-fill 和 fee；
+- 检查6—24h、不同 spread 和不同概率区间下的 maker 条件；
+- 比较单腿 maker 与 Event 内相对价值多腿执行。
+
+这一层通过 Nautilus BacktestEngine 统一处理订单、fill、position 和账户状态；研究脚本只负责产生信号与执行假设，保证研究和回测的职责边界一致。
+
+### 11.5 Activity 和 lifecycle 应作为 regime，而不是简单过滤器
+
+Dynamic active set 提高 IC、却恶化 crossing，说明活跃市场不是天然更赚钱。后续不应简单规定“只交易最活跃的三个 outcome”，而应该把以下字段作为 regime 或模型输入：
+
+- 距离 Event 结束的时间；
+- 当前活跃 outcome 数；
+- Top3 probability mass；
+- mutation / trade intensity；
+- spread、book staleness 和 tick regime；
+- 当前概率中心与目标 outcome 的距离。
+
+模型需要回答的是“这个信号在什么状态下有效、适合 maker 还是应当放弃”，而不是仅做一次静态样本筛选。
+
+### 11.6 暂时后置的方向
+
+以下方向现在不是主线：
+
+- **天气基本面模型**：可能有效，但容易把方法做窄；待市场内结构形成 baseline 后再评估增量。
+- **跨 Event 因子**：时间对齐、共同信息源和因果关系更复杂，先把单 Event 内部结构做清楚。
+- **继续堆单 token 因子**：当前主要障碍是执行和 Event 结构，不是候选因子数量不足。
+- **直接 taker 策略**：现有 crossing 已经给出一致负证据，不应在没有新执行假设时继续投入。
+- **立即扩到100+ Event**：24个 tick-size 失败、lifecycle 锚点和 native parity 尚未收口，先扩样本只会放大口径问题。
+
+### 11.7 建议会上讨论的三个决策
+
+1. **下一阶段主线是否确定为 Event 内结构性信号**：以 probability mass flow、相邻 outcome lead-lag 和 stale outcome 为核心，跨 Event 延后。
+2. **执行路线是否以 maker 为主**：接受更复杂的 queue / fill 校准，还是仍要求寻找能够覆盖 spread 的 taker 信号。
+3. **天气市场承担什么角色**：把天气作为通用多 outcome 方法的试验场，还是投入外部天气数据，把它发展成独立垂直策略。
+
+当前建议是：先做 Event 内结构性信号，执行以 maker 验证为主；天气基本面只作为后续增量实验，不作为当前研究主轴。
+
+## 12. Roadmap
 
 ```text
 24个 tick-size 冲突收口
@@ -308,7 +395,7 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 
 本轮不扩100 Event，也不进入正式 Nautilus 策略回测。当前更重要的是把24个失败 token 和 lifecycle 时间锚点解释清楚，并证明 rebuild replay 与 Nautilus native data 完全一致。
 
-## 12. 对外口径
+## 13. 对外口径
 
 当前可以说：
 
@@ -324,7 +411,7 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 - dynamic active set 可以直接作为交易 gate；
 - 已经完成 Nautilus 原生回测或证明策略收益。
 
-## 13. 结果位置
+## 14. 结果位置
 
 ```text
 polymarket/research/2026-07-15-pmxt-weather-next-stage-experiments-rebuild/
