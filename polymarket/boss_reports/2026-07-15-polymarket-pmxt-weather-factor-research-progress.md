@@ -34,9 +34,9 @@ PMXT event data
 | tokens | 9,702 |
 | rows_written_total | 747,185,591 |
 
-可用性上，441 个 Event 已按数据质量分成两类：245 个 `primary_development_replication`，196 个 `degraded_robustness`。primary cohort 的覆盖更完整，degraded cohort 主要用于稳健性和异常压力测试，不和 primary 混成一个无差别样本。inventory 层面的行数和覆盖已经足够支持抽样实验，但质量差异必须进入实验设计，而不是事后解释。
+可用性上，441 个 Event 已按数据质量分成两类：245 个 `primary_development_replication`，196 个 `degraded_robustness`。（这里的degraded_robustness 的 196 的意思是？）primary cohort 的覆盖更完整，degraded cohort 主要用于稳健性和异常压力测试，不和 primary 混成一个无差别样本。inventory 层面的行数和覆盖已经足够支持抽样实验，但质量差异必须进入实验设计，而不是事后解释。
 
-本轮 36 Event 验证样本从这个 inventory 中抽取，覆盖 9 个日期、36 个城市、20 clean + 16 degraded，共 396 tokens。实际进入 token baseline 分析的是 366 tokens；24 个 token 因无 ranking observations 被跳过，6 个 token 因 PMXT tick 状态冲突失败且未静默修补。这个审计结果说明样本可用，但不能把“可用”理解成“无质量边界”。
+本轮 36 Event 验证样本从这个 inventory 中抽取，覆盖 9 个日期、36 个城市、20 clean + 16 degraded，共 396 tokens。（这里也简单说一下，可以跟我说，不一定写在报告里，要能让我讲明白）实际进入 token baseline 分析的是 366 tokens；24 个 token 因无 ranking observations 被跳过，6 个 token 因 PMXT tick 状态冲突失败且未静默修补。这个审计结果说明样本可用，但不能把“可用”理解成“无质量边界”。
 
 ## 2. 单 Token 盘口因子结果
 
@@ -54,7 +54,7 @@ OFI、trade pressure、cancel pressure 这类 flow 或 message-order-sensitive �
 36 Event baseline 的正式范围是 36 Event / 9 日期 / 36 城市 / 396 tokens，不是 441 Event 融合结果。event-level runner 最终选取 `depth_imbalance_1` 和 `microprice_minus_mid` 两个代表性盘口因子，跑固定时间 label 的 token-level baseline。
 
 label 工作量也比表面上的“看 120s 后价格”复杂。固定时间 horizon 覆盖 30/60/120/300/600/900s，其中 30/120/600 是主窗口，60/300/900 是诊断与敏感性分析。每个 anchor 必须是 `ranking_observation = actual_mutation AND valid_book`；对每个 horizon，代码在 `t+h` 之后寻找第一个同 token L2 mutation timestamp，并使用该 timestamp 的最后一个 mutation 作为 future mid。找不到未来 mutation、遇到 declared gap / resolution barrier、future book invalid，都会写入 censor reason；只有 current/future mid 都有效的行才进入 label。coverage 是有效 label 行数占 anchor 行数的比例；zero-return 在有效 label 内单独统计，不会被静默丢弃。
-
+（对我觉得这里因子和lable就单独列一下，这样就很清楚）
 核心结果：
 
 | factor | horizon | events | median IC | positive Event | zero | crossing | coverage |
@@ -73,6 +73,8 @@ label 工作量也比表面上的“看 120s 后价格”复杂。固定时间 h
 | microprice_minus_mid | 900s | 36 | 0.065 | 0.889 | 0.459 | -0.0087 | 0.977 |
 
 `depth_imbalance_1` 的 median IC 随 horizon 从 0.077 到 0.106 上升，zero 从 0.795 降到 0.459；但所有 crossing 都为负。`microprice_minus_mid` 也类似，方向信息存在，执行空间不存在。valid_obs pilot 修正过“固定时间内无更新导致大量 0”的诊断，确实能降低 zero；但 `obs200` 的 P90 elapsed 约 2870 秒，超过预注册的 1800 秒门槛，容易把不同 regime 混在一起，因此没有升级为主标签。
+
+（crossing 字段解释一下，就像写论文一样，得说明一下是啥）
 
 这一步给出的结论不是“盘口因子无效”，而是单 token fixed-horizon 的研究单位不够好。不同时间、不同 outcome 的含义完全不同；越接近 settlement，概率收敛和 stale quote 清理又变成另一种市场状态。
 
@@ -116,7 +118,7 @@ Event grid 为 1 分钟；每个 token 只用该时刻之前最后一个有效�
 24 个 skipped 主要来自 inactive market 无 ranking observations，且偏向早期 clean 日期和 Lucknow 等城市；因此 token baseline 只代表能形成 ranking 的较活跃 token。6 个失败 token 来自 PMXT `tick_size_change` old tick 与回放状态冲突，未静默修补。
 
 ## 5. 结果一：Lifecycle 指向 1-6h 主窗口
-
+（5这里的前三张图怎么这么的丑，好简单。。。。而且updates把trade和 active 淹没了，他俩的变化都看不到，而且 active 是啥？）
 ![Lifecycle activity curve](../research/2026-07-15-pmxt-weather-next-stage-experiments/event_level/lifecycle/lifecycle_activity_curve.png)
 
 | bucket | trades/min | spread | 120s IC | zero |
@@ -129,7 +131,7 @@ Event grid 为 1 分钟；每个 token 只用该时刻之前最后一个有效�
 1-6h 是当前最像主要价格发现的窗口：trades/min 最高，spread 已经明显收窄，120s IC 最高，zero 也最低。<1h 虽然 spread 更窄，但交易活跃度和 IC 回落，zero 反而上升，更像 settlement regime，而不是统一价格发现窗口。
 
 ## 6. 结果二：Active set 改善预测，但不改善执行
-
+（两个柱状图的含义是？这么简单的数据一定要画柱状图吗，Dynamic 的意思是？）
 ![All market vs active set comparison](../research/2026-07-15-pmxt-weather-next-stage-experiments/event_level/active_set/all_market_vs_active_set_comparison.png)
 
 | scope | IC | zero | crossing | Top3 mass |
