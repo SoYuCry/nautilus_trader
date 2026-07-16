@@ -8,6 +8,7 @@ objects that can be passed to :class:`nautilus_trader.backtest.engine.BacktestEn
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from datetime import UTC
 from datetime import datetime
@@ -398,6 +399,25 @@ def convert_dataset_to_nautilus(
                 old_tick = str(update.old_tick_size)
                 new_tick = str(update.new_tick_size)
                 tick_size_changes.append((old_tick, new_tick))
+                # Duplicate 0.001 target events have been observed milliseconds
+                # apart in PMXT/Polymarket data. The first event already changed
+                # the effective instrument precision, so later identical targets
+                # are idempotent jitter: retain the raw audit entry, emit a warning,
+                # and do not create a second effective instrument transition.
+                if (
+                    current_tick_size == POLYMARKET_FINE_PRICE_INCREMENT
+                    and update.new_tick_size == POLYMARKET_FINE_PRICE_INCREMENT
+                    and update.old_tick_size in {POLYMARKET_INITIAL_EFFECTIVE_TICK_SIZE, POLYMARKET_FINE_PRICE_INCREMENT}
+                ):
+                    warnings.warn(
+                        "ignoring duplicate tick_size_change already effective at 0.001 "
+                        f"(sequence={step.sequence}, asset_id={update.asset_id!r}, "
+                        f"old_tick_size={update.old_tick_size}, new_tick_size={update.new_tick_size})",
+                        RuntimeWarning,
+                        stacklevel=2,
+                    )
+                    skipped.append(f"tick_size_change {old_tick}->{new_tick} (duplicate_ignored)")
+                    continue
                 if update.old_tick_size != current_tick_size:
                     raise ValueError(
                         "tick_size_change old_tick_size does not match current effective "
@@ -1078,4 +1098,3 @@ def _decimal_from_price_like(value: Any) -> Decimal:
         return Decimal(str(value.as_decimal()))
     text = str(value).split()[0]
     return Decimal(text)
-

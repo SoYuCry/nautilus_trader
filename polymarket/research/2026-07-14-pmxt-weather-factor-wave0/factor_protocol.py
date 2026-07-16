@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import warnings
 from bisect import bisect_left
 from bisect import bisect_right
 from collections import deque
@@ -374,7 +375,29 @@ def _validate_update(
     current_tick = tick_sizes.get(key, _DEFAULT_TICK_SIZE)
     old_tick = update.old_tick_size
     new_tick = update.new_tick_size
-    if not isinstance(old_tick, Decimal) or not old_tick.is_finite() or old_tick != current_tick:
+    if not isinstance(old_tick, Decimal) or not old_tick.is_finite():
+        raise _validation_error(step, update, "old_tick_size", "must be a finite Decimal")
+    if not isinstance(new_tick, Decimal) or not new_tick.is_finite():
+        raise _validation_error(step, update, "new_tick_size", "must be a finite Decimal")
+    # PMXT/Polymarket can deliver the same 0.01 -> 0.001 transition more than
+    # once within milliseconds. Once 0.001 is already effective this is an
+    # idempotent transport/data jitter event, not a state transition. Warn and
+    # ignore it, while keeping malformed or genuinely conflicting transitions
+    # fail-fast below.
+    if (
+        current_tick == _NARROW_TICK_SIZE
+        and new_tick == _NARROW_TICK_SIZE
+        and old_tick in {_DEFAULT_TICK_SIZE, _NARROW_TICK_SIZE}
+    ):
+        warnings.warn(
+            "ignoring duplicate tick_size_change already effective at 0.001 "
+            f"(sequence={step.sequence}, market={update.market!r}, asset_id={update.asset_id!r}, "
+            f"old_tick_size={old_tick}, new_tick_size={new_tick})",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return
+    if old_tick != current_tick:
         raise _validation_error(
             step,
             update,
@@ -383,7 +406,7 @@ def _validate_update(
         )
     if old_tick != _DEFAULT_TICK_SIZE:
         raise _validation_error(step, update, "old_tick_size", "only 0.01 -> 0.001 is supported")
-    if not isinstance(new_tick, Decimal) or not new_tick.is_finite() or new_tick != _NARROW_TICK_SIZE:
+    if new_tick != _NARROW_TICK_SIZE:
         raise _validation_error(step, update, "new_tick_size", "only 0.01 -> 0.001 is supported")
     tick_sizes[key] = _NARROW_TICK_SIZE
 
@@ -1159,4 +1182,3 @@ def _frame_digest(frame: pd.DataFrame) -> str:
         stable = stable.sort_values(sort_columns, kind="mergesort")
     payload = stable.reset_index(drop=True).to_json(orient="split", date_format="iso", default_handler=str)
     return hashlib.sha256(json.dumps(json.loads(payload), sort_keys=True).encode()).hexdigest()
-

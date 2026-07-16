@@ -434,6 +434,46 @@ def test_bridge_applies_tick_size_change_before_later_updates_in_same_step() -> 
     assert [type(item) for item in converted.data] == [OrderBookDeltas, OrderBookDeltas]
 
 
+def test_bridge_warns_and_ignores_duplicate_narrow_tick_size_change() -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step(
+                2,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+            step(
+                3,
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.warns(RuntimeWarning, match="duplicate tick_size_change"):
+        converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert converted.tick_size_changes == (("0.01", "0.001"), ("0.01", "0.001"))
+    assert len(converted.effective_tick_size_changes) == 1
+    assert converted.skipped_updates[-1] == "tick_size_change 0.01->0.001 (duplicate_ignored)"
+
+
 def test_bridge_same_step_tick_change_effective_time_follows_pre_tick_flush() -> None:
     data = dataset(
         [
