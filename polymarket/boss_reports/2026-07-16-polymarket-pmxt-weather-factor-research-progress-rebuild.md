@@ -6,12 +6,13 @@
 
 1. PMXT 天气数据已经重新收口。新目录包含 227 个完整生命周期 Event、5 个日期、49 个城市、2,497 个二元 Market、4,994 个 outcome token，共 707,045,334 行；missing hour 和 bad file 均为 0。
 2. 两套实验已经用 `events-rebuild` 完整重跑：6 Event pilot 用于检查因子、label 和实验流程，36 Event 用于验证 token baseline、lifecycle、dynamic active set 和 Event probability distribution。
-3. `depth_imbalance_1` 的预测方向稳定。36 Event 中 30s / 120s / 600s median IC 分别为 0.069 / 0.082 / 0.103，三个 horizon 的 positive Event 均为 100%。但 crossing 分别为 -0.0093 / -0.0090 / -0.0089，不能直接转成 taker 策略。
+3. `depth_imbalance_1` 的预测方向稳定。36 Event 中 30s / 120s / 600s median IC 分别为 0.069 / 0.084 / 0.104，三个 horizon 的 positive Event 均为 100%。但 crossing 分别为 -0.0090 / -0.0086 / -0.0083，不能直接转成 taker 策略。
 4. 天气 Event 最有研究价值的窗口是结束前 6—24h，而不是旧实验认为的 1—6h。该窗口的更新、成交和 120s IC 都更高；进入 1—6h 后更新量断崖下降，<1h 已没有可用方向性 label。
-5. Dynamic active set 能提高统计信号，但没有改善执行：IC 从 0.054 提高到 0.081，zero rate 从 0.854 降到 0.742，crossing 却从 -0.0067 恶化到 -0.0116。因此 active set 暂时只作为状态特征，不作为交易 gate。
-6. Event distribution pressure 是目前更值得继续研究的方向：median Event IC 为 0.076，36 个 Event 全部为正，90% bootstrap CI 为 [0.072, 0.081]，5 组 leave-one-date-out 均保持正向。但它仍是弱结构信号，不是已验证 Alpha。
-7. 概率和异常大部分来自 outcome 不完整、报价陈旧或不同步。严格控制完整性、新鲜度、spread 和时间同步后，`|sum(mid)-1| > 0.10` 从 13.6% 降至 1.8%。残余偏离需要逐 Event 核验，不能直接叫套利。
-8. 当前仍有两个硬边界：396 个 token 中24个因 tick-size 状态冲突失败，涉及20个 Event；direct replay → Nautilus native parity 因当前环境缺少 `nautilus_trader.core.data`，仍是 NOT RUN。完成这两项前不进入正式策略回测。
+5. Dynamic active set 能提高统计信号，但没有改善执行：IC 从 0.053 提高到 0.083，zero rate 从 0.855 降到 0.741，crossing 却从 -0.0064 恶化到 -0.0115。因此 active set 暂时只作为状态特征，不作为交易 gate。
+6. Event distribution pressure 是目前更值得继续研究的方向：median Event IC 为 0.074，36 个 Event 全部为正，90% bootstrap CI 为 [0.070, 0.079]，5 组 leave-one-date-out 均保持正向。但它仍是弱结构信号，不是已验证 Alpha。
+7. 概率和异常大部分来自 outcome 不完整、报价陈旧或不同步。修复短间隔重复 tick 通知、恢复23个 token 后，原始 `|sum(mid)-1| > 0.10` 已从上一轮的13.6%降至4.7%；严格控制完整性、新鲜度、spread 和时间同步后进一步降至1.8%。残余偏离需要逐 Event 核验，不能直接叫套利。
+8. Tick-size 边界已经收敛：23个 source-time 间隔不超过8ms的重复 `0.01 → 0.001` 通知按幂等告警跳过；Wuhan 的325.489秒长间隔重复继续严格失败。396个 token 最终394个进入分析、1个 inactive token 被跳过、1个严格失败。研究结论没有发生实质变化。
+9. direct replay → Nautilus native parity 因当前环境缺少 `nautilus_trader.core.data`，仍是 NOT RUN。完成 parity 前不进入正式策略回测。
 
 ## 1. PMXT 问题回顾与数据重建
 
@@ -88,7 +89,7 @@ C:\Projects\PolyReaper\data\curated\polymarket\events-rebuild\
 - Event probability distribution；
 - bootstrap、leave-one-date-out 和概率和异常尾部。
 
-36 Event 的 replay 累计处理约5.03 CPUh，缓存聚合约10.1分钟。所有输入均已确认来自 `events-rebuild`，没有混用旧 `events` 目录。
+最终36 Event 产物记录的 replay 累计处理约2.61 CPUh，本轮增量聚合约12.5分钟。完整相关重跑实际约29分钟，部分阶段并行并复用了未受影响 token 的缓存。所有输入均已确认来自 `events-rebuild`，没有混用旧 `events` 目录。
 
 ### 2.2 因子范围
 
@@ -115,7 +116,7 @@ Wave 0 因子池包括：
 
 Pilot 使用30s、120s、600s；36 Event baseline 扩展到30s、60s、120s、300s、600s、900s。主结论按 Event 等权，避免少数高频 Event 支配结果。
 
-valid_obs10 / 50 / 200 只作诊断。obs200 相比 obs10 将 zero rate 降低23.5%，elapsed P90 为1008.1秒，已经达到 amendment 候选门槛，但本轮没有改写预注册主 label。
+valid_obs10 / 50 / 200 只作诊断。obs200 相比 obs10 将 zero rate 降低23.7%，elapsed P90 为999.8秒，已经达到 amendment 候选门槛，但本轮没有改写预注册主 label。
 
 ## 3. Token baseline
 
@@ -134,16 +135,36 @@ Pilot 中相对较好的候选仍是：
 
 | factor | horizon | Event | median IC | positive Event | zero | crossing | coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| depth_imbalance_1 | 30s | 36 | 0.069 | 1.000 | 0.782 | -0.0093 | 0.998 |
-| depth_imbalance_1 | 120s | 36 | 0.082 | 1.000 | 0.691 | -0.0090 | 0.996 |
-| depth_imbalance_1 | 600s | 36 | 0.103 | 1.000 | 0.536 | -0.0089 | 0.986 |
-| microprice_minus_mid | 30s | 36 | 0.063 | 0.972 | 0.782 | -0.0094 | 0.998 |
-| microprice_minus_mid | 120s | 36 | 0.068 | 1.000 | 0.691 | -0.0090 | 0.996 |
-| microprice_minus_mid | 600s | 36 | 0.069 | 1.000 | 0.536 | -0.0089 | 0.986 |
+| depth_imbalance_1 | 30s | 36 | 0.069 | 1.000 | 0.784 | -0.0090 | 0.998 |
+| depth_imbalance_1 | 120s | 36 | 0.084 | 1.000 | 0.691 | -0.0086 | 0.996 |
+| depth_imbalance_1 | 600s | 36 | 0.104 | 1.000 | 0.552 | -0.0083 | 0.986 |
+| microprice_minus_mid | 30s | 36 | 0.061 | 0.972 | 0.784 | -0.0090 | 0.998 |
+| microprice_minus_mid | 120s | 36 | 0.068 | 1.000 | 0.691 | -0.0086 | 0.996 |
+| microprice_minus_mid | 600s | 36 | 0.068 | 1.000 | 0.552 | -0.0083 | 0.986 |
 
 这组结果说明盘口不平衡对未来 mid 的排序方向很稳定，而且 horizon 越长，zero rate 越低。但所有 crossing 都是负数：如果看到正信号后直接跨 ask 买入，或者看到负信号后直接打 bid 卖出，预测幅度不足以覆盖当下 spread。
 
 因此目前可以把 token baseline 当作 Event 内部的局部状态特征，不能直接变成 taker 策略。
+
+### 3.3 Tick-size 重跑的影响
+
+原24个失败 token 并不属于同一种风险：
+
+- 23个 token 的第二次 `0.01 → 0.001` 通知与第一次只相隔0—8ms；
+- replay 现在对 source timestamp 间隔不超过10ms的同方向重复转换输出 warning，并把第二次通知作为 idempotent no-op 跳过；
+- Wuhan 的重复通知相隔325.489秒，超过10ms边界，仍然严格失败。
+
+边界修复后的结果是：
+
+| 实验 | 修复前 | 修复后 |
+| --- | ---: | ---: |
+| 10 Event 单因子 | 7个失败 token | 110个 YES token，失败0 |
+| 6 Event pilot | 1个失败 token | 失败0 |
+| 36 Event | 24 token / 20 Event 受影响 | 1 token / 1 Event 受影响 |
+
+重跑后 `depth_imbalance_1` 的120s IC 从约0.082变为0.084，600s 从约0.103变为0.104；distribution IC 从约0.076变为0.074。短重复主要造成样本缺失，没有改变研究方向或执行结论。
+
+当前边界已经由测试锁定：短重复通过并告警，325.489秒长重复严格失败；因子协议相关测试77项通过。Nautilus bridge 的2项测试因本机缺少编译 runtime 被跳过，属于仍待完成的 parity 边界。
 
 ## 4. 三个天气市场结构问题
 
@@ -163,12 +184,16 @@ Pilot 中相对较好的候选仍是：
 
 | bucket | Event | updates/min | trades/min | active markets | spread | 120s IC | zero | crossing | coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| >24h | 36 | 337.74 | 0.11 | 4.84 | 0.0090 | 0.076 | 0.729 | -0.0078 | 0.999 |
-| 6—24h | 36 | 566.42 | 0.41 | 4.66 | 0.0030 | 0.108 | 0.634 | -0.0104 | 0.990 |
-| 1—6h | 34 | 0.09 | 0.04 | 3.09 | 0.0010 | 0.065 | 0.962 | -0.0009 | 0.831 |
+| >24h | 36 | 365.43 | 0.12 | 4.88 | 0.0080 | 0.080 | 0.734 | -0.0076 | 0.999 |
+| 6—24h | 36 | 597.22 | 0.43 | 4.74 | 0.0030 | 0.099 | 0.636 | -0.0105 | 0.990 |
+| 1—6h | 35 | 0.11 | 0.04 | 3.10 | 0.0010 | 0.065 | 0.962 | -0.0009 | 0.822 |
 | <1h | 21 | 0.00 | 0.05 | 3.00 | 0.0010 | N/A | N/A | N/A | 0.000 |
 
 本轮推翻了旧模板写死的“1—6h 主窗口”。6—24h 的更新和成交最集中，120s IC 最高，zero rate 也低于其他窗口。进入1—6h 后，订单簿更新量已经断崖下降；<1h 没有可用的方向性 label，只能作为关闭/结算边界诊断。
+
+![Lifecycle activity](assets/2026-07-16-weather-rebuild/01-lifecycle-activity.png)
+
+> 图1：不同 lifecycle 使用独立量纲展示。6—24h 的订单簿更新和成交最集中；1—6h 后活动迅速下降。
 
 需要注意：lifecycle 目前以 metadata `event_end` 为锚点。由于1—6h 的更新量下降过于明显，进入下一轮前还要核验 `event_end`、实际停止交易时间、当地自然日结束和 resolution time 的关系，避免把 metadata 时差解释成市场行为。
 
@@ -178,10 +203,14 @@ active 的定义为：存在有效 BBO，并满足当前概率 Top3、过去30�
 
 | scope | Event | IC | zero | crossing | Top3 updates | Top3 trades | Top3 probability mass |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| all_market | 36 | 0.054 | 0.854 | -0.0067 | 0.496 | 0.749 | 0.881 |
-| dynamic_active | 36 | 0.081 | 0.742 | -0.0116 | 0.706 | 0.749 | 0.947 |
+| all_market | 36 | 0.053 | 0.855 | -0.0064 | 0.489 | 0.722 | 0.875 |
+| dynamic_active | 36 | 0.083 | 0.741 | -0.0115 | 0.686 | 0.722 | 0.944 |
 
 Dynamic active set 确实集中到了更活跃、更有信息量的 outcome，但这些 outcome 同时也更难通过直接跨价获得收益。它可以继续作为 activity regime、仓位筛选或模型输入，暂时不升级为硬交易 gate。
+
+![Active-set trade-off](assets/2026-07-16-weather-rebuild/02-active-set-tradeoff.png)
+
+> 图2：Dynamic active set 提高 IC、降低 zero rate，但 crossing 更负。预测质量改善没有转化成 taker 可执行性。
 
 ## 7. Event probability distribution
 
@@ -191,28 +220,36 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 
 | 指标 | 结果 |
 | --- | ---: |
-| median Event IC | 0.076 |
+| median Event IC | 0.074 |
 | positive Event | 36 / 36 |
-| Event bootstrap 90% CI | [0.072, 0.081] |
-| `|sum(mid)-1| <= 0.10` 子样本 IC | 0.073 |
-| 子样本 bootstrap 90% CI | [0.065, 0.082] |
+| Event bootstrap 90% CI | [0.070, 0.079] |
+| `|sum(mid)-1| <= 0.10` 子样本 IC | 0.072 |
+| 子样本 bootstrap 90% CI | [0.066, 0.079] |
 | leave-one-date-out | 5 / 5 保持正向 |
 | leave-one-date-out median IC 范围 | 0.073—0.077 |
 
 这说明 distribution pressure 并不是由单个日期或城市偶然贡献出来的。它目前可以称为“跨日期稳定的弱结构信号”，但仍不能称为可交易 Alpha，因为没有正 crossing，也没有成交容量和费用验证。
 
+![Distribution signal forest](assets/2026-07-16-weather-rebuild/03-distribution-signal-forest.png)
+
+> 图3：36个 Event 的 distribution pressure IC 全部为正。信号跨城市和日期存在，但量级仍然较弱。图中颜色沿用实验产物旧字段；橙色只表示观察到 post-close rows，不代表缺文件或较差数据质量。
+
+![Representative Event distribution](assets/2026-07-16-weather-rebuild/04-representative-event-distribution.png)
+
+> 图4：同一 Event 从 T-48 到 T-1 的概率分布变化示例。研究对象是整条概率分布如何迁移和收敛，而不是把11个 outcome 当成互不相关的市场。
+
 ### 7.2 概率和异常尾部
 
-原始 Event snapshot 中，`|sum(mid)-1| > 0.10` 占13.6%，P95 为0.266，最大达到3.870。进一步控制 outcome 完整性、BBO 新鲜度、spread 和同一分钟的 source-time 同步后：
+原始 Event snapshot 中，`|sum(mid)-1| > 0.10` 占4.7%，P95 为0.097，最大达到4.370。进一步控制 outcome 完整性、BBO 新鲜度、spread 和同一分钟的 source-time 同步后：
 
 | filter | snapshots | Event | P95 | `>0.10` | max |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Raw | 109,526 | 36 | 0.266 | 13.6% | 3.870 |
-| Complete outcomes | 47,671 | 16 | 0.104 | 5.2% | 0.965 |
-| Complete + fresh | 12,989 | 16 | 0.087 | 3.0% | 0.596 |
-| Complete + fresh + spread + sync | 10,467 | 16 | 0.079 | 1.8% | 0.207 |
+| Raw | 109,767 | 36 | 0.097 | 4.7% | 4.370 |
+| Complete outcomes | 101,379 | 34 | 0.086 | 3.6% | 4.370 |
+| Complete + fresh | 30,481 | 34 | 0.086 | 3.1% | 4.370 |
+| Complete + fresh + spread + sync | 25,898 | 34 | 0.080 | 1.8% | 0.249 |
 
-结论是：绝大多数极端偏离不是稳定套利，而是缺少 outcome、报价陈旧、spread 太大或不同步造成的截面错觉。严格过滤后仍有189个 snapshot、10个 Event 超过0.10，需要逐 Event 检查报价语义和可成交数量。
+结论是：绝大多数极端偏离不是稳定套利，而是缺少 outcome、报价陈旧、spread 太大或不同步造成的截面错觉。恢复23个短重复 token 后，raw 异常占比本身已从13.6%下降到4.7%，说明上一轮相当一部分异常确实来自 outcome vector 不完整。严格过滤后仍有460个 snapshot、22个 Event 超过0.10，需要逐 Event 检查报价语义和可成交数量。
 
 当前缓存只有 BBO 价格，没有每条腿可验证的 BBO size 和 fee rate，因此不能计算多腿最小容量，也不能把残余偏离称为套利机会。
 
@@ -223,15 +260,16 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 | PMXT 天气数据可以进入统一研究链路 | 227 Event 完整覆盖；因子和36 Event结构实验均从 `events-rebuild` 消费 | 保留 PMXT research mode，继续使用统一 replay contract |
 | 单 token 盘口方向稳定 | `depth_imbalance_1` 30s / 120s / 600s positive Event 均为100% | 作为 Event 内局部特征，不直接做 taker |
 | 6—24h 是主要研究窗口 | updates、trades、120s IC 最高 | 下一轮重点研究该窗口，同时核验 lifecycle 锚点 |
-| active outcome 更有预测信息 | IC 0.054 → 0.081，zero 0.854 → 0.742 | 作为状态特征，不作为交易 gate |
-| Event distribution 存在稳定弱结构 | IC 0.076；bootstrap 和5组日期留一均为正 | 作为下一轮主方向 |
+| active outcome 更有预测信息 | IC 0.053 → 0.083，zero 0.855 → 0.741 | 作为状态特征，不作为交易 gate |
+| Event distribution 存在稳定弱结构 | IC 0.074；bootstrap 和5组日期留一均为正 | 作为下一轮主方向 |
 | crossing 全部为负 | token、lifecycle 和 active-set 结果均为负 | 停止直接 taker 路线 |
-| 原始概率和异常多数不可交易 | 严格过滤后异常占比13.6% → 1.8% | 只核验残余10个 Event，不宣传套利 |
-| 还不能进入正式 Nautilus 回测 | 24个 tick-size 失败；native parity NOT RUN | 先修数据语义和运行环境 |
+| 原始概率和异常多数不可交易 | 短重复修复后 raw 为4.7%，严格过滤后为1.8% | 核验残余22个 Event，不宣传套利 |
+| 短 tick 重复主要造成样本缺失 | 23个 token 恢复后主要 IC 与执行结论基本不变 | 保留告警和10ms边界，不再整 token 丢弃 |
+| 还不能进入正式 Nautilus 回测 | Wuhan 保留1个严格失败；native parity NOT RUN | 核验长重复并修复运行环境 |
 
 ## 9. 当前风险和信任边界
 
-1. **24个 tick-size 失败**：396个 token 中371个进入分析、1个因无 ranking observation 被跳过、24个因 `tick_size_change.old_tick_size` 与 replay 当前状态冲突而失败，涉及20个 Event。程序没有静默修补，但最终统计存在 token 缺失，必须做修复和敏感性重跑。
+1. **Wuhan 长间隔 tick 重复**：396个 token 中394个进入分析、1个因无 ranking observation 被跳过、1个严格失败。唯一失败是 Wuhan market index 4：第二次 `0.01 → 0.001` 与第一次相隔325.489秒，不能按短时传输抖动忽略。程序继续 fail closed，因此 Wuhan 的 Event probability vector 仍不完整。
 2. **Nautilus parity 未运行**：当前 Python 环境缺少 `nautilus_trader.core.data` 编译扩展。因此本轮只证明 factor/event-level replay 结果，没有证明同一批 rebuild 数据经过 native bridge 后完全一致。
 3. **crossing 不是 PnL**：当前 crossing 只比较未来 mid 与当下 bid/ask，没有手续费、延迟、盘口数量、排队和 partial fill。
 4. **lifecycle 锚点需要核验**：6—24h 到1—6h 的更新量下降非常大。当前以 metadata `event_end` 为锚，仍需和实际停止交易、当地自然日及 resolution time 对齐。
@@ -244,11 +282,11 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 
 ### P0：进入 Nautilus 策略回测之前
 
-1. **tick-size 冲突收口**
-   - 对24个失败 token 输出完整 tick timeline；
-   - 判断是 PMXT 重复/乱序、初始 tick 推断，还是 adapter 状态机问题；
-   - 修复后重跑受影响的20个 Event；
-   - 对比修复前后 token IC、Event IC、lifecycle 和 distribution 结果。
+1. **Wuhan 长重复收口**
+   - 保留当前超过10ms严格失败的边界；
+   - 核验 Wuhan 两次通知之间的 book、price 和其他 tick 状态；
+   - 判断它是延迟重复、源端重放，还是确实缺失了中间状态转换；
+   - 在没有证据前不扩大10ms容忍窗口。
 
 2. **direct replay → Nautilus native parity**
    - 在可导入 `nautilus_trader.core.data` 的编译环境运行；
@@ -322,7 +360,7 @@ Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力�
 - 分布收窄、扩宽和整体平移是否对应不同市场状态；
 - distribution pressure 在6—24h 主窗口是否显著强于其他窗口。
 
-这一方向比继续堆单 token 因子更重要，因为它直接利用了 Polymarket 多 outcome Event 的结构，也是当前 median Event IC 0.076 最自然的延伸。
+这一方向比继续堆单 token 因子更重要，因为它直接利用了 Polymarket 多 outcome Event 的结构，也是当前 median Event IC 0.074 最自然的延伸。
 
 ### 11.3 方向二：Event 内相对价值和 stale outcome
 
@@ -371,7 +409,7 @@ Dynamic active set 提高 IC、却恶化 crossing，说明活跃市场不是天�
 - **跨 Event 因子**：时间对齐、共同信息源和因果关系更复杂，先把单 Event 内部结构做清楚。
 - **继续堆单 token 因子**：当前主要障碍是执行和 Event 结构，不是候选因子数量不足。
 - **直接 taker 策略**：现有 crossing 已经给出一致负证据，不应在没有新执行假设时继续投入。
-- **立即扩到100+ Event**：24个 tick-size 失败、lifecycle 锚点和 native parity 尚未收口，先扩样本只会放大口径问题。
+- **立即扩到100+ Event**：Wuhan 长重复、lifecycle 锚点和 native parity 尚未收口，先扩样本只会放大口径问题。
 
 ### 11.7 建议会上讨论的三个决策
 
@@ -384,7 +422,7 @@ Dynamic active set 提高 IC、却恶化 crossing，说明活跃市场不是天�
 ## 12. Roadmap
 
 ```text
-24个 tick-size 冲突收口
+Wuhan 长间隔 tick 重复收口
   -> lifecycle 锚点与 post-close 敏感性
   -> direct/native parity
   -> Nautilus research backtest
@@ -393,7 +431,7 @@ Dynamic active set 提高 IC、却恶化 crossing，说明活跃市场不是天�
   -> 扩日期和 Event 类型
 ```
 
-本轮不扩100 Event，也不进入正式 Nautilus 策略回测。当前更重要的是把24个失败 token 和 lifecycle 时间锚点解释清楚，并证明 rebuild replay 与 Nautilus native data 完全一致。
+本轮不扩100 Event，也不进入正式 Nautilus 策略回测。当前更重要的是把 Wuhan 长间隔重复和 lifecycle 时间锚点解释清楚，并证明 rebuild replay 与 Nautilus native data 完全一致。
 
 ## 13. 对外口径
 
