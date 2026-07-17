@@ -157,7 +157,7 @@ label_h = mid(t + h) - mid(t)
 
 ### 3.2 结果
 
-6 Event 小样本用于确认数据、因子和 label 流程能够工作；随后用 36 Event、36 个城市、5 个日期检查方向是否稳定。核心结果如下：
+6 Event 小样本用于确认数据、因子和 label 流程能够工作；随后用 36 Event、36 个城市、5 个日期检查方向是否稳定。Token baseline 取每个温度 Market 的 YES token；NO token 是同一二元 Market 的互补合约，不在这张 baseline 中重复计入。核心结果如下：
 
 | Factor | Horizon | Event | Median IC | Positive Event | Zero rate | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -191,7 +191,7 @@ label_h = mid(t + h) - mid(t)
 
 ### 5.1 Lifecycle
 
-本次分桶锚点是 Gamma `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。以下结论应准确表述为“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
+本次分桶锚点是 Gamma Event metadata 的 `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。Event-level activity grid 也在该时间截断。以下结论应准确表述为“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
 
 | 距规则截止时间 | Event | Updates/min | Trades/min | Active markets | Spread | 120s IC | Zero | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
