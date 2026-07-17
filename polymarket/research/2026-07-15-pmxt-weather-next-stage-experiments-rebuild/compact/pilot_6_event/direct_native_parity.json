@@ -13,7 +13,9 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
@@ -29,7 +31,9 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-beijing-on-june-6-2026",
@@ -37,7 +41,9 @@
     "condition_id": "0x7533f09cc0855c57941a1003d3541138e970bbe93e4a0d74f51f147e46476118",
     "asset_id": "89524461528590554782747259006243974052252971996311732811400735351023642710974",
     "status": "fail",
-    "error": "ValueError(\"price violates effective tick size: sequence=53253, asset_id='89524461528590554782747259006243974052252971996311732811400735351023642710974', price=0.001, effective_tick_size=0.01\")"
+    "error": "ValueError(\"price violates effective tick size: sequence=53253, asset_id='89524461528590554782747259006243974052252971996311732811400735351023642710974', price=0.001, effective_tick_size=0.01\")",
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-beijing-on-june-6-2026",
@@ -45,7 +51,9 @@
     "condition_id": "0x7533f09cc0855c57941a1003d3541138e970bbe93e4a0d74f51f147e46476118",
     "asset_id": "59283210530855211916924872037306161528399991005462181827966043145784641588695",
     "status": "fail",
-    "error": "ValueError(\"price violates effective tick size: sequence=53198, asset_id='59283210530855211916924872037306161528399991005462181827966043145784641588695', price=0.001, effective_tick_size=0.01\")"
+    "error": "ValueError(\"price violates effective tick size: sequence=53198, asset_id='59283210530855211916924872037306161528399991005462181827966043145784641588695', price=0.001, effective_tick_size=0.01\")",
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-busan-on-june-6-2026",
@@ -61,7 +69,9 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-busan-on-june-6-2026",
@@ -77,7 +87,9 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
@@ -92,7 +104,9 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   },
   {
     "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
@@ -108,6 +122,8 @@
     },
     "direct_replay_order_monotonic": true,
     "native_ts_init_monotonic": true,
-    "skipped_native_updates": 1
+    "skipped_native_updates": 1,
+    "parity_scope": "independent ordering and native convertibility smoke",
+    "semantic_output_equality_checked": false
   }
 ]

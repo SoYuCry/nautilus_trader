@@ -76,7 +76,7 @@ obs200 相比 obs10 将 zero rate 降低 23.7%，elapsed P90=999.8s，满足 ame
 
 ## direct replay parity
 
-FAIL：8 条检查中 6 条通过；Beijing YES/NO 两条在有效 tick 仍为 `0.01` 时出现 `0.001` 价格，按严格精度校验失败。按预注册规则暂不扩张。
+ORDERING / CONVERTIBILITY SMOKE FAIL：8 条中 6 条完成转换且 direct replay 时间与 Nautilus `ts_init` 各自单调；Beijing YES/NO 两条在有效 tick 仍为 `0.01` 时出现 `0.001` 价格，按严格精度校验失败。当前没有逐事件比较两边完整语义输出，因此不能声明 direct replay 与 Nautilus 输出完全一致。
 具体记录见 `compact/pilot_6_event/direct_native_parity.json`。
 
 ## E3

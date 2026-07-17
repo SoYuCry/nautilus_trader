@@ -5,7 +5,6 @@
   "event_failures": 0,
   "token_failures": 0,
   "skipped_tokens": 0,
-  "direct_native_parity_pass": false,
   "wall_elapsed_seconds": 461.1610214999964,
   "report": "polymarket\\research\\2026-07-15-pmxt-weather-next-stage-experiments-rebuild\\report\\pilot_report.md",
   "direct_native_parity_checks": 8,
@@ -14,5 +13,7 @@
     "highest-temperature-in-beijing-on-june-6-2026:YES",
     "highest-temperature-in-beijing-on-june-6-2026:NO"
   ],
-  "direct_native_parity_failure_reason": "price 0.001 observed while effective tick size remained 0.01"
+  "direct_native_parity_failure_reason": "price 0.001 observed while effective tick size remained 0.01",
+  "direct_native_ordering_smoke_pass": false,
+  "direct_native_semantic_output_equality_checked": false
 }

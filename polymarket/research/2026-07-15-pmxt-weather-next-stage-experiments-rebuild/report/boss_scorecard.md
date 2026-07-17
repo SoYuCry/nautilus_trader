@@ -5,7 +5,7 @@
 - 因子统计路径：**U0**；扩张：**NO-GO**。
 - E2：价格分层样本不足，只能诊断；不得当作正式结论。
 - valid_obs：diagnostic-only；已达到 amendment 候选门槛，但尚未采用。
-- direct→Nautilus parity：FAIL，8 条检查中 6 条通过；Beijing YES/NO 两条在有效 tick 仍为 `0.01` 时出现 `0.001` 价格。
+- direct→Nautilus ordering smoke：FAIL，8 条中 6 条完成转换且两侧各自时间单调；Beijing YES/NO 两条精度失败。完整语义输出 equality 尚未检查。
 
 ## 主指标
 

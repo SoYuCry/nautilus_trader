@@ -228,7 +228,14 @@ def run_direct_native_parity(selected: list[dict[str, Any]]) -> list[dict[str, A
         market = index["markets"][0]
         for leg, field in (("YES", "yesToken"), ("NO", "noToken")):
             asset_id = str(market[field])
-            row = {"event_slug": event["event_slug"], "leg": leg, "condition_id": str(market["conditionId"]), "asset_id": asset_id}
+            row = {
+                "event_slug": event["event_slug"],
+                "leg": leg,
+                "condition_id": str(market["conditionId"]),
+                "asset_id": asset_id,
+                "parity_scope": "independent ordering and native convertibility smoke",
+                "semantic_output_equality_checked": False,
+            }
             try:
                 dataset = parity.load_pmxt_event(event_dir, condition_id=row["condition_id"], asset_id=asset_id)
                 direct = parity.o1_records(dataset)
@@ -344,12 +351,12 @@ def write_reports(output: Path, selected: list[dict[str, Any]], results: list[di
     parity_pass = bool(parity) and all(item["status"] == "pass" for item in parity)
     first_parity_failure = next((item for item in parity if item.get("status") != "pass"), None)
     if parity_pass:
-        parity_text = "PASS：4 Event × YES/NO 共 8 条检查通过。"
+        parity_text = "ORDERING SMOKE PASS：4 Event × YES/NO 共 8 条完成转换且两侧各自时间单调；未检查完整语义输出相等。"
     elif first_parity_failure and first_parity_failure["status"] == "not_run":
         parity_text = f"NOT RUN：{first_parity_failure.get('reason', first_parity_failure.get('error', 'unknown'))}；按预注册规则暂不扩张。"
     else:
         passed = sum(item.get("status") == "pass" for item in parity)
-        parity_text = f"FAIL：{passed}/{len(parity)} 通过；{first_parity_failure.get('error', 'unknown') if first_parity_failure else 'unknown'}；按预注册规则暂不扩张。"
+        parity_text = f"ORDERING SMOKE FAIL：{passed}/{len(parity)} 完成转换且两侧各自时间单调；未检查完整语义输出相等；{first_parity_failure.get('error', 'unknown') if first_parity_failure else 'unknown'}；按预注册规则暂不扩张。"
     lines = ["# PMXT 天气因子 6-event pilot", "", "> 因子研究，不是成交/PnL 回测；crossing markout 仅为诊断。主结论 Event 等权，置信区间按 Event bootstrap。", "", "## 样本与运行", "", "| event | city | quality | source rows | elapsed | token failures |", "| --- | --- | --- | ---: | ---: | ---: |"]
     by_slug = {x["event_slug"]: x for x in results}
     for event in selected:
@@ -433,7 +440,7 @@ def main() -> int:
     parity = run_direct_native_parity(selected); (compact / "direct_native_parity.json").write_text(json.dumps(parity, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
     make_charts(events, valid_metrics, args.output / "charts")
     wall = time.perf_counter() - started; write_reports(args.output, selected, results, head, activity, events, valid_metrics, parity, wall)
-    summary = {"generated_at": datetime.now(UTC).isoformat(), "stage": "pilot_6_event", "events": len(selected), "event_failures": sum(x["token_count"] == 0 for x in results), "token_failures": sum(len(x["failures"]) for x in results), "skipped_tokens": sum(len(x["skipped_tokens"]) for x in results), "direct_native_parity_pass": all(x["status"] == "pass" for x in parity), "direct_native_parity_checks": len(parity), "direct_native_parity_passed": sum(x["status"] == "pass" for x in parity), "direct_native_parity_failures": [x for x in parity if x["status"] != "pass"], "wall_elapsed_seconds": wall, "report": str(args.output / "report/pilot_report.md")}
+    summary = {"generated_at": datetime.now(UTC).isoformat(), "stage": "pilot_6_event", "events": len(selected), "event_failures": sum(x["token_count"] == 0 for x in results), "token_failures": sum(len(x["failures"]) for x in results), "skipped_tokens": sum(len(x["skipped_tokens"]) for x in results), "direct_native_ordering_smoke_pass": all(x["status"] == "pass" for x in parity), "direct_native_semantic_output_equality_checked": False, "direct_native_parity_checks": len(parity), "direct_native_parity_passed": sum(x["status"] == "pass" for x in parity), "direct_native_parity_failures": [x for x in parity if x["status"] != "pass"], "wall_elapsed_seconds": wall, "report": str(args.output / "report/pilot_report.md")}
     (compact / "run_summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False)); return 0
 

@@ -18,6 +18,7 @@
 ## 主要入口与交付物
 
 - Pilot 报告：`report/pilot_report.md`
+- Beijing tick transition 诊断：`report/beijing-missing-tick-size-transition.md`
 - Pilot scorecard：`report/boss_scorecard.md`
 - 36 Event 样本：`protocol/batch_36_sample_plan.csv`
 - Event-level 报告：`event_level/reports/event_level_summary.md`
@@ -30,6 +31,6 @@
 
 - 这是因子与市场结构研究，不是 PnL 回测。
 - crossing markout 不是成交收益。
-- direct→Nautilus parity 已使用 base Python 3.13 的编译扩展运行：8 条 YES/NO 检查中 6 条通过；Beijing YES/NO 两条因 tick 仍为 `0.01` 时出现 `0.001` 价格而失败，正式 Nautilus 回测仍被阻塞。
+- direct→Nautilus ordering/convertibility smoke 已使用 base Python 3.13 的编译扩展运行：8 条 YES/NO 检查中 6 条完成转换且两侧各自时间单调；Beijing YES/NO 两条因 tick 仍为 `0.01` 时出现 `0.001` 价格而失败。当前尚未逐事件比较两边完整语义输出，正式 Nautilus 回测仍被阻塞。
 - 36 Event 中没有整个 Event 失败。原 24 个异常 token 中，23 个 source-time 间隔为 0-8ms 的重复 `0.01 -> 0.001` 通知已告警并按幂等抖动跳过；Wuhan 的 1 个约 325s 长间隔重复仍严格报错，因此最终为 1 个失败 token、涉及 1 个 Event。
 - 新旧样本日期和 Event 组成不同，结果不能当作严格配对比较。
