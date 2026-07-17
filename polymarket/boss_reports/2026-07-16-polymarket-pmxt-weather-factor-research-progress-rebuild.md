@@ -159,6 +159,10 @@ label_h = mid(t + h) - mid(t)
 
 6 Event 小样本用于确认数据、因子和 label 流程能够工作；随后用 36 Event、36 个城市、5 个日期检查方向是否稳定。Token baseline 取每个温度 Market 的 YES token；NO token 是同一二元 Market 的互补合约，不在这张 baseline 中重复计入。核心结果如下：
 
+- **IC**：因子排序与未来价格变化排序的一致程度，越高说明方向预测越稳定；
+- **Zero rate**：固定 horizon 后价格没有变化的样本比例，越高说明 label 的有效信息越稀；
+- **Crossing**：按信号立即跨过 spread 后的 markout，负数表示方向判断即使正确，也不足以覆盖当下买卖价差。
+
 | Factor | Horizon | Event | Median IC | Positive Event | Zero rate | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | depth_imbalance_1 | 30s | 36 | 0.069 | 1.000 | 0.784 | -0.0090 | 0.998 |
@@ -185,13 +189,15 @@ label_h = mid(t + h) - mid(t)
 
 这些 Outcome 不是互不相关的 11 个标的，而是共同描述同一个温度结果的概率分布。一个 Outcome 的概率上升，意味着概率质量需要从其他 Outcome 转移。单 token 研究只能看到局部盘口，Event-level 研究才能看到整条分布如何移动、集中和重新定价。
 
-因此第二阶段没有继续堆单 token 因子，而是转向 36 Event 的 lifecycle、active set 和 probability distribution 分析。
+这三个问题共同说明：token-level 证据不足以描述天气市场的完整结构。因此第二阶段没有继续堆单 token 因子，而是把研究单位提升到 Event，转向 36 Event 的 lifecycle、active set 和 probability distribution 分析。
 
 ## 5. 第二阶段：36 Event 的结构验证
 
 ### 5.1 Lifecycle
 
-本次分桶锚点是 Gamma Event metadata 的 `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。Event-level activity grid 也在该时间截断。以下结论应准确表述为“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
+活动和信号主要集中在距规则截止 6—24h 的分桶：该窗口的 updates、trades 和 120s IC 较高；进入 1—6h 后，数据中的盘口 mutation 和有效 label 明显减少。
+
+这里的锚点是 Gamma Event metadata 的 `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。Event-level activity grid 也在该时间截断。因此以下结果只能写成“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
 
 | 距规则截止时间 | Event | Updates/min | Trades/min | Active markets | Spread | 120s IC | Zero | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -221,7 +227,7 @@ Dynamic active set 只使用当时和过去信息：Market 需要有有效 BBO�
 
 ### 5.3 Event probability distribution
 
-Event-level 分析先把各 Outcome mid 归一化成概率分布，再观察 Event 内盘口压力是否指向未来 implied-temperature mean 的移动。
+Event-level 分析先把各温度 Outcome 的 mid 归一化成一条概率分布，再计算这条分布对应的“市场隐含平均温度”。`Distribution pressure` 表示各 Outcome 的盘口压力合并后，整体更倾向把概率推向较高还是较低温度；这里检验它是否与 120 秒后的隐含平均温度同方向。
 
 | 指标 | 结果 |
 | --- | ---: |
@@ -232,13 +238,13 @@ Event-level 分析先把各 Outcome mid 归一化成概率分布，再观察 Eve
 
 ![Distribution signal forest](assets/2026-07-16-weather-rebuild/03-distribution-signal-forest.png)
 
-> 图 3：36 个 Event 的 distribution pressure IC 全部为正。图中的实验分组颜色只对应 closure diagnostic 字段，不代表缺文件或较差数据质量。
+> 图 3：36 个 Event 的 distribution pressure IC 全部为正。图中统一使用同一种颜色，不再沿用容易被误解为数据质量分层的实验字段。
 
 ![Representative Event distribution](assets/2026-07-16-weather-rebuild/04-representative-event-distribution.png)
 
-> 图 4：一个 Event 内，概率质量集中在少数相邻温度 Outcome，并随市场信息整体迁移。这也是 Event-level 表达比孤立 token 更自然的原因。
+> 图 4：T-48 / T-24 / T-6 / T-1 同样相对 Gamma `event_index.endDate`。一个 Event 内，概率质量集中在少数相邻温度 Outcome，并随市场信息整体迁移。这也是 Event-level 表达比孤立 token 更自然的原因。
 
-这组结果说明 distribution pressure 不是由单个城市或单个日期偶然贡献，但其量级较弱，而且尚未证明能够覆盖 spread、fee 和执行摩擦。因此当前只能称为“跨日期稳定的弱结构信号”。
+Bootstrap 区间用于检查对 Event 抽样是否敏感；leave-one-date-out 则每次剔除一个日期，检查结论是否依赖某一天。这两项都保持正向，说明 distribution pressure 不是由单个城市或单个日期偶然贡献。但其量级较弱，而且尚未证明能够覆盖 spread、fee 和执行摩擦，因此当前只能称为“跨日期稳定的弱结构信号”。
 
 ### 5.4 概率和异常尾部
 
@@ -247,11 +253,11 @@ Event-level 分析先把各 Outcome mid 归一化成概率分布，再观察 Eve
 | 口径 | Snapshots | Event | P95 `|sum(mid)-1|` | `>0.10` | Max |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Raw | 109,767 | 36 | 0.097 | 4.7% | 4.370 |
-| Outcomes complete | 101,379 | 34 | 0.086 | 3.6% | — |
-| Complete + fresh | 30,481 | 34 | 0.086 | 3.1% | — |
+| Outcomes complete | 101,379 | 34 | 0.086 | 3.6% | 4.370 |
+| Complete + fresh | 30,481 | 34 | 0.086 | 3.1% | 4.370 |
 | Strict synchronized sample | 25,898 | 34 | 0.080 | 1.8% | 0.249 |
 
-结论是：多数极端概率和偏离来自 Outcome 不完整、陈旧报价、宽 spread 或不同步状态，不应直接叫套利。严格样本仍有少量残余偏离，后续只能逐 Event 核对报价语义和可执行容量。
+完整性和新鲜度过滤降低了异常比例与 P95，但没有消除最大的极端值；加入 spread 和时间同步约束后，最大值才从 4.370 降到 0.249。结论是：多数极端概率和偏离来自 Outcome 不完整、陈旧报价、宽 spread 或不同步状态，不应直接叫套利。严格样本仍有少量残余偏离，后续只能逐 Event 核对报价语义和可执行容量。
 
 ## 6. 当前能够下的结论
 
@@ -288,10 +294,12 @@ Event-level 分析先把各 Outcome mid 归一化成概率分布，再观察 Eve
 
 - 外部天气预报与 Polymarket 的跨源基本面预测；
 - 大规模跨 Event 联动；
-- 直接扩大到 100 Event；
+- 在信号机制和执行路径确认前扩大到 100 Event；
 - 在完整 native semantic parity 和执行语义明确前进入正式策略回测。
 
 ### 7.3 建议会上讨论的三个决策
+
+基于“方向存在、跨价为负、Event-level 表达更稳定”这三项结果，下一阶段需要确定研究单位和执行路线：
 
 1. 下一阶段是否将主研究单位从单 token 正式提升为 Event distribution；
 2. 是否优先验证 passive maker / relative-value，而不是继续优化 taker crossing；
