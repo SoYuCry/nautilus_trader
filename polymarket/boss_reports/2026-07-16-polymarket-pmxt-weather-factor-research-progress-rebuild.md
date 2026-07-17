@@ -1,724 +1,323 @@
-# 20260716 - Polymarket PMXT 天气因子研究进展（完整数据重跑）
+# 20260716 - Polymarket PMXT 天气因子与市场结构研究进展
 
-> 数据重建、6 Event pilot 和 36 Event 结构实验均已完成。本轮是因子与市场结构研究，不是 PnL 回测；crossing markout 也不是实际成交收益。
+> 本轮完成的是数据建设、因子研究和市场结构验证，不是 PnL 回测。文中的 crossing markout 是跨价后的价格变化诊断，不等于实际成交收益。
 
 ## TLDR
-（先提出一个通病问题，就是不应该提重跑，旧模板这样的字，本报告的视角里，那个旧的错误的实验报告不存在，也不需要和它对比）
-1. PMXT 天气数据已经重新收口。新目录包含 227 个完整生命周期 Event、5 个日期、49 个城市、2,497 个二元 Market、4,994 个 outcome token，共 707,045,334 行；missing hour 和 bad file 均为 0。
-2. 两套实验已经用 `events-rebuild` 完整重跑：6 Event pilot 用于检查因子、label 和实验流程，36 Event 用于验证 token baseline、lifecycle、dynamic active set 和 Event probability distribution。（比如这里的重跑，和两套实验就没有语境）
-3. `depth_imbalance_1` 的预测方向稳定。36 Event 中 30s / 120s / 600s median IC 分别为 0.069 / 0.084 / 0.104，三个 horizon 的 positive Event 均为 100%。但 crossing 分别为 -0.0090 / -0.0086 / -0.0083，不能直接转成 taker 策略。
-4. 天气 Event 最有研究价值的窗口是结束前 6—24h，而不是旧实验认为的 1—6h。该窗口的更新、成交和 120s IC 都更高；进入 1—6h 后更新量断崖下降，<1h 已没有可用方向性 label。（而不是旧实验的xxx这里要改，以及说结束前，这个结束应该替换成实际的一个什么时间点，比如结算前的，或者没有订单提交之后）
-5. Dynamic active set 能提高统计信号，但没有改善执行：IC 从 0.053 提高到 0.083，zero rate 从 0.855 降到 0.741，crossing 却从 -0.0064 恶化到 -0.0115。因此 active set 暂时只作为状态特征，不作为交易 gate。
-6. Event distribution pressure 是目前更值得继续研究的方向：median Event IC 为 0.074，36 个 Event 全部为正，90% bootstrap CI 为 [0.070, 0.079]，5 组 leave-one-date-out 均保持正向。但它仍是弱结构信号，不是已验证 Alpha。
-7. 概率和异常大部分来自 outcome 不完整、报价陈旧或不同步。修复短间隔重复 tick 通知、恢复23个 token 后，原始 `|sum(mid)-1| > 0.10` 已从上一轮的13.6%降至4.7%；严格控制完整性、新鲜度、spread 和时间同步后进一步降至1.8%。残余偏离需要逐 Event 核验，不能直接叫套利。
-8. Tick-size 边界已经收敛：23个 source-time 间隔不超过8ms的重复 `0.01 → 0.001` 通知按幂等告警跳过；Wuhan 的325.489秒长间隔重复继续严格失败。396个 token 最终394个进入分析、1个 inactive token 被跳过、1个严格失败。研究结论没有发生实质变化。（还会发现数据会有自动跳 0.01 -> 0.001 但是没有 tick size event 的情况）
-9. direct replay → Nautilus native parity 因当前环境缺少 `nautilus_trader.core.data`，仍是 NOT RUN。完成 parity 前不进入正式策略回测。（这个已经完成了，但是不够严谨。- 现有检查只叫 ordering / convertibility smoke；）
 
-## 1. PMXT 问题回顾与数据重建
+1. PMXT 天气数据已经进入统一研究链路。因子研究和 Nautilus 数据转换消费同一份 Event 数据、同一套排序规则，不再各自解释数据顺序。
+2. 从 169 个连续 hourly Parquet 中整理出 227 个完整生命周期的最高气温 Event：覆盖 5 个日期、49 个城市、2,497 个二元 Market、4,994 个 token，共 707,045,334 行；missing hour 和 bad file 均为 0。
+3. 单 token 盘口压力对未来价格方向存在稳定信息。36 Event 中，`depth_imbalance_1` 在 30s / 120s / 600s 的 median IC 为 0.069 / 0.084 / 0.104，positive Event 均为 100%。
+4. 方向信息尚不能直接交易：对应 crossing markout 为 -0.0090 / -0.0086 / -0.0083，说明信号幅度不足以覆盖当下 bid-ask spread，更不能据此宣称 taker Alpha。
+5. 单 token 研究进一步暴露出三个结构问题：交易活跃度随生命周期变化；一个 Event 中只有少数温度 Outcome 活跃；多个 Outcome 共同组成一条概率分布，Event 才是更完整的研究单位。
+6. Event-level 的 distribution pressure 是目前更值得继续研究的内部结构信号：36 个 Event 的 IC 全部为正，中位数 0.074，90% bootstrap CI 为 [0.070, 0.079]，5 组 leave-one-date-out 均保持正向。
+7. 当前结论是“存在稳定但较弱的市场内生结构信号”，不是“已经找到可交易 Alpha”。优先方向应是 Event 内概率质量迁移、相对价值和被动执行，而不是立刻扩大样本或进入正式策略回测。
 
-### 1.1 问题来自哪里
+## 1. 先把数据变成可研究、可回放的 Event
 
-原始链路是：
+### 1.1 PMXT hourly 是文件分区，不是每小时一个快照
 
-```text
-Polymarket WebSocket
-  -> PMXT 监听和归档
-  -> PMXT hourly parquet
-  -> PolyReaper 下载并按 Event 摘取
-  -> PMXT adapter / replay contract
-  -> factor research / Nautilus research backtest
-```
+PMXT 数据按小时落成 Parquet 文件。这里的“hourly”表示文件分区频率，文件内部仍然保留逐行的：
 
-旧数据中确认过两段持续缺失：`2026-06-05 09:00—2026-06-06 23:00 UTC` 共38小时，`2026-06-11 04:00—2026-06-12 00:00 UTC` 共20小时；另有一个 `2026-06-04T14` Parquet 文件曾无法读取。下载记录显示最终缺失的58个小时文件在重试后仍由 PMXT archive 返回404。
-（这里也不提旧数据啊什么，就像第一份报告一样，平铺秩序的交待）
-PMXT Discord 历史讨论也确认过同类问题：public archive 不是 100% coverage，历史上发生过 WebSocket / Polymarket 连接中断、部分市场未被 tracking，以及6月11日后新市场监听失败。社区还报告过 timestamp 并列和 deeper L2 replay 不一致。因此旧 PMXT 数据可以用于研究，但不能默认当成无缺口、严格有序的交易所真值流。
+- `book`；
+- `price_change`；
+- `last_trade_price`；
+- `tick_size_change`；
+- source timestamp、receive timestamp 和原始物理行序。
 
-PolyReaper 负责下载和按 Event 摘取，并不是这些历史缺口的来源。
-（这里第一章我想回顾数据的问题，Polyreaper里应该有，然后说一开始想是不是我的打开方式不对，以及去 discord 里爬了他们的讨论，最后发现确实有xx问题，对当前的影响的大小说一下，为了用起来，对回测框架修了什么，以及当前的因子的回测框架是怎么做的，边界是什么，如何计算和遍历的）
+因此它可以用于订单簿重放和因子计算，但不能把“文件按小时切分”误解为“每小时只有一张盘口快照”。
 
-（这些都他妈是工作量啊操要讲的啊）
+同时，PMXT 也不是交易所撮合级审计数据。对照 PolyReaper 的抓取记录、PMXT 社区说明和真实文件后，当前采用的信任边界是：
 
-### 1.2 新数据口径
+- source timestamp 用于重建 research replay 顺序；
+- timestamp received、原始行序和 tie 情况保留用于审计；
+- 不把 source timestamp 宣称为交易所真实到达顺序；
+- 不静默补齐缺失小时、坏文件或无法解释的状态转换。
 
-（这里要把数据讲清楚，第一，原始数据是 1h 一次，我从里面把天气的给弄出来，每个 event 当作一个单位，这里介绍一下弄出来的方法，然后梳理一下 life cycle，还有几个细节，比如 Create 时间和 market 的 Create 时间不同，以及实际订单有信号要比 Create 的时间还早。这种现象，6 个 market 都是一次在几秒内弄出来的，这块可以参考：C:\Projects\PolyReaper\docs\development\reference\polymarket-weather-event-lifecycle.md）
+### 1.2 从 hourly 文件摘出完整 Event
 
-数据这块其他可以参考的语料（当然这太长了，我们没必要写这么细）
-
-"""
-先纠正两个容易写错的点：
-
-  1. “原始数据 1h 一次”不准确：PMXT 是按 1 小时切分文件，不是每小时只有一个快照；文件内部仍是逐条
-     book、price_change、last_trade_price 等消息。
-
-  2. 没有发现订单信号早于 Market 创建：真实现象是 Market 已创建并开始接单，但 Event 层的 creationDate
-     还没有出现。上海案例中，数据早于 Event 创建约 14 分钟，但不早于 Market 创建或接单。
-
-  下面这版可以直接作为报告素材。
-
-  ———
-
-  ### 1.2 新数据口径
-
-  #### 从小时文件重组为 Event 数据
-
-  PMXT 原始订单簿数据按 UTC 小时切分为 Parquet 文件。这里的“1h”只是文件分区粒度，文件内部仍保留逐条
-  WebSocket 消息，并非每小时采样一次。
-
-  本次使用的原始数据连续覆盖：
-
-  2026-06-04 00:00 UTC
-  至
-  2026-06-11 01:00 UTC（不含）
-
-  共 169 个连续小时文件。处理时先从 Gamma API 获取天气 Event 及其全部 Market 元数据，再通过 conditionId
-  将 PMXT 数据归属到具体 Event：
-
-  PMXT hourly Parquet
-  → 根据 conditionId 匹配 Market
-  → 汇总 Event 下的全部 Market 和 YES/NO token
-  → 按 Event 完整生命周期裁剪
-  → 输出 Event-level Parquet
-
-  最终得到 227 个生命周期能够被本地数据完整覆盖的最高气温 Event，共 707,045,334 行。每个 Event 独立保存
-  Gamma 原始响应、Market/token 索引、订单簿 Parquet 和数据清单，后续可直接用于可视化、盘口重放和回测。
-
-  #### 为什么不能直接使用 Event 的 start/end
-
-  Polymarket 的 Event 是展示和组织层对象，Market 才是实际拥有 condition、YES/NO token 和 CLOB 订单簿的
-  交易对象。一个天气 Event 通常包含多个温度 Market，因此 Event 的完整生命周期必须由其下所有 Market 共同
-  决定。
-
-  本次采用以下口径：
-
-  归档开始时间
-  = min(all market.createdAt)
-
-  实际开始接单时间
-  = min(all market.acceptingOrdersTimestamp)
-
-  规则预定结束时间
-  = max(all market.endDate)
-
-  归档结束时间
-  = max(
-      event.closedTime,
-      all market.closedTime,
-      all market.umaEndDate
-  )
-
-  最终写入区间为：
-
-  [captureStartAt, captureEndAt]
-
-  其中，market.endDate 只代表规则上的预定截止时间，不代表订单簿已经停止更新，因此不能用于截断数据。
-  Event 关闭后一小时的数据只用于检查迟到消息，不写入正式 Event Parquet。
-
-  #### Event 与 Market 创建时间并不同步
-
-  以上海 2026 年 6 月 6 日最高气温 Event 为例，该 Event 下共有 11 个二元 Market。它们不是由一个原子操作
-  同时生成，而是在很短时间内依次创建和开放交易：
-
-   时间点                            最早                最晚
-  ━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━
-   11 个 Market 创建     04:03:12.729 UTC    04:03:14.045 UTC
-  ────────────────────  ──────────────────  ──────────────────
-   Market 开始接单           04:09:10 UTC        04:09:45 UTC
-  ────────────────────  ──────────────────  ──────────────────
-   PMXT 第一条消息       04:10:22.200 UTC    04:10:53.255 UTC
-  ────────────────────  ──────────────────  ──────────────────
-   Event creationDate    04:23:42.127 UTC                   —
-
-  11 个 Market 在约 1.3 秒内依次创建，但 Event 层的 creationDate 比最早开始接单晚约 14 分钟。在这段时间
-  内，PMXT 已经记录了 2,275 行数据：
-
-   消息类型             行数
-  ━━━━━━━━━━━━━━━━━━  ━━━━━━━
-   price_change        2,194
-  ──────────────────  ───────
-   book                   52
-  ──────────────────  ───────
-   last_trade_price       15
-  ──────────────────  ───────
-   tick_size_change       14
-
-  因此，如果从 Event creationDate 开始提取，会遗漏已经发生的盘口更新和成交价格信号。正确做法是从所有
-  Market 中最早的 createdAt 开始归档。
-
-  同时，对 11 个 Market 的逐一检查表明：
-
-  第一条 PMXT 消息早于 market.createdAt：                0 / 11
-  第一条 PMXT 消息早于 acceptingOrdersTimestamp：        0 / 11
-
-  因此更准确的结论不是“订单早于创建”，而是：
-
-  > Event 层元数据可能晚于其下 Market 的创建和实际交易活动，不能把 Event creationDate 当作交易数据起
-  > 点。
-
-  #### 规则截止不等于交易结束
-
-  同一个上海 Event 的 market.endDate 是北京时间 6 月 6 日 20:00，但 event.closedTime 是次日 00:43。在两
-  者之间，PMXT 仍记录到 140,664 行消息，其中包括 40 条 last_trade_price 更新。
-
-  最后一条盘口消息发生在北京时间 00:43:27，与 Event 的正式关闭时间基本一致。这说明：
-
-  > endDate 是规则或观测截止时间，closedTime 才更接近订单簿生命周期结束；如果按 endDate 截断，会丢失约
-  > 4 小时 44 分钟的数据。
-
-  #### 当前仍需核查的边界问题
-
-  本次还发现，39 个 Event 在元数据定义的最晚关闭时间之后一小时内仍出现消息，共 9,500 行。当前这些消息没
-  有写入正式 Event Parquet，只记录在 manifest 中。
-
-  后续需要判断这些数据属于：
-
-  - 关闭后的盘口清理；
-  - 延迟到达的消息；
-  - Gamma 与 CLOB 的时间口径差异；
-  - 或关闭时间字段本身不足以代表消息流终点。
-
-  因此，目前的数据口径已经解决了 creationDate 和 endDate 导致的明显截断问题，但最终关闭边界仍保留显式诊
-  断，而不是静默忽略。
-
- Weather 文档入口：
-
-  C:\Projects\PolyReaper\docs\development\domains\weather\README.md
-
-  数据质量登记：
-
-  C:\Projects\PolyReaper\docs\development\domains\weather\data-quality-findings.md
-
-  已记录：
-
-  1. Event 创建晚于 Market 交易活动；
-  2. endDate 后仍有盘口活动；
-  3. 39 个 Event 关闭后仍有 9,500 行消息；
-  4. Beijing 缺失 0.01 → 0.001 tick transition；
-  5. 23 个 token 出现间隔 0–8ms 的重复 tick 通知；
-  6. Wuhan 在约 325 秒后再次收到冲突的 tick transition，严格回放报错。
-
-  其中北京问题已记录 condition、行数、精度变化边界及 YES/NO 证据；武汉问题也记录了 Event、condition、
-  asset ID 和上游失败文件路径。
-
-  文档编码已验证为 UTF-8，没有乱码。
-
-"""
-
-新数据由 PolyReaper 重新生成，路径为：
+源数据连续范围为 `2026-06-04 00:00 UTC` 至 `2026-06-11 01:00 UTC`（右开），共 169 个连续小时文件。天气数据整理过程为：
 
 ```text
-C:\Projects\PolyReaper\data\curated\polymarket\events-rebuild\
+PMXT hourly Parquet
+  → Gamma Event / Market metadata
+  → conditionId 匹配
+  → 收集 Event 下全部 Market 和 YES/NO token
+  → 按完整 Event 生命周期裁剪
+  → Event-level Parquet + manifest
 ```
 
-使用 `highest-temperature-event-batch-v3` 合同。每个 Event 从 `captureStartAt` 到 `captureEndAt` 检查小时文件覆盖，只把完整生命周期 Event 纳入正式 inventory。
+这里不能只按 Event 页面上的开始、结束时间机械裁剪。Polymarket 的层级关系是：
 
-| 项目 | 新 inventory |
+```text
+Event：展示和组织层
+  └── Market：condition、YES/NO token、独立 CLOB 订单簿
+```
+
+当前数据合同分别保存四个时间概念：
+
+| 时间 | 定义 | 用途 |
+| --- | --- | --- |
+| capture start | `min(all market.createdAt)` | 完整归档起点 |
+| trading start | `min(all market.acceptingOrdersTimestamp)` | 交易研究起点 |
+| scheduled end | `max(all market.endDate)` | 规则上的预定截止，只保存、不裁剪盘口 |
+| capture end | `max(event.closedTime, all market.closedTime, all market.umaEndDate)` | 正式 Event Parquet 的归档终点 |
+
+最终提取区间为 `[captureStartAt, captureEndAt]`。关闭后一小时只做迟到消息诊断，不写入正式 Event Parquet。
+
+### 1.3 为什么生命周期要这样定义
+
+上海 6 月 6 日 Event 提供了一个完整例子：
+
+- 11 个 Market 在约 1.3 秒内创建，但开始接单分布在约 35 秒内；
+- Event `creationDate` 比其下 Market 开始活动晚约 14 分钟；
+- Event `creationDate` 之前已经存在 2,275 行 PMXT 消息；
+- 没有发现 PMXT 消息早于对应 Market 的 `createdAt` 或 `acceptingOrdersTimestamp`；
+- `market.endDate` 为北京时间 20:00，而 `event.closedTime` 为次日 00:43；
+- 两者之间仍有 140,664 行消息，包括 40 条 `last_trade_price` 更新。
+
+因此：从 Event `creationDate` 开始会漏掉早期盘口；按 `market.endDate` 结束会漏掉约 4 小时 44 分钟的数据。生命周期必须从 Market 层构建，而不能只相信 Event 页面字段。
+
+### 1.4 最终数据规模
+
+| 项目 | 结果 |
 | --- | ---: |
-| Event | 227 |
+| 完整生命周期 Event | 227 |
 | 日期 | 5（6/6—6/10） |
 | 城市 | 49 |
 | 二元 Market | 2,497 |
-| outcome token | 4,994 |
-| rows | 707,045,334 |
+| Outcome token | 4,994 |
+| Rows | 707,045,334 |
 | 单 Event rows 中位数 | 3,047,589 |
-| fully covered | 227 / 227 |
-| missing hour | 0 |
-| bad file | 0 |
+| Missing hour | 0 |
+| Bad file | 0 |
 
-日期分布：
+实验产物中曾沿用 `clean/degraded` 字段名。后者实际只表示 7 个样本 Event 在 `captureEndAt` 后的诊断窗口观察到消息，不代表缺文件、坏文件或生命周期覆盖不完整。本报告不把它作为数据质量分组。
 
-| Event 日期 | Event 数 |
-| --- | ---: |
-| 6月6日 | 49 |
-| 6月7日 | 49 |
-| 6月8日 | 49 |
-| 6月9日 | 49 |
-| 6月10日 | 31 |
+### 1.5 数据整理过程中发现的真实边界
 
-实验产物中仍保留了 `29 clean / 7 degraded` 的旧字段名，但这里的7个 Event 只是观察到 `postCloseValidation.rowsObserved > 0`，并没有 missing hour 或 bad file。它们应解释为关闭时间 metadata 诊断，而不是较差数据组。本报告不使用该标签做质量分层结论。
+| 问题 | 现象 | 当前处理 |
+| --- | --- | --- |
+| Event 创建晚于 Market 活动 | Event metadata 晚于下属 Market 的实际活动 | 从最早 Market 创建时间归档 |
+| `endDate` 早于盘口停止 | 上海在 `endDate` 后仍有 140,664 行消息 | 不用 `endDate` 截断正式数据 |
+| capture end 后仍有消息 | 227 个 Event 中，39 个在后一小时出现 9,500 行消息 | 只进入 closure diagnostic，不写入正式 Parquet |
+| 短间隔重复 tick 通知 | 23 个 token 在 0—8ms 内重复收到 `0.01 → 0.001` | 仅对同 token、同目标状态且间隔不超过 10ms 的重复告警并按幂等处理 |
+| 长间隔重复 tick 通知 | Wuhan 在约 325.489 秒后再次收到同类转换 | 继续严格失败，不套用短重复规则 |
+| tick 转换事件缺失 | Beijing 的 YES/NO 在约 19 小时内使用 0.001 网格，但数据中没有 `tick_size_change` | 保留严格失败，只把盘口精度作为诊断证据，不反推官方事件 |
 
-（这里的 7 degraded 是什么意思来着，修了吗我记得修了）
+这些问题不是靠 `sort` 或填默认值消失的。它们分别进入 manifest、health gate、warning 或 fail-closed 路径，并由测试锁定。
 
-## 2. 实验设计
+## 2. 因子和 Nautilus 使用同一条 replay contract
 
-### 2.1 两套实验
+```text
+Event-level PMXT 数据
+  → PMXTEventV1Adapter
+  → PolymarketL2DatasetV1
+  → 统一 replay clock / 排序 / health gate
+      ├── 因子研究和 Event-level 统计
+      └── Nautilus native bridge
+          → OrderBookDeltas / TradeTick / InstrumentClose
+          → BacktestEngine
+```
 
-第一套是6 Event pilot，作用是检查：
+这次统一解决的是：
 
-（pilot 我有点听不懂，但是，我理解这里就是随便做了一些只考虑当前订单簿的预测对吧）
+- 因子和回测不再各自重排 PMXT；
+- source-time 相同的记录使用 timestamp received 和原始行序做稳定 tie-break；
+- research replay 和 strict capture 使用不同但显式的时钟合同；
+- 每次运行保存 replay mode、clock、排序键、数据路径和输入 hash；
+- 盘口、成交、tick size 和 settlement 都通过同一个 adapter 进入后续流程。
 
-- `depth_imbalance_1`、`microprice_minus_mid` 等基础因子；
-- fixed-time label 在不同 activity 和 price bucket 下的表现；
-- valid_obs label 是否值得进入下一轮；
-- direct replay → Nautilus native parity 是否具备运行条件。
+当前已执行 4 Event × YES/NO 共 8 条 native 检查：6 条完成转换，且 direct replay 与 native 输出各自保持时间单调；Beijing YES/NO 两条因缺失 tick transition 严格失败。这个检查只能称为 **ordering / convertibility smoke**，尚未逐事件比较 book action、价格、数量、TradeTick、逐步 BBO/深度和最终订单簿状态，因此不能称为完整语义 parity，也不作为正式策略回测的放行条件。
 
-（这里简单过渡一句为什么要做第二套实验，我觉得这块的讲述的顺序可以调整一下，也就是说，先展示完第一个实验，然后提出那三个问题，进而提出第二套实验设计与结果）
+## 3. 第一阶段：当前盘口能否预测未来价格方向
 
-第二套是36 Event 结构实验。样本覆盖5个日期和36个城市，按日期及 source rows/activity 分位确定性抽取，作用是检查：
+### 3.1 问题和方法
 
-- token-level fixed-horizon baseline；
-- lifecycle；
-- dynamic active set；（尤其这里，如果不介绍那三个问题，完全就没有办法理解所谓的 dynamic 的含义）
-- Event probability distribution；
-- bootstrap、leave-one-date-out 和概率和异常尾部。
+第一步先回答一个窄问题：当前买卖盘的力量差异，是否与固定时间后的中间价变化同方向？
 
-最终36 Event 产物记录的 replay 累计处理约2.61 CPUh，本轮增量聚合约12.5分钟。完整相关重跑实际约29分钟，部分阶段并行并复用了未受影响 token 的缓存。所有输入均已确认来自 `events-rebuild`，没有混用旧 `events` 目录。
+主要候选包括：
 
-### 2.2 因子范围
+- `depth_imbalance_1`：最优一档的买卖深度不平衡；
+- `depth_imbalance_3`：前三档深度不平衡；
+- `microprice_minus_mid`：微价格相对中间价的偏移；
+- `bid_ask_liquidity_asymmetry`：买卖侧流动性不对称。
 
-Wave 0 因子池包括：
+当前固定时间 label 为：
 
-- depth imbalance：`depth_imbalance_1`、`depth_imbalance_3`、`depth_imbalance_5`；
-- 深度形状：`top_level_depth`、`depth_concentration`、`depth_slope`；
-- 价格压力：`microprice_minus_mid`；
-- 流动性不对称：`bid_ask_liquidity_asymmetry`；
-- 状态变量：`spread`、`distance_to_zero_one`、`tick_size_regime`；
-- 诊断字段：`book_staleness_seconds`、`book_update_intensity`。
+```text
+label_h = mid(t + h) - mid(t)
+```
 
-6 Event pilot 对因子池做了初筛；36 Event 主实验保留 `depth_imbalance_1` 和 `microprice_minus_mid` 作为 baseline。OFI、trade pressure、cancel pressure 更依赖严格消息顺序，本轮仍不进入正式主因子池。
+使用 30s、120s、600s 等 horizon，并通过 forward as-of 寻找目标时间之后第一条有效盘口，不使用未来信息参与当前特征。
 
-### 2.3 Label 口径
+这个 label 只用于建立方向性 baseline，存在两个解释边界：
 
-固定时间 label 的构造是：
+1. 天气市场更新不均匀。同样是 120 秒，活跃时可能发生大量更新，冷清时可能完全不变；zero rate 因此反映的不只是“没有信息”，也反映市场没有更新。
+2. Polymarket 价格是 `[0,1]` 上的概率。当前使用绝对 mid change，0.04、0.50、0.96 附近的同等变化不具有完全相同的经济含义。因此跨价格区间比较 IC 时需要保守解释。
 
-- anchor 必须满足 `actual_mutation AND valid_book`；
-- 在 `t+h` 之后寻找第一个同 token L2 mutation timestamp；
-- 使用该 timestamp 最后一次 mutation 的 future mid；
-- future mutation 不存在、future book 无效或跨越明确数据 barrier 时不生成有效 label；
-- zero-return 单独统计，不静默删除。
+### 3.2 结果
 
-Pilot 使用30s、120s、600s；36 Event baseline 扩展到30s、60s、120s、300s、600s、900s。主结论按 Event 等权，避免少数高频 Event 支配结果。
+6 Event 小样本用于确认数据、因子和 label 流程能够工作；随后用 36 Event、36 个城市、5 个日期检查方向是否稳定。核心结果如下：
 
-valid_obs10 / 50 / 200 只作诊断。obs200 相比 obs10 将 zero rate 降低23.7%，elapsed P90 为999.8秒，已经达到 amendment 候选门槛，但本轮没有改写预注册主 label。
-
-（这里的实验设计有问题啊，这里埋一个 hook，后面会讨论到 lable 的设计）
-
-（我先说一下思路，后面整理到后续的报告中：目前的 IC 计算思路是，看“当前盘口买卖压力的大小和方向”，是否能预测“未来固定时间后普通 mid price 的变化大小和方向”。但是首先我认为这里要预测return，其次poly的价格是0-1的，所以可能要做一次 mapping，搞到正无穷到负无穷那边去。
-
-具体来说：
-
-## 1. 普通百分比 return 不太适合 Polymarket
-
-  直接写：
-
-  [
-  \frac{p_{t+h}-p_t}{p_t}
-  ]
-
-  会严重不对称。例如价格都上涨 0.01：
-
-  - 0.02 → 0.03：收益率 +50%
-  - 0.50 → 0.51：收益率 +2%
-  - 0.98 → 0.99：收益率约 +1%
-
-  而且 YES 与 NO 不对称。它更像“买入 YES 的持仓回报”，不适合作为统一的价格状态标签。
-
-  ## 2. 更自然的是 log-odds 映射
-
-  先把概率价格映射到实数轴：
-
-  [
-  z(p)=\log\frac{p}{1-p}
-  ]
-
-  对应关系大致是：
-
-  p = 0.01  → z = -4.60
-  p = 0.10  → z = -2.20
-  p = 0.50  → z =  0
-  p = 0.90  → z = +2.20
-  p = 0.99  → z = +4.60
-
-  然后把 label 改成：
-
-  # [
-  r^{logit}_{t,h}
-
-  ## \log\frac{p_{t+h}}{1-p_{t+h}}
-
-  \log\frac{p_t}{1-p_t}
-  ]
-
-  也就是：
-
-  label_logit_120s = logit(future_mid) - logit(current_mid)
-
-  这可以理解为：
-
-  > 当前盘口因子是否能预测未来市场隐含 odds 的变化。
-
-  它有几个优点：
-
-  - 将 (0,1) 映射到 (-∞,+∞)；
-  - 0.01 的变化在 0.50 和 0.99 附近不再被视为同一件事；
-  - YES/NO 更对称：
-    [
-    logit(1-p)=-logit(p)
-    ]
-
-  - 更适合跨不同价格区间比较因子。
-
-  实际计算时必须避免 0 和 1：
-
-  p = clip(mid, epsilon, 1 - epsilon)
-  label = logit(future_p) - logit(current_p)
-
-  epsilon 可以结合最小 tick，例如 0.001，但需要固定进实验合同。
-）
-
-## 3. Token baseline
-
-### 3.1 6 Event pilot
-
-Pilot 中相对较好的候选仍是：
-（仍是？？带着旧报告的视角了）
-
-1. `depth_imbalance_1`；
-2. `microprice_minus_mid`；
-3. `bid_ask_liquidity_asymmetry`；
-4. `depth_imbalance_3`。
-
-其中 `depth_imbalance_1` 的30s / 120s / 600s median Event IC 为0.053 / 0.076 / 0.079。Pilot 的作用是确认流程和方向，不用于 Alpha 声明。
-
-### 3.2 36 Event baseline
-
-| factor | horizon | Event | median IC | positive Event | zero | crossing | coverage |
+| Factor | Horizon | Event | Median IC | Positive Event | Zero rate | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | depth_imbalance_1 | 30s | 36 | 0.069 | 1.000 | 0.784 | -0.0090 | 0.998 |
 | depth_imbalance_1 | 120s | 36 | 0.084 | 1.000 | 0.691 | -0.0086 | 0.996 |
 | depth_imbalance_1 | 600s | 36 | 0.104 | 1.000 | 0.552 | -0.0083 | 0.986 |
 | microprice_minus_mid | 30s | 36 | 0.061 | 0.972 | 0.784 | -0.0090 | 0.998 |
 | microprice_minus_mid | 120s | 36 | 0.068 | 1.000 | 0.691 | -0.0086 | 0.996 |
-| microprice_minus_mid | 600s | 36 | 0.068 | 1.000 | 0.552 | -0.0083 | 0.986 |
 
-这组结果说明盘口不平衡对未来 mid 的排序方向很稳定，而且 horizon 越长，zero rate 越低。但所有 crossing 都是负数：如果看到正信号后直接跨 ask 买入，或者看到负信号后直接打 bid 卖出，预测幅度不足以覆盖当下 spread。
+盘口压力对未来 mid 的排序方向稳定，且 horizon 增加后 zero rate 下降。但所有 crossing 都为负：看到正信号后直接跨 ask 买入，或看到负信号后直接打 bid 卖出，未来价格变化不足以覆盖当前 spread。
 
-因此目前可以把 token baseline 当作 Event 内部的局部状态特征，不能直接变成 taker 策略。
+因此，单 token 盘口因子目前应被当作 Event 内部的局部状态特征，而不是独立的 taker 策略。
 
-### 3.3 Tick-size 重跑的影响
-（这里不提重跑的事，我的想法是这里在后面体现为数据的问题，会几种描述出来，暗示自己走了些弯路，体现工作量，但是这里不提，一方面是因为老板没有旧报告的视角，另一方面是容易打乱听众的思路）
-
-原24个失败 token 并不属于同一种风险：
-
-- 23个 token 的第二次 `0.01 → 0.001` 通知与第一次只相隔0—8ms；
-- replay 现在对 source timestamp 间隔不超过10ms的同方向重复转换输出 warning，并把第二次通知作为 idempotent no-op 跳过；
-- Wuhan 的重复通知相隔325.489秒，超过10ms边界，仍然严格失败。
-
-边界修复后的结果是：
-
-| 实验 | 修复前 | 修复后 |
-| --- | ---: | ---: |
-| 10 Event 单因子 | 7个失败 token | 110个 YES token，失败0 |
-| 6 Event pilot | 1个失败 token | 失败0 |
-| 36 Event | 24 token / 20 Event 受影响 | 1 token / 1 Event 受影响 |
-
-（相关的实验结果就直接用新跑出来的就好了）
-
-重跑后 `depth_imbalance_1` 的120s IC 从约0.082变为0.084，600s 从约0.103变为0.104；distribution IC 从约0.076变为0.074。短重复主要造成样本缺失，没有改变研究方向或执行结论。
-
-当前边界已经由测试锁定：短重复通过并告警，325.489秒长重复严格失败；因子协议相关测试77项通过。Nautilus bridge 的2项测试因本机缺少编译 runtime 被跳过，属于仍待完成的 parity 边界。
-
-## 4. 三个天气市场结构问题
+## 4. 单 token 研究暴露出的三个结构问题
 
 ### 4.1 生命周期不均匀
 
-天气 Event 持续约三天，但信息和交易并不是均匀到达。相同的120s label 在早期、主要价格发现阶段和接近结束时，代表的市场变化完全不同。
+天气 Event 通常持续数天，但信息、盘口更新和成交并不均匀到达。固定时间 label 在早期、主要价格发现阶段和接近规则截止时，代表的市场状态不同，不能简单混成同一种样本。
 
-### 4.2 Outcome 活跃度不均
+### 4.2 Outcome 活跃度不均匀
 
-一个 Event 通常包含约11个温度 outcome，只有靠近当前概率中心的少数 outcome 持续活跃。把所有 outcome 无差别混在一起，会把真实信号和 stale / inactive market 混合。
+一个最高气温 Event 通常包含约 11 个温度 Outcome，但交易主要集中在当前概率中心附近的 2—3 个 Market。其余 Outcome 可能长期 stale 或几乎没有有效双边盘口。把所有 Outcome 无差别混合，会稀释信号并放大 zero rate。
 
 ### 4.3 Event 才是完整研究单位
 
-这些 outcome 共同描述同一条温度概率分布，不是11个彼此独立的二元 Market。单 token 因子适合描述局部盘口状态，但更完整的研究对象应该是 Event 内的概率质量如何移动、集中和重新定价。
+这些 Outcome 不是互不相关的 11 个标的，而是共同描述同一个温度结果的概率分布。一个 Outcome 的概率上升，意味着概率质量需要从其他 Outcome 转移。单 token 研究只能看到局部盘口，Event-level 研究才能看到整条分布如何移动、集中和重新定价。
 
-## 5. Lifecycle：主要窗口是6—24h
+因此第二阶段没有继续堆单 token 因子，而是转向 36 Event 的 lifecycle、active set 和 probability distribution 分析。
 
-（这里实验好跑的话，要不要再细一点）
+## 5. 第二阶段：36 Event 的结构验证
 
-| bucket | Event | updates/min | trades/min | active markets | spread | 120s IC | zero | crossing | coverage |
+### 5.1 Lifecycle
+
+本次分桶锚点是 Gamma `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。以下结论应准确表述为“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
+
+| 距规则截止时间 | Event | Updates/min | Trades/min | Active markets | Spread | 120s IC | Zero | Crossing | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | >24h | 36 | 365.43 | 0.12 | 4.88 | 0.0080 | 0.080 | 0.734 | -0.0076 | 0.999 |
 | 6—24h | 36 | 597.22 | 0.43 | 4.74 | 0.0030 | 0.099 | 0.636 | -0.0105 | 0.990 |
 | 1—6h | 35 | 0.11 | 0.04 | 3.10 | 0.0010 | 0.065 | 0.962 | -0.0009 | 0.822 |
 | <1h | 21 | 0.00 | 0.05 | 3.00 | 0.0010 | N/A | N/A | N/A | 0.000 |
 
-本轮推翻了旧模板写死的“1—6h 主窗口”。6—24h 的更新和成交最集中，120s IC 最高，zero rate 也低于其他窗口。进入1—6h 后，订单簿更新量已经断崖下降；<1h 没有可用的方向性 label，只能作为关闭/结算边界诊断。
-
 ![Lifecycle activity](assets/2026-07-16-weather-rebuild/01-lifecycle-activity.png)
 
-> 图1：不同 lifecycle 使用独立量纲展示。6—24h 的订单簿更新和成交最集中；1—6h 后活动迅速下降。
+> 图 1：按规则截止时间分桶后，6—24h 的盘口更新、成交和 120s IC 较高；进入 1—6h 后，数据中的盘口 mutation 明显下降。该图描述的是 metadata endDate 周围的市场结构，不等同于实际结算生命周期。
 
-需要注意：lifecycle 目前以 metadata `event_end` 为锚点。由于1—6h 的更新量下降过于明显，进入下一轮前还要核验 `event_end`、实际停止交易时间、当地自然日结束和 resolution time 的关系，避免把 metadata 时差解释成市场行为。
+### 5.2 Dynamic active set
 
-## 6. Dynamic active set：预测改善，执行恶化
+Dynamic active set 只使用当时和过去信息：Market 需要有有效 BBO，并满足当前概率 Top3、过去 30 分钟有成交、或过去 30 分钟 mutation count 排名前三之一。
 
-active 的定义为：存在有效 BBO，并满足当前概率 Top3、过去30分钟有成交、或过去30分钟 mutation count 排名前三之一。它只使用当时和过去信息，没有使用未来信息。
-
-| scope | Event | IC | zero | crossing | Top3 updates | Top3 trades | Top3 probability mass |
+| Scope | Event | IC | Zero | Crossing | Top3 updates | Top3 trades | Top3 probability mass |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | all_market | 36 | 0.053 | 0.855 | -0.0064 | 0.489 | 0.722 | 0.875 |
 | dynamic_active | 36 | 0.083 | 0.741 | -0.0115 | 0.686 | 0.722 | 0.944 |
 
-Dynamic active set 确实集中到了更活跃、更有信息量的 outcome，但这些 outcome 同时也更难通过直接跨价获得收益。它可以继续作为 activity regime、仓位筛选或模型输入，暂时不升级为硬交易 gate。
+![Active set tradeoff](assets/2026-07-16-weather-rebuild/02-active-set-tradeoff.png)
 
-![Active-set trade-off](assets/2026-07-16-weather-rebuild/02-active-set-tradeoff.png)
+> 图 2：只看活跃 Outcome 后，IC 提高、zero rate 下降，但 crossing 更负。筛选提高了统计信号浓度，没有提高跨价执行价值。
 
-> 图2：Dynamic active set 提高 IC、降低 zero rate，但 crossing 更负。预测质量改善没有转化成 taker 可执行性。
+所以 active set 暂时适合作为 regime 或状态特征，不适合作为直接交易 gate。
 
-## 7. Event probability distribution
+### 5.3 Event probability distribution
 
-### 7.1 Distribution pressure
-
-Event 内先把各 outcome mid 归一化为概率分布，再观察盘口压力是否指向未来 implied-temperature mean 的移动。
+Event-level 分析先把各 Outcome mid 归一化成概率分布，再观察 Event 内盘口压力是否指向未来 implied-temperature mean 的移动。
 
 | 指标 | 结果 |
 | --- | ---: |
-| median Event IC | 0.074 |
-| positive Event | 36 / 36 |
+| Median Event IC | 0.074 |
+| Positive Event | 36 / 36 |
 | Event bootstrap 90% CI | [0.070, 0.079] |
-| `|sum(mid)-1| <= 0.10` 子样本 IC | 0.072 |
-| 子样本 bootstrap 90% CI | [0.066, 0.079] |
-| leave-one-date-out | 5 / 5 保持正向 |
-| leave-one-date-out median IC 范围 | 0.073—0.077 |
-
-这说明 distribution pressure 并不是由单个日期或城市偶然贡献出来的。它目前可以称为“跨日期稳定的弱结构信号”，但仍不能称为可交易 Alpha，因为没有正 crossing，也没有成交容量和费用验证。
+| Leave-one-date-out | 5 / 5 保持正向 |
 
 ![Distribution signal forest](assets/2026-07-16-weather-rebuild/03-distribution-signal-forest.png)
 
-> 图3：36个 Event 的 distribution pressure IC 全部为正。信号跨城市和日期存在，但量级仍然较弱。图中颜色沿用实验产物旧字段；橙色只表示观察到 post-close rows，不代表缺文件或较差数据质量。
+> 图 3：36 个 Event 的 distribution pressure IC 全部为正。图中的实验分组颜色只对应 closure diagnostic 字段，不代表缺文件或较差数据质量。
 
 ![Representative Event distribution](assets/2026-07-16-weather-rebuild/04-representative-event-distribution.png)
 
-> 图4：同一 Event 从 T-48 到 T-1 的概率分布变化示例。研究对象是整条概率分布如何迁移和收敛，而不是把11个 outcome 当成互不相关的市场。
+> 图 4：一个 Event 内，概率质量集中在少数相邻温度 Outcome，并随市场信息整体迁移。这也是 Event-level 表达比孤立 token 更自然的原因。
 
-### 7.2 概率和异常尾部
+这组结果说明 distribution pressure 不是由单个城市或单个日期偶然贡献，但其量级较弱，而且尚未证明能够覆盖 spread、fee 和执行摩擦。因此当前只能称为“跨日期稳定的弱结构信号”。
 
-原始 Event snapshot 中，`|sum(mid)-1| > 0.10` 占4.7%，P95 为0.097，最大达到4.370。进一步控制 outcome 完整性、BBO 新鲜度、spread 和同一分钟的 source-time 同步后：
+### 5.4 概率和异常尾部
 
-| filter | snapshots | Event | P95 | `>0.10` | max |
+如果直接把所有 Outcome 的 mid 相加，原始 snapshot 中存在明显异常；逐步控制完整性、报价新鲜度、spread 和 source-time 同步后，尾部大幅收敛：
+
+| 口径 | Snapshots | Event | P95 `|sum(mid)-1|` | `>0.10` | Max |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Raw | 109,767 | 36 | 0.097 | 4.7% | 4.370 |
-| Complete outcomes | 101,379 | 34 | 0.086 | 3.6% | 4.370 |
-| Complete + fresh | 30,481 | 34 | 0.086 | 3.1% | 4.370 |
-| Complete + fresh + spread + sync | 25,898 | 34 | 0.080 | 1.8% | 0.249 |
-（缺少的问题已经解决了，就不和旧报告对比了，就直接展示最新的最正确的结果就好了）
-结论是：绝大多数极端偏离不是稳定套利，而是缺少 outcome、报价陈旧、spread 太大或不同步造成的截面错觉。恢复23个短重复 token 后，raw 异常占比本身已从13.6%下降到4.7%，说明上一轮相当一部分异常确实来自 outcome vector 不完整。严格过滤后仍有460个 snapshot、22个 Event 超过0.10，需要逐 Event 检查报价语义和可成交数量。
+| Outcomes complete | 101,379 | 34 | 0.086 | 3.6% | — |
+| Complete + fresh | 30,481 | 34 | 0.086 | 3.1% | — |
+| Strict synchronized sample | 25,898 | 34 | 0.080 | 1.8% | 0.249 |
 
-当前缓存只有 BBO 价格，没有每条腿可验证的 BBO size 和 fee rate，因此不能计算多腿最小容量，也不能把残余偏离称为套利机会。
+结论是：多数极端概率和偏离来自 Outcome 不完整、陈旧报价、宽 spread 或不同步状态，不应直接叫套利。严格样本仍有少量残余偏离，后续只能逐 Event 核对报价语义和可执行容量。
 
-## 8. 发现、证据和当前决策
+## 6. 当前能够下的结论
 
-| 发现 | 证据 | 当前决策 |
-| --- | --- | --- |
-| PMXT 天气数据可以进入统一研究链路 | 227 Event 完整覆盖；因子和36 Event结构实验均从 `events-rebuild` 消费 | 保留 PMXT research mode，继续使用统一 replay contract |
-| 单 token 盘口方向稳定 | `depth_imbalance_1` 30s / 120s / 600s positive Event 均为100% | 作为 Event 内局部特征，不直接做 taker |
-| 6—24h 是主要研究窗口 | updates、trades、120s IC 最高 | 下一轮重点研究该窗口，同时核验 lifecycle 锚点 |
-| active outcome 更有预测信息 | IC 0.053 → 0.083，zero 0.855 → 0.741 | 作为状态特征，不作为交易 gate |
-| Event distribution 存在稳定弱结构 | IC 0.074；bootstrap 和5组日期留一均为正 | 作为下一轮主方向 |
-| crossing 全部为负 | token、lifecycle 和 active-set 结果均为负 | 停止直接 taker 路线 |
-| 原始概率和异常多数不可交易 | 短重复修复后 raw 为4.7%，严格过滤后为1.8% | 核验残余22个 Event，不宣传套利 |
-| 短 tick 重复主要造成样本缺失 | 23个 token 恢复后主要 IC 与执行结论基本不变 | 保留告警和10ms边界，不再整 token 丢弃 |
-| 还不能进入正式 Nautilus 回测 | Wuhan 保留1个严格失败；native parity NOT RUN | 核验长重复并修复运行环境 |
+### 已确认
 
-## 9. 当前风险和信任边界
+1. PMXT 天气数据能够通过统一 adapter 同时服务因子研究和 Nautilus native 数据转换。
+2. 单 token 盘口压力对未来 mid 方向存在稳定但较弱的预测信息。
+3. 生命周期和 Outcome 活跃度显著改变样本的信息密度，天气 Event 不能按均匀时间序列处理。
+4. Event distribution pressure 在 36 Event 和 5 个日期上保持正向，是比孤立 token 更自然的研究表达。
+5. 直接 crossing 全部为负，当前结果不支持简单 taker 策略。
 
-1. **Wuhan 长间隔 tick 重复**：396个 token 中394个进入分析、1个因无 ranking observation 被跳过、1个严格失败。唯一失败是 Wuhan market index 4：第二次 `0.01 → 0.001` 与第一次相隔325.489秒，不能按短时传输抖动忽略。程序继续 fail closed，因此 Wuhan 的 Event probability vector 仍不完整。
-2. **Nautilus parity 未运行**：当前 Python 环境缺少 `nautilus_trader.core.data` 编译扩展。因此本轮只证明 factor/event-level replay 结果，没有证明同一批 rebuild 数据经过 native bridge 后完全一致。
-3. **crossing 不是 PnL**：当前 crossing 只比较未来 mid 与当下 bid/ask，没有手续费、延迟、盘口数量、排队和 partial fill。
-4. **lifecycle 锚点需要核验**：6—24h 到1—6h 的更新量下降非常大。当前以 metadata `event_end` 为锚，仍需和实际停止交易、当地自然日及 resolution time 对齐。
-5. **post-close 标签不能叫 degraded**：实验中7个 Event 的旧标签只表示存在 post-close rows，不表示缺文件或坏数据；后续产物应改名为 closure diagnostic。
-6. **日期只有5个**：bootstrap 和 leave-one-date-out 支持当前样本稳定，但不能替代更长日期跨度。
-7. **新旧结果不是严格配对**：旧实验和 rebuild 的日期、Event 组成不同，不能把数值变化全部归因于数据清理。
-8. **runner 默认路径仍需收口**：本次运行通过显式 inventory 验证只消费了 `events-rebuild`，但 `run_pilot.py` 和 `run_event_level.py` 的代码默认值仍指向旧 inventory。后续必须改成 rebuild inventory 并在启动时 fail closed，避免误跑旧数据。
+### 尚未确认
 
-## 10. 还需要补的实验
+1. 方向信息能否通过 passive maker、相对价值或组合执行转成可实现收益。
+2. 当前 absolute mid-change label 在不同概率区间是否具有完全一致的经济含义。
+3. PMXT direct replay 与 Nautilus native bridge 的逐事件完整语义一致性。
+4. tick-size 缺失和长间隔冲突的上游成因，以及是否存在可审计的恢复来源。
+5. 概率和残余偏离在加入 BBO size、fee、延迟和多腿成交约束后是否仍存在。
 
-### P0：进入 Nautilus 策略回测之前
+## 7. 下一步研究抓手
 
-1. **Wuhan 长重复收口**
-   - 保留当前超过10ms严格失败的边界；
-   - 核验 Wuhan 两次通知之间的 book、price 和其他 tick 状态；
-   - 判断它是延迟重复、源端重放，还是确实缺失了中间状态转换；
-   - 在没有证据前不扩大10ms容忍窗口。
+### 7.1 优先研究市场内部结构
 
-2. **direct replay → Nautilus native parity**
-   - 在可导入 `nautilus_trader.core.data` 的编译环境运行；
-   - 固定 Event / token 核对 mutation 数、replay clock、BBO、TradeTick、tick timeline 和 settlement；
-   - parity 通过后再进入 BacktestEngine 策略回测。
+现阶段不优先把路线收窄为天气数据源预测，而是先研究 Polymarket 自身可迁移的内生市场 Alpha：
 
-3. **lifecycle 锚点审计**
-   - 对比 metadata `event_end`、实际最后活跃时间、当地自然日结束和 resolution time；
-   - 画出相对不同锚点的 updates/trades 曲线；
-   - 确认6—24h 是真实价格发现窗口，而不是 metadata 时差。
+- **Event 内概率质量迁移**：研究整条 Outcome 分布向哪个方向移动；
+- **Event 内相对价值**：识别 stale Outcome、局部断层和相邻 Outcome 定价不一致；
+- **盘口压力与被动执行**：方向信息不够跨 spread，但可能适合 maker 定价、挂单偏置和撤单控制；
+- **Activity / lifecycle regime**：把活跃度和生命周期作为模型状态，而不是简单删除冷清样本。
 
-4. **post-close rows 敏感性**
-   - 删除 clean/degraded 命名；
-   - 比较保留 post-close rows 与严格截断后的结果；
-   - 若差异不显著，只保留为数据诊断字段。
+天气 Event 是第一个结构清晰、Outcome 完备的验证场景，但上述方法不依赖天气基本面，后续可以迁移到选举、宏观、体育等多 Outcome Event。
 
-5. **运行入口固定新 inventory**
-   - 将 pilot 和 event-level runner 的默认路径改为 `events-rebuild` inventory；
-   - 启动时记录并校验数据根路径、inventory hash、missing hour 和 bad file；
-   - 如果输入指向旧 inventory，直接拒绝运行。
+### 7.2 暂时后置
 
-### P1：下一轮研究抓手
+- 外部天气预报与 Polymarket 的跨源基本面预测；
+- 大规模跨 Event 联动；
+- 直接扩大到 100 Event；
+- 在完整 native semantic parity 和执行语义明确前进入正式策略回测。
 
-6. **Event 内结构信号**
-   - 以6—24h 为主窗口；
-   - 研究 leader-lag、probability mass flow、stale outcome 和局部盘口压力向相邻 outcome 的传导；
-   - active set 作为解释变量，不作为预设交易 gate。
+### 7.3 建议会上讨论的三个决策
 
-7. **可执行边界**
-   - 分 passive / taker；
-   - 加入 BBO size、fee、延迟、queue 和 partial fill；
-   - 当前 crossing 全负，因此 taker 分支只做反证，不作为主路线。
+1. 下一阶段是否将主研究单位从单 token 正式提升为 Event distribution；
+2. 是否优先验证 passive maker / relative-value，而不是继续优化 taker crossing；
+3. lifecycle 与 activity 是作为统一模型的状态变量，还是拆成独立 regime 分别建模。
 
-8. **残余概率和偏离核验**
-   - 逐一检查严格过滤后仍异常的10个 Event；
-   - 核对 outcome 是否完备、价格是否来自同一时点、是否有足够可成交数量；
-   - 只有 fee 后且容量可验证时，才升级为套利研究。
+## 8. 对外口径
 
-### P2：结果稳定后
+可以说：
 
-9. 扩展到100+ Event 或更长滚动日期；
-10. 做同 Event 旧数据/rebuild 配对，量化数据清理影响；
-11. 天气结构稳定后再扩到其他 Event 类型；
-12. 跨 Event 因子继续后置。
+> 已经完成 PMXT 天气 Event 数据建设，并统一了因子研究与 Nautilus 数据转换的 replay 顺序。盘口不平衡和 Event-level distribution pressure 对未来价格方向存在跨城市、跨日期的稳定弱信号，但直接跨价执行仍为负，因此下一阶段重点是 Event 内部结构与被动执行，而不是宣称已有可交易 Alpha。
 
-## 11. 研究方向讨论
+不应说：
 
-### 11.1 先研究市场内部，而不是先做天气基本面
-
-天气数据源、预报模型和城市气象差异当然可能提供信息，但如果现在直接从这些外部数据入手，研究很容易收窄成一个天气专项。我们的目标是寻找能够迁移到更多 Polymarket Event 的方法，因此下一阶段优先研究 **endogenous market alpha**：只使用市场自身产生的价格、盘口、成交和不同 outcome 之间的关系，判断市场内部的信息如何传播和重新定价。
-
-这不等于永远不做基本面。更合理的顺序是：
-
-```text
-先确认市场内部存在稳定、可执行的结构
-  -> 再引入外部信息判断它是否提供增量
-  -> 最后比较纯市场模型与市场+基本面模型
-```
-
-天气 Event 适合作为第一个研究载体，因为它同时具备多个互斥 outcome、明确生命周期和最终结算。但最终方法不应该依赖“这是天气市场”才能成立。
-
-### 11.2 方向一：Event 内概率质量迁移
-
-当前最有证据支持的方向是 Event probability distribution。单个 outcome 的盘口压力不仅可能推动自身价格，也可能意味着概率质量正在向相邻温度区间迁移。
-
-下一步可以研究：
-
-- implied-temperature mean、variance、entropy 的变化；
-- 概率质量从低温 outcome 向高温 outcome，或反方向的迁移速度；
-- 某个 outcome 出现压力后，相邻 outcome 是否按固定次序响应；
-- 分布收窄、扩宽和整体平移是否对应不同市场状态；
-- distribution pressure 在6—24h 主窗口是否显著强于其他窗口。
-
-这一方向比继续堆单 token 因子更重要，因为它直接利用了 Polymarket 多 outcome Event 的结构，也是当前 median Event IC 0.074 最自然的延伸。
-
-### 11.3 方向二：Event 内相对价值和 stale outcome
-
-同一个天气 Event 的 outcome 应组成一条相对连续、近似单峰的概率分布。如果某个 outcome 更新较慢，而相邻 outcome 已经发生变化，它可能成为短暂的 stale leg。
-
-可以重点检查：
-
-- outcome A 的盘口或成交是否领先相邻 outcome B；
-- 相邻 outcome 之间的价格变化是否存在稳定 lead-lag；
-- 某个 outcome 的报价是否偏离相邻 outcome 隐含的局部曲线；
-- 概率中心移动时，哪些 outcome 通常先动、哪些通常后动；
-- 严格同步后仍存在的概率和偏离，是否来自可识别的 stale outcome。
-
-这里的目标不是看到 `sum(mid) != 1` 就做多腿套利，而是先确定偏离来自真实的异步定价，还是缺腿、陈旧报价和宽 spread。
-
-### 11.4 方向三：盘口信号如何转成被动执行
-
-`depth_imbalance_1` 的方向稳定，但 crossing 全负，说明“看对方向”并不等于“可以直接跨价成交”。因此执行研究应该从 taker 转向 passive / maker：
-
-- 信号出现后挂在 best bid / best ask，观察后续 adverse selection；
-- 比较挂单等待时间、成交概率和信号衰减速度；
-- 引入 BBO size、queue proxy、partial fill、cancel-before-fill 和 fee；
-- 检查6—24h、不同 spread 和不同概率区间下的 maker 条件；
-- 比较单腿 maker 与 Event 内相对价值多腿执行。
-
-这一层通过 Nautilus BacktestEngine 统一处理订单、fill、position 和账户状态；研究脚本只负责产生信号与执行假设，保证研究和回测的职责边界一致。
-
-### 11.5 Activity 和 lifecycle 应作为 regime，而不是简单过滤器
-
-Dynamic active set 提高 IC、却恶化 crossing，说明活跃市场不是天然更赚钱。后续不应简单规定“只交易最活跃的三个 outcome”，而应该把以下字段作为 regime 或模型输入：
-
-- 距离 Event 结束的时间；
-- 当前活跃 outcome 数；
-- Top3 probability mass；
-- mutation / trade intensity；
-- spread、book staleness 和 tick regime；
-- 当前概率中心与目标 outcome 的距离。
-
-模型需要回答的是“这个信号在什么状态下有效、适合 maker 还是应当放弃”，而不是仅做一次静态样本筛选。
-
-### 11.6 暂时后置的方向
-
-以下方向现在不是主线：
-
-- **天气基本面模型**：可能有效，但容易把方法做窄；待市场内结构形成 baseline 后再评估增量。
-- **跨 Event 因子**：时间对齐、共同信息源和因果关系更复杂，先把单 Event 内部结构做清楚。
-- **继续堆单 token 因子**：当前主要障碍是执行和 Event 结构，不是候选因子数量不足。
-- **直接 taker 策略**：现有 crossing 已经给出一致负证据，不应在没有新执行假设时继续投入。
-- **立即扩到100+ Event**：Wuhan 长重复、lifecycle 锚点和 native parity 尚未收口，先扩样本只会放大口径问题。
-
-### 11.7 建议会上讨论的三个决策
-
-1. **下一阶段主线是否确定为 Event 内结构性信号**：以 probability mass flow、相邻 outcome lead-lag 和 stale outcome 为核心，跨 Event 延后。
-2. **执行路线是否以 maker 为主**：接受更复杂的 queue / fill 校准，还是仍要求寻找能够覆盖 spread 的 taker 信号。
-3. **天气市场承担什么角色**：把天气作为通用多 outcome 方法的试验场，还是投入外部天气数据，把它发展成独立垂直策略。
-
-当前建议是：先做 Event 内结构性信号，执行以 maker 验证为主；天气基本面只作为后续增量实验，不作为当前研究主轴。
-
-## 12. Roadmap
-
-```text
-Wuhan 长间隔 tick 重复收口
-  -> lifecycle 锚点与 post-close 敏感性
-  -> direct/native parity
-  -> Nautilus research backtest
-  -> Event 内结构信号
-  -> passive fill / fee / capacity
-  -> 扩日期和 Event 类型
-```
-
-本轮不扩100 Event，也不进入正式 Nautilus 策略回测。当前更重要的是把 Wuhan 长间隔重复和 lifecycle 时间锚点解释清楚，并证明 rebuild replay 与 Nautilus native data 完全一致。
-
-## 13. 对外口径
-
-当前可以说：
-
-- PMXT 天气数据已经整理成可重复消费的完整 Event inventory，因子研究和 Event-level 研究使用同一套 replay 顺序；
-- 单 token 盘口不平衡存在跨 Event 稳定的预测方向，但直接跨价不可执行；
-- 天气 Event 的主要研究窗口在结束前6—24h；
-- Event probability distribution 存在跨日期稳定的弱结构信号，值得作为下一轮主方向。
-
-当前不能说：
-
-- 已经发现可交易 Alpha；
+- 已经找到稳定盈利策略；
 - 概率和偏离就是套利；
-- dynamic active set 可以直接作为交易 gate；
-- 已经完成 Nautilus 原生回测或证明策略收益。
+- PMXT 等价于撮合级历史数据；
+- ordering / convertibility smoke 已证明完整 native parity；
+- 6—24h 是“结算前”窗口。
 
-## 14. 结果位置
+## 9. 结果和审计材料
 
-```text
-polymarket/research/2026-07-15-pmxt-weather-next-stage-experiments-rebuild/
-  README.md
-  report/
-    pilot_report.md
-    boss_scorecard.md
-  event_level/reports/
-    event_level_summary.md
-    cached_supplement_report.md
-    boss_scorecard.md
-```
-
-旧数据口径报告保存在：
-
-```text
-polymarket/boss_reports/archive/
-  2026-07-15-polymarket-pmxt-weather-factor-research-progress-pre-rebuild.md
-```
+- 完整实验总览：`polymarket/research/2026-07-15-pmxt-weather-next-stage-experiments-rebuild/README.md`
+- 6 Event 因子与 label 报告：`report/pilot_report.md`
+- 36 Event 汇总：`event_level/reports/event_level_summary.md`
+- Bootstrap、日期留一和概率和尾部：`event_level/reports/cached_supplement_report.md`
+- Native smoke 原始结果：`compact/pilot_6_event/direct_native_parity.json`
+- Beijing tick transition 诊断：`report/beijing-missing-tick-size-transition.md`
+- Event 生命周期标准：`C:\Projects\PolyReaper\docs\development\reference\polymarket-weather-event-lifecycle.md`
+- Weather 数据质量登记：`C:\Projects\PolyReaper\docs\development\domains\weather\data-quality-findings.md`
