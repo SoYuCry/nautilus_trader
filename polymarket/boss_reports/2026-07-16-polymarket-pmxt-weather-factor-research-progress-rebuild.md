@@ -4,6 +4,15 @@
 
 ## TLDR
 
+1. 历史数据准备：清洗 PMXT 数据实现因子研究
+2. 暴露三个关键研究问题：
+- 不同活跃度
+- 价格空间需要映射
+- xx
+3. 下一步研究方案：将 polymarket 问题 mapping 到传统市场
+
+
+
 1. PMXT 天气数据已经进入统一研究链路。因子研究和 Nautilus 数据转换消费同一份 Event 数据、同一套排序规则，不再各自解释数据顺序。
 2. 从 169 个连续 hourly Parquet 中整理出 227 个完整生命周期的最高气温 Event：覆盖 5 个日期、49 个城市、2,497 个二元 Market、4,994 个 token，共 707,045,334 行；missing hour 和 bad file 均为 0。
 3. 单 token 盘口压力对未来价格方向存在稳定信息。36 Event 中，`depth_imbalance_1` 在 30s / 120s / 600s 的 median IC 为 0.069 / 0.084 / 0.104，positive Event 均为 100%。
@@ -195,20 +204,30 @@ label_h = mid(t + h) - mid(t)
 
 ### 5.1 Lifecycle
 
-活动和信号主要集中在距规则截止 6—24h 的分桶：该窗口的 updates、trades 和 120s IC 较高；进入 1—6h 后，数据中的盘口 mutation 和有效 label 明显减少。
+原始粗分桶显示活动和信号集中在距 lifecycle `endDate` 6—24h。进一步拆分整个生命周期后，可以看到两侧都存在冷却：距离关闭锚点较远时，updates 和 trades 较少；12—24h 的盘口 mutation 最密集；6—12h 的成交与 120s 方向信号最强；进入 3—6h 后，盘口 mutation 和有效方向 label 又快速消失。
 
-这里的锚点是 Gamma Event metadata 的 `event_index.endDate`，即规则上的预定截止时间，不是 `captureEndAt`、实际最后盘口时间或结算时间。Event-level activity grid 也在该时间截断。因此以下结果只能写成“距规则截止时间”，不能写成“距结算”或“距订单簿关闭”。
+这里需要修正一个口径：rebuild `event_index.endDate` 不是规则上的预定截止时间。规则截止对应 `scheduledEndAt`；当前 lifecycle grid 使用的 `endDate` 与 `captureEndAt` 对齐，代表 Event/Market/UMA 生命周期中较晚的关闭锚点。36 Event 中，`endDate` 比 `scheduledEndAt` 晚的中位数约为 9.98 小时，四分位区间为 4.80—12.40 小时。因此下表只能写成“距 lifecycle endDate”，不能写成“距规则截止”或“距结算”。
 
-| 距规则截止时间 | Event | Updates/min | Trades/min | Active markets | Spread | 120s IC | Zero | Crossing | Coverage |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| >24h | 36 | 365.43 | 0.12 | 4.88 | 0.0080 | 0.080 | 0.734 | -0.0076 | 0.999 |
-| 6—24h | 36 | 597.22 | 0.43 | 4.74 | 0.0030 | 0.099 | 0.636 | -0.0105 | 0.990 |
-| 1—6h | 35 | 0.11 | 0.04 | 3.10 | 0.0010 | 0.065 | 0.962 | -0.0009 | 0.822 |
-| <1h | 21 | 0.00 | 0.05 | 3.00 | 0.0010 | N/A | N/A | N/A | 0.000 |
+| 距 lifecycle `endDate` | Activity Event | Signal Event | Updates/min | Trades/min | Active markets | Spread | 120s IC | Zero | Crossing | Coverage |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 48—72h | 24 | 24 | 297.98 | 0.08 | 4.78 | 0.0100 | 0.084 | 0.652 | -0.0134 | 0.999 |
+| 36—48h | 35 | 35 | 356.13 | 0.11 | 5.03 | 0.0080 | 0.072 | 0.720 | -0.0073 | 0.999 |
+| 24—36h | 36 | 36 | 388.89 | 0.12 | 4.93 | 0.0050 | 0.095 | 0.782 | -0.0066 | 0.998 |
+| 12—24h | 36 | 36 | 647.51 | 0.35 | 4.96 | 0.0050 | 0.111 | 0.681 | -0.0090 | 0.995 |
+| 6—12h | 36 | 36 | 413.21 | 0.66 | 4.41 | 0.0013 | 0.115 | 0.477 | -0.0150 | 0.966 |
+| 3—6h | 35 | 20 | 0.11 | 0.05 | 3.17 | 0.0010 | 0.065 | 0.897 | -0.0011 | 0.828 |
+| 1—3h | 33 | 6 | 0.00 | 0.03 | 3.00 | 0.0010 | 0.181 | 0.912 | -0.0009 | 0.665 |
+| 0—1h | 21 | 1 | 0.00 | 0.05 | 3.00 | 0.0010 | N/A | N/A | N/A | 0.000 |
+
+36 Event 样本没有 `>72h` 的共同覆盖，因此当前只能确认 48—72h 到 12—24h 的活动逐步升温，不能判断更早阶段。Updates/min 从 48—72h 的 297.98，升至 24—36h 的 388.89，并在 12—24h 达到 647.51；Trades/min 同期从 0.08 升至 0.35。这支持“离关键生命周期太远时市场较冷”的判断，但远端 IC 并非严格单调，因此不能把单纯的时间距离当作方向因子。
+
+最后 6 小时更像关闭尾段，而不是新的价格发现阶段：3—6h 只有约 2.2% 的分钟存在盘口 mutation，1—3h 和 0—1h 的 Event 中位数已经降为零；但零星 `last_trade_price` 仍会到达，35/36 个 Event 在最后 6 小时至少出现过一条 trade 类事件。此时 backward as-of 仍会携带此前的 BBO，所以表中的约 3 个 active markets 和 0.001 spread 不能解释为仍有三条新鲜、可成交的盘口。120s 信号的可用 Event 也从 36 个降至 20、6、1 个，且 zero rate 接近 90% 或更高，因此 1—3h 的高 IC 只是极小退化样本，不具备研究含义。
+
+细分汇总、Event 明细和最后活动时间分别落在 `event_level/lifecycle/lifecycle_close_end_detailed_summary.csv`、`lifecycle_close_end_detailed_event_metrics.csv`、`lifecycle_close_end_detailed_event_signal.csv` 和 `lifecycle_close_end_last_activity.csv`。
 
 ![Lifecycle activity](assets/2026-07-16-weather-rebuild/01-lifecycle-activity.png)
 
-> 图 1：按规则截止时间分桶后，6—24h 的盘口更新、成交和 120s IC 较高；进入 1—6h 后，数据中的盘口 mutation 明显下降。该图描述的是 metadata endDate 周围的市场结构，不等同于实际结算生命周期。
+> 图 1：原始粗分桶图以 lifecycle `endDate` 为锚。细分结果表明，48—72h 到 12—24h 逐步升温，6—12h 的成交和方向信号最强，3—6h 后则进入以 stale book carry-forward 和零星 trade event 为主的关闭尾段。它不等同于规则截止或实际结算生命周期。
 
 ### 5.2 Dynamic active set
 
@@ -242,7 +261,7 @@ Event-level 分析先把各温度 Outcome 的 mid 归一化成一条概率分布
 
 ![Representative Event distribution](assets/2026-07-16-weather-rebuild/04-representative-event-distribution.png)
 
-> 图 4：T-48 / T-24 / T-6 / T-1 同样相对 Gamma `event_index.endDate`。一个 Event 内，概率质量集中在少数相邻温度 Outcome，并随市场信息整体迁移。这也是 Event-level 表达比孤立 token 更自然的原因。
+> 图 4：T-48 / T-24 / T-6 / T-1 同样相对 rebuild lifecycle `event_index.endDate`，不是 `scheduledEndAt`。一个 Event 内，概率质量集中在少数相邻温度 Outcome，并随市场信息整体迁移。这也是 Event-level 表达比孤立 token 更自然的原因。
 
 Bootstrap 区间用于检查对 Event 抽样是否敏感；leave-one-date-out 则每次剔除一个日期，检查结论是否依赖某一天。这两项都保持正向，说明 distribution pressure 不是由单个城市或单个日期偶然贡献。但其量级较弱，而且尚未证明能够覆盖 spread、fee 和执行摩擦，因此当前只能称为“跨日期稳定的弱结构信号”。
 
@@ -250,7 +269,7 @@ Bootstrap 区间用于检查对 Event 抽样是否敏感；leave-one-date-out �
 
 如果直接把所有 Outcome 的 mid 相加，原始 snapshot 中存在明显异常；逐步控制完整性、报价新鲜度、spread 和 source-time 同步后，尾部大幅收敛：
 
-| 口径 | Snapshots | Event | P95 `|sum(mid)-1|` | `>0.10` | Max |
+| 口径 | Snapshots | Event | P95 `abs(sum(mid)-1)` | `>0.10` | Max |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Raw | 109,767 | 36 | 0.097 | 4.7% | 4.370 |
 | Outcomes complete | 101,379 | 34 | 0.086 | 3.6% | 4.370 |
