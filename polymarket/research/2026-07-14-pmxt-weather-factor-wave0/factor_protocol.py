@@ -3,12 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import warnings
 from bisect import bisect_left
 from bisect import bisect_right
 from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
 from dataclasses import field
+from datetime import timedelta
 from decimal import Decimal
 from heapq import heapify
 from heapq import heappop
@@ -51,6 +53,7 @@ _SUPPORTED_EVENT_TYPES = frozenset({"book", "price_change", "trade", "tick_size_
 _IDENTITY_COLUMNS = ["event_id", "market", "token_id"]
 _DEFAULT_TICK_SIZE = Decimal("0.01")
 _NARROW_TICK_SIZE = Decimal("0.001")
+_DUPLICATE_TICK_SIZE_MAX_SOURCE_DELAY = timedelta(milliseconds=10)
 _DECIMAL_ZERO = Decimal(0)
 _DECIMAL_ONE = Decimal(1)
 _MISSING_LEVEL = object()
@@ -326,6 +329,7 @@ def _token_key(update: L2UpdateV1) -> tuple[str, str]:
 
 def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
     tick_sizes: dict[tuple[str, str], Decimal] = {}
+    last_effective_tick_change_source_times: dict[tuple[str, str], pd.Timestamp] = {}
     for step_index, step in enumerate(dataset.steps):
         if not isinstance(step, L2ReplayStepV1):
             raise ValueError(
@@ -340,13 +344,14 @@ def _validate_dataset(dataset: PolymarketL2DatasetV1) -> None:
                     f"sequence={step.sequence}, updates[{update_index}] must be L2UpdateV1; "
                     f"actual type={type(update).__module__}.{type(update).__qualname__}",
                 )
-            _validate_update(step, update, tick_sizes)
+            _validate_update(step, update, tick_sizes, last_effective_tick_change_source_times)
 
 
 def _validate_update(
     step: L2ReplayStepV1,
     update: L2UpdateV1,
     tick_sizes: dict[tuple[str, str], Decimal],
+    last_effective_tick_change_source_times: dict[tuple[str, str], pd.Timestamp],
 ) -> None:
     if not isinstance(update.event_type, str) or update.event_type not in _SUPPORTED_EVENT_TYPES:
         raise _validation_error(step, update, "event_type", "is not supported")
@@ -374,7 +379,34 @@ def _validate_update(
     current_tick = tick_sizes.get(key, _DEFAULT_TICK_SIZE)
     old_tick = update.old_tick_size
     new_tick = update.new_tick_size
-    if not isinstance(old_tick, Decimal) or not old_tick.is_finite() or old_tick != current_tick:
+    if not isinstance(old_tick, Decimal) or not old_tick.is_finite():
+        raise _validation_error(step, update, "old_tick_size", "must be a finite Decimal")
+    if not isinstance(new_tick, Decimal) or not new_tick.is_finite():
+        raise _validation_error(step, update, "new_tick_size", "must be a finite Decimal")
+    source_time = pd.Timestamp(step.timestamp) if step.timestamp is not None else None
+    previous_source_time = last_effective_tick_change_source_times.get(key)
+    source_delay = source_time - previous_source_time if source_time is not None and previous_source_time is not None else None
+    # Twenty-three observed PMXT duplicates repeat the same 0.01 -> 0.001
+    # notification within 0-8 ms of source time. Treat only this tightly bounded
+    # <=10 ms pattern as idempotent transport jitter. A later repeat (for example
+    # the Wuhan sample after ~325 s) remains a strict state-transition error.
+    if (
+        current_tick == _NARROW_TICK_SIZE
+        and new_tick == _NARROW_TICK_SIZE
+        and old_tick in {_DEFAULT_TICK_SIZE, _NARROW_TICK_SIZE}
+        and source_delay is not None
+        and timedelta(0) <= source_delay <= _DUPLICATE_TICK_SIZE_MAX_SOURCE_DELAY
+    ):
+        warnings.warn(
+            "ignoring duplicate tick_size_change already effective at 0.001 "
+            f"(sequence={step.sequence}, market={update.market!r}, asset_id={update.asset_id!r}, "
+            f"old_tick_size={old_tick}, new_tick_size={new_tick}, "
+            f"source_delay_ms={source_delay / timedelta(milliseconds=1):.3f})",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return
+    if old_tick != current_tick:
         raise _validation_error(
             step,
             update,
@@ -383,9 +415,11 @@ def _validate_update(
         )
     if old_tick != _DEFAULT_TICK_SIZE:
         raise _validation_error(step, update, "old_tick_size", "only 0.01 -> 0.001 is supported")
-    if not isinstance(new_tick, Decimal) or not new_tick.is_finite() or new_tick != _NARROW_TICK_SIZE:
+    if new_tick != _NARROW_TICK_SIZE:
         raise _validation_error(step, update, "new_tick_size", "only 0.01 -> 0.001 is supported")
     tick_sizes[key] = _NARROW_TICK_SIZE
+    if source_time is not None:
+        last_effective_tick_change_source_times[key] = source_time
 
 
 def _validate_levels(
@@ -1159,4 +1193,3 @@ def _frame_digest(frame: pd.DataFrame) -> str:
         stable = stable.sort_values(sort_columns, kind="mergesort")
     payload = stable.reset_index(drop=True).to_json(orient="split", date_format="iso", default_handler=str)
     return hashlib.sha256(json.dumps(json.loads(payload), sort_keys=True).encode()).hexdigest()
-

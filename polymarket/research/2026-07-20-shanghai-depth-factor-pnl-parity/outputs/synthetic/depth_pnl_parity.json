@@ -1,0 +1,121 @@
+{
+  "fee_mode": "forced_zero",
+  "hold_seconds": 120,
+  "quantity": 1.0,
+  "scope": "shanghai_depth_factor_pnl_parity",
+  "summary_signature": "f3a81b776c151f1221c0ae6a590289bf5bceb350ef2bc08b83411602fedddd9b",
+  "synthetic": [
+    {
+      "action_mismatches": [],
+      "case": "normal_round_trip",
+      "checks": {
+        "commissions_are_zero": true,
+        "factor_values_match": true,
+        "fill_actions_match": true,
+        "no_order_rejections": true,
+        "open_position_state_matches": true,
+        "round_trip_pnl_matches": true
+      },
+      "counts": {
+        "completed_round_trips": 1,
+        "direct_callback_rows": 2,
+        "direct_exit_due_missing_bid_callbacks": 0,
+        "direct_missing_entry_ask_callbacks": 0,
+        "fills": 2,
+        "fills_report_rows": 2,
+        "native_callbacks": 2,
+        "native_exit_due_missing_bid_callbacks": 0,
+        "positions_report_rows": 1
+      },
+      "factor_mismatches": [],
+      "gross_pnl": {
+        "commission": 0.0,
+        "direct": -0.10000000000000003,
+        "native": -0.10000000000000003
+      },
+      "open_position": {
+        "direct": null,
+        "native": null
+      },
+      "pnl_mismatches": [],
+      "rejections": [],
+      "status": "pass",
+      "trade_digest": "af339b25c38ecf367d888f6d82917e94c5ce5f059f7726b041eee8ef9cbd3662"
+    },
+    {
+      "action_mismatches": [],
+      "case": "missing_entry_ask_at_0999",
+      "checks": {
+        "commissions_are_zero": true,
+        "factor_values_match": true,
+        "fill_actions_match": true,
+        "no_order_rejections": true,
+        "open_position_state_matches": true,
+        "round_trip_pnl_matches": true
+      },
+      "counts": {
+        "completed_round_trips": 0,
+        "direct_callback_rows": 2,
+        "direct_exit_due_missing_bid_callbacks": 0,
+        "direct_missing_entry_ask_callbacks": 2,
+        "fills": 0,
+        "fills_report_rows": 0,
+        "native_callbacks": 2,
+        "native_exit_due_missing_bid_callbacks": 0,
+        "positions_report_rows": 0
+      },
+      "factor_mismatches": [],
+      "gross_pnl": {
+        "commission": 0,
+        "direct": 0,
+        "native": 0
+      },
+      "open_position": {
+        "direct": null,
+        "native": null
+      },
+      "pnl_mismatches": [],
+      "rejections": [],
+      "status": "pass",
+      "trade_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "action_mismatches": [],
+      "case": "missing_exit_bid_then_recovers",
+      "checks": {
+        "commissions_are_zero": true,
+        "factor_values_match": true,
+        "fill_actions_match": true,
+        "no_order_rejections": true,
+        "open_position_state_matches": true,
+        "round_trip_pnl_matches": true
+      },
+      "counts": {
+        "completed_round_trips": 1,
+        "direct_callback_rows": 3,
+        "direct_exit_due_missing_bid_callbacks": 1,
+        "direct_missing_entry_ask_callbacks": 0,
+        "fills": 2,
+        "fills_report_rows": 2,
+        "native_callbacks": 3,
+        "native_exit_due_missing_bid_callbacks": 1,
+        "positions_report_rows": 1
+      },
+      "factor_mismatches": [],
+      "gross_pnl": {
+        "commission": 0.0,
+        "direct": -0.11000000000000004,
+        "native": -0.11000000000000004
+      },
+      "open_position": {
+        "direct": null,
+        "native": null
+      },
+      "pnl_mismatches": [],
+      "rejections": [],
+      "status": "pass",
+      "trade_digest": "b46a94697d4dbec1a3d86eb1280bd2eefbd31781f36e106cd319bf74cf0d1c5c"
+    }
+  ],
+  "threshold": 0.1
+}

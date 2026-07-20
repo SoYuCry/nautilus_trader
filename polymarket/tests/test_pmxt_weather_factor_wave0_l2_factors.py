@@ -347,6 +347,35 @@ def test_tick_size_change_requires_exact_decimal_contract(
     )
 
 
+def test_duplicate_narrow_tick_size_change_warns_and_is_ignored(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00.000Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _tick_step(2, "2026-07-14T00:00:01.000Z", old="0.01", new="0.001"),
+            _tick_step(3, "2026-07-14T00:00:01.001Z", old="0.01", new="0.001"),
+        ],
+    )
+
+    with pytest.warns(RuntimeWarning, match="duplicate tick_size_change"):
+        panel = factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+    assert panel.loc[panel["sequence"] == 2, "tick_size_regime"].iloc[0] == pytest.approx(0.001)
+    assert panel.loc[panel["sequence"] == 3, "tick_size_regime"].iloc[0] == pytest.approx(0.001)
+
+
+def test_long_gap_duplicate_narrow_tick_size_change_remains_strict(factor_protocol: Any) -> None:
+    dataset = _dataset(
+        [
+            _book_step(1, "2026-07-14T00:00:00.000Z", bids=[("0.40", "10")], asks=[("0.60", "10")]),
+            _tick_step(2, "2026-07-14T00:00:01.000Z", old="0.01", new="0.001"),
+            _tick_step(3, "2026-07-14T00:05:26.489Z", old="0.01", new="0.001"),
+        ],
+    )
+
+    with pytest.raises(ValueError, match="old_tick_size"):
+        factor_protocol.build_factor_panel(dataset, horizons_seconds=(30,), include_labels=False)
+
+
 def test_empty_canonical_step_fails_fast_with_sequence_context(factor_protocol: Any) -> None:
     clock = _dt("2026-07-14T00:00:00Z")
     dataset = _dataset(

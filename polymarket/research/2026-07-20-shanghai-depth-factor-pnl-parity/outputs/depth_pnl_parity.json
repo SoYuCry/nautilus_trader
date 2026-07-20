@@ -1,0 +1,61 @@
+{
+  "fee_mode": "forced_zero",
+  "hold_seconds": 120,
+  "quantity": 1.0,
+  "scope": "shanghai_depth_factor_pnl_parity",
+  "shanghai": [
+    {
+      "action_mismatches": [],
+      "asset_id": "82108548216968010072870699597305974161044963313995774427931182710031745067538",
+      "checks": {
+        "commissions_are_zero": true,
+        "factor_values_match": true,
+        "fill_actions_match": true,
+        "no_order_rejections": true,
+        "open_position_state_matches": true,
+        "round_trip_pnl_matches": true
+      },
+      "condition_id": "0xc2e74183c15adfc561bdab466ce80efb6525b907ff36a1667452f14e7e607b73",
+      "counts": {
+        "completed_round_trips": 8,
+        "direct_callback_rows": 21864,
+        "direct_exit_due_missing_bid_callbacks": 14304,
+        "direct_missing_entry_ask_callbacks": 0,
+        "fills": 17,
+        "fills_report_rows": 17,
+        "native_callbacks": 21864,
+        "native_exit_due_missing_bid_callbacks": 14304,
+        "positions_report_rows": 9
+      },
+      "factor_mismatches": [],
+      "gross_pnl": {
+        "commission": 0.0,
+        "direct": -0.07100000000000001,
+        "native": -0.07100000000000001
+      },
+      "open_position": {
+        "direct": {
+          "price": 0.004,
+          "sequence": 7536,
+          "ts_init": 1780824818465000001
+        },
+        "native": {
+          "commission": 0.0,
+          "price": 0.004,
+          "quantity": 1.0,
+          "sequence": 7536,
+          "side": "BUY",
+          "ts_init": 1780824818465000001
+        }
+      },
+      "outcome_index": 0,
+      "pnl_mismatches": [],
+      "question": "Will the highest temperature in Shanghai be 18\u00b0C or below on June 9?",
+      "rejections": [],
+      "status": "pass",
+      "trade_digest": "9eaf6981f341e5e6a7cc7e7fa3cc248c571f43f414d97a5de9dff97153c6a7ca"
+    }
+  ],
+  "summary_signature": "1025526513db4a142e7f4e7cee863a75b2490ecce03cd057b096359820f4d33e",
+  "threshold": 0.1
+}

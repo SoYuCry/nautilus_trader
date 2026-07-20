@@ -1,0 +1,37 @@
+event_slug,city,event_date,cohort_role,sample_activity,rows_written
+highest-temperature-in-lucknow-on-june-4-2026,Lucknow,2026-06-04,primary_development_replication,low,390637
+highest-temperature-in-los-angeles-on-june-4-2026,Los Angeles,2026-06-04,primary_development_replication,medium,738381
+highest-temperature-in-london-on-june-4-2026,London,2026-06-04,primary_development_replication,medium,1090833
+highest-temperature-in-moscow-on-june-4-2026,Moscow,2026-06-04,primary_development_replication,high,2033482
+highest-temperature-in-denver-on-june-5-2026,Denver,2026-06-05,primary_development_replication,low,303836
+highest-temperature-in-sao-paulo-on-june-5-2026,Sao Paulo,2026-06-05,primary_development_replication,medium,1379572
+highest-temperature-in-kuala-lumpur-on-june-5-2026,Kuala Lumpur,2026-06-05,primary_development_replication,medium,2016714
+highest-temperature-in-hong-kong-on-june-5-2026,Hong Kong,2026-06-05,primary_development_replication,high,3334458
+highest-temperature-in-singapore-on-june-6-2026,Singapore,2026-06-06,degraded_robustness,low,92223
+highest-temperature-in-chongqing-on-june-6-2026,Chongqing,2026-06-06,degraded_robustness,medium,144289
+highest-temperature-in-mexico-city-on-june-6-2026,Mexico City,2026-06-06,degraded_robustness,medium,179871
+highest-temperature-in-munich-on-june-6-2026,Munich,2026-06-06,degraded_robustness,high,310269
+highest-temperature-in-toronto-on-june-7-2026,Toronto,2026-06-07,degraded_robustness,low,581341
+highest-temperature-in-chengdu-on-june-7-2026,Chengdu,2026-06-07,degraded_robustness,medium,996480
+highest-temperature-in-nyc-on-june-7-2026,NYC,2026-06-07,degraded_robustness,medium,1200521
+highest-temperature-in-atlanta-on-june-7-2026,Atlanta,2026-06-07,degraded_robustness,high,1976958
+highest-temperature-in-buenos-aires-on-june-8-2026,Buenos Aires,2026-06-08,primary_development_replication,low,1487509
+highest-temperature-in-taipei-on-june-8-2026,Taipei,2026-06-08,primary_development_replication,medium,2197332
+highest-temperature-in-amsterdam-on-june-8-2026,Amsterdam,2026-06-08,primary_development_replication,medium,2816182
+highest-temperature-in-beijing-on-june-8-2026,Beijing,2026-06-08,primary_development_replication,high,4641265
+highest-temperature-in-chicago-on-june-9-2026,Chicago,2026-06-09,primary_development_replication,low,1495960
+highest-temperature-in-panama-city-on-june-9-2026,Panama City,2026-06-09,primary_development_replication,medium,2532776
+highest-temperature-in-shenzhen-on-june-9-2026,Shenzhen,2026-06-09,primary_development_replication,medium,3272075
+highest-temperature-in-seoul-on-june-9-2026,Seoul,2026-06-09,primary_development_replication,high,4493623
+highest-temperature-in-seattle-on-june-10-2026,Seattle,2026-06-10,primary_development_replication,low,1354038
+highest-temperature-in-qingdao-on-june-10-2026,Qingdao,2026-06-10,primary_development_replication,medium,2643613
+highest-temperature-in-wuhan-on-june-10-2026,Wuhan,2026-06-10,primary_development_replication,medium,3399772
+highest-temperature-in-shanghai-on-june-10-2026,Shanghai,2026-06-10,primary_development_replication,high,5238231
+highest-temperature-in-austin-on-june-11-2026,Austin,2026-06-11,degraded_robustness,low,1077784
+highest-temperature-in-ankara-on-june-11-2026,Ankara,2026-06-11,degraded_robustness,medium,1773634
+highest-temperature-in-manila-on-june-11-2026,Manila,2026-06-11,degraded_robustness,medium,2359351
+highest-temperature-in-karachi-on-june-11-2026,Karachi,2026-06-11,degraded_robustness,high,3050207
+highest-temperature-in-houston-on-june-12-2026,Houston,2026-06-12,degraded_robustness,low,21812
+highest-temperature-in-istanbul-on-june-12-2026,Istanbul,2026-06-12,degraded_robustness,medium,470543
+highest-temperature-in-tokyo-on-june-12-2026,Tokyo,2026-06-12,degraded_robustness,medium,815840
+highest-temperature-in-busan-on-june-12-2026,Busan,2026-06-12,degraded_robustness,high,1080064

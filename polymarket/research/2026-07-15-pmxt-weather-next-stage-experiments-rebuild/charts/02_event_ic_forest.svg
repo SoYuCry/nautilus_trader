@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="340">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="28" font-size="20" font-family="sans-serif">120s Event-level IC</text>
+<line x1="600.0" y1="55" x2="600.0" y2="315" stroke="#777"/>
+<text x="340" y="71" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-karachi-on-june-6-20 | depth_im</text>
+<circle cx="641.8468796369864" cy="67" r="4" fill="#1665a8"/>
+<text x="340" y="91" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-busan-on-june-6-2026 | depth_im</text>
+<circle cx="643.1480552949031" cy="87" r="4" fill="#1665a8"/>
+<text x="340" y="111" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-qingdao-on-june-6-20 | depth_im</text>
+<circle cx="651.2471064181021" cy="107" r="4" fill="#1665a8"/>
+<text x="340" y="131" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-beijing-on-june-6-20 | depth_im</text>
+<circle cx="674.9566335395622" cy="127" r="4" fill="#1665a8"/>
+<text x="340" y="151" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-jeddah-on-june-10-20 | depth_im</text>
+<circle cx="683.4854057833916" cy="147" r="4" fill="#1665a8"/>
+<text x="340" y="171" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-taipei-on-june-6-202 | depth_im</text>
+<circle cx="729.465477337197" cy="167" r="4" fill="#1665a8"/>
+<text x="340" y="191" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-qingdao-on-june-6-20 | micropri</text>
+<circle cx="590.7780777795717" cy="187" r="4" fill="#1665a8"/>
+<text x="340" y="211" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-busan-on-june-6-2026 | micropri</text>
+<circle cx="618.8912159562058" cy="207" r="4" fill="#1665a8"/>
+<text x="340" y="231" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-karachi-on-june-6-20 | micropri</text>
+<circle cx="637.8697100852603" cy="227" r="4" fill="#1665a8"/>
+<text x="340" y="251" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-beijing-on-june-6-20 | micropri</text>
+<circle cx="666.1914438017557" cy="247" r="4" fill="#1665a8"/>
+<text x="340" y="271" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-jeddah-on-june-10-20 | micropri</text>
+<circle cx="686.0726769097738" cy="267" r="4" fill="#1665a8"/>
+<text x="340" y="291" text-anchor="end" font-size="10" font-family="sans-serif">highest-temperature-in-taipei-on-june-6-202 | micropri</text>
+<circle cx="709.3658261988949" cy="287" r="4" fill="#1665a8"/>
+</svg>

@@ -55,6 +55,15 @@ def step(sequence: int, updates: list[L2UpdateV1]) -> L2ReplayStepV1:
     )
 
 
+def step_at(sequence: int, timestamp: datetime, updates: list[L2UpdateV1]) -> L2ReplayStepV1:
+    return L2ReplayStepV1(
+        sequence=sequence,
+        timestamp_received=timestamp,
+        timestamp=timestamp,
+        updates=tuple(updates),
+    )
+
+
 def dataset(steps: list[L2ReplayStepV1]) -> PolymarketL2DatasetV1:
     return PolymarketL2DatasetV1(
         metadata=DatasetMetadataV1(
@@ -432,6 +441,71 @@ def test_bridge_applies_tick_size_change_before_later_updates_in_same_step() -> 
 
     assert converted.effective_tick_size_changes[0].sequence == 2
     assert [type(item) for item in converted.data] == [OrderBookDeltas, OrderBookDeltas]
+
+
+def test_bridge_warns_and_ignores_duplicate_narrow_tick_size_change() -> None:
+    data = dataset(
+        [
+            step(1, [book()]),
+            step_at(
+                2,
+                BASE + timedelta(seconds=2),
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+            step_at(
+                3,
+                BASE + timedelta(seconds=2, milliseconds=1),
+                [
+                    L2UpdateV1(
+                        event_type="tick_size_change",
+                        market="condition",
+                        asset_id="yes",
+                        old_tick_size=Decimal("0.01"),
+                        new_tick_size=Decimal("0.001"),
+                    ),
+                ],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.warns(RuntimeWarning, match="duplicate tick_size_change"):
+        converted = convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
+
+    assert converted.tick_size_changes == (("0.01", "0.001"), ("0.01", "0.001"))
+    assert len(converted.effective_tick_size_changes) == 1
+    assert converted.skipped_updates[-1] == "tick_size_change 0.01->0.001 (duplicate_ignored)"
+
+
+def test_bridge_rejects_long_gap_duplicate_narrow_tick_size_change() -> None:
+    first_change = BASE + timedelta(seconds=2)
+    data = dataset(
+        [
+            step(1, [book()]),
+            step_at(
+                2,
+                first_change,
+                [L2UpdateV1(event_type="tick_size_change", market="condition", asset_id="yes", old_tick_size=Decimal("0.01"), new_tick_size=Decimal("0.001"))],
+            ),
+            step_at(
+                3,
+                first_change + timedelta(seconds=325, milliseconds=489),
+                [L2UpdateV1(event_type="tick_size_change", market="condition", asset_id="yes", old_tick_size=Decimal("0.01"), new_tick_size=Decimal("0.001"))],
+            ),
+        ],
+    )
+    instrument = load_binary_option_from_config({}, dataset=data, selected_asset_id="yes")
+
+    with pytest.raises(ValueError, match="old_tick_size does not match current effective"):
+        convert_dataset_to_nautilus(data, instrument=instrument, selected_asset_id="yes")
 
 
 def test_bridge_same_step_tick_change_effective_time_follows_pre_tick_flush() -> None:

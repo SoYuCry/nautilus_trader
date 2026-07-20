@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="340">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="30" font-size="20" font-family="sans-serif">E1 Activity × Label IC</text>
+<text x="265.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">depth_im 30s</text>
+<text x="415.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">depth_im 120s</text>
+<text x="565.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">depth_im 600s</text>
+<text x="715.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">micropri 30s</text>
+<text x="865.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">micropri 120s</text>
+<text x="1015.0" y="55" text-anchor="middle" font-size="13" font-family="sans-serif">micropri 600s</text>
+<text x="180" y="98" text-anchor="end" font-size="12" font-family="sans-serif">low</text>
+<rect x="190" y="70" width="148" height="43" fill="rgb(67,158,187)"/>
+<text x="265.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.093</text>
+<rect x="340" y="70" width="148" height="43" fill="rgb(59,151,195)"/>
+<text x="415.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.107</text>
+<rect x="490" y="70" width="148" height="43" fill="rgb(32,128,222)"/>
+<text x="565.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.148</text>
+<rect x="640" y="70" width="148" height="43" fill="rgb(71,161,183)"/>
+<text x="715.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.087</text>
+<rect x="790" y="70" width="148" height="43" fill="rgb(67,158,187)"/>
+<text x="865.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.094</text>
+<rect x="940" y="70" width="148" height="43" fill="rgb(45,139,209)"/>
+<text x="1015.0" y="98" text-anchor="middle" font-size="13" font-family="monospace">0.129</text>
+<text x="180" y="143" text-anchor="end" font-size="12" font-family="sans-serif">medium</text>
+<rect x="190" y="115" width="148" height="43" fill="rgb(73,163,181)"/>
+<text x="265.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.084</text>
+<rect x="340" y="115" width="148" height="43" fill="rgb(68,158,186)"/>
+<text x="415.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.093</text>
+<rect x="490" y="115" width="148" height="43" fill="rgb(47,140,207)"/>
+<text x="565.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.126</text>
+<rect x="640" y="115" width="148" height="43" fill="rgb(75,165,179)"/>
+<text x="715.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.081</text>
+<rect x="790" y="115" width="148" height="43" fill="rgb(77,167,177)"/>
+<text x="865.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.078</text>
+<rect x="940" y="115" width="148" height="43" fill="rgb(62,153,192)"/>
+<text x="1015.0" y="143" text-anchor="middle" font-size="13" font-family="monospace">0.102</text>
+<text x="180" y="188" text-anchor="end" font-size="12" font-family="sans-serif">high</text>
+<rect x="190" y="160" width="148" height="43" fill="rgb(87,175,167)"/>
+<text x="265.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.063</text>
+<rect x="340" y="160" width="148" height="43" fill="rgb(84,172,170)"/>
+<text x="415.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.068</text>
+<rect x="490" y="160" width="148" height="43" fill="rgb(79,168,175)"/>
+<text x="565.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.076</text>
+<rect x="640" y="160" width="148" height="43" fill="rgb(96,183,158)"/>
+<text x="715.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.048</text>
+<rect x="790" y="160" width="148" height="43" fill="rgb(101,187,153)"/>
+<text x="865.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.041</text>
+<rect x="940" y="160" width="148" height="43" fill="rgb(103,188,151)"/>
+<text x="1015.0" y="188" text-anchor="middle" font-size="13" font-family="monospace">0.038</text>
+</svg>
