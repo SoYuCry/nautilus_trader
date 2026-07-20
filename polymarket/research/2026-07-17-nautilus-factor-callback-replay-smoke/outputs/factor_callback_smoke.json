@@ -1,0 +1,367 @@
+{
+  "real": [
+    {
+      "asset_id": "62627295587472152931851736943375875103849292447805082671578463541905186507048",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 22658,
+        "native_book_callbacks": 22651,
+        "native_callbacks": 22657,
+        "no_op_rows": 1425,
+        "ranking_observations": 15348,
+        "signal_triggers": 13922
+      },
+      "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
+      "leg": "YES",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "d18d3dd81aa3ef0f8e4c96dbda17f23e3b3ff1543630766cbbaa1fbba48a35d5",
+      "signal_sequence_sample": {
+        "first": [
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41
+        ],
+        "last": [
+          17178,
+          17179,
+          17180,
+          17181,
+          17182,
+          17183,
+          17184,
+          17185,
+          17186,
+          17187
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "asset_id": "70532977780931597527398382719862352628602830404986026345783453187080634108998",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 22667,
+        "native_book_callbacks": 22659,
+        "native_callbacks": 22666,
+        "no_op_rows": 1459,
+        "ranking_observations": 15335,
+        "signal_triggers": 13907
+      },
+      "event_slug": "highest-temperature-in-karachi-on-june-6-2026",
+      "leg": "NO",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "7a4ded28931d59555943eb74e500d9182235240a67c190a63d760f03240fd654",
+      "signal_sequence_sample": {
+        "first": [
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41
+        ],
+        "last": [
+          17163,
+          17164,
+          17165,
+          17166,
+          17167,
+          17168,
+          17169,
+          17170,
+          17171,
+          17172
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "asset_id": "9240623362032232402210121631897629934803161391074671828803872173952662674475",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 24471,
+        "native_book_callbacks": 24468,
+        "native_callbacks": 24470,
+        "no_op_rows": 2269,
+        "ranking_observations": 18121,
+        "signal_triggers": 16952
+      },
+      "event_slug": "highest-temperature-in-busan-on-june-6-2026",
+      "leg": "YES",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "095c791b3fb5c0a7c63c50226d5b41d9755f59720cc283fb1b0fe370dd523d07",
+      "signal_sequence_sample": {
+        "first": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          44,
+          45,
+          46,
+          47,
+          48
+        ],
+        "last": [
+          20096,
+          20097,
+          20098,
+          20457,
+          20458,
+          20459,
+          20460,
+          20461,
+          20462,
+          20463
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "asset_id": "83816465611947607441085846775945053644827135316074238009167982577109551142355",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 24491,
+        "native_book_callbacks": 24472,
+        "native_callbacks": 24490,
+        "no_op_rows": 2329,
+        "ranking_observations": 18067,
+        "signal_triggers": 16904
+      },
+      "event_slug": "highest-temperature-in-busan-on-june-6-2026",
+      "leg": "NO",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "9e0f28b51352927ab97e329bb46f05ae2df80b629b902b406350a2abaeee988c",
+      "signal_sequence_sample": {
+        "first": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          50,
+          51,
+          52,
+          53,
+          54
+        ],
+        "last": [
+          20104,
+          20105,
+          20106,
+          20467,
+          20468,
+          20469,
+          20470,
+          20471,
+          20472,
+          20473
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "asset_id": "18625209804774066314040140378438972135402420472856224885082747857601360370601",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 16550,
+        "native_book_callbacks": 16548,
+        "native_callbacks": 16548,
+        "no_op_rows": 1074,
+        "ranking_observations": 8547,
+        "signal_triggers": 6977
+      },
+      "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
+      "leg": "YES",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "13056fbc70f468b007b9221147c4ca44e9374430703c10743008341ad90500f9",
+      "signal_sequence_sample": {
+        "first": [
+          103,
+          106,
+          107,
+          112,
+          114,
+          115,
+          116,
+          118,
+          119,
+          120
+        ],
+        "last": [
+          9584,
+          9585,
+          9586,
+          9587,
+          9588,
+          9589,
+          9590,
+          9591,
+          9592,
+          9593
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "asset_id": "4032994999974569817739424984258325058991165133404005438519077228137994234865",
+      "checks": {
+        "callback_book_state_matches_direct": true,
+        "callback_mutation_semantics_match_direct": true,
+        "callback_ts_matches_native_input": true,
+        "callback_ts_monotonic": true,
+        "no_op_not_ranked_or_signaled": true,
+        "ranking_sequences_complete": true,
+        "ranking_sequences_preserved": true,
+        "signal_trigger_sequences_match": true
+      },
+      "counts": {
+        "direct_rows": 16549,
+        "native_book_callbacks": 16538,
+        "native_callbacks": 16547,
+        "no_op_rows": 1074,
+        "ranking_observations": 8548,
+        "signal_triggers": 6977
+      },
+      "event_slug": "highest-temperature-in-qingdao-on-june-6-2026",
+      "leg": "NO",
+      "missing_sequences": [],
+      "mutation_mismatches": [],
+      "signal_sequence_digest": "dd9dbaed06bf58f05bad9cd0767ccf52676e5a37bc338c413823e78a41a833e1",
+      "signal_sequence_sample": {
+        "first": [
+          103,
+          106,
+          107,
+          112,
+          114,
+          115,
+          116,
+          118,
+          119,
+          120
+        ],
+        "last": [
+          9596,
+          9597,
+          9598,
+          9599,
+          9600,
+          9601,
+          9602,
+          9603,
+          9604,
+          9605
+        ]
+      },
+      "state_mismatches": [],
+      "status": "pass"
+    }
+  ],
+  "scope": "factor_callback_replay_smoke",
+  "signal_threshold": 0.1,
+  "summary_signature": "5218fba04be010213c721f5bb3587f11ccb11ce831548ecd29dab17695c7fb36",
+  "synthetic": {
+    "case": "synthetic",
+    "checks": {
+      "callback_book_state_matches_direct": true,
+      "callback_mutation_semantics_match_direct": true,
+      "callback_ts_matches_native_input": true,
+      "callback_ts_monotonic": true,
+      "no_op_not_ranked_or_signaled": true,
+      "ranking_sequences_complete": true,
+      "ranking_sequences_preserved": true,
+      "signal_trigger_sequences_match": true
+    },
+    "counts": {
+      "direct_rows": 5,
+      "native_book_callbacks": 4,
+      "native_callbacks": 5,
+      "no_op_rows": 2,
+      "ranking_observations": 3,
+      "signal_triggers": 2
+    },
+    "missing_sequences": [],
+    "mutation_mismatches": [],
+    "signal_sequence_digest": "18b058689d010062a25cd7fb949b2abfea1757d2de45ca3abdda17db956e506b",
+    "signal_sequence_sample": {
+      "first": [
+        2,
+        3
+      ],
+      "last": [
+        2,
+        3
+      ]
+    },
+    "state_mismatches": [],
+    "status": "pass"
+  }
+}
