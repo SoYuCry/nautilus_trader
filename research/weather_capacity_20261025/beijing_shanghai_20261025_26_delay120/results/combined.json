@@ -1,0 +1,62 @@
+[
+  {
+    "date": "2026-10-25",
+    "city": "beijing",
+    "opportunity_conditions": 2,
+    "covered_conditions": 9,
+    "total_conditions": 11,
+    "first_capacity_pusd": 2046.4131699999998,
+    "first_excluding_lowest_pusd": 2046.4131699999998,
+    "best_sample_capacity_pusd": 2064.0455199999997,
+    "best_sample_excluding_lowest_pusd": 2064.0455199999997,
+    "post_signal_turnover_pusd": 2576.797501502,
+    "turnover_excluding_lowest_pusd": 2576.797501502,
+    "turnover_partial_conditions": 0,
+    "coverage_note": "partial_snapshot_coverage"
+  },
+  {
+    "date": "2026-10-25",
+    "city": "shanghai",
+    "opportunity_conditions": 0,
+    "covered_conditions": 8,
+    "total_conditions": 11,
+    "first_capacity_pusd": 0,
+    "first_excluding_lowest_pusd": 0,
+    "best_sample_capacity_pusd": 0,
+    "best_sample_excluding_lowest_pusd": 0,
+    "post_signal_turnover_pusd": 142.58727000000002,
+    "turnover_excluding_lowest_pusd": 142.58727000000002,
+    "turnover_partial_conditions": 0,
+    "coverage_note": "partial_snapshot_coverage"
+  },
+  {
+    "date": "2026-10-26",
+    "city": "beijing",
+    "opportunity_conditions": 0,
+    "covered_conditions": 5,
+    "total_conditions": 11,
+    "first_capacity_pusd": null,
+    "first_excluding_lowest_pusd": null,
+    "best_sample_capacity_pusd": null,
+    "best_sample_excluding_lowest_pusd": null,
+    "post_signal_turnover_pusd": null,
+    "turnover_excluding_lowest_pusd": null,
+    "turnover_partial_conditions": 6,
+    "coverage_note": "insufficient_data_no_oct26_utc_files"
+  },
+  {
+    "date": "2026-10-26",
+    "city": "shanghai",
+    "opportunity_conditions": 0,
+    "covered_conditions": 5,
+    "total_conditions": 11,
+    "first_capacity_pusd": null,
+    "first_excluding_lowest_pusd": null,
+    "best_sample_capacity_pusd": null,
+    "best_sample_excluding_lowest_pusd": null,
+    "post_signal_turnover_pusd": null,
+    "turnover_excluding_lowest_pusd": null,
+    "turnover_partial_conditions": 6,
+    "coverage_note": "insufficient_data_no_oct26_utc_files"
+  }
+]

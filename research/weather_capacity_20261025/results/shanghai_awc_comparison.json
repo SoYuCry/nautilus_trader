@@ -1,0 +1,16 @@
+{
+  "old_file": "C:\\Projects\\PolyReaper\\data\\external\\weather\\awc\\zspd\\zspd-20261018T120000Z-hours24.json",
+  "old_records": 50,
+  "unique_observations": 50,
+  "matched_observations": 50,
+  "field_matches": {
+    "temp": 50,
+    "rawOb": 50,
+    "receiptTime": 50
+  },
+  "full_row_matches": 50,
+  "missing": [],
+  "differences": [],
+  "obs_min": 1792238400,
+  "obs_max": 1792324800
+}

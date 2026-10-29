@@ -1,0 +1,5 @@
+﻿date,city,conditions,triggered_conditions,partial_conditions,trade_count,trade_count_excluding_lowest,shares,shares_excluding_lowest,notional_pusd,notional_pusd_excluding_lowest,eligible_shares,eligible_shares_excluding_lowest,eligible_notional_pusd,eligible_notional_pusd_excluding_lowest,eligible_fee_pusd,eligible_fee_pusd_excluding_lowest,eligible_conditional_profit_pusd,eligible_conditional_profit_pusd_excluding_lowest,vwap,eligible_vwap
+2026-10-25,beijing,11,4,0,34,34,2579.778166,2579.778166,2576.797501502,2576.797501502,2579.778166,2579.778166,2576.797501502,2576.797501502,0.0,0.0,2.9806644979998964,2.9806644979998964,0.998844604339519,0.998844604339519
+2026-10-25,shanghai,11,4,0,8,8,142.73,142.73,142.58727000000002,142.58727000000002,142.73,142.73,142.58727000000002,142.58727000000002,0.0,0.0,0.14272999999997626,0.14272999999997626,0.9990000000000002,0.9990000000000002
+2026-10-26,beijing,11,6,6,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,
+2026-10-26,shanghai,11,6,6,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,
