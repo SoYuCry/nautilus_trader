@@ -1,0 +1,5 @@
+﻿date,city,conditions,covered_conditions,opportunity_conditions,coverage,first_shares,first_notional_pusd,first_fee_pusd,first_investment_pusd,first_conditional_profit_pusd,first_average_price,best_sample_shares,best_sample_notional_pusd,best_sample_fee_pusd,best_sample_investment_pusd,best_sample_conditional_profit_pusd,best_sample_average_price,turnover_proxy_shares,turnover_proxy_notional_pusd,turnover_proxy_fee_pusd,turnover_proxy_investment_pusd,turnover_proxy_conditional_profit_pusd,turnover_proxy_average_price
+2026-10-25,beijing,11,7,0,partial_sample_coverage,0,0,0,0,0,,0,0,0,0,0,,101.46,101.35853999999999,0,101.35853999999999,0.10146000000000299,0.999
+2026-10-25,shanghai,11,7,0,partial_sample_coverage,0,0,0,0,0,,0,0,0,0,0,,8.4,8.3916,0,8.3916,0.008400000000000407,0.999
+2026-10-26,beijing,11,9,0,partial_sample_coverage,0,0,0,0,0,,0,0,0,0,0,,1414.4099999999999,1412.99559,0,1412.99559,1.4144100000000628,0.9990000000000001
+2026-10-26,shanghai,11,7,0,partial_sample_coverage,0,0,0,0,0,,0,0,0,0,0,,320.97,320.64903,0,320.64903,0.32096999999999987,0.9989999999999999

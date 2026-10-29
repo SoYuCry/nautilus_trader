@@ -1,0 +1,5 @@
+﻿date,city,opportunity_conditions,covered_conditions,total_conditions,first_capacity_pusd,first_excluding_lowest_pusd,best_sample_capacity_pusd,best_sample_excluding_lowest_pusd,post_signal_turnover_pusd,turnover_excluding_lowest_pusd,turnover_partial_conditions,coverage_note
+2026-10-25,beijing,2,9,11,2046.4131699999998,2046.4131699999998,2064.0455199999997,2064.0455199999997,2576.797501502,2576.797501502,0,partial_snapshot_coverage
+2026-10-25,shanghai,0,8,11,0,0,0,0,142.58727000000002,142.58727000000002,0,partial_snapshot_coverage
+2026-10-26,beijing,0,5,11,,,,,,,6,insufficient_data_no_oct26_utc_files
+2026-10-26,shanghai,0,5,11,,,,,,,6,insufficient_data_no_oct26_utc_files

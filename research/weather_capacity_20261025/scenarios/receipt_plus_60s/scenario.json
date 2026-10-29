@@ -1,0 +1,8 @@
+{
+  "delay_seconds": 60,
+  "observation_expiry_shifted": false,
+  "sample_hours": 204,
+  "trade_hours": 239,
+  "supplemented": [],
+  "baseline_unchanged": true
+}

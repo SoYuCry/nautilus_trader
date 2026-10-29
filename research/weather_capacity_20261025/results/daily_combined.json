@@ -1,0 +1,98 @@
+[
+  {
+    "date": "2026-10-16",
+    "opportunity_cities": 19,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 47,
+    "first_capacity_pusd": 15611.905212064501,
+    "first_excluding_lowest_pusd": 15446.0429393655,
+    "best_snapshot_sum_pusd": 16071.346844943,
+    "best_snapshot_excluding_lowest_pusd": 15905.484572244,
+    "post_signal_turnover_pusd": 94219.253009484,
+    "turnover_excluding_lowest_pusd": 90996.488999484
+  },
+  {
+    "date": "2026-10-17",
+    "opportunity_cities": 16,
+    "cities_with_trigger": 47,
+    "cities_with_trades": 46,
+    "first_capacity_pusd": 17397.024424381,
+    "first_excluding_lowest_pusd": 17215.457086468,
+    "best_snapshot_sum_pusd": 17475.520313255,
+    "best_snapshot_excluding_lowest_pusd": 17293.952975342,
+    "post_signal_turnover_pusd": 70157.724530454,
+    "turnover_excluding_lowest_pusd": 67243.01766194699
+  },
+  {
+    "date": "2026-10-18",
+    "opportunity_cities": 24,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 22161.943236651,
+    "first_excluding_lowest_pusd": 21856.0041704625,
+    "best_snapshot_sum_pusd": 29553.780912636503,
+    "best_snapshot_excluding_lowest_pusd": 26520.258525899,
+    "post_signal_turnover_pusd": 127648.853469168,
+    "turnover_excluding_lowest_pusd": 124327.14995819899
+  },
+  {
+    "date": "2026-10-19",
+    "opportunity_cities": 18,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 28829.108303465502,
+    "first_excluding_lowest_pusd": 26161.0701283495,
+    "best_snapshot_sum_pusd": 33259.4639994195,
+    "best_snapshot_excluding_lowest_pusd": 30591.4258243035,
+    "post_signal_turnover_pusd": 121208.516253957,
+    "turnover_excluding_lowest_pusd": 111765.223805463
+  },
+  {
+    "date": "2026-10-20",
+    "opportunity_cities": 41,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 233176.2160422305,
+    "first_excluding_lowest_pusd": 163168.2570292305,
+    "best_snapshot_sum_pusd": 589344.416936042,
+    "best_snapshot_excluding_lowest_pusd": 378432.305373042,
+    "post_signal_turnover_pusd": 376632.21832259104,
+    "turnover_excluding_lowest_pusd": 291011.91778407304
+  },
+  {
+    "date": "2026-10-21",
+    "opportunity_cities": 45,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 107249.47898,
+    "first_excluding_lowest_pusd": 76497.83929,
+    "best_snapshot_sum_pusd": 170627.90382,
+    "best_snapshot_excluding_lowest_pusd": 111442.02378,
+    "post_signal_turnover_pusd": 159760.90582656302,
+    "turnover_excluding_lowest_pusd": 132549.290374472
+  },
+  {
+    "date": "2026-10-22",
+    "opportunity_cities": 37,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 110830.22645000002,
+    "first_excluding_lowest_pusd": 45791.625120000004,
+    "best_snapshot_sum_pusd": 138618.31194,
+    "best_snapshot_excluding_lowest_pusd": 62949.64624,
+    "post_signal_turnover_pusd": 118887.46545686098,
+    "turnover_excluding_lowest_pusd": 93653.691201357
+  },
+  {
+    "date": "2026-10-23",
+    "opportunity_cities": 45,
+    "cities_with_trigger": 48,
+    "cities_with_trades": 48,
+    "first_capacity_pusd": 58188.56991,
+    "first_excluding_lowest_pusd": 53564.44866,
+    "best_snapshot_sum_pusd": 69650.24766,
+    "best_snapshot_excluding_lowest_pusd": 64369.97503,
+    "post_signal_turnover_pusd": 110099.690717373,
+    "turnover_excluding_lowest_pusd": 105731.937951467
+  }
+]

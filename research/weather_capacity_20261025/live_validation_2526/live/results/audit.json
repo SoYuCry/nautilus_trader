@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "best_bid_ask": 2560,
+    "book": 741,
+    "last_trade_price": 216,
+    "deleted_ask_levels": 40,
+    "expired_snapshot_quotes": 128
+  },
+  "first_received_ns": 1792857608261242000,
+  "last_received_ns": 1793029390064167000,
+  "hours": 59,
+  "max_snapshot_to_quote_lag_seconds": 5,
+  "method": "One first and one best BBO-validated full snapshot per condition; independent timing scenarios; neither sums repeated snapshots nor claims synchronized peaks. Historical quantities can change during the <=5 second quote validation lag.",
+  "availability": "Original local received_ns; recorded errors and run boundaries; 120s polling TTL and 4500s observation age; no extra latency",
+  "fees": "Retrieved Gamma feeSchedule scenario; historical fee effectiveness unverified.",
+  "settlement": "Conditional profit assumes NO payout 1; no actual realized profit claim."
+}
