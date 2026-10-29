@@ -1,0 +1,5 @@
+# Download caches remain available locally; retain reports and derived results.
+minute_events/
+minute_full_cache/
+*_1m_full.json
+*_raw.json

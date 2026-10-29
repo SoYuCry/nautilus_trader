@@ -1,0 +1,99 @@
+{
+  "planned_events": 86,
+  "missing_events": [],
+  "no_signal_events": 27,
+  "download_errors": {},
+  "split_utc": "2026-08-15T00:00:00+00:00",
+  "all": {
+    "trades": 59,
+    "winners": 19,
+    "net_usdt": -1319.3201354596567,
+    "return_pct": -13.193201354596567,
+    "gross_usdt": -493.86293625371866,
+    "funding_usdt": 0.0,
+    "costs_usdt": 825.4571992059382,
+    "average_net_usdt": -22.361358228129777,
+    "worst_trade_usdt": -98.50569127517699,
+    "best_trade_usdt": 58.107870225230975,
+    "trade_close_drawdown_usdt": 1319.3201354596622,
+    "exits": {
+      "revert": 17,
+      "stop": 28,
+      "timeout": 14
+    }
+  },
+  "earlier": {
+    "trades": 40,
+    "winners": 12,
+    "net_usdt": -1123.0399393477323,
+    "return_pct": -11.230399393477324,
+    "gross_usdt": -564.050585750724,
+    "funding_usdt": 0.0,
+    "costs_usdt": 558.9893535970084,
+    "average_net_usdt": -28.07599848369331,
+    "worst_trade_usdt": -98.50569127517699,
+    "best_trade_usdt": 58.107870225230975,
+    "trade_close_drawdown_usdt": 1149.6847115489218,
+    "exits": {
+      "revert": 10,
+      "stop": 23,
+      "timeout": 7
+    }
+  },
+  "later": {
+    "trades": 19,
+    "winners": 7,
+    "net_usdt": -196.28019611192437,
+    "return_pct": -1.9628019611192438,
+    "gross_usdt": 70.18764949700537,
+    "funding_usdt": 0.0,
+    "costs_usdt": 266.46784560892974,
+    "average_net_usdt": -10.330536637469704,
+    "worst_trade_usdt": -56.13759187614647,
+    "best_trade_usdt": 34.10888364948401,
+    "trade_close_drawdown_usdt": 221.53027571451457,
+    "exits": {
+      "revert": 7,
+      "stop": 5,
+      "timeout": 7
+    }
+  },
+  "by_market": {
+    "KR": {
+      "trades": 29,
+      "winners": 10,
+      "net_usdt": -536.5037599713976,
+      "return_pct": -5.365037599713975,
+      "gross_usdt": -131.0893339499702,
+      "funding_usdt": 0,
+      "costs_usdt": 405.41442602142735,
+      "average_net_usdt": -18.50012965418612,
+      "worst_trade_usdt": -79.16335360516673,
+      "best_trade_usdt": 54.84441965878952,
+      "trade_close_drawdown_usdt": 590.8996801935718,
+      "exits": {
+        "revert": 9,
+        "stop": 13,
+        "timeout": 7
+      }
+    },
+    "US": {
+      "trades": 30,
+      "winners": 9,
+      "net_usdt": -782.8163754882593,
+      "return_pct": -7.828163754882593,
+      "gross_usdt": -362.7736023037485,
+      "funding_usdt": 0.0,
+      "costs_usdt": 420.0427731845108,
+      "average_net_usdt": -26.093879182941976,
+      "worst_trade_usdt": -98.50569127517699,
+      "best_trade_usdt": 58.107870225230975,
+      "trade_close_drawdown_usdt": 782.8163754882626,
+      "exits": {
+        "revert": 8,
+        "stop": 15,
+        "timeout": 7
+      }
+    }
+  }
+}
