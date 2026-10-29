@@ -1,0 +1,2 @@
+entry_utc,exit_or_mark_utc,market,direction,layers,holding_hours,first_premium_pct,exit_premium_pct,gross_usdt,funding_usdt,entry_cost_usdt,exit_cost_usdt,net_usdt,target_usdt,worst_open_net_usdt,reason
+2026-07-13T00:01:00+00:00,2026-09-11T09:00:00+00:00,KR,1,5,1448.9833333333333,17.353448396730364,40.032852282060304,-844.73929257287,-247.41637617139395,7.0,7.510046610581269,-1106.6657153548451,50.0,-1142.5598452492752,sample_end_mark

@@ -1,0 +1,15 @@
+{
+  "retrieved_at_utc": "2026-09-11T09:02:32.166540+00:00",
+  "branch": "codex/research-hynix-premium",
+  "expected_bars": 1506,
+  "aligned_bars": 1506,
+  "missing_us": 0,
+  "missing_kr": 0,
+  "first_bar_close_utc": "2026-07-10T16:00:00+00:00",
+  "last_bar_close_utc": "2026-09-11T09:00:00+00:00",
+  "latest_premium_pct": 40.032852282060304,
+  "median_premium_pct": 33.378138365116186,
+  "min_premium_pct": 13.918884562375379,
+  "max_premium_pct": 42.60602630721475,
+  "formula": "100 * (10 * SKHYUSDT.close / SKHYNIXUSDT.close - 1)"
+}

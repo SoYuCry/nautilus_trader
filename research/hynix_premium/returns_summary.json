@@ -1,0 +1,168 @@
+{
+  "capital_usdt": 10000,
+  "initial_notional_each_leg": 5000,
+  "assumed_fee_bps": 5,
+  "assumed_slippage_bps": 2,
+  "funding_counts": [
+    189,
+    370
+  ],
+  "latest_premium_pct": 40.032852282060304,
+  "scenarios": [
+    {
+      "target_premium_pct": 33.378138365116186,
+      "gross_usdt": 237.61259620492146,
+      "cost_usdt": 13.833671182656557,
+      "net_before_funding_usdt": 223.7789250222649,
+      "return_before_funding_pct": 2.237789250222649
+    },
+    {
+      "target_premium_pct": 35.0,
+      "gross_usdt": 179.7025555090071,
+      "cost_usdt": 13.874208211143694,
+      "net_before_funding_usdt": 165.82834729786342,
+      "return_before_funding_pct": 1.658283472978634
+    },
+    {
+      "target_premium_pct": 30.0,
+      "gross_usdt": 358.232090490155,
+      "cost_usdt": 13.74923753665689,
+      "net_before_funding_usdt": 344.4828529534981,
+      "return_before_funding_pct": 3.444828529534981
+    },
+    {
+      "target_premium_pct": 0,
+      "gross_usdt": 1429.4093003770422,
+      "cost_usdt": 12.99941348973607,
+      "net_before_funding_usdt": 1416.4098868873061,
+      "return_before_funding_pct": 14.164098868873062
+    },
+    {
+      "target_premium_pct": 50.0,
+      "gross_usdt": -355.8860494344366,
+      "cost_usdt": 14.249120234604106,
+      "net_before_funding_usdt": -370.1351696690407,
+      "return_before_funding_pct": -3.7013516966904065
+    }
+  ],
+  "recent_funding_fixed_notional": {
+    "last_7d": {
+      "fixed_notional_net_usdt": -17.96125,
+      "events_per_leg": [
+        21,
+        42
+      ],
+      "daily_usdt": -2.565892857142857
+    },
+    "last_30d": {
+      "fixed_notional_net_usdt": -51.51365,
+      "events_per_leg": [
+        90,
+        185
+      ],
+      "daily_usdt": -1.7171216666666667
+    }
+  },
+  "illustrative_backtest": {
+    "trades": 7,
+    "winners": 4,
+    "gross_usdt": 226.41589088768194,
+    "funding_usdt": -107.50855792562855,
+    "costs_usdt": 99.96137332677205,
+    "net_usdt": 18.945959635281362,
+    "return_on_initial_capital_pct": 0.18945959635281362
+  },
+  "trade_details": [
+    {
+      "entry_utc": "2026-07-23T14:00:00+00:00",
+      "exit_utc": "2026-07-25T20:00:00+00:00",
+      "hours": 54.0,
+      "entry_premium_pct": 34.666366060530684,
+      "exit_premium_pct": 30.691282051282045,
+      "gross_usdt": 139.84048136103684,
+      "funding_usdt": -11.307511530432018,
+      "cost_usdt": 13.534558467422649,
+      "net_usdt": 114.99841136318219,
+      "net_return_pct": 1.1499841136318218,
+      "exit_reason": "mean"
+    },
+    {
+      "entry_utc": "2026-07-30T13:00:00+00:00",
+      "exit_utc": "2026-08-02T09:00:00+00:00",
+      "hours": 68.0,
+      "entry_premium_pct": 37.12463189215074,
+      "exit_premium_pct": 31.684586545943283,
+      "gross_usdt": 228.59752116916184,
+      "funding_usdt": -14.35290850950721,
+      "cost_usdt": 14.906990101037481,
+      "net_usdt": 199.33762255861714,
+      "net_return_pct": 1.9933762255861716,
+      "exit_reason": "mean"
+    },
+    {
+      "entry_utc": "2026-08-07T01:00:00+00:00",
+      "exit_utc": "2026-08-12T03:00:00+00:00",
+      "hours": 122.0,
+      "entry_premium_pct": 36.67208257669885,
+      "exit_premium_pct": 35.533491819325945,
+      "gross_usdt": 42.70312503132999,
+      "funding_usdt": -23.27223189073812,
+      "cost_usdt": 14.146395684025428,
+      "net_usdt": 5.2844974565664415,
+      "net_return_pct": 0.052844974565664414,
+      "exit_reason": "mean"
+    },
+    {
+      "entry_utc": "2026-08-12T14:00:00+00:00",
+      "exit_utc": "2026-08-18T01:00:00+00:00",
+      "hours": 131.0,
+      "entry_premium_pct": 38.87879668652812,
+      "exit_premium_pct": 39.66431307323861,
+      "gross_usdt": -32.12371575305872,
+      "funding_usdt": -30.19006726497859,
+      "cost_usdt": 14.973720069999674,
+      "net_usdt": -77.28750308803698,
+      "net_return_pct": -0.7728750308803698,
+      "exit_reason": "mean"
+    },
+    {
+      "entry_utc": "2026-08-28T17:00:00+00:00",
+      "exit_utc": "2026-09-04T18:00:00+00:00",
+      "hours": 169.0,
+      "entry_premium_pct": 33.1515471051504,
+      "exit_premium_pct": 37.86750107212631,
+      "gross_usdt": -183.6984135413194,
+      "funding_usdt": -12.802533460721037,
+      "cost_usdt": 14.38981734698708,
+      "net_usdt": -210.89076434902753,
+      "net_return_pct": -2.1089076434902756,
+      "exit_reason": "time_limit"
+    },
+    {
+      "entry_utc": "2026-09-04T19:00:00+00:00",
+      "exit_utc": "2026-09-07T07:00:00+00:00",
+      "hours": 60.0,
+      "entry_premium_pct": 37.78027260364949,
+      "exit_premium_pct": 35.76238757400907,
+      "gross_usdt": 76.85841201150083,
+      "funding_usdt": -3.4942462812560993,
+      "cost_usdt": 14.293199522711143,
+      "net_usdt": 59.070966207533594,
+      "net_return_pct": 0.5907096620753359,
+      "exit_reason": "mean"
+    },
+    {
+      "entry_utc": "2026-09-09T19:00:00+00:00",
+      "exit_utc": "2026-09-11T09:00:00+00:00",
+      "hours": 38.0,
+      "entry_premium_pct": 38.70351047961849,
+      "exit_premium_pct": 40.032852282060304,
+      "gross_usdt": -45.761519390969426,
+      "funding_usdt": -12.089058987995474,
+      "cost_usdt": 13.716692134588587,
+      "net_usdt": -71.56727051355348,
+      "net_return_pct": -0.7156727051355348,
+      "exit_reason": "sample_end"
+    }
+  ]
+}
