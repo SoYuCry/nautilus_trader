@@ -1,0 +1,11 @@
+{
+  "event_slug": "highest-temperature-in-CITY-on-DATE",
+  "date": "2026-10-16", "station": "REPLACE_ICAO", "timezone": "Asia/Shanghai",
+  "temperature_unit": "C", "metar_rule": "decoded-temperature",
+  "catalog_path": "/ABS/EXTRACTED_PACKAGE/tmp/catalogs/EVENT",
+  "conditions": [{"condition_id": "REPLACE", "no_token_id": "NO_ID", "upper_bound": "20", "fee_rate": "0.05", "minimum_quantity": "5"}],
+  "limits": {"max_event_cost": "100", "max_condition_quantity": "5", "max_order_quantity": "5", "minimum_edge": "0", "safety_margin": "0"},
+  "weather": [{"kind": "metar_poll", "received_ns": 1792108800000000000,
+               "source": {"path": "/ABS/WEATHER.jsonl", "line": 1},
+               "rows": [{"icaoId": "REPLACE_ICAO", "obsTime": 1792108800, "receiptTime": "2026-10-16T00:00:00Z", "temp": 25, "rawOb": "REPLACE_WITH_RECORDED_METAR"}]}]
+}

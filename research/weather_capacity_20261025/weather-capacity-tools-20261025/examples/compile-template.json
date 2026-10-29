@@ -1,0 +1,13 @@
+{
+  "event_slug": "highest-temperature-in-CITY-on-DATE",
+  "raw_path": "/ABS/EVENT/raw/market.jsonl",
+  "source_paths": ["/ABS/EVENT/raw/market.jsonl", "/ABS/EVENT/metadata.json"],
+  "analysis_window": {"timezone": "Asia/Shanghai", "start": "2026-10-15T16:00:00Z", "end": "2026-10-16T16:00:00Z"},
+  "metadata": {"conditions": [{
+    "condition_id": "REPLACE", "scheduled_expiration": "2026-10-16T12:00:00Z",
+    "metadata_evidence": {"path": "/ABS/EVENT/metadata.json", "key": "markets[0]"},
+    "fee_status": "unknown",
+    "tokens": [{"token_id": "YES_ID", "outcome": "Yes"}, {"token_id": "NO_ID", "outcome": "No"}]
+  }]},
+  "http_resolutions": []
+}

@@ -1,0 +1,40 @@
+{
+  "source_commit": "5187dd6189bf7b2d089765714cf020ccebe3b5c9",
+  "source_hashes": {
+    "/data/liuchang/nautilus_catalog_organization/polymarket/_core/identifiers.py": "38aeeebd5b2d0dd86c10d38896bb3cb08d766abd7ad9a03f3ef9b2dd6e5bc633",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/event_catalog/native.py": "cdd3b23219b31746b2f9f299b6e31394682709ccbb3be98d419c6921435eaea3",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/strategies/weather_observed_high.py": "6926d39e1c1d6374e9b90c37b9a42d883127c120cd937d0081949bf9b092886b",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/strategies/weather_capacity.py": "022c64bb1129719905a13652a915d00ac86405d14f0d59e2a7ceebb5ac48cd0e",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/tmp/capacity-inputs/weather_metar_frozen.py": "d6781b6ef6587f086a1acb3fb33d6dad301bd6aa56b6c2ce891966de43b21924",
+    "/data/liuchang/nautilus_trader/polymarket/research/2026-10-20-bbo-pruned-catalog/tmp/frozen-a5cb8cc430-recovery/polymarket/research/2026-10-20-bbo-pruned-catalog/bbo_prune.py": "aa17897dfde19460eaf5beabff2068cd9b33c0c3e4fd8b5039357a92b4be59bf",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/_core/audit_log.py": "a7982ede3ca462f2cd0aa66250f6ea99ac2e2dd3b2a0c99c08dc782169d4f948",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/collector_native.py": "f70f9107ffe78b7164060f22136db93b9da4d51285702c03189c0cadc544bb34",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/compile_temporary.py": "2f55601b85d864fce24192ec2b88c7e5bf42e96dfe612f6f47700b28ac4f04c7",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/capacity_run.py": "fda84e70b39214e3b1f1784d0c4c254afbc14256f3ec359a8b49017c32dfec77",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/validate_samples.py": "cf58ecfd022ef0da6c8febac1fe7924924f036f07801e68363aed82fa48595bb",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/test_collector_native.py": "d0c28d2ced3fb65eb108bf9d33747df9cb73c548105a1dae4f473c7c47588fca",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/test_compile_temporary.py": "790117eaef854ffdeff1b9660b0c0008a5f23cafa4a909cad4a7033d36895d62",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/test_capacity_run.py": "45e58a04b71b47956189cf661acc15d7bad3519c6d122d4219cb95e25715618e",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/freeze_inputs.py": "79f24d6c9654d47d1e4b27bd32d0a71e5998d4982578aa7baf90fbee711b1a45",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/doctor.py": "0d1046136b46522c975a5bab34c407b57d351f965e2bf52f57375667b899d5f5",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/README.md": "4c844227fcded36dcc1dd27d220a66daa44722bec2902e43f02f4379dea968c3",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/requirements.txt": "b280a8ba47948f0b01e3d6149571b15a2ef1cb27669d82187a34f9b2602b8fdb",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/run.sh": "aeef1820208e348fcfe12ed6c6e743ecc44977164d532cd43b4dd382b01206e8",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/compile-template.json": "72b3da5e7a57be976a957cce35bf27da4cb91c76893d8259c74da7ad224655d0",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/portable/capacity-template.json": "4b895d82910acda980d5973f9c7d0283e47cfa672a94a428a7c6d8e96ef8d2be",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/prepare_frozen.py": "fe71e6e8700f6557aa367a2f428973f904e7033f7900dbd03503f29ac92706fb",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/prepare_capacity_inputs.py": "a500c3213085f9b0d85b18cce23a2cb684f24cf181ccae8892a01bb1aa694ff4",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/INPUTS.md": "f00b088334f186dfddc5d22d0d5da1ec48c69f2bf18d0f04e1952111682c9507",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/REAL_INPUT.md": "8b9ad9baa0dca573b77d0b689a2a324efd4ac691085b32776c7047d46efa4245",
+    "/data/liuchang/nautilus_catalog_organization/polymarket/research/2026-10-23-weather-history-capacity/CAPACITY_REPORT.md": "109012710a71c91508be59c0bbc5966ca850afdaba4201ea2886024bae3fdbd9",
+    "/data/liuchang/nautilus_catalog_organization/LICENSE": "ee907919ec88c9c017b1f8b608db20960b6598aefcc4fe58820bde955d65ed3c",
+    "/data/liuchang/nautilus_catalog_organization/AI_POLICY.md": "57c967521e37dba26dc00e88d8d8e098ab58574c2ab506b5be629862602d304d"
+  },
+  "contents": "code only; no market data, logs, config credentials, venv or native binaries",
+  "portable_changes": [
+    "local dependency paths",
+    "arbitrary Event count/cities",
+    "explicit station/timezone/rule required",
+    "Fahrenheit not auto-converted"
+  ]
+}

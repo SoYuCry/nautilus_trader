@@ -1,0 +1,35 @@
+{
+  "schema": "live-awc-exact-row-dedup/v1",
+  "window": {
+    "timezone": "Asia/Shanghai",
+    "start_inclusive_ns": 1792857600000000000,
+    "end_exclusive_ns": 1793030400000000000
+  },
+  "unique_observations": 312,
+  "observation_references": 309819,
+  "original_exports": {
+    "2026-10-25": {
+      "filename": "live-awc-2026-10-25.jsonl",
+      "sha256": "8eacc20d6d109d5af715964844debdba887cdc78a0d8f8d13559be19a963e5eb",
+      "bytes": 21399611,
+      "records": 996,
+      "nonempty_polls": 490
+    },
+    "2026-10-26": {
+      "filename": "live-awc-2026-10-26.jsonl",
+      "sha256": "12ef2044e03e076b6300931ab5aef92036035491f55988cc47ca896c6e253ded",
+      "bytes": 117022734,
+      "records": 5572,
+      "nonempty_polls": 2739
+    }
+  },
+  "files_sha256": {
+    "observations.jsonl": "21b7202d457e87419af6dd5560ffa2c464a8b7ba67472df8658777c91b6d78f1",
+    "events-2026-10-25.jsonl": "f040fe89eba9331e5d2d04ac53e279d58890b24a9525638896f4f2214c84ff7e",
+    "events-2026-10-26.jsonl": "462325de103244688e93338fa8f08fd672ef566bb16d30767e157b2b18a09731",
+    "coverage.json": "f8862cc6cc7a4a1bae337b48e6e43cd761004bc207ee70c72f6dc53bc1b47801",
+    "replay_awc.py": "ae0fb193a8bb5adc10718f6ffa265c0c996b5e32045fc2f30f27bd6b558ac50a"
+  },
+  "losslessness": "Each original export must reconstruct byte-for-byte, including full metadata, error/delivery/exit records, numeric spellings, observation order and repeated polls.",
+  "scope": "Offline packaging only; no live service, network, Redis or trading API access."
+}
