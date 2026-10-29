@@ -1,0 +1,118 @@
+[
+  {
+    "file": "refined.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\queue_estimate_20261026\\refined.json",
+    "sha256": "0e00577ed8a05c7cf8dc9f85b5644734c56ea4a4e47bf3884fe077f35ec1c40d"
+  },
+  {
+    "file": "refined.csv",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\queue_estimate_20261026\\refined.csv",
+    "sha256": "6f8592acbd9bcaf49a44e430fe87953fed1c67cd773996ccbaf35cf7c88b604d"
+  },
+  {
+    "file": "estimates.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\queue_estimate_20261026\\estimates.json",
+    "sha256": "3ff6a8bb2dbda15b526100362299458e5be4033e89210ad44295ec93cdbaa1f8"
+  },
+  {
+    "file": "estimates.csv",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\queue_estimate_20261026\\estimates.csv",
+    "sha256": "70adb4f82867aa2f66ea025dfc7da033e43a7c33faa190b76f97dc3acd5e0ff2"
+  },
+  {
+    "file": "resolution-state-beijing16.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\queue_estimate_20261026\\resolution-state-beijing16.json",
+    "sha256": "d33032f0fd41c51f7ce77268680d2aa11a0e69ed8f556a60701ccf92865bff45"
+  },
+  {
+    "file": "halfhour_trades.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\trades.json",
+    "sha256": "05ade0961a28109691585b1ebac3515a47c52836a0290b163bb0251037c0b7ac"
+  },
+  {
+    "file": "halfhour_trades.csv",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\trades.csv",
+    "sha256": "470016f97313987ce24b17380ea5a1618ddfe74297419af459fe28f5e69ec5f0"
+  },
+  {
+    "file": "halfhour_all_windows.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\all_windows.json",
+    "sha256": "e92acfcc86d575668369f70124b4f4bb34c5a1cc5e16b81fe71d181ce32fb8c6"
+  },
+  {
+    "file": "halfhour_all_windows.csv",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\all_windows.csv",
+    "sha256": "b700b5ed961ac334dcc43805801b2706b1747be7def0eeb5c9a45dc6727ca026"
+  },
+  {
+    "file": "halfhour_windows_with_trades.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\windows_with_trades.json",
+    "sha256": "20bef1a36751a23c6e6d255ea2ced40e4e1e429196bdae24096a6a633c72ef51"
+  },
+  {
+    "file": "halfhour_windows_with_trades.csv",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\windows_with_trades.csv",
+    "sha256": "37325386b77fdd449ac39770c1ffa566f8484cd1a1f9b562d3aed58eaab05ca4"
+  },
+  {
+    "file": "halfhour_REPORT.md",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\results\\halfhour\\REPORT.md",
+    "sha256": "fa1b54625ec943ae38ce94ad64e15044b1181ef72ae269f8a2e8b163aa6db10b"
+  },
+  {
+    "file": "live_awc_events.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\live_validation_2526\\live\\events.json",
+    "sha256": "22b4c04ffb8a679f33e04bbbb30afa153c0d66e3e29964798fc56ea7b5d35d8c"
+  },
+  {
+    "file": "highest-temperature-in-beijing-on-october-26-2026.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\beijing_shanghai_20261025_26_delay120\\inputs\\gamma\\highest-temperature-in-beijing-on-october-26-2026.json",
+    "sha256": "03027de718b17149163a2dfbbcadc2097cf53d52a8fdf42ed4f7e829ec19063f"
+  },
+  {
+    "file": "highest-temperature-in-shanghai-on-october-26-2026.json",
+    "source": "C:\\Projects\\nautilus_trader\\research\\weather_capacity_20261025\\beijing_shanghai_20261025_26_delay120\\inputs\\gamma\\highest-temperature-in-shanghai-on-october-26-2026.json",
+    "sha256": "1055058f998e6ef77089f3bda6b3b6d07ce2eab52694a90bdbba22c2a7592321"
+  },
+  {
+    "file": "market_resolved_raw.json / .csv",
+    "source": "C:\\Projects\\PolyReaper\\data\\external\\pendulumflow\\v3_1012-latest\\2026-10-26\\16\\2026-10-26T16.parquet",
+    "filter": "event_type=market_resolved; conditionId in saved Beijing/Shanghai 2026-10-26 Gamma markets",
+    "rows": 22
+  },
+  {
+    "file": "orders_screenshot.png",
+    "source": "C:\\Users\\xhth\\AppData\\Local\\Temp\\codex-clipboard-uJsxOb.png",
+    "sha256": "4a1f1f08eb1b293860c7d52a77ba0b2f9f49373d5d6df11a23b75c9037f02120"
+  },
+  {
+    "file": "gamma_conditions.csv",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "05936bb548a661ea5868cf1bd1d351593ed435e106de77d67568317959bb0256"
+  },
+  {
+    "file": "gamma_conditions.json",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "9810dbda3715ba582c41de77bf23887767d4255f7a55030ba666edf4648ae53f"
+  },
+  {
+    "file": "market_resolved_raw.csv",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "3fd40c66e411b7c7325838b827d4e3bb97fb1d5209ac23b050ab5dccef048556"
+  },
+  {
+    "file": "market_resolved_raw.json",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "acb7f540afb452482ab3f5c39899726468c1865a82e337a86fd7bc32737e6c67"
+  },
+  {
+    "file": "orders_and_gamma.csv",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "61a5930e7c27b2e378fc1377bb69d89bfd5c67eda2ccedd032c73918a7291998"
+  },
+  {
+    "file": "orders_and_gamma.json",
+    "source": "derived by archive_lifecycle.py",
+    "sha256": "8b90cd1a4680b8272449ddc17d249d0a43c62e6075cc3a192142958482b4c7fb"
+  }
+]
