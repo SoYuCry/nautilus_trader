@@ -1,0 +1,13 @@
+# Regenerable local inputs and intermediate market-data shards; retain on disk.
+inputs/
+filtered/
+sampled/
+trade_only/
+__pycache__/
+*.pyc
+*.log
+*.writing
+*.parquet
+*.zip
+# Live payload archive remains local; normalized events and evidence are tracked.
+live-awc-20261025-26-compact/*.jsonl

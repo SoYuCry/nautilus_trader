@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "unique_observations": 312,
+  "originals": [
+    {
+      "day": "2026-10-25",
+      "records": 996,
+      "sha256": "8eacc20d6d109d5af715964844debdba887cdc78a0d8f8d13559be19a963e5eb"
+    },
+    {
+      "day": "2026-10-26",
+      "records": 5572,
+      "sha256": "12ef2044e03e076b6300931ab5aef92036035491f55988cc47ca896c6e253ded"
+    }
+  ]
+}
