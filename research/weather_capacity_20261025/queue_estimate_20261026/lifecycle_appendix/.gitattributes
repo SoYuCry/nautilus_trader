@@ -1,0 +1,2 @@
+# Preserve archived evidence bytes so manifest SHA-256 remains valid on checkout.
+* -text whitespace=cr-at-eol
